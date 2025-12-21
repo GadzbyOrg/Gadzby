@@ -1,0 +1,38 @@
+import { type NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
+import { ENV } from "@/lib/env";
+import { COOKIE_NAME } from "@/lib/session";
+
+const publicRoutes = ["/login"];
+
+export default async function middleware(req: NextRequest) {
+	const currentPath = req.nextUrl.pathname;
+	const isPublicRoute = publicRoutes.includes(currentPath);
+	const session = req.cookies.get(COOKIE_NAME)?.value;
+
+
+	if (!session && !isPublicRoute) {
+		
+		return NextResponse.redirect(new URL("/login", req.url));
+	}
+
+	if (session) {
+		try {
+			const secret = new TextEncoder().encode(ENV.JWT_SECRET);
+			await jwtVerify(session, secret);
+
+			if (isPublicRoute) {
+				console.log("Redirecting to dashboard");
+				return NextResponse.redirect("/");
+			}
+		} catch (err) {
+			const response = NextResponse.redirect(new URL("/login", req.url));
+			response.cookies.delete(COOKIE_NAME);
+			return response;
+		}
+	}
+}
+
+export const config = {
+	matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+};
