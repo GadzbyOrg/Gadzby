@@ -90,7 +90,7 @@ export function ShopTeamManager({ slug, members, currentUserId }: ShopTeamManage
                     {members.map((member) => (
                         <div key={member.user.id} className="flex items-center justify-between p-3 bg-dark-800 rounded-xl border border-dark-700">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-grenat-900/50 flex items-center justify-center text-grenat-200 font-bold border border-grenat-500/30">
+                                <div className="h-10 w-10 rounded-full bg-primary-900/50 flex items-center justify-center text-primary-200 font-bold border border-primary-500/30">
                                     {member.user.prenom?.[0] || member.user.username[0].toUpperCase()}
                                 </div>
                                 <div>
@@ -106,7 +106,7 @@ export function ShopTeamManager({ slug, members, currentUserId }: ShopTeamManage
                                     value={member.role}
                                     onChange={(e) => handleUpdateRole(member.user.id, e.target.value as any)}
                                     disabled={isLoading || member.user.id === currentUserId} 
-                                    className="bg-dark-950 border border-dark-700 rounded-lg px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-grenat-500"
+                                    className="bg-dark-950 border border-dark-700 rounded-lg px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-primary-500"
                                 >
                                     <option value="VP">VP</option>
                                     <option value="MEMBRE">Membre</option>
@@ -140,7 +140,7 @@ export function ShopTeamManager({ slug, members, currentUserId }: ShopTeamManage
                             placeholder="Rechercher un utilisateur (nom, bucque...)"
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-grenat-500 focus:ring-1 focus:ring-grenat-500 transition-all"
+                            className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
                         />
                         
                         {/* Search Results Dropdown */}
@@ -157,12 +157,12 @@ export function ShopTeamManager({ slug, members, currentUserId }: ShopTeamManage
                                         className="w-full text-left px-4 py-3 hover:bg-dark-800 transition-colors flex items-center justify-between group"
                                     >
                                         <div>
-                                            <div className="text-white font-medium group-hover:text-grenat-400 transition-colors">
+                                            <div className="text-white font-medium group-hover:text-primary-400 transition-colors">
                                                 {user.prenom} {user.nom}
                                             </div>
                                             <div className="text-xs text-gray-500">@{user.username} • {user.bucque}</div>
                                         </div>
-                                        <div className="h-6 w-6 rounded-full border border-dark-600 flex items-center justify-center text-dark-400 group-hover:border-grenat-500 group-hover:text-grenat-500">
+                                        <div className="h-6 w-6 rounded-full border border-dark-600 flex items-center justify-center text-dark-400 group-hover:border-primary-500 group-hover:text-primary-500">
                                             +
                                         </div>
                                     </button>
@@ -176,7 +176,7 @@ export function ShopTeamManager({ slug, members, currentUserId }: ShopTeamManage
                              <select
                                 value={selectedRole}
                                 onChange={(e) => setSelectedRole(e.target.value as any)}
-                                className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-grenat-500 transition-all appearance-none cursor-pointer"
+                                className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
                             >
                                 <option value="MEMBRE">Membre</option>
                                 <option value="VP">VP</option>
@@ -186,7 +186,7 @@ export function ShopTeamManager({ slug, members, currentUserId }: ShopTeamManage
                         <button 
                             onClick={handleAddMember}
                             disabled={!selectedUser || isLoading}
-                            className="bg-grenat-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-grenat-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="bg-primary-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {isLoading ? "..." : "Ajouter"}
                         </button>

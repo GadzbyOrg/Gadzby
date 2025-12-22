@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ProductToolbar from "./_components/ProductToolbar";
 import DeleteProductButton from "./_components/DeleteProductButton";
+import { ExcelImportModal } from "@/components/excel-import-modal";
+import { importProducts } from "@/features/shops/import";
 
 export default async function ShopProductsPage({
     params,
@@ -56,6 +58,8 @@ export default async function ShopProductsPage({
                 <span className="text-white font-medium">Produits</span>
             </div>
 
+
+
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                      <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
@@ -65,13 +69,25 @@ export default async function ShopProductsPage({
                         Gérez l'inventaire de {shop.name} ({products.length} produits)
                     </p>
                 </div>
-                <Link 
-                    href={`/shops/${slug}/manage/products/new`}
-                    className="px-4 py-2 bg-grenat-600 hover:bg-grenat-500 text-white rounded-lg transition-colors font-medium text-center"
-                >
-                    + Nouveau Produit
-                </Link>
+                <div className="flex gap-4">
+                    <Link 
+                        href={`/shops/${slug}/manage/products/new`}
+                        className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors font-medium text-center"
+                    >
+                        + Nouveau Produit
+                    </Link>
+                </div>
             </header>
+
+            <div className="flex justify-end">
+                 <ExcelImportModal 
+                    action={importProducts}
+                    triggerLabel="Importer Excel"
+                    modalTitle="Importer des produits"
+                    expectedFormat="Nom, Prix d'achat, Stock, Catégorie"
+                    additionalData={{ slug }}
+                 />
+            </div>
 
             <ProductToolbar categories={categories} />
 
@@ -112,7 +128,7 @@ export default async function ShopProductsPage({
                                             <div className="flex items-center justify-end gap-3">
                                                 <Link 
                                                     href={`/shops/${slug}/manage/products/${product.id}`}
-                                                    className="text-grenat-400 hover:text-grenat-300 hover:underline"
+                                                    className="text-primary-400 hover:text-primary-300 hover:underline"
                                                 >
                                                     Modifier
                                                 </Link>

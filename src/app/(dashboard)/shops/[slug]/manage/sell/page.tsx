@@ -37,7 +37,7 @@ export default async function ShopPosPage({
 
             <header className="border-b border-dark-800 pb-6 mb-6">
                 <h1 className="text-3xl font-bold text-white tracking-tight">
-                    {shop.name} <span className="text-grenat-500">POS</span>
+                    {shop.name} <span className="text-primary-500">POS</span>
                 </h1>
                 <p className="text-gray-400">
                     Interface de vente pour le staff.

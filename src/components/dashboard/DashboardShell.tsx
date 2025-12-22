@@ -42,7 +42,7 @@ export function DashboardShell({
 	const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " €";
 
 	return (
-		<div className="flex h-screen min-h-screen w-full bg-dark-950 text-gray-100 font-sans selection:bg-grenat-900 selection:text-white">
+		<div className="flex h-screen min-h-screen w-full bg-dark-950 text-gray-100 font-sans selection:bg-primary-900 selection:text-white">
 			{/* --- SIDEBAR DESKTOP --- */}
 			<div className="hidden md:block">
 				<Sidebar userRole={user.appRole} shops={shops} />
@@ -79,7 +79,7 @@ export function DashboardShell({
 
 					{/* Titre ou Fil d'ariane */}
 					<div className="hidden md:block">
-						<h1 className="text-lg font-semibold text-gray-200">Tyrion</h1>
+						<h1 className="text-lg font-semibold text-gray-200">Gadzby</h1>
 					</div>
 
 					{/* User Info & Actions */}
@@ -105,7 +105,7 @@ export function DashboardShell({
 				</header>
 
 				{/* PAGE CONTENT (Scrollable) */}
-				<div className="flex-1 overflow-y-auto p-6 md:p-8 bg-linear-to-br from-dark-950 to-dark-900">
+				<div className="flex-1 overflow-y-auto p-6 md:p-8 bg-dark-950">
 					<div className="mx-auto max-w-6xl animate-in fade-in zoom-in-95 duration-300">
 						{children}
 					</div>

@@ -63,7 +63,7 @@ export function ShopPermissionsManager({ slug, initialPermissions }: ShopPermiss
                     <thead>
                         <tr className="bg-dark-950 border-b border-dark-800">
                             <th className="py-4 px-6 font-medium text-gray-400">Fonctionnalité</th>
-                            <th className="py-4 px-6 font-medium text-grenat-400 text-center w-32">VP</th>
+                            <th className="py-4 px-6 font-medium text-primary-400 text-center w-32">VP</th>
                             <th className="py-4 px-6 font-medium text-gray-400 text-center w-32">Membre</th>
                         </tr>
                     </thead>
@@ -112,8 +112,8 @@ function Switch({ checked, onChange, disabled }: { checked: boolean; onChange: (
             onClick={onChange}
             disabled={disabled}
             className={`
-                relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:ring-offset-2
-                ${checked ? 'bg-grenat-600' : 'bg-dark-700'}
+                relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2
+                ${checked ? 'bg-primary-600' : 'bg-dark-700'}
                 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
         >

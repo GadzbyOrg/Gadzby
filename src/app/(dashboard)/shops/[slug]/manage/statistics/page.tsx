@@ -2,6 +2,7 @@ import { getShopTransactions, checkTeamMemberAccess } from "@/features/shops/act
 import { formatPrice } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { StatisticsCharts } from "./_components/statistics-charts";
 
 export default async function ShopTransactionsPage({
     params,
@@ -36,14 +37,19 @@ export default async function ShopTransactionsPage({
 
             <header>
                 <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
-                    Historique des transactions
+                    Statistiques & Transactions
                 </h1>
                 <p className="text-gray-400">
-                    Retrouvez ici toutes les ventes et mouvements de stock du shop {shop.name}.
+                    Aperçu des performances et historique des mouvements de stock.
                 </p>
             </header>
 
+            <StatisticsCharts slug={slug} />
+
             <div className="rounded-2xl bg-dark-900 border border-dark-800 overflow-hidden">
+                <div className="p-6 border-b border-dark-800">
+                    <h2 className="text-lg font-semibold text-white">Historique détaillé</h2>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-dark-800 text-gray-400 font-medium">

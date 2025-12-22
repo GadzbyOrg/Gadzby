@@ -98,7 +98,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
                             placeholder="Nom d'utilisateur (ex: bucque)"
                             value={newMemberUsername}
                             onChange={(e) => setNewMemberUsername(e.target.value)}
-                            className="flex-1 bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-grenat-500 placeholder:text-gray-600"
+                            className="flex-1 bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
                         />
                         <button
                             type="submit"
@@ -119,14 +119,14 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
                             {members.map((member) => (
                                 <li key={member.id} className="flex items-center justify-between p-3 bg-dark-900/50 border border-dark-800/50 rounded-xl hover:border-dark-700 transition-colors">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-full bg-grenat-900/30 flex items-center justify-center text-grenat-400 font-bold text-xs">
+                                        <div className="h-8 w-8 rounded-full bg-primary-900/30 flex items-center justify-center text-primary-400 font-bold text-xs">
                                             {member.prenom?.[0]}{member.nom?.[0]}
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <div className="text-sm font-medium text-white">{member.prenom} {member.nom}</div>
                                                 {member.isAdmin && (
-                                                     <span className="text-[10px] bg-grenat-900/50 text-grenat-400 px-1.5 py-0.5 rounded border border-grenat-900/50">Admin</span>
+                                                     <span className="text-[10px] bg-primary-900/50 text-primary-400 px-1.5 py-0.5 rounded border border-primary-900/50">Admin</span>
                                                 )}
                                             </div>
                                             <div className="text-xs text-gray-500">@{member.username}</div>
@@ -135,7 +135,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => toggleAdmin(member)}
-                                            className={`p-1.5 rounded-lg transition-colors ${member.isAdmin ? 'text-grenat-400 hover:bg-grenat-900/20' : 'text-gray-600 hover:text-gray-300 hover:bg-dark-800'}`}
+                                            className={`p-1.5 rounded-lg transition-colors ${member.isAdmin ? 'text-primary-400 hover:bg-primary-900/20' : 'text-gray-600 hover:text-gray-300 hover:bg-dark-800'}`}
                                             title={member.isAdmin ? "Révoquer Admin" : "Promouvoir Admin"}
                                         >
                                             {member.isAdmin ? <IconShieldOff size={16} /> : <IconShield size={16} />}

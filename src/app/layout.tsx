@@ -3,7 +3,7 @@ import React from "react";
 import "./globals.css";
 
 export const metadata = {
-	title: "Projet Tyrion",
+	title: "Projet Gadzby",
 	description: "Borgia 2.0",
 };
 

@@ -80,7 +80,7 @@ export function FamssTable({ famss }: FamssTableProps) {
                     <input
                         type="search"
                         placeholder="Rechercher une Fam'ss..."
-                        className="w-full bg-dark-950 border border-dark-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-grenat-500 placeholder:text-gray-600"
+                        className="w-full bg-dark-950 border border-dark-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
                         defaultValue={searchParams.get("search")?.toString()}
                         onChange={(e) => handleSearch(e.target.value)}
                     />
@@ -88,7 +88,7 @@ export function FamssTable({ famss }: FamssTableProps) {
                 <div className="flex-1"></div>
                 <button
                     onClick={handleCreate}
-                    className="flex items-center gap-2 bg-grenat-600 hover:bg-grenat-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                     <IconPlus size={16} />
                     Nouvelle Fam'ss
@@ -126,8 +126,8 @@ export function FamssTable({ famss }: FamssTableProps) {
                                                 onClick={() => handleMembers(fams)}
                                                 className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors group/members"
                                             >
-                                                <IconUsersGroup size={16} className="text-gray-500 group-hover/members:text-grenat-400 transition-colors" />
-                                                <span className="group-hover/members:underline decoration-grenat-500/50 underline-offset-4">{fams.memberCount} membre{fams.memberCount > 1 ? 's' : ''}</span>
+                                                <IconUsersGroup size={16} className="text-gray-500 group-hover/members:text-primary-400 transition-colors" />
+                                                <span className="group-hover/members:underline decoration-primary-500/50 underline-offset-4">{fams.memberCount} membre{fams.memberCount > 1 ? 's' : ''}</span>
                                             </button>
                                         </td>
                                         <td className="py-3 px-6 text-right font-mono text-gray-300">

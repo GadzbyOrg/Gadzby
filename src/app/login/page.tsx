@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { loginAction } from "@/features/auth/actions";
 import {
 	IconReceipt2,
@@ -36,9 +37,9 @@ function SubmitButton() {
 			type="submit"
 			disabled={pending}
 			className={cn(
-				"flex w-full justify-center rounded-lg bg-grenat-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm transition-all",
-				"hover:bg-grenat-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-grenat-600",
-				"disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-grenat-600"
+				"flex w-full justify-center rounded-lg bg-primary-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm transition-all",
+				"hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
+				"disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600"
 			)}
 		>
 			{pending ? (
@@ -56,17 +57,17 @@ function SubmitButton() {
 // --- Page Principale ---
 
 export default function LoginPage() {
-	const [state, action] = useFormState(loginAction, { error: undefined });
+	const [state, action] = useActionState(loginAction, { error: undefined });
 
 	return (
 		<div className="flex min-h-screen flex-col justify-center bg-dark-950 px-6 py-12 lg:px-8">
 			{/* En-tête avec Logo */}
 			<div className="sm:mx-auto sm:w-full sm:max-w-sm">
-				<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-grenat-900/30 text-grenat-500 ring-1 ring-grenat-900/50 shadow-[0_0_30px_-5px_var(--grenat-900)]">
+				<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-900/30 text-primary-500 ring-1 ring-primary-900/50 shadow-[0_0_30px_-5px_var(--primary-900)]">
 					<IconReceipt2 size={32} stroke={1.5} />
 				</div>
 				<h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-white">
-					Tyrion
+					Gadzby
 				</h2>
 				<p className="mt-2 text-center text-sm text-gray-500">
 					Gestion centralisée des boquettes
@@ -115,7 +116,7 @@ export default function LoginPage() {
 									type="text"
 									required
 									placeholder="112-95"
-									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-grenat-600 sm:text-sm sm:leading-6 transition-all"
+									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
 								/>
 							</div>
 						</div>
@@ -138,7 +139,7 @@ export default function LoginPage() {
 									type="password"
 									required
 									placeholder="••••••••"
-									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-grenat-600 sm:text-sm sm:leading-6 transition-all"
+									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
 								/>
 							</div>
 						</div>
@@ -155,7 +156,7 @@ export default function LoginPage() {
 					Pas encore de compte ?{" "}
 					<a
 						href="#"
-						className="font-semibold leading-6 text-grenat-400 hover:text-grenat-300 transition-colors"
+						className="font-semibold leading-6 text-primary-400 hover:text-primary-300 transition-colors"
 					>
 						Contacte ton Zifoy'ss
 					</a>

@@ -56,26 +56,53 @@ export async function updateUserAction(prevState: any, formData: FormData): Prom
 import { adminUpdateUserSchema } from "./schemas";
 import { transactions } from "@/db/schema";
 
-export async function getUsers(page = 1, limit = 20, search = "") {
+export async function getUsers(
+    page = 1, 
+    limit = 20, 
+    search = "", 
+    sort: string | null = null, 
+    order: "asc" | "desc" | null = null,
+    role: string | null = null
+) {
     const session = await verifySession();
     if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
 
     const offset = (page - 1) * limit;
 
     try {
-        const whereClause = search
-            ? (users: any, { or, ilike }: any) => or(
-                ilike(users.username, `%${search}%`),
-                ilike(users.nom, `%${search}%`),
-                ilike(users.prenom, `%${search}%`),
-                ilike(users.email, `%${search}%`),
-                ilike(users.bucque, `%${search}%`)
-            )
-            : undefined;
+        const whereClause = (users: any, { or, ilike, and, eq }: any) => {
+            const conditions = [];
+
+            if (search) {
+                conditions.push(or(
+                    ilike(users.username, `%${search}%`),
+                    ilike(users.nom, `%${search}%`),
+                    ilike(users.prenom, `%${search}%`),
+                    ilike(users.email, `%${search}%`),
+                    ilike(users.bucque, `%${search}%`)
+                ));
+            }
+
+            if (role) {
+                conditions.push(eq(users.appRole, role));
+            }
+
+            return and(...conditions);
+        };
+
+        const orderByClause = (users: any, { asc, desc }: any) => {
+            if (sort && order) {
+                 const column = users[sort];
+                 if (column) {
+                     return order === "asc" ? asc(column) : desc(column);
+                 }
+            }
+            return [desc(users.username)];
+        };
 
         const allUsers = await db.query.users.findMany({
             where: whereClause as any,
-            orderBy: (users, { desc }) => [desc(users.username)], // Sort by username default? Or created_at? Users doesn't have created_at in schema shown, maybe ID.
+            orderBy: orderByClause as any,
             limit: limit,
             offset: offset,
         });
@@ -111,7 +138,7 @@ export async function adminUpdateUserAction(prevState: any, formData: FormData):
         return { error: parsed.error.issues[0].message }; 
     }
 
-    const { userId, nom, prenom, email, bucque, promss, nums, appRole, balance } = parsed.data;
+    const { userId, nom, prenom, email, bucque, promss, nums, appRole, balance, isAsleep } = parsed.data;
     const newUsername = `${nums}${promss}`;
 
     try {
@@ -150,7 +177,8 @@ export async function adminUpdateUserAction(prevState: any, formData: FormData):
                     nums,
                     username: newUsername,
                     appRole,
-                    balance
+                    balance,
+                    isAsleep
                 })
                 .where(eq(users.id, userId));
         });
@@ -452,3 +480,57 @@ export async function importUsersAction(prevState: any, formData: FormData): Pro
         return { error: "Erreur critique lors de l'import" };
     }
 }
+
+export async function toggleUserStatusAction(userId: string, isAsleep: boolean): Promise<ActionResponse> {
+    const session = await verifySession();
+    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+
+    try {
+        await db.update(users)
+            .set({ isAsleep })
+            .where(eq(users.id, userId));
+
+        revalidatePath("/admin/users");
+        return { success: isAsleep ? "Utilisateur désactivé" : "Utilisateur réactivé" };
+    } catch (error) {
+        console.error("Failed to toggle user status:", error);
+        return { error: "Erreur lors de la modification du statut" };
+    }
+}
+
+export async function searchUsersPublicAction(query: string) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    if (!query || query.length < 2) return { users: [] };
+
+    try {
+        const foundUsers = await db.query.users.findMany({
+            where: (users, { and, or, ilike, ne, eq }) => and(
+                ne(users.id, session.userId), // Exclude self
+                eq(users.isAsleep, false), // Only active users
+                or(
+                    ilike(users.username, `%${query}%`),
+                    ilike(users.nom, `%${query}%`),
+                    ilike(users.prenom, `%${query}%`),
+                    ilike(users.bucque, `%${query}%`)
+                )
+            ),
+            limit: 10,
+            columns: {
+                id: true,
+                username: true,
+                nom: true,
+                prenom: true,
+                bucque: true,
+                promss: true
+            }
+        });
+
+        return { users: foundUsers };
+    } catch (error) {
+        console.error("Failed to search users:", error);
+        return { error: "Erreur lors de la recherche" };
+    }
+}
+

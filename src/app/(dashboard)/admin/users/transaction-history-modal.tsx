@@ -88,7 +88,7 @@ export function TransactionHistoryModal({ user, onClose }: TransactionHistoryMod
 
                     {loading ? (
                          <div className="flex justify-center py-12">
-                            <div className="w-8 h-8 border-2 border-grenat-500 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
                          </div>
                     ) : transactions.length === 0 ? (
                         <div className="text-center py-12 text-gray-500">
@@ -136,7 +136,7 @@ export function TransactionHistoryModal({ user, onClose }: TransactionHistoryMod
                                                     {(tx.amount / 100).toFixed(2)} €
                                                 </td>
                                                 <td className="py-3 px-4 text-right">
-                                                    {(!isCancelled && tx.type !== 'REFUND' && tx.type !== 'ADJUSTMENT' && tx.amount < 0) || (tx.type === 'TOPUP') ? (
+                                                    {(!isCancelled && tx.type !== 'REFUND' && tx.type !== 'ADJUSTMENT' && tx.amount < 0) || (tx.type === 'TOPUP') || (tx.type === 'TRANSFER' && tx.amount < 0) ? (
                                                         <button
                                                             onClick={() => handleCancel(tx.id)}
                                                             disabled={submitting === tx.id}

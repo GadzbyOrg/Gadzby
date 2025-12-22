@@ -1,57 +1,65 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @theme {
-  /* --- PALETTE GRENAT --- */
-  --color-grenat-50: #fdf2f4;
-  --color-grenat-100: #fde6e9;
-  --color-grenat-200: #fbd0d9;
-  --color-grenat-300: #f7aab9;
-  --color-grenat-400: #f27a93;
-  --color-grenat-500: #e63f66;
-  /* Couleur principale */
-  --color-grenat-600: #c61a46;
-  /* Hover / Vif */
-  --color-grenat-700: #a61036;
-  /* Standard */
-  --color-grenat-800: #8b1232;
-  /* Sombre */
-  --color-grenat-900: #751430;
-  /* Profond */
-  --color-grenat-950: #410515;
-  /* Très sombre */
+  /* --- PALETTE PRIMARY (Amber/Beer) --- */
+  --color-primary-50: #fffbeb;
+  --color-primary-100: #fef3c7;
+  --color-primary-200: #fde68a;
+  --color-primary-300: #fcd34d;
+  --color-primary-400: #fbbf24;
+  --color-primary-500: #f59e0b;
+  /* Main */
+  --color-primary-600: #d97706;
+  /* Hover */
+  --color-primary-700: #b45309;
+  --color-primary-800: #92400e;
+  --color-primary-900: #78350f;
+  --color-primary-950: #451a03;
 
-  /* --- PALETTE DARK MODE (Extension des gris par défaut ou surcharge) --- */
-  /* On utilise les gris par défaut de Tailwind mais on peut définir des alias si nécessaire */
-  /* Less dark / softer scaling */
-  --color-dark-950: #121212;
-  --color-dark-900: #1e1e1e;
-  --color-dark-800: #2d2d2d;
-  --color-dark-700: #454545;
+  /* --- PALETTE BACKGROUND (Cream/Tablecloth) --- */
+  /* Replaces previous Dark palette logic, now Light/Warm */
+  --color-dark-50: #ffffff;
+  --color-dark-100: #fffbf0;
+  /* Warm Cream */
+  --color-dark-200: #fefce8;
+  --color-dark-300: #fef08a;
+
+  /* --- PALETTE TEXT (Slate/Menu) --- */
+  --color-dark-950: #0f172a;
+  /* Slate 900 for Headings */
+  --color-dark-900: #1e293b;
+  /* Slate 800 */
+  --color-dark-800: #334155;
+  /* Slate 700 for Body */
+  --color-dark-700: #475569;
+  /* Slate 600 */
 }
 
 /* Application des couleurs de base via les directives CSS natives et les variables du thème */
 @layer base {
   body {
-    background-color: var(--color-dark-950);
-    color: var(--color-gray-200);
+    background-color: var(--color-dark-100);
+    /* CREAM BACKGROUND */
+    color: var(--color-dark-800);
+    /* SLATE TEXT */
     font-family: Arial, Helvetica, sans-serif;
   }
 }
 
-/* Custom Scrollbar - utilisant les variables définies dans @theme */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-dark-950);
+  background: var(--color-dark-100);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-dark-800);
+  background: var(--color-dark-700);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-grenat-700);
+  background: var(--color-primary-600);
 }

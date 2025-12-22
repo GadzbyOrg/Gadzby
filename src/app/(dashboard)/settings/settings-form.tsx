@@ -13,8 +13,8 @@ function SubmitButton() {
 			type="submit"
 			disabled={pending}
 			className={cn(
-				"flex w-full justify-center rounded-lg bg-grenat-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm transition-all",
-				"hover:bg-grenat-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-grenat-600",
+				"flex w-full justify-center rounded-lg bg-primary-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm transition-all",
+				"hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
 				"disabled:opacity-50 disabled:cursor-not-allowed"
 			)}
 		>
@@ -75,7 +75,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="prenom"
 							id="prenom"
 							defaultValue={user.prenom}
-							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-grenat-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -91,7 +91,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="nom"
 							id="nom"
 							defaultValue={user.nom}
-							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-grenat-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -107,7 +107,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="email"
 							id="email"
 							defaultValue={user.email}
-							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-grenat-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -123,7 +123,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="bucque"
 							id="bucque"
 							defaultValue={user.bucque}
-							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-grenat-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -139,7 +139,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="promss"
 							id="promss"
 							defaultValue={user.promss}
-							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-grenat-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -155,7 +155,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="nums"
 							id="nums"
 							defaultValue={user.nums}
-							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-grenat-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>

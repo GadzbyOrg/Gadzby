@@ -53,7 +53,7 @@ export function TransactionToolbar() {
                 <input
                     type="text"
                     placeholder="Rechercher (description, montant)..."
-                    className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-10 pr-4 py-2 rounded-lg focus:ring-1 focus:ring-grenat-500 focus:border-grenat-500 text-sm"
+                    className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-10 pr-4 py-2 rounded-lg focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-sm"
                     defaultValue={searchParams.get("search")?.toString()}
                     onChange={(e) => handleSearch(e.target.value)}
                 />
@@ -61,7 +61,7 @@ export function TransactionToolbar() {
             <div className="flex gap-2">
                 <div className="relative">
                     <select
-                        className="bg-dark-800 border-dark-700 text-gray-200 pl-4 pr-10 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-grenat-500 cursor-pointer"
+                        className="bg-dark-800 border-dark-700 text-gray-200 pl-4 pr-10 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
                         onChange={(e) => handleTypeFilter(e.target.value)}
                         defaultValue={searchParams.get("type")?.toString() || "ALL"}
                     >
@@ -78,7 +78,7 @@ export function TransactionToolbar() {
                 
                  <div className="relative">
                     <select
-                        className="bg-dark-800 border-dark-700 text-gray-200 pl-4 pr-10 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-grenat-500 cursor-pointer"
+                        className="bg-dark-800 border-dark-700 text-gray-200 pl-4 pr-10 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
                         onChange={(e) => handleSort(e.target.value)}
                         defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
                     >

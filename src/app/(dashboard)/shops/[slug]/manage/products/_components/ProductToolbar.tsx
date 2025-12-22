@@ -64,7 +64,7 @@ export default function ProductToolbar({ categories }: ProductToolbarProps) {
                     placeholder="Rechercher un produit..."
                     onChange={(e) => handleSearch(e.target.value)}
                     defaultValue={searchParams.get("search")?.toString()}
-                    className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-grenat-500 focus:border-transparent outline-none transition-all placeholder-gray-500"
+                    className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all placeholder-gray-500"
                 />
             </div>
 
@@ -73,7 +73,7 @@ export default function ProductToolbar({ categories }: ProductToolbarProps) {
                 <select
                     onChange={(e) => handleFilter(e.target.value)}
                     defaultValue={searchParams.get("category")?.toString() || "all"}
-                    className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-grenat-500 focus:border-transparent outline-none transition-all"
+                    className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
                 >
                     <option value="all">Toutes catégories</option>
                     {categories.map((cat) => (
@@ -89,7 +89,7 @@ export default function ProductToolbar({ categories }: ProductToolbarProps) {
                 <select
                     onChange={(e) => handleSort(e.target.value)}
                     defaultValue={`${searchParams.get("sortBy") || "name"}-${searchParams.get("sortOrder") || "asc"}`}
-                    className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-grenat-500 focus:border-transparent outline-none transition-all"
+                    className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
                 >
                     <option value="name-asc">Nom (A-Z)</option>
                     <option value="name-desc">Nom (Z-A)</option>

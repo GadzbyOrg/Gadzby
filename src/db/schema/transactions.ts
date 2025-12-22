@@ -16,6 +16,8 @@ export const transactionTypeEnum = pgEnum('transaction_type', [
 
 export const walletSourceEnum = pgEnum('wallet_source', ['PERSONAL', 'FAMILY']);
 
+export const transactionStatusEnum = pgEnum('transaction_status', ['PENDING', 'COMPLETED', 'FAILED']);
+
 export const transactions = pgTable('transactions', {
   id: uuid('id').defaultRandom().primaryKey(),
   
@@ -26,6 +28,8 @@ export const transactions = pgTable('transactions', {
 
   // TYPE & CONTEXTE
   type: transactionTypeEnum('type').notNull(),
+  status: transactionStatusEnum('status').default('COMPLETED').notNull(),
+  paymentProviderId: text('payment_provider_id'), // Order ID from provider
   walletSource: walletSourceEnum('wallet_source').default('PERSONAL').notNull(),
   
   // ACTEURS

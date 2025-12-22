@@ -5,13 +5,13 @@ import { redirect } from "next/navigation";
 export default async function AdminUsersPage({
     searchParams,
 }: {
-    searchParams: Promise<{ page?: string; search?: string }>;
+    searchParams: Promise<{ page?: string; search?: string; sort?: string; order?: "asc" | "desc"; role?: string }>;
 }) {
-    const { page, search } = await searchParams;
+    const { page, search, sort, order, role } = await searchParams;
     const currentPage = Number(page) || 1;
     const searchTerm = search || "";
 
-    const { users, error } = await getUsers(currentPage, 50, searchTerm);
+    const { users, error } = await getUsers(currentPage, 50, searchTerm, sort || null, order || null, role || null);
 
     if (error) {
         // Simple error handling, could also redirect or show error component

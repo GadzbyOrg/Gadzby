@@ -165,7 +165,7 @@ export default async function AdminDashboardPage({
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 {/* Allow cancel if purchase or topup (mostly) and not already cancelled */}
-                                                {(['PURCHASE', 'TOPUP', 'DEPOSIT', 'ADJUSTMENT'].includes(t.type)) && (
+                                                {(['PURCHASE', 'TOPUP', 'DEPOSIT', 'ADJUSTMENT', 'TRANSFER'].includes(t.type)) && (
                                                     <CancelButton transactionId={t.id} isCancelled={isCancelled || false} />
                                                 )}
                                             </td>

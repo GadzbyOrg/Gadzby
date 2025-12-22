@@ -99,7 +99,7 @@ export default async function ShopSelfServicePage({
                     </p>
                     <Link 
                         href="/shops"
-                        className="inline-block mt-8 px-6 py-3 bg-grenat-600 hover:bg-grenat-500 text-white rounded-xl font-medium transition-colors"
+                        className="inline-block mt-8 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-colors"
                     >
                         Explorer les autres shops
                     </Link>

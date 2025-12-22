@@ -32,7 +32,7 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
             <div className="flex flex-col gap-1 w-full">
                 <label className="text-xs font-medium text-gray-400">Ajouter un membre (username)</label>
                 <input
-                    className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-grenat-500 outline-none w-full transition-colors text-sm"
+                    className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-primary-500 outline-none w-full transition-colors text-sm"
                     placeholder="Username..."
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -96,7 +96,7 @@ export function TransferForm({ famsName }: { famsName: string }) {
                         <input
                             type="text"
                             inputMode="decimal"
-                            className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-grenat-500 outline-none w-full pr-8 font-mono"
+                            className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-primary-500 outline-none w-full pr-8 font-mono"
                             placeholder="0.00"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
@@ -108,7 +108,7 @@ export function TransferForm({ famsName }: { famsName: string }) {
                 
                 <button 
                     disabled={loading}
-                    className="w-full bg-grenat-600 text-white px-4 py-2 rounded font-medium hover:bg-grenat-500 disabled:opacity-50 transition-colors cursor-pointer"
+                    className="w-full bg-primary-600 text-white px-4 py-2 rounded font-medium hover:bg-primary-500 disabled:opacity-50 transition-colors cursor-pointer"
                 >
                     {loading ? "Transfert en cours..." : "Envoyer vers la Fam'ss"}
                 </button>

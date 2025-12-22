@@ -34,6 +34,7 @@ const getNavStructure = (): NavGroup[] => [
 		links: [
 			{ label: "Tableau de bord", url: "/" },
 			{ label: "Historique", url: "/transactions" },
+			{ label: "Virement", url: "/transfer" },
 			{ label: "Recharger", url: "/topup" },
 			{ label: "Mes fam'ss", url: "/famss" },
 			{ label: "Mon Profil", url: "/settings" },
@@ -53,6 +54,7 @@ const getNavStructure = (): NavGroup[] => [
 			{ label: "Utilisateurs", url: "/admin/users" },
 			{ label: "Shops", url: "/admin/shops" },
 			{ label: "Fam'ss", url: "/admin/famss" },
+			{ label: "Moyens de paiement", url: "/admin/payments" },
 		],
 	},
 ];
@@ -99,6 +101,7 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
                             if (shop.permissions.canManageProducts) items.push({ label: "Produits", url: `/shops/${shop.slug}/manage/products` });
                             if (shop.permissions.canManageInventory) items.push({ label: "Inventaire", url: `/shops/${shop.slug}/manage/inventory` });
                             if (shop.permissions.canViewStats) items.push({ label: "Statistiques", url: `/shops/${shop.slug}/manage/statistics` });
+                            if (shop.permissions.canViewStats) items.push({ label: "Dépenses", url: `/shops/${shop.slug}/manage/expenses` }); // Using canViewStats for now
                             if (shop.permissions.canManageSettings) items.push({ label: "Paramètres", url: `/shops/${shop.slug}/manage/settings` });
                         } else if (shop.canManage) {
                              // Fallback for backward compatibility or simple check
@@ -107,6 +110,7 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
                                 { label: "Produits", url: `/shops/${shop.slug}/manage/products` },
                                 { label: "Inventaire", url: `/shops/${shop.slug}/manage/inventory` },
                                 { label: "Statistiques", url: `/shops/${shop.slug}/manage/statistics` },
+                                { label: "Dépenses", url: `/shops/${shop.slug}/manage/expenses` },
                                 { label: "Paramètres", url: `/shops/${shop.slug}/manage/settings` }
                              );
                         }
@@ -166,7 +170,7 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
 			{/* --- COLONNE 1 : ICONES (80px) --- */}
 			<div className="flex w-[80px] flex-col items-center border-r border-dark-800 bg-dark-950 py-6">
 				{/* Logo */}
-				<div className="mb-8 flex h-10 w-10 items-center justify-center rounded-full bg-grenat-700 text-white shadow-lg shadow-grenat-900/50">
+				<div className="mb-8 flex h-10 w-10 items-center justify-center rounded-full bg-primary-700 text-white shadow-lg shadow-primary-900/50">
 					<IconReceipt2 size={24} />
 				</div>
 
@@ -181,7 +185,7 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
 								className={cn(
 									"group relative flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-200",
 									isActive
-										? "bg-grenat-700/20 text-grenat-500"
+										? "bg-primary-700/20 text-primary-500"
 										: "text-gray-500 hover:bg-dark-800 hover:text-gray-300"
 								)}
 							>
@@ -189,7 +193,7 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
 
 								{/* Indicateur actif */}
 								{isActive && (
-									<div className="absolute right-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-l-full bg-grenat-600" />
+									<div className="absolute right-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-l-full bg-primary-600" />
 								)}
 
 								{/* Tooltip CSS-only */}
@@ -260,7 +264,7 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
                                                         className={cn(
                                                             "rounded-lg px-3 py-2 text-sm transition-colors",
                                                             isSubActive
-                                                                ? "text-grenat-400 font-medium" 
+                                                                ? "text-primary-400 font-medium" 
                                                                 : "text-gray-500 hover:text-gray-300"
                                                         )}
                                                     >
@@ -291,7 +295,7 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
 							>
 								{link.label}
 								{isActive && (
-									<IconChevronRight size={14} className="text-grenat-600" />
+									<IconChevronRight size={14} className="text-primary-600" />
 								)}
 							</Link>
 						);

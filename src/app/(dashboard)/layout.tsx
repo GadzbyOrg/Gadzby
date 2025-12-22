@@ -5,6 +5,7 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { getShops } from "@/features/shops/actions";
+import { ToastProvider } from "@/components/ui/use-toast";
 
 export default async function Layout({
 	children,
@@ -40,8 +41,10 @@ export default async function Layout({
 
 	// 4. Passer les données au composant client
 	return (
-		<DashboardShell user={user} shops={activeShops || []}>
-			{children}
-		</DashboardShell>
+        <ToastProvider>
+            <DashboardShell user={user} shops={activeShops || []}>
+                {children}
+            </DashboardShell>
+        </ToastProvider>
 	);
 }

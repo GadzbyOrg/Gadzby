@@ -64,6 +64,7 @@ export default async function ShopSettingsPage({
                         slug={fullShop.slug}
                         initialDescription={fullShop.description}
                         initialSelfService={fullShop.isSelfServiceEnabled ?? false}
+                        initialDefaultMargin={fullShop.defaultMargin}
                     />
                 </section>
 

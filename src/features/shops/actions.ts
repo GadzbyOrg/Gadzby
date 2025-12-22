@@ -1,24 +1,18 @@
 "use server";
 
 import { db } from "@/db";
-import { shops, shopUsers, users, transactions, products, famss, famsMembers } from "@/db/schema";
+import { shops, shopUsers, users, transactions, products, famss, famsMembers, shopExpenses } from "@/db/schema";
 import { verifySession } from "@/lib/session";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, gte, lte, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 
 
+import { hasShopPermission } from "./utils";
+
 // --- Helper for Permissions ---
-function hasShopPermission(
-    role: "GRIPSS" | "VP" | "MEMBRE", 
-    permissions: any, 
-    action: "canSell" | "canManageProducts" | "canManageInventory" | "canViewStats" | "canManageSettings"
-): boolean {
-    if (role === "GRIPSS") return true; // Owner has full access
-    if (role === "VP") return permissions.vp[action];
-    if (role === "MEMBRE") return permissions.member[action];
-    return false;
-}
+// Removed local definition
+
 
 export async function getShops() {
 	const session = await verifySession();
@@ -203,6 +197,7 @@ export async function searchUsers(query: string) {
                 bucque: true,
                 image: true,
                 balance: true,
+                isAsleep: true,
             }
         });
 
@@ -332,11 +327,15 @@ export async function processSale(shopSlug: string, targetUserId: string, items:
             } else {
                  const currentUser = await tx.query.users.findFirst({
                      where: eq(users.id, targetUserId),
-                     columns: { balance: true }
+                     columns: { balance: true, isAsleep: true }
                  });
 
                  if (!currentUser || currentUser.balance < totalAmount) {
                      return { error: "Solde insuffisant" };
+                 }
+
+                 if (currentUser.isAsleep) {
+                     return { error: "Cet utilisateur est désactivé et ne peut pas effectuer d'achats." };
                  }
 
                  await tx.update(users)
@@ -494,11 +493,15 @@ export async function processSelfServicePurchase(shopSlug: string, items: { prod
             } else {
                  const user = await tx.query.users.findFirst({
                      where: eq(users.id, session.userId),
-                     columns: { balance: true }
+                     columns: { balance: true, isAsleep: true }
                  });
 
                  if (!user || user.balance < totalAmount) {
                      return { error: "Solde insuffisant" };
+                 }
+
+                 if (user.isAsleep) {
+                     return { error: "Votre compte est désactivé." };
                  }
 
                  await tx.update(users)
@@ -563,7 +566,7 @@ export async function deleteProduct(shopSlug: string, productId: string) {
     }
 }
 
-export async function updateShop(slug: string, data: { description?: string, isSelfServiceEnabled?: boolean, permissions?: any }) {
+export async function updateShop(slug: string, data: { description?: string, isSelfServiceEnabled?: boolean, permissions?: any, defaultMargin?: number }) {
     const session = await verifySession();
     if (!session) return { error: "Non autorisé" };
 
@@ -781,4 +784,235 @@ export async function checkTeamMemberAccess(shopSlug: string, requiredPermission
     }
 
     return { authorized: true, shop, role: member.role, userId: session.userId };
+}
+
+export async function createShopAction(data: { name: string, description?: string, category?: string, slug?: string }) {
+    const session = await verifySession();
+    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+
+    try {
+        let slug = data.slug;
+        if (!slug) {
+            slug = data.name.toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+        }
+
+        const existingShop = await db.query.shops.findFirst({
+            where: eq(shops.slug, slug)
+        });
+
+        if (existingShop) return { error: "Ce slug est déjà utilisé" };
+
+        await db.insert(shops).values({
+            name: data.name,
+            slug: slug,
+            description: data.description,
+            category: data.category,
+        });
+
+        revalidatePath("/shops");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to create shop:", error);
+        return { error: "Erreur lors de la création" };
+    }
+}
+
+export async function getShopStats(
+    slug: string, 
+    timeframe: '7d' | '30d' | '90d' | 'all' | 'custom', 
+    customStartDate?: Date, 
+    customEndDate?: Date
+) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    const shop = await db.query.shops.findFirst({
+        where: eq(shops.slug, slug),
+        with: {
+            members: {
+                where: eq(shopUsers.userId, session.userId)
+            }
+        }
+    });
+
+    if (!shop) return { error: "Shop introuvable" };
+    
+    // Check permissions
+    let isAuthorized = false;
+    if (session.role === "ADMIN") isAuthorized = true;
+    else if (shop.members[0]) {
+        isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canViewStats");
+    }
+
+    if (!isAuthorized) return { error: "Non autorisé" };
+
+    try {
+        let startDate: Date;
+        let endDate: Date = new Date(); // now
+
+        if (timeframe === 'custom' && customStartDate && customEndDate) {
+            startDate = customStartDate;
+            endDate = customEndDate;
+            // Ensure end of day for endDate
+            endDate.setHours(23, 59, 59, 999);
+            // Ensure start of day for startDate
+            startDate.setHours(0, 0, 0, 0);
+        } else {
+            startDate = new Date();
+            // Reset to start of day for consistency? Or keep sliding window?
+            // Let's go with exact days back from now, but maybe snap to start of day for cleanliness
+            startDate.setHours(0,0,0,0);
+            
+            if (timeframe === '7d') startDate.setDate(startDate.getDate() - 7);
+            else if (timeframe === '30d') startDate.setDate(startDate.getDate() - 30);
+            else if (timeframe === '90d') startDate.setDate(startDate.getDate() - 90);
+            else if (timeframe === 'all') startDate = new Date(0); // Epoch
+        }
+
+        // Fetch Revenues (Transactions of type PURCHASE)
+        // Amount is negative for purchases
+        const revenueTransactions = await db.query.transactions.findMany({
+            where: and(
+                eq(transactions.shopId, shop.id),
+                eq(transactions.type, "PURCHASE"),
+                gte(transactions.createdAt, startDate),
+                lte(transactions.createdAt, endDate)
+            ),
+            columns: {
+                amount: true,
+                createdAt: true,
+            }
+        });
+
+        // Fetch Expenses
+        const expenseRecords = await db.query.shopExpenses.findMany({
+            where: and(
+                eq(shopExpenses.shopId, shop.id),
+                gte(shopExpenses.date, startDate),
+                lte(shopExpenses.date, endDate)
+            ),
+            columns: {
+                amount: true,
+                date: true,
+            }
+        });
+
+        // Aggregate by Date
+        const statsByDate = new Map<string, { date: string, revenue: number, expenses: number, profit: number }>();
+
+        // Helper to format date key YYYY-MM-DD
+        const getDateKey = (date: Date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        };
+
+        // Initialize map with all dates in range? 
+        // Or just sparse? Let's do sparse for now, chart lib usually handles gaps or we fill them in frontend.
+        // Actually for a nice chart, filling gaps is better.
+        
+        const currentDate = new Date(startDate);
+        const endLoopDate = new Date(endDate);
+        if (timeframe !== 'all') { // Don't fill 50 years if all is selected
+             while (currentDate <= endLoopDate) {
+                 const key = getDateKey(currentDate);
+                 statsByDate.set(key, { date: key, revenue: 0, expenses: 0, profit: 0 });
+                 currentDate.setDate(currentDate.getDate() + 1);
+             }
+        }
+
+        let totalRevenue = 0;
+        let totalExpenses = 0;
+
+        revenueTransactions.forEach(tx => { // tx.amount is negative
+            const key = getDateKey(new Date(tx.createdAt));
+            if (!statsByDate.has(key) && timeframe === 'all') {
+                 statsByDate.set(key, { date: key, revenue: 0, expenses: 0, profit: 0 });
+            }
+            
+            if (statsByDate.has(key)) {
+                const dayStat = statsByDate.get(key)!;
+                const revenueAmount = Math.abs(tx.amount); // Convert to positive for revenue display
+                dayStat.revenue += revenueAmount;
+                totalRevenue += revenueAmount;
+                dayStat.profit += revenueAmount; // Profit = Revenue - Expenses (Expenses deducted later)
+            }
+        });
+
+        expenseRecords.forEach(exp => {
+            const key = getDateKey(new Date(exp.date));
+             if (!statsByDate.has(key) && timeframe === 'all') {
+                 statsByDate.set(key, { date: key, revenue: 0, expenses: 0, profit: 0 });
+            }
+
+            if (statsByDate.has(key)) {
+                const dayStat = statsByDate.get(key)!;
+                dayStat.expenses += exp.amount;
+                totalExpenses += exp.amount;
+                dayStat.profit -= exp.amount;
+            }
+        });
+
+        // Sort by date
+        const sortedChartData = Array.from(statsByDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+        return {
+            summary: {
+                totalRevenue,
+                totalExpenses,
+                profit: totalRevenue - totalExpenses
+            },
+            chartData: sortedChartData
+        };
+
+    } catch (error) {
+        console.error("Failed to fetch shop stats:", error);
+        return { error: "Erreur lors du calcul des statistiques" };
+    }
+}
+
+
+
+export async function getAdminShops() {
+    const session = await verifySession();
+    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+
+    try {
+        const allShops = await db.query.shops.findMany({
+            orderBy: (shops, { asc }) => [asc(shops.name)],
+            with: {
+                members: {
+                    columns: { userId: true }
+                }
+            }
+        });
+
+        return { shops: allShops };
+    } catch (error) {
+        console.error("Failed to fetch admin shops:", error);
+        return { error: "Erreur lors de la récupération des shops" };
+    }
+}
+
+export async function toggleShopStatusAction(shopId: string, isActive: boolean) {
+    const session = await verifySession();
+    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+
+    try {
+        await db.update(shops)
+            .set({ 
+                isActive: isActive,
+                updatedAt: new Date()
+            })
+            .where(eq(shops.id, shopId));
+
+        revalidatePath("/admin/shops");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to toggle shop status:", error);
+        return { error: "Erreur lors de la mise à jour du statut" };
+    }
 }

@@ -35,7 +35,7 @@ export function CreateFamForm() {
             <div className="flex flex-col gap-2 flex-1">
                 <label className="text-sm font-medium text-gray-400">Créer une nouvelle Fam'ss</label>
                 <input
-                    className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-grenat-500 outline-none transition-colors w-full"
+                    className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-primary-500 outline-none transition-colors w-full"
                     placeholder="Nom de la Fam'ss..."
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -44,7 +44,7 @@ export function CreateFamForm() {
             </div>
             <button 
                 disabled={loading}
-                className="bg-grenat-600 text-white px-4 py-2 rounded font-medium hover:bg-grenat-500 disabled:opacity-50 transition-colors cursor-pointer self-end"
+                className="bg-primary-600 text-white px-4 py-2 rounded font-medium hover:bg-primary-500 disabled:opacity-50 transition-colors cursor-pointer self-end"
             >
                 {loading ? "..." : "Créer"}
             </button>

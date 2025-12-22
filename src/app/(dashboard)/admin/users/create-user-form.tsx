@@ -49,7 +49,7 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                             name="prenom"
                             id="prenom"
                             placeholder="Ex: Louis"
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all"
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                         />
                     </div>
                     <div className="space-y-2">
@@ -60,7 +60,7 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                             name="nom"
                             id="nom"
                             placeholder="Ex: Dupont"
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all"
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                         />
                     </div>
                 </div>
@@ -73,7 +73,7 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                         name="email"
                         id="email"
                         placeholder="Ex: louis.dupont@gadz.org"
-                        className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all"
+                        className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                     />
                 </div>
 
@@ -86,7 +86,7 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                             name="bucque"
                             id="bucque"
                             placeholder="Ex: Pol"
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all"
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                         />
                     </div>
                     <div className="space-y-2">
@@ -97,7 +97,7 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                             name="promss"
                             id="promss"
                             placeholder="Ex: 223"
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all"
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                         />
                     </div>
                 </div>
@@ -110,7 +110,7 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                         name="nums"
                         id="nums"
                         placeholder="Ex: 123"
-                        className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all"
+                        className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                     />
                 </div>
 
@@ -123,7 +123,7 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                         id="password"
                         minLength={6}
                         placeholder="••••••"
-                        className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all"
+                        className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                     />
                 </div>
 
@@ -132,12 +132,12 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                     
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label htmlFor="appRole" className="text-sm font-medium text-grenat-300">Rôle Application</label>
+                            <label htmlFor="appRole" className="text-sm font-medium text-primary-300">Rôle Application</label>
                             <select
                                 name="appRole"
                                 id="appRole"
                                 defaultValue="USER"
-                                className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all"
+                                className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                             >
                                 <option value="USER">Utilisateur</option>
                                 <option value="TRESORIER">Trésorier</option>
@@ -145,14 +145,14 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                             </select>
                         </div>
                          <div className="space-y-2">
-                            <label htmlFor="balance" className="text-sm font-medium text-grenat-300">Solde Initial (€)</label>
+                            <label htmlFor="balance" className="text-sm font-medium text-primary-300">Solde Initial (€)</label>
                             <input
                                 type="number"
                                 name="balance"
                                 id="balance"
                                 step="0.01"
                                 defaultValue="0.00"
-                                className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-grenat-600 focus:border-transparent transition-all font-mono"
+                                className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all font-mono"
                             />
                         </div>
                     </div>
@@ -163,7 +163,7 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="px-6 py-2.5 bg-grenat-600 hover:bg-grenat-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-grenat-900/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary-900/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isPending ? (
                         <>

@@ -43,11 +43,11 @@ export function UserDropdown({ user }: { user: UserProp }) {
 					<p className="text-sm font-medium text-white leading-tight">
 						{user.bucque || "Gadz"}
 					</p>
-					<p className="text-xs text-grenat-400 font-medium">
+					<p className="text-xs text-primary-400 font-medium">
 						{user.username}
 					</p>
 				</div>
-				<div className="h-9 w-9 rounded-full bg-linear-to-br from-grenat-600 to-grenat-800 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-grenat-900/40 ring-2 ring-dark-950">
+				<div className="h-9 w-9 rounded-full bg-linear-to-br from-primary-600 to-primary-800 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-primary-900/40 ring-2 ring-dark-950">
 					{(user.bucque?.slice(0, 2) || "GZ").toUpperCase()}
 				</div>
                 <IconChevronDown size={16} className={cn("text-gray-500 transition-transform duration-200", isOpen && "rotate-180")} />

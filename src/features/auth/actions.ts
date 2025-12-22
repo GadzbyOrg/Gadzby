@@ -47,6 +47,11 @@ export async function loginAction(initialState: any, formData: FormData): Promis
 		return { error: "Identifiants incorrects" };
 	}
 
+    if (user.isAsleep) {
+        console.log("User is asleep (inactive):", username);
+        return { error: "Votre compte a été désactivé" };
+    }
+
 	await createSession(user.id, user.appRole);
 
 	console.log("Login successful:", username);

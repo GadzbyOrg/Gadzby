@@ -162,7 +162,57 @@ export async function cancelTransaction(transactionId: string) {
                 throw new Error("Transaction déjà annulée");
             }
 
-            // 2. Logic for reversal
+            // Special Handling for TRANSFER: Must cancel both legs
+            if (originalTx.type === "TRANSFER") {
+                 // Determine counterpart: same issuerId, different ID, ~same timestamp, matching amount logic
+                 // If original is outgoing (-100), counterpart is incoming (+100) for recipient
+                 // If original is incoming (+100), counterpart is outgoing (-100) for issuer
+                 // To find it safely:
+                 // Match issuerId AND receiverUserId (they are constant in the pair) AND type="TRANSFER"
+                 // AND id != originalId AND abs(amount) == abs(originalAmount)
+                 // Timestamp check to avoid false positives?
+                 
+                 const counterpart = await tx.query.transactions.findFirst({
+                     where: (t, { and, eq, ne, gt, lt }) => and(
+                         eq(t.issuerId, originalTx.issuerId),
+                         eq(t.receiverUserId, originalTx.receiverUserId),
+                         eq(t.type, "TRANSFER"),
+                         ne(t.id, originalTx.id),
+                         // Rough approximation for same "batch"
+                         sql`ABS(${t.amount}) = ABS(${originalTx.amount})`, 
+                         // Check approximate time (within 2 seconds)
+                         sql`ABS(EXTRACT(EPOCH FROM ${t.createdAt}) - EXTRACT(EPOCH FROM ${originalTx.createdAt.toISOString()}::timestamp)) < 2` 
+                     )
+                 });
+
+                 if (counterpart && !counterpart.description?.includes("[CANCELLED]")) {
+                     // Reverse Counterpart (Similar logic to generic cancellation)
+                     const counterpartReverseAmount = -counterpart.amount;
+                     
+                     // Counterpart is always PERSONAL/USER based for now in Transfers
+                     await tx.update(users)
+                        .set({ balance: sql`${users.balance} + ${counterpartReverseAmount}` })
+                        .where(eq(users.id, counterpart.targetUserId));
+                     
+                     await tx.insert(transactions).values({
+                        amount: counterpartReverseAmount,
+                        type: "ADJUSTMENT",
+                        walletSource: "PERSONAL",
+                        issuerId: session.userId,
+                        targetUserId: counterpart.targetUserId,
+                        receiverUserId: counterpart.receiverUserId,
+                        description: `Annulation (Liée): ${counterpart.description || 'Transfert'}`,
+                     });
+
+                     await tx.update(transactions)
+                        .set({ 
+                            description: counterpart.description ? `${counterpart.description} [CANCELLED]` : "[CANCELLED]" 
+                        })
+                        .where(eq(transactions.id, counterpart.id));
+                 }
+            }
+
+            // 2. Logic for reversal (Generic/Original)
             // If amount was negative (purchase), we refund (positive).
             // If amount was positive (topup), we deduct (negative).
             const reverseAmount = -originalTx.amount;
@@ -223,3 +273,108 @@ export async function cancelTransaction(transactionId: string) {
         return { error: error.message || "Erreur lors de l'annulation" };
     }
 }
+
+import { transferMoneySchema } from "./schemas";
+
+export async function transferMoneyAction(prevState: any, formData: FormData) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+
+    const data = Object.fromEntries(formData);
+    
+    // Conversion Euros -> Centimes
+    // On parse en float puis on multiplie par 100 et on arrondit
+    const rawAmount = String(data.amount).replace(",", "."); // Handle comma decimal
+    const amountInCents = Math.round(Number(rawAmount) * 100);
+
+    const parsed = transferMoneySchema.safeParse({
+        ...data,
+        amount: amountInCents,
+    });
+
+    if (!parsed.success) {
+        return { error: parsed.error.issues[0].message };
+    }
+
+    const { recipientId, amount, description } = parsed.data;
+
+    if (recipientId === session.userId) {
+        return { error: "Vous ne pouvez pas envoyer de l'argent à vous-même" };
+    }
+
+    try {
+        await db.transaction(async (tx) => {
+            // 1. Check sender
+            const sender = await tx.query.users.findFirst({
+                where: eq(users.id, session.userId),
+                columns: { balance: true, username: true, isAsleep: true }
+            });
+
+            if (!sender) throw new Error("Utilisateur expéditeur introuvable");
+            
+            if (sender.isAsleep) {
+                 throw new Error("Votre compte est désactivé. Transfert impossible.");
+            }
+
+            if (sender.balance < amount) {
+                throw new Error("Solde insuffisant");
+            }
+
+            // 2. Check recipient
+            const recipient = await tx.query.users.findFirst({
+                where: eq(users.id, recipientId),
+                columns: { id: true, nom: true, prenom: true, isAsleep: true }
+            });
+
+            if (!recipient) throw new Error("Destinataire introuvable");
+            
+            if (recipient.isAsleep) {
+                throw new Error("Le compte du destinataire est désactivé.");
+           }
+
+            // 3. Update Balances
+            // Deduct from sender
+            await tx.update(users)
+                .set({ balance: sql`${users.balance} - ${amount}` })
+                .where(eq(users.id, session.userId));
+            
+            // Add to recipient
+            await tx.update(users)
+                .set({ balance: sql`${users.balance} + ${amount}` })
+                .where(eq(users.id, recipientId));
+
+            // 4. Create Transactions
+            // Debit for sender (TRANSFER type, negative amount)
+            await tx.insert(transactions).values({
+                amount: -amount,
+                type: "TRANSFER",
+                walletSource: "PERSONAL",
+                issuerId: session.userId,
+                targetUserId: session.userId,
+                receiverUserId: recipientId,
+                description: description || `Virement vers ${recipient.prenom} ${recipient.nom}`,
+            });
+
+            // Credit for recipient (TRANSFER type, positive amount)
+            await tx.insert(transactions).values({
+                amount: amount,
+                type: "TRANSFER",
+                walletSource: "PERSONAL",
+                issuerId: session.userId, // Initiated by sender
+                targetUserId: recipientId, // Impact on recipient wallet
+                receiverUserId: recipientId, // Explicit receiver ref
+                description: description || `Virement de ${sender.username}`,
+            });
+        });
+
+        revalidatePath("/transfer");
+        revalidatePath("/");
+        return { success: "Virement effectué avec succès" };
+
+    } catch (error: any) {
+        console.error("Failed to transfer money:", error);
+        return { error: error.message || "Erreur lors du virement" };
+    }
+}
+

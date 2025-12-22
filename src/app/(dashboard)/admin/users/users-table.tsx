@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { IconPencil, IconSearch, IconX, IconHistory, IconPlus, IconUpload } from "@tabler/icons-react";
+import { IconPencil, IconSearch, IconX, IconHistory, IconPlus, IconUpload, IconArrowsSort, IconFilter, IconPower, IconSortAscending, IconSortDescending } from "@tabler/icons-react";
 import { UserEditForm } from "./user-edit-form";
 import { CreateUserForm } from "./create-user-form";
-import { ImportUsersModal } from "./import-users-modal";
+import { ExcelImportModal } from "@/components/excel-import-modal"; // New import
+import { importUsersAction } from "@/features/users/actions"; // Action import
 import { TransactionHistoryModal } from "./transaction-history-modal";
+import { toggleUserStatusAction } from "@/features/users/actions";
+import { useTransition } from "react";
 
 // Simple Debounce Hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -37,9 +40,10 @@ export function UsersTable({ users }: UsersTableProps) {
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [viewHistoryUser, setViewHistoryUser] = useState<any>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [showImportModal, setShowImportModal] = useState(false);
+    // Removed showImportModal state
 
-    // Search Handler
+    const [isPending, startTransition] = useTransition();
+
     const handleSearch = (term: string) => {
         const params = new URLSearchParams(searchParams);
         if (term) {
@@ -48,6 +52,47 @@ export function UsersTable({ users }: UsersTableProps) {
             params.delete("search");
         }
         router.replace(`${pathname}?${params.toString()}`);
+    };
+
+    const handleSort = (column: string) => {
+        const params = new URLSearchParams(searchParams);
+        const currentSort = params.get("sort");
+        const currentOrder = params.get("order");
+
+        if (currentSort === column) {
+            if (currentOrder === "asc") params.set("order", "desc");
+            else params.delete("order"); // Reset or cycle? Let's just toggle
+        } else {
+            params.set("sort", column);
+            params.set("order", "asc"); // Default to asc
+        }
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
+    const handleRoleFilter = (role: string) => {
+        const params = new URLSearchParams(searchParams);
+        if (role) params.set("role", role);
+        else params.delete("role");
+        params.set("page", "1"); // Reset page
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
+    const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
+        if (!confirm(currentStatus ? "Voulez-vous réactiver cet utilisateur ?" : "Voulez-vous désactiver cet utilisateur ?")) return;
+        
+        startTransition(async () => {
+             const res = await toggleUserStatusAction(userId, !currentStatus);
+             if (res.error) alert(res.error);
+        });
+    };
+
+    const currentSort = searchParams.get("sort");
+    const currentOrder = searchParams.get("order");
+    const currentRole = searchParams.get("role") || "";
+
+    const SortIcon = ({ column }: { column: string }) => {
+        if (currentSort !== column) return <IconArrowsSort className="w-3 h-3 opacity-30 group-hover:opacity-100" />;
+        return currentOrder === 'asc' ? <IconSortAscending className="w-3 h-3 text-primary-400" /> : <IconSortDescending className="w-3 h-3 text-primary-400" />;
     };
 
     return (
@@ -59,23 +104,35 @@ export function UsersTable({ users }: UsersTableProps) {
                     <input
                         type="search"
                         placeholder="Rechercher un utilisateur..."
-                        className="w-full bg-dark-950 border border-dark-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-grenat-500 placeholder:text-gray-600"
+                        className="w-full bg-dark-950 border border-dark-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
                         defaultValue={searchParams.get("search")?.toString()}
                         onChange={(e) => handleSearch(e.target.value)}
                     />
                 </div>
 
-                <div className="flex gap-2 ml-auto">
-                    <button
-                        onClick={() => setShowImportModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-dark-800 hover:bg-dark-700 text-gray-300 rounded-lg transition-colors text-sm font-medium border border-dark-700"
+                <div className="flex gap-2">
+                    <select
+                        value={currentRole}
+                        onChange={(e) => handleRoleFilter(e.target.value)}
+                        className="bg-dark-950 border border-dark-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
                     >
-                        <IconUpload className="w-4 h-4" />
-                        <span className="hidden sm:inline">Importer</span>
-                    </button>
+                        <option value="">Tous les rôles</option>
+                        <option value="USER">Utilisateur</option>
+                        <option value="TRESORIER">Trésorier</option>
+                        <option value="ADMIN">Administrateur</option>
+                    </select>
+                </div>
+
+                <div className="flex gap-2 ml-auto">
+                    <ExcelImportModal 
+                        action={importUsersAction}
+                        triggerLabel="Importer"
+                        modalTitle="Importer des utilisateurs"
+                        expectedFormat="Nom, Prenom, Email, Bucque, Promss, Nums, Balance"
+                    />
                     <button
                         onClick={() => setShowCreateModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-grenat-600 hover:bg-grenat-700 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-grenat-900/20"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-primary-900/20"
                     >
                         <IconPlus className="w-4 h-4" />
                         <span className="hidden sm:inline">Créer</span>
@@ -89,10 +146,25 @@ export function UsersTable({ users }: UsersTableProps) {
                     <table className="w-full text-left text-sm">
                         <thead>
                             <tr className="bg-dark-950 border-b border-dark-800 text-gray-400">
-                                <th className="py-3 px-6 font-medium">Utilisateur</th>
-                                <th className="py-3 px-6 font-medium">Bucque / Email</th>
+                                <th 
+                                    className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+                                    onClick={() => handleSort('nom')}
+                                >
+                                    <div className="flex items-center gap-1">Utilisateur <SortIcon column="nom" /></div>
+                                </th>
+                                <th 
+                                    className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+                                    onClick={() => handleSort('bucque')}
+                                >
+                                    <div className="flex items-center gap-1">Bucque / Email <SortIcon column="bucque" /></div>
+                                </th>
                                 <th className="py-3 px-6 font-medium">Rôle</th>
-                                <th className="py-3 px-6 font-medium text-right">Solde</th>
+                                <th 
+                                    className="py-3 px-6 font-medium text-right cursor-pointer hover:text-white group transition-colors"
+                                    onClick={() => handleSort('balance')}
+                                >
+                                    <div className="flex items-center justify-end gap-1">Solde <SortIcon column="balance" /></div>
+                                </th>
                                 <th className="py-3 px-6 font-medium text-right">Actions</th>
                             </tr>
                         </thead>
@@ -105,9 +177,12 @@ export function UsersTable({ users }: UsersTableProps) {
                                 </tr>
                             ) : (
                                 users.map((user) => (
-                                    <tr key={user.id} className="hover:bg-dark-800/50 transition-colors group">
+                                    <tr key={user.id} className={`hover:bg-dark-800/50 transition-colors group ${user.isAsleep ? 'opacity-50 grayscale hover:grayscale-0' : ''}`}>
                                          <td className="py-3 px-6">
-                                            <div className="font-medium text-white">{user.prenom} {user.nom}</div>
+                                            <div className="font-medium text-white flex items-center gap-2">
+                                                {user.prenom} {user.nom}
+                                                {user.isAsleep && <span className="text-[10px] bg-red-900/40 text-red-400 px-1.5 py-0.5 rounded border border-red-900/50">INACTIF</span>}
+                                            </div>
                                             <div className="text-xs text-gray-500">@{user.username}</div>
                                         </td>
                                         <td className="py-3 px-6">
@@ -116,7 +191,7 @@ export function UsersTable({ users }: UsersTableProps) {
                                         </td>
                                         <td className="py-3 px-6">
                                              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
-                                                ${user.appRole === 'ADMIN' ? 'bg-grenat-900/30 text-grenat-400 border border-grenat-900/50' : 
+                                                ${user.appRole === 'ADMIN' ? 'bg-primary-900/30 text-primary-400 border border-primary-900/50' : 
                                                   user.appRole === 'TRESORIER' ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-900/50' : 
                                                   'bg-dark-800 text-gray-400 border border-dark-700'}`}>
                                                 {user.appRole}
@@ -135,10 +210,18 @@ export function UsersTable({ users }: UsersTableProps) {
                                             </button>
                                             <button 
                                                 onClick={() => setSelectedUser(user)}
-                                                className="p-1 text-gray-500 hover:text-white hover:bg-dark-700 rounded-md transition-colors"
+                                                className="p-1 text-gray-500 hover:text-white hover:bg-dark-700 rounded-md transition-colors mr-1"
                                                 title="Modifier"
                                             >
                                                 <IconPencil className="w-4 h-4" />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleToggleStatus(user.id, user.isAsleep)}
+                                                disabled={isPending}
+                                                className={`p-1 rounded-md transition-colors ${user.isAsleep ? 'text-red-500 hover:text-red-300 hover:bg-red-900/20' : 'text-gray-500 hover:text-red-400 hover:bg-dark-700'}`}
+                                                title={user.isAsleep ? "Réactiver" : "Désactiver"}
+                                            >
+                                                <IconPower className="w-4 h-4" />
                                             </button>
                                         </td>
                                     </tr>
@@ -210,15 +293,7 @@ export function UsersTable({ users }: UsersTableProps) {
                 </div>
             )}
 
-            {/* Import Modal */}
-            {showImportModal && (
-                <ImportUsersModal 
-                    onClose={() => setShowImportModal(false)} 
-                    onSuccess={() => {
-                        setShowImportModal(false);
-                    }} 
-                />
-            )}
+
         </div>
     );
 }

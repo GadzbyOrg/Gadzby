@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, pgEnum, primaryKey, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, pgEnum, primaryKey, boolean, timestamp, json, integer } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { shopExpenses } from "./expenses";
@@ -21,6 +21,8 @@ export const shops = pgTable("shops", {
 		vp: { canSell: true, canManageProducts: false, canManageInventory: false, canViewStats: false, canManageSettings: false },
 		member: { canSell: true, canManageProducts: true, canManageInventory: true, canViewStats: true, canManageSettings: false },
 	}).notNull(),
+
+	defaultMargin: integer("default_margin").default(0).notNull(),
 
 	isSelfServiceEnabled: boolean("is_self_service_enabled").default(false),
 

@@ -27,9 +27,9 @@ export default async function ShopsPage() {
 							href={`/shops/${shop.slug}/self-service`}
 							className="group block"
 						>
-							<div className="h-full rounded-2xl bg-dark-900 border border-dark-800 p-6 transition-all duration-300 hover:border-grenat-500/50 hover:shadow-lg hover:shadow-grenat-900/10 hover:-translate-y-1">
+							<div className="h-full rounded-2xl bg-dark-900 border border-dark-800 p-6 transition-all duration-300 hover:border-primary-500/50 hover:shadow-lg hover:shadow-primary-900/10 hover:-translate-y-1">
 								<div className="flex items-start justify-between mb-4">
-									<div className="h-12 w-12 rounded-xl bg-grenat-500/10 flex items-center justify-center text-grenat-500 group-hover:bg-grenat-500 group-hover:text-white transition-colors duration-300">
+									<div className="h-12 w-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-500 group-hover:bg-primary-500 group-hover:text-white transition-colors duration-300">
 										{/* Icon placeholder (e.g. ShoppingBag) */}
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
@@ -54,13 +54,13 @@ export default async function ShopsPage() {
 									)}
 								</div>
 
-								<h3 className="text-xl font-bold text-white mb-2 group-hover:text-grenat-400 transition-colors">
+								<h3 className="text-xl font-bold text-white mb-2 group-hover:text-primary-400 transition-colors">
 									{shop.name}
 								</h3>
 								<p className="text-sm text-gray-400 line-clamp-3">
 									{shop.description || "Aucune description disponible pour ce shop."}
 								</p>
-                                <div className="mt-4 flex items-center text-sm font-medium text-grenat-400 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
+                                <div className="mt-4 flex items-center text-sm font-medium text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
                                     Voir le shop <span className="ml-1">→</span>
                                 </div>
 							</div>

@@ -7,11 +7,13 @@ interface ShopSettingsFormProps {
     slug: string;
     initialDescription: string | null; // Allow null
     initialSelfService: boolean; // Must be boolean
+    initialDefaultMargin: number;
 }
 
-export function ShopSettingsForm({ slug, initialDescription, initialSelfService }: ShopSettingsFormProps) {
+export function ShopSettingsForm({ slug, initialDescription, initialSelfService, initialDefaultMargin }: ShopSettingsFormProps) {
     const [description, setDescription] = useState(initialDescription || "");
     const [isSelfService, setIsSelfService] = useState(initialSelfService);
+    const [defaultMargin, setDefaultMargin] = useState(initialDefaultMargin);
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ text: string, type: "success" | "error" } | null>(null);
 
@@ -21,7 +23,8 @@ export function ShopSettingsForm({ slug, initialDescription, initialSelfService 
 
         const result = await updateShop(slug, {
             description,
-            isSelfServiceEnabled: isSelfService
+            isSelfServiceEnabled: isSelfService,
+            defaultMargin
         });
 
         if (result.error) {
@@ -40,9 +43,29 @@ export function ShopSettingsForm({ slug, initialDescription, initialSelfService 
                 <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-grenat-500/50 min-h-[100px]"
+                    className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 min-h-[100px]"
                     placeholder="Description du shop..."
                 />
+            </div>
+
+            <div className="grid gap-2">
+                <label className="text-sm font-medium text-gray-300">Marge par défaut (%)</label>
+                <div className="relative">
+                    <input
+                        type="number"
+                        min="0"
+                        value={defaultMargin}
+                        onChange={(e) => setDefaultMargin(Number(e.target.value))}
+                        className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                        placeholder="20"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500">%</span>
+                    </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                    Cette marge sera appliquée automatiquement lors de l'import de produits via Excel.
+                </p>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-dark-800 rounded-lg border border-dark-700">
@@ -54,8 +77,8 @@ export function ShopSettingsForm({ slug, initialDescription, initialSelfService 
                 </div>
                 <button
                     onClick={() => setIsSelfService(!isSelfService)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-grenat-500/50 ${
-                        isSelfService ? "bg-grenat-600" : "bg-gray-700"
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/50 ${
+                        isSelfService ? "bg-primary-600" : "bg-gray-700"
                     }`}
                 >
                     <span
@@ -78,7 +101,7 @@ export function ShopSettingsForm({ slug, initialDescription, initialSelfService 
                 <button
                     onClick={handleSubmit}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-grenat-600 hover:bg-grenat-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isLoading ? "Enregistrement..." : "Enregistrer"}
                 </button>

@@ -161,7 +161,7 @@ export function ShopManagerView({ shopSlug, products, categories }: ShopManagerV
                                         onClick={() => setPaymentSource("PERSONAL")}
                                         className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${
                                             paymentSource === "PERSONAL" 
-                                            ? "bg-dark-700 border-grenat-500 text-white" 
+                                            ? "bg-dark-700 border-primary-500 text-white" 
                                             : "bg-dark-900 border-dark-700 text-gray-400 hover:bg-dark-700"
                                         }`}
                                     >
@@ -178,7 +178,7 @@ export function ShopManagerView({ shopSlug, products, categories }: ShopManagerV
                                         disabled={clientFamss.length === 0}
                                         className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${
                                             paymentSource === "FAMILY" 
-                                            ? "bg-dark-700 border-grenat-500 text-white" 
+                                            ? "bg-dark-700 border-primary-500 text-white" 
                                             : "bg-dark-900 border-dark-700 text-gray-400 hover:bg-dark-700 disabled:opacity-50"
                                         }`}
                                     >

@@ -15,6 +15,7 @@ export const adminUpdateUserSchema = updateUserSchema.extend({
     userId: z.string().uuid(),
     appRole: z.enum(["USER", "TRESORIER", "ADMIN"]),
     balance: z.number().int(), // Stored in cents
+    isAsleep: z.boolean().default(false),
 });
 
 export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;

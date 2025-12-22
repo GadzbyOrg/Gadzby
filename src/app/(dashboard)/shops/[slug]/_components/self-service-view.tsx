@@ -158,14 +158,14 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                             placeholder="Rechercher un produit..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-grenat-500 transition-colors"
+                            className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors"
                         />
                     </div>
                     <div className="flex gap-2">
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as any)}
-                            className="bg-dark-950 border border-dark-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-grenat-500 transition-colors"
+                            className="bg-dark-950 border border-dark-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-colors"
                         >
                             <option value="name">Nom (A-Z)</option>
                             <option value="price-asc">Prix croissant</option>
@@ -182,7 +182,7 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                         <div key={category.id} className="space-y-6">
                             <div className="sticky top-0 z-10 pt-4 pb-2 bg-gradient-to-b from-dark-950 via-dark-950/95 to-transparent">
                                 <h3 className="flex items-center gap-3 text-lg font-bold text-white">
-                                    <span className="h-6 w-1 rounded-full bg-grenat-500"></span>
+                                    <span className="h-6 w-1 rounded-full bg-primary-500"></span>
                                     {category.name}
                                     <span className="text-xs font-normal text-gray-500 bg-dark-900 border border-dark-800 px-2 py-0.5 rounded-full">
                                         {catProducts.length}
@@ -201,7 +201,7 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                                             className={`
                                                 group relative overflow-hidden rounded-2xl border transition-all duration-300
                                                 ${inCart > 0 
-                                                    ? 'bg-dark-900/80 border-grenat-500/50 shadow-[0_0_15px_-5px_rgba(220,38,38,0.2)]' 
+                                                    ? 'bg-dark-900/80 border-primary-500/50 shadow-[0_0_15px_-5px_rgba(220,38,38,0.2)]' 
                                                     : 'bg-dark-900/40 border-dark-800 hover:border-dark-700 hover:bg-dark-900/60'
                                                 }
                                             `}
@@ -209,7 +209,7 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                                             {/* Quantity Badge (if in cart) */}
                                             {inCart > 0 && (
                                                 <div className="absolute top-3 right-3 z-10">
-                                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-grenat-500 text-xs font-bold text-white shadow-lg">
+                                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white shadow-lg">
                                                         {inCart}
                                                     </span>
                                                 </div>
@@ -219,11 +219,11 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                                                 {/* Header */}
                                                 <div className="w-full mb-2">
                                                     <div className="flex justify-between items-start mb-1">
-                                                        <h4 className="font-semibold text-white group-hover:text-grenat-400 transition-colors line-clamp-1 pr-6" title={product.name}>
+                                                        <h4 className="font-semibold text-white group-hover:text-primary-400 transition-colors line-clamp-1 pr-6" title={product.name}>
                                                             {product.name}
                                                         </h4>
                                                     </div>
-                                                    <div className="text-xl font-bold text-grenat-400">
+                                                    <div className="text-xl font-bold text-primary-400">
                                                         {(product.price / 100).toFixed(2)} €
                                                     </div>
                                                 </div>
@@ -259,7 +259,7 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                                                                 <button 
                                                                     onClick={(e) => { e.stopPropagation(); addToCart(product.id); }}
                                                                     disabled={outOfStock || inCart >= product.stock}
-                                                                    className="h-8 w-8 flex items-center justify-center rounded-md bg-grenat-600 text-white hover:bg-grenat-500 disabled:opacity-50 disabled:hover:bg-grenat-600 transition-colors"
+                                                                    className="h-8 w-8 flex items-center justify-center rounded-md bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50 disabled:hover:bg-primary-600 transition-colors"
                                                                 >
                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                                                                 </button>
@@ -314,7 +314,7 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                 {totalItems > 0 && (
                     <button 
                         onClick={() => setIsCartOpen(true)}
-                        className="w-full bg-grenat-600 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-grenat-500/50 backdrop-blur-xl"
+                        className="w-full bg-primary-600 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between border border-primary-500/50 backdrop-blur-xl"
                     >
                         <div className="flex items-center gap-3">
                             <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">
@@ -403,7 +403,7 @@ function CartSummary({
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <span>Panier</span>
                     {totalItems > 0 && (
-                        <span className="bg-grenat-500 text-white text-xs px-2 py-0.5 rounded-full">{totalItems}</span>
+                        <span className="bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">{totalItems}</span>
                     )}
                 </h3>
              )}
@@ -434,7 +434,7 @@ function CartSummary({
                                 onClick={() => setPaymentSource("PERSONAL")}
                                 className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
                                     paymentSource === "PERSONAL" 
-                                    ? "bg-dark-800 border-grenat-500 text-white shadow-[0_0_10px_-3px_rgba(220,38,38,0.3)]" 
+                                    ? "bg-dark-800 border-primary-500 text-white shadow-[0_0_10px_-3px_rgba(220,38,38,0.3)]" 
                                     : "bg-dark-950 border-dark-700 text-gray-400 hover:bg-dark-800 hover:border-dark-600"
                                 }`}
                             >
@@ -451,7 +451,7 @@ function CartSummary({
                                 disabled={!userFamss || userFamss.length === 0}
                                 className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
                                     paymentSource === "FAMILY" 
-                                    ? "bg-dark-800 border-grenat-500 text-white shadow-[0_0_10px_-3px_rgba(220,38,38,0.3)]" 
+                                    ? "bg-dark-800 border-primary-500 text-white shadow-[0_0_10px_-3px_rgba(220,38,38,0.3)]" 
                                     : "bg-dark-950 border-dark-700 text-gray-400 hover:bg-dark-800 hover:border-dark-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                 }`}
                             >
@@ -464,7 +464,7 @@ function CartSummary({
                             <select
                                 value={selectedFamsId}
                                 onChange={(e) => setSelectedFamsId(e.target.value)}
-                                className="w-full bg-dark-950 border border-dark-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-grenat-500"
+                                className="w-full bg-dark-950 border border-dark-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
                             >
                                 {userFamss.map((f: any) => (
                                     <option key={f.id} value={f.id}>
@@ -490,7 +490,7 @@ function CartSummary({
                     <button
                         onClick={handleCheckout}
                         disabled={isCheckingOut}
-                        className="w-full py-4 rounded-xl bg-grenat-600 text-white font-bold text-lg hover:bg-grenat-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-grenat-900/20 flex justify-center items-center"
+                        className="w-full py-4 rounded-xl bg-primary-600 text-white font-bold text-lg hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-primary-900/20 flex justify-center items-center"
                     >
                         {isCheckingOut ? (
                             <span className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>

@@ -45,14 +45,14 @@ export default async function FamssPage() {
                             key={membership.famsId}
                             className="block group"
                         >
-                            <div className="bg-dark-900 border border-dark-800 rounded-xl p-6 hover:border-grenat-500/50 transition-all shadow-sm hover:shadow-md hover:shadow-grenat-500/10">
+                            <div className="bg-dark-900 border border-dark-800 rounded-xl p-6 hover:border-primary-500/50 transition-all shadow-sm hover:shadow-md hover:shadow-primary-500/10">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-xl font-bold text-white group-hover:text-grenat-400 transition-colors">
+                                    <h3 className="text-xl font-bold text-white group-hover:text-primary-400 transition-colors">
                                         {membership.family.name}
                                     </h3>
                                     <span className={`text-xs px-2 py-1 rounded-full ${
                                         membership.isAdmin 
-                                            ? "bg-grenat-500/20 text-grenat-300" 
+                                            ? "bg-primary-500/20 text-primary-300" 
                                             : "bg-dark-800 text-gray-400"
                                     }`}>
                                         {membership.isAdmin ? "Admin" : "Membre"}

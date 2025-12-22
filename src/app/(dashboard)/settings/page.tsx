@@ -27,7 +27,7 @@ export default async function SettingsPage() {
 
 			<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm">
 				<div className="mb-8 flex items-center gap-4 border-b border-dark-800 pb-8">
-					<div className="flex h-20 w-20 items-center justify-center rounded-full bg-grenat-900/30 text-grenat-500 ring-2 ring-grenat-900/50">
+					<div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-900/30 text-primary-500 ring-2 ring-primary-900/50">
 						<span className="text-3xl font-bold">
 							{user.prenom[0]}
 							{user.nom[0]}
@@ -38,7 +38,7 @@ export default async function SettingsPage() {
 							{user.prenom} {user.nom}
 						</h2>
 						<p className="text-sm text-gray-400">@{user.username}</p>
-						<div className="mt-2 text-xs font-medium text-grenat-400 border border-grenat-900/50 bg-grenat-900/20 px-2 py-1 rounded-md w-fit">
+						<div className="mt-2 text-xs font-medium text-primary-400 border border-primary-900/50 bg-primary-900/20 px-2 py-1 rounded-md w-fit">
 							{user.appRole}
 						</div>
 					</div>

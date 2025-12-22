@@ -61,7 +61,7 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
                             {fams.members.length} membre{fams.members.length > 1 ? 's' : ''}
                         </span>
                         {membership.isAdmin && (
-                            <span className="text-grenat-300 text-sm bg-grenat-500/10 px-2 py-1 rounded border border-grenat-500/20">
+                            <span className="text-primary-300 text-sm bg-primary-500/10 px-2 py-1 rounded border border-primary-500/20">
                                 Admin
                             </span>
                         )}
@@ -89,13 +89,13 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
                             {fams.members.map(m => (
                                 <div key={m.userId} className="flex justify-between items-center text-sm p-2 hover:bg-dark-800 rounded transition-colors group">
                                     <div className="flex items-center gap-2">
-                                         <div className="w-8 h-8 rounded-full bg-dark-950 flex items-center justify-center text-xs font-bold text-gray-500 group-hover:text-grenat-400 border border-dark-800 group-hover:border-grenat-500/30 transition-colors">
+                                         <div className="w-8 h-8 rounded-full bg-dark-950 flex items-center justify-center text-xs font-bold text-gray-500 group-hover:text-primary-400 border border-dark-800 group-hover:border-primary-500/30 transition-colors">
                                             {m.user.username.slice(0, 2).toUpperCase()}
                                          </div>
                                          <span className="text-gray-200 group-hover:text-white transition-colors">{m.user.username}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        {m.isAdmin && <span className="text-[10px] uppercase font-bold tracking-wider text-grenat-400 bg-grenat-500/10 px-1.5 py-0.5 rounded">Admin</span>}
+                                        {m.isAdmin && <span className="text-[10px] uppercase font-bold tracking-wider text-primary-400 bg-primary-500/10 px-1.5 py-0.5 rounded">Admin</span>}
                                         {membership.isAdmin && m.userId !== session.userId && (
                                             <>
                                                 {!m.isAdmin && <PromoteMemberButton famsName={fams.name} userId={m.userId} />}

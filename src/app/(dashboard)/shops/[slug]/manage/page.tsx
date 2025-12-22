@@ -58,8 +58,20 @@ export default async function ShopManageIndexPage({
     if (permissions.canSell) redirect(`/shops/${slug}/manage/sell`);
     if (permissions.canManageProducts) redirect(`/shops/${slug}/manage/products`);
     if (permissions.canManageInventory) redirect(`/shops/${slug}/manage/inventory`);
+    if (permissions.canViewStats) {
+        // Prefer statistics first, but listing both
+        // redirect(`/shops/${slug}/manage/statistics`);
+    }
+    // We handle conditional redirects. Since statistics is checked above, we need to decide where to land.
+    // If we have stats permission, we can access expenses too. 
+    // Let's just keep statistics as priority.
     if (permissions.canViewStats) redirect(`/shops/${slug}/manage/statistics`);
     if (permissions.canManageSettings) redirect(`/shops/${slug}/manage/settings`);
+    
+    // We should probably add expenses to the list of potential redirects?
+    // But since it shares permission with statistics, it's covered.
+    // IF we wanted a specific landing page for expenses permissions only, we'd need a separate permission.
+    // For now, it's fine.
 
     // If no management permission, back to self service
     redirect(`/shops/${slug}/self-service`);
