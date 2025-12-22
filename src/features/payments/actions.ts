@@ -5,7 +5,7 @@ import { transactions, users } from "@/db/schema";
 import { getPaymentProvider } from "@/lib/payments/factory";
 import { verifySession } from "@/lib/session";
 import { eq } from "drizzle-orm";
-import { redirect } from "next/navigation";
+
 
 export async function initiateTopUp(providerSlug: string, amountCents: number) {
   const session = await verifySession();
@@ -62,5 +62,5 @@ export async function initiateTopUp(providerSlug: string, amountCents: number) {
      })
      .where(eq(transactions.id, tx.id));
   
-  redirect(paymentResult.redirectUrl);
+  return paymentResult.redirectUrl;
 }

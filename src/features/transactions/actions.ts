@@ -4,7 +4,7 @@
 import { db } from "@/db";
 import { transactions, famss, products, users } from "@/db/schema";
 import { verifySession } from "@/lib/session";
-import { eq, desc, and, or, ilike, sql, asc } from "drizzle-orm";
+import { eq, desc, and, or, ilike, sql, asc, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 
@@ -175,7 +175,7 @@ export async function cancelTransaction(transactionId: string) {
                  const counterpart = await tx.query.transactions.findFirst({
                      where: (t, { and, eq, ne, gt, lt }) => and(
                          eq(t.issuerId, originalTx.issuerId),
-                         eq(t.receiverUserId, originalTx.receiverUserId),
+                         originalTx.receiverUserId ? eq(t.receiverUserId, originalTx.receiverUserId) : isNull(t.receiverUserId),
                          eq(t.type, "TRANSFER"),
                          ne(t.id, originalTx.id),
                          // Rough approximation for same "batch"
@@ -276,7 +276,12 @@ export async function cancelTransaction(transactionId: string) {
 
 import { transferMoneySchema } from "./schemas";
 
-export async function transferMoneyAction(prevState: any, formData: FormData) {
+export type TransferState = {
+    error?: string;
+    success?: string;
+};
+
+export async function transferMoneyAction(prevState: TransferState, formData: FormData): Promise<TransferState> {
     const session = await verifySession();
     if (!session) return { error: "Non autorisé" };
 
