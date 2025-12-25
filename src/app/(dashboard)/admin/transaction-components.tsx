@@ -11,7 +11,7 @@ import {
     IconLoader2,
     IconTrash
 } from "@tabler/icons-react";
-import { cancelTransaction } from "@/features/transactions/actions"; // Correct import path after refactor
+import { cancelTransaction } from "@/features/transactions/actions";
 
 export function TransactionToolbar() {
     const searchParams = useSearchParams();

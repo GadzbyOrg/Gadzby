@@ -11,18 +11,21 @@ export const COOKIE_NAME = "tyrion_session";
 type SessionPayload = {
 	userId: string;
 	role: string;
+	permissions: string[];
 	expiresAt: Date;
 };
 
 export async function createSession(
 	userId: string,
 	role: string,
+	permissions: string[],
 	redirectTo = "/"
 ) {
 	const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 2);
 	const session = await new SignJWT({
 		userId,
 		role,
+		permissions,
 		expiresAt,
 	})
 		.setProtectedHeader({ alg: "HS256" })

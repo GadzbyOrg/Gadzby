@@ -12,6 +12,7 @@ type UserProp = {
 	bucque: string | null;
 	balance: number;
 	appRole: string;
+    permissions: string[];
 };
 
 type ShopProp = {
@@ -45,7 +46,7 @@ export function DashboardShell({
 		<div className="flex h-screen min-h-screen w-full bg-dark-950 text-gray-100 font-sans selection:bg-primary-900 selection:text-white">
 			{/* --- SIDEBAR DESKTOP --- */}
 			<div className="hidden md:block">
-				<Sidebar userRole={user.appRole} shops={shops} />
+				<Sidebar userRole={user.appRole} permissions={user.permissions} shops={shops} />
 			</div>
 
 			{/* --- SIDEBAR MOBILE (Overlay) --- */}
@@ -56,7 +57,7 @@ export function DashboardShell({
 				)}
 			>
 				<div className="relative z-50">
-					<Sidebar userRole={user.appRole} shops={shops} />
+					<Sidebar userRole={user.appRole} permissions={user.permissions} shops={shops} />
 				</div>
 				{/* Backdrop pour fermer */}
 				<div

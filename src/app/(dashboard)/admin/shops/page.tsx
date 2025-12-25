@@ -5,8 +5,15 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { CreateShopModal } from "./create-shop-modal";
 import { ShopCard } from "./shop-card";
+import { verifySession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 export default async function AdminShopsPage() {
+    const session = await verifySession();
+    if (!session || (!session.permissions.includes("MANAGE_SHOPS") && !session.permissions.includes("ADMIN_ACCESS"))) {
+        redirect("/");
+    }
+
     const result = await getAdminShops();
     const shops = !("error" in result) && result.shops ? result.shops : [];
 

@@ -145,7 +145,7 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
                                             const isPositive = displayAmount > 0;
 
                                             // Check for cancellation
-                                            const isCancelled = tx.description?.includes("[CANCELLED]");
+                                            const isCancelled = tx.status === "CANCELLED";
                                             const displayDescription = tx.description || tx.type;
                                             const finalDescription = isCancelled ? `${displayDescription} (Annulé)` : displayDescription;
 

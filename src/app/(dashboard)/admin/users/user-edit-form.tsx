@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { adminUpdateUserAction } from "@/features/users/actions";
-import { IconLoader2, IconCheck, IconAlertTriangle } from "@tabler/icons-react";
+import { IconLoader2, IconCheck, IconAlertTriangle, IconLock } from "@tabler/icons-react";
 
 interface UserEditFormProps {
     user: {
@@ -14,9 +14,11 @@ interface UserEditFormProps {
         nums: string;
         promss: string;
         appRole: "USER" | "TRESORIER" | "ADMIN";
+        roleId: string | null;
         balance: number;
         isAsleep: boolean;
     };
+    roles: any[];
     onSuccess: () => void;
 }
 
@@ -25,7 +27,7 @@ const initialState = {
     success: undefined,
 };
 
-export function UserEditForm({ user, onSuccess }: UserEditFormProps) {
+export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
     const [state, formAction, isPending] = useActionState(adminUpdateUserAction, initialState);
     
     // Convert balance from cents to euros for display
@@ -135,16 +137,17 @@ export function UserEditForm({ user, onSuccess }: UserEditFormProps) {
                     
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label htmlFor="appRole" className="text-sm font-medium text-primary-300">Rôle Application</label>
+                            <label htmlFor="roleId" className="text-sm font-medium text-primary-300">Rôle</label>
                             <select
-                                name="appRole"
-                                id="appRole"
-                                defaultValue={user.appRole}
+                                name="roleId"
+                                id="roleId"
+                                defaultValue={user.roleId || ""}
                                 className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                             >
-                                <option value="USER">Utilisateur</option>
-                                <option value="TRESORIER">Trésorier</option>
-                                <option value="ADMIN">Administrateur</option>
+                                <option value="" disabled>Sélectionner un rôle</option>
+                                {roles.map(role => (
+                                    <option key={role.id} value={role.id}>{role.name}</option>
+                                ))}
                             </select>
                         </div>
                          <div className="space-y-2">
@@ -174,6 +177,22 @@ export function UserEditForm({ user, onSuccess }: UserEditFormProps) {
                                 </div>
                             </label>
                         </div>
+                </div>
+
+                </div>
+                <div className="pt-4 border-t border-dark-800 mt-4">
+                    <h3 className="text-white text-sm font-semibold mb-4">Sécurité</h3>
+                    <div className="space-y-2">
+                        <label htmlFor="newPassword" className="text-sm font-medium text-gray-300">
+                             Nouveau mot de passe (laisser vide pour ne pas changer)
+                        </label>
+                        <input
+                            type="password"
+                            name="newPassword"
+                            id="newPassword"
+                            placeholder="••••••••"
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+                        />
                     </div>
                 </div>
             </div>

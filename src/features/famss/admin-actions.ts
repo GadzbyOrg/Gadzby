@@ -14,7 +14,7 @@ const adminFamsSchema = z.object({
 
 export async function getAdminFamss(page = 1, limit = 20, search = "") {
 	const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || session.permissions.includes("ADMIN") && session.permissions.includes("MANAGE_FAMSS")) return { error: "Non autorisé" };
 
 	const offset = (page - 1) * limit;
 
@@ -45,7 +45,7 @@ export async function getAdminFamss(page = 1, limit = 20, search = "") {
 
 export async function adminCreateFams(formData: FormData) {
 	const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
 
 	const rawName = formData.get("name") as string;
     const rawBalance = formData.get("balance");
@@ -74,7 +74,7 @@ export async function adminCreateFams(formData: FormData) {
 
 export async function adminUpdateFams(prevState: any, formData: FormData) {
 	const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
 
     const id = formData.get("id") as string;
     if (!id) return { error: "ID manquant" };
@@ -136,7 +136,7 @@ export async function adminUpdateFams(prevState: any, formData: FormData) {
 
 export async function adminDeleteFams(id: string) {
 	const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
 
 	try {
         await db.delete(famsMembers).where(eq(famsMembers.famsId, id));
@@ -155,7 +155,7 @@ export async function adminDeleteFams(id: string) {
 
 export async function getFamsMembers(famsId: string) {
     const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
 
     try {
         const members = await db.query.famsMembers.findMany({
@@ -177,7 +177,7 @@ export async function getFamsMembers(famsId: string) {
 
 export async function adminAddMember(famsId: string, username: string) {
     const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
 
     try {
         const user = await db.query.users.findFirst({
@@ -203,7 +203,7 @@ export async function adminAddMember(famsId: string, username: string) {
 
 export async function adminUpdateMemberRole(famsId: string, userId: string, isAdmin: boolean) {
 	const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
 
 	try {
 		await db.update(famsMembers)
@@ -219,7 +219,7 @@ export async function adminUpdateMemberRole(famsId: string, userId: string, isAd
 
 export async function adminRemoveMember(famsId: string, userId: string) {
     const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
 
     try {
         await db.delete(famsMembers)
@@ -237,7 +237,7 @@ export async function adminRemoveMember(famsId: string, userId: string) {
 
 export async function getFamsTransactions(famsId: string) {
     const session = await verifySession();
-	if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
 
     try {
         const history = await db.query.transactions.findMany({
@@ -245,10 +245,9 @@ export async function getFamsTransactions(famsId: string) {
             orderBy: [desc(transactions.createdAt)],
             limit: 50, // Limit to last 50 for modal
             with: {
-                issuer: true
+                issuer: true,
             }
         });
-
         return { transactions: history };
     } catch (error) {
         console.error("Failed to fetch fams transactions:", error);

@@ -1,9 +1,10 @@
-import { pgTable, text, integer, timestamp, pgEnum, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, pgEnum, uuid, doublePrecision } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { famss } from "./famss";
 import { shops } from "./shops";
 import { products } from "./products";
+import { events } from "./events";
 
 export const transactionTypeEnum = pgEnum('transaction_type', [
   'PURCHASE',
@@ -16,7 +17,7 @@ export const transactionTypeEnum = pgEnum('transaction_type', [
 
 export const walletSourceEnum = pgEnum('wallet_source', ['PERSONAL', 'FAMILY']);
 
-export const transactionStatusEnum = pgEnum('transaction_status', ['PENDING', 'COMPLETED', 'FAILED']);
+export const transactionStatusEnum = pgEnum('transaction_status', ['PENDING', 'COMPLETED', 'FAILED', 'CANCELLED']);
 
 export const transactions = pgTable('transactions', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -33,10 +34,10 @@ export const transactions = pgTable('transactions', {
   walletSource: walletSourceEnum('wallet_source').default('PERSONAL').notNull(),
   
   // ACTEURS
-  // Qui a initié l'action ? (Le payeur ou l'admin)
+  // Qui a initié l'action ?
   issuerId: uuid('issuer_id').references(() => users.id).notNull(),
   
-  // Sur quel compte l'impact a lieu ? (Généralement le issuer, sauf si Admin débucque qqun d'autre)
+  // Sur quel compte l'impact a lieu ?
   targetUserId: uuid('target_user_id').references(() => users.id).notNull(),
   
   // Si c'est payé avec la Fam'ss 
@@ -47,11 +48,11 @@ export const transactions = pgTable('transactions', {
 
   // CONTEXTE BOQUETTE
   shopId: uuid('shop_id').references(() => shops.id),
+  eventId: uuid('event_id'), // Link to event for specific payments (acompte)
   
   // CONTEXTE PRODUIT (Pour le stock)
-  // productId: uuid('product_id').references(() => products.id), // Products/Stocks not implemented yet
-  productId: uuid('product_id'),
-  quantity: integer('quantity').default(1), // Combien d'items ?
+  productId: uuid('product_id').references(() => products.id),
+  quantity: doublePrecision('quantity').default(1), // Combien d'items ?
 
   // MÉTHADONNÉES
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -65,4 +66,6 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 	fams: one(famss, { fields: [transactions.famsId], references: [famss.id] }),
 	shop: one(shops, { fields: [transactions.shopId], references: [shops.id] }),
     product: one(products, { fields: [transactions.productId], references: [products.id] }),
+    event: one(events, { fields: [transactions.eventId], references: [events.id] }),
 }));
+

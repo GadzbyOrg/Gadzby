@@ -15,7 +15,6 @@ export default async function Layout({
 	// 1. Vérifier le cookie de session
 	const session = await verifySession();
 
-
 	if (!session) {
 		console.log("Invalid session redirecting to login");
 		redirect("/login");
@@ -28,7 +27,6 @@ export default async function Layout({
 			username: true,
 			bucque: true,
 			balance: true,
-			appRole: true,
 		},
 	});
 
@@ -36,15 +34,21 @@ export default async function Layout({
 		redirect("/login");
 	}
 
-	// 3. Récupérer les shops actifs pour la sidebar (filtrés)
-    const { shops: activeShops } = await getShops();
+	// 3. Récupérer les shops actifs (filtrés)
+	const { shops: activeShops } = await getShops();
 
 	// 4. Passer les données au composant client
+	const userWithPermissions = {
+		...user,
+		appRole: session.role,
+		permissions: session.permissions || [],
+	};
+
 	return (
-        <ToastProvider>
-            <DashboardShell user={user} shops={activeShops || []}>
-                {children}
-            </DashboardShell>
-        </ToastProvider>
+		<ToastProvider>
+			<DashboardShell user={userWithPermissions} shops={activeShops || []}>
+				{children}
+			</DashboardShell>
+		</ToastProvider>
 	);
 }

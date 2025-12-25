@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, integer, boolean, pgEnum, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, uuid, integer, boolean, pgEnum, timestamp, doublePrecision } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { shops } from './shops';
 import { events } from './events';
@@ -18,7 +18,9 @@ export const products = pgTable('products', {
   
   // PRIX & STOCK
   price: integer('price').notNull(), // En centimes
-  stock: integer('stock').default(0).notNull(),
+  stock: doublePrecision('stock').default(0).notNull(),
+  unit: text('unit').default('unit').notNull(), // 'unit', 'liter', 'kg'
+  fcv: doublePrecision('fcv').default(1.0).notNull(), // Facteur de correction des ventes
 
   allowSelfService: boolean('allow_self_service').default(false),
   
@@ -37,6 +39,7 @@ export const products = pgTable('products', {
   
   isArchived: boolean('is_archived').default(false),
 });
+
 
 export const productCategoriesRelations = relations(productCategories, ({ one, many }) => ({
   shop: one(shops, { fields: [productCategories.shopId], references: [shops.id] }),

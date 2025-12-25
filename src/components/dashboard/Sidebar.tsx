@@ -12,10 +12,9 @@ import {
 	IconChevronRight,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import { logoutAction } from "@/features/auth/actions";
 
 // --- Types ---
-type LinkItem = { label: string; url: string; type?: "link" };
+type LinkItem = { label: string; url: string; type?: "link"; permission?: string };
 type SeparatorItem = { type: "separator" };
 type DropdownItem = { type: "dropdown"; label: string; url?: string; items: { label: string; url: string }[] };
 type NavItem = LinkItem | SeparatorItem | DropdownItem;
@@ -24,6 +23,7 @@ type NavGroup = {
 	main: string;
 	icon: React.ElementType;
 	role?: string;
+    permissions?: string[];
 	links: NavItem[];
 };
 
@@ -34,10 +34,12 @@ const getNavStructure = (): NavGroup[] => [
 		links: [
 			{ label: "Tableau de bord", url: "/" },
 			{ label: "Historique", url: "/transactions" },
+			{ label: "Mes fam'ss", url: "/famss" },
+            { type: "separator" },
 			{ label: "Virement", url: "/transfer" },
 			{ label: "Recharger", url: "/topup" },
-			{ label: "Mes fam'ss", url: "/famss" },
-			{ label: "Mon Profil", url: "/settings" },
+			{ label: "Créditer", url: "/credit", permission: "TOPUP_USER" },
+
 		],
 	},
 	{
@@ -48,19 +50,22 @@ const getNavStructure = (): NavGroup[] => [
 	{
 		main: "Admin",
 		icon: IconSettings,
-		role: "ADMIN",
+		// Role check removed here, dealt with in filtering by links presence
 		links: [
-			{ label: "Vue d'ensemble", url: "/admin" },
-			{ label: "Utilisateurs", url: "/admin/users" },
-			{ label: "Shops", url: "/admin/shops" },
-			{ label: "Fam'ss", url: "/admin/famss" },
-			{ label: "Moyens de paiement", url: "/admin/payments" },
+			{ label: "Vue d'ensemble", url: "/admin", permission: "VIEW_TRANSACTIONS" },
+            { label: "Rôles", url: "/admin/roles", permission: "MANAGE_ROLES" },
+			{ label: "Utilisateurs", url: "/admin/users", permission: "MANAGE_USERS" },
+			{ label: "Shops", url: "/admin/shops", permission: "MANAGE_SHOPS" },
+			{ label: "Fam'ss", url: "/admin/famss", permission: "MANAGE_FAMSS" },
+			{ label: "Moyens de paiement", url: "/admin/payments", permission: "MANAGE_PAYMENTS" },
+            { label: "Emails", url: "/admin/settings/email", permission: "ADMIN_ACCESS" },
 		],
 	},
 ];
 
 type SidebarProps = {
 	userRole: string;
+    permissions: string[];
 	shops: {
         name: string;
         slug: string;
@@ -75,7 +80,7 @@ type SidebarProps = {
     }[];
 };
 
-export function Sidebar({ userRole, shops }: SidebarProps) {
+export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 	const pathname = usePathname();
 	const [activeMain, setActiveMain] = useState("Général");
     const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
@@ -84,41 +89,53 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
         setOpenDropdowns(prev => ({ ...prev, [label]: !prev[label] }));
     };
 
-	// Filtrage par rôle et ajout des shops
 	const availableGroups = useMemo(() => {
+        const hasAdminAccess = permissions.includes("ADMIN_ACCESS") || userRole === "ADMIN";
+
 		return getNavStructure().map((group) => {
 			// Clone shallow pour ne pas muter la constante globale
-			const newGroup = { ...group, links: [...group.links] };
+             // Filter links based on permission
+			const links = group.links.filter(link => {
+                if ("permission" in link && link.permission) {
+                    return hasAdminAccess || permissions.includes(link.permission); 
+                }
+                return true;
+            });
+
+			const newGroup = { ...group, links: [...links] };
 
 				// Ajouter les shops dynamiques
 				if (newGroup.main === "Boutiques" && shops.length > 0) {
 					newGroup.links.push({ type: "separator" });
 					shops.forEach((shop) => {
+                        // For shops, we might want to check shop-specific permissions OR global admin access
+                        // But usually shop permissions are distinct. However, super admin might want to see everything.
+                        // Assuming ADMIN_ACCESS grants access to everything including shop management:
+                        
                         const items = [{ label: "Caisse libre-service", url: `/shops/${shop.slug}/self-service` }];
                         
-                        if (shop.permissions) {
-                            if (shop.permissions.canSell) items.push({ label: "Vendre", url: `/shops/${shop.slug}/manage/sell` });
-                            if (shop.permissions.canManageProducts) items.push({ label: "Produits", url: `/shops/${shop.slug}/manage/products` });
-                            if (shop.permissions.canManageInventory) items.push({ label: "Inventaire", url: `/shops/${shop.slug}/manage/inventory` });
-                            if (shop.permissions.canViewStats) items.push({ label: "Statistiques", url: `/shops/${shop.slug}/manage/statistics` });
-                            if (shop.permissions.canViewStats) items.push({ label: "Dépenses", url: `/shops/${shop.slug}/manage/expenses` }); // Using canViewStats for now
-                            if (shop.permissions.canManageSettings) items.push({ label: "Paramètres", url: `/shops/${shop.slug}/manage/settings` });
-                        } else if (shop.canManage) {
-                             // Fallback for backward compatibility or simple check
-                             items.push(
-                                { label: "Vendre", url: `/shops/${shop.slug}/manage/sell` },
-                                { label: "Produits", url: `/shops/${shop.slug}/manage/products` },
-                                { label: "Inventaire", url: `/shops/${shop.slug}/manage/inventory` },
-                                { label: "Statistiques", url: `/shops/${shop.slug}/manage/statistics` },
-                                { label: "Dépenses", url: `/shops/${shop.slug}/manage/expenses` },
-                                { label: "Paramètres", url: `/shops/${shop.slug}/manage/settings` }
-                             );
+                        if (shop.permissions || hasAdminAccess) {
+                            // If hasAdminAccess, we assume they can do everything, OR we need to know if the backend actually allows it.
+                            // Usually ADMIN_ACCESS implies full control. 
+                            // Let's assume for UI we show all if ADMIN_ACCESS.
+                            const canSell = hasAdminAccess || shop.permissions?.canSell;
+                            const canManageProducts = hasAdminAccess || shop.permissions?.canManageProducts;
+                            const canManageInventory = hasAdminAccess || shop.permissions?.canManageInventory;
+                            const canViewStats = hasAdminAccess || shop.permissions?.canViewStats;
+                            const canManageSettings = hasAdminAccess || shop.permissions?.canManageSettings;
+
+                            if (canSell) items.push({ label: "Vendre", url: `/shops/${shop.slug}/manage/sell` });
+                            if (canManageProducts) items.push({ label: "Produits", url: `/shops/${shop.slug}/manage/products` });
+                            if (canManageProducts) items.push({ label: "Manips", url: `/admin/shops/${shop.slug}/events` });
+                            if (canManageInventory) items.push({ label: "Inventaire", url: `/shops/${shop.slug}/manage/inventory` });
+                            if (canViewStats) items.push({ label: "Statistiques", url: `/shops/${shop.slug}/manage/statistics` });
+                            if (canViewStats) items.push({ label: "Dépenses", url: `/shops/${shop.slug}/manage/expenses` }); 
+                            if (canManageSettings) items.push({ label: "Paramètres", url: `/shops/${shop.slug}/manage/settings` });
                         }
 
 						newGroup.links.push({
                             type: "dropdown",
 							label: shop.name,
-                            // url: `/shops/${shop.slug}`, // Optional: clicking header goes to shop
 							items: items
 						});
 					});
@@ -126,12 +143,21 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
 
 			return newGroup;
 		}).filter((group) => {
-			if (group.main === "Admin") {
-				return ["ADMIN", "TRESORIER"].includes(userRole);
-			}
-			return true;
+            // If the group has links, show it. 
+            // The "links" array has already been filtered above based on permissions.
+            // Special handling for "Admin" group might not be needed if we rely solely on link precense,
+            // BUT "Vue d'ensemble" might be public in the list but we want to hide the whole group if the user isn't an admin?
+            // Actually, "Vue d'ensemble" should probably be restricted too.
+            
+            // Let's rely on the links. If no links are visible (or only separator), hide group.
+            // But wait, "Vue d'ensemble" doesn't have a permission in the definition yet. I need to add it.
+            // See next step for updating definition.
+            
+            // Filter out groups with no relevant links
+             const hasLinks = group.links.some(l => l.type !== "separator");
+             return hasLinks;
 		});
-	}, [userRole, shops]);
+	}, [userRole, permissions, shops]);
 
 	// Sync state avec URL
 	useEffect(() => {
@@ -204,16 +230,6 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
 						);
 					})}
 				</div>
-
-				{/* Logout (Bas de page) */}
-				<form action={logoutAction}>
-					<button
-						type="submit"
-						className="flex h-12 w-12 items-center justify-center rounded-xl text-gray-500 hover:bg-red-900/20 hover:text-red-500 transition-colors"
-					>
-						<IconLogout size={22} stroke={1.5} />
-					</button>
-				</form>
 			</div>
 
 			{/* --- COLONNE 2 : LIENS (220px) --- */}
@@ -281,7 +297,7 @@ export function Sidebar({ userRole, shops }: SidebarProps) {
 						const link = item as LinkItem;
 						const isActive =
 							pathname === link.url ||
-							(link.url !== "/shops" && pathname.startsWith(link.url + "/"));
+							(link.url !== "/shops" && link.url !== "/admin" && pathname.startsWith(link.url + "/"));
 						return (
 							<Link
 								key={link.url}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ClientSearch } from "./client-search";
+import { ClientSearch } from "@/components/dashboard/client-search";
 import { ProductGrid } from "./product-grid";
 import { processSale, getUserFamss } from "@/features/shops/actions";
 import { IconLoader2, IconWallet, IconUsers } from "@tabler/icons-react";

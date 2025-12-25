@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { shopUsers } from "./shops";
 import { famsMembers } from "./famss";
+import { roles } from "./roles";
 import {
 	pgTable,
 	text,
@@ -25,7 +26,7 @@ export const users = pgTable("users", {
 	passwordHash: text("password_hash").notNull(),
 
 	//Permission globale
-	appRole: appRoleEnum("app_role").default("USER").notNull(),
+	roleId: uuid("role_id").references(() => roles.id),
 
 	bucque: text("bucque").notNull(),
 	nums: text("nums").notNull(),
@@ -37,10 +38,18 @@ export const users = pgTable("users", {
 	// Compte mort
 	isAsleep: boolean("is_asleep").default(false),
 
+	// Password Recovery
+	resetPasswordToken: text("reset_password_token"),
+	resetPasswordExpires: timestamp("reset_password_expires"),
+
 	image: text("image"),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
 	shopRoles: many(shopUsers),
 	famss: many(famsMembers),
+	role: one(roles, {
+		fields: [users.roleId],
+		references: [roles.id],
+	}),
 }));

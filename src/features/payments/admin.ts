@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 
 export async function togglePaymentMethod(id: string, isEnabled: boolean) {
   const session = await verifySession();
-  if (!session || session.role !== "ADMIN") {
+  if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_PAYMENTS"))) {
     throw new Error("Unauthorized");
   }
 
@@ -25,7 +25,7 @@ export async function updatePaymentMethodConfig(
   config: Record<string, string>
 ) {
   const session = await verifySession();
-  if (!session || session.role !== "ADMIN") {
+  if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_PAYMENTS"))) {
     throw new Error("Unauthorized");
   }
 

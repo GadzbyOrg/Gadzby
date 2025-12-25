@@ -12,6 +12,8 @@ import {
     IconUser
 } from "@tabler/icons-react";
 import { TransactionToolbar, CancelButton, ExportButton } from "./transaction-components";
+import { verifySession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 export default async function AdminDashboardPage({
     searchParams,
@@ -23,6 +25,11 @@ export default async function AdminDashboardPage({
         sort?: string;
     }>;
 }) {
+    const session = await verifySession();
+    if (!session || (!session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("VIEW_TRANSACTIONS"))) {
+        redirect("/");
+    }
+
     const params = await searchParams;
     const search = params?.search || "";
     const page = Number(params?.page) || 1;
@@ -128,7 +135,7 @@ export default async function AdminDashboardPage({
                                             break;
                                     }
 
-                                    const isCancelled = t.description?.includes("[CANCELLED]");
+                                    const isCancelled = t.status === "CANCELLED";
                                     
                                     if (isCancelled) {
                                         title += " (Annulé)";

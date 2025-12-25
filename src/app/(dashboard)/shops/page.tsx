@@ -12,10 +12,10 @@ export default async function ShopsPage() {
 		<div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
 			<header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight text-white">Shops</h1>
-					<p className="text-gray-400 mt-1">
-						Découvrez tous les shops actifs du campus
-					</p>
+					<h1 className="text-3xl font-bold tracking-tight text-white">
+						Boquettes
+					</h1>
+					<p className="text-gray-400 mt-1">Liste des boquettes</p>
 				</div>
 			</header>
 
@@ -58,20 +58,23 @@ export default async function ShopsPage() {
 									{shop.name}
 								</h3>
 								<p className="text-sm text-gray-400 line-clamp-3">
-									{shop.description || "Aucune description disponible pour ce shop."}
+									{shop.description ||
+										"Aucune description disponible pour ce shop."}
 								</p>
-                                <div className="mt-4 flex items-center text-sm font-medium text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
-                                    Voir le shop <span className="ml-1">→</span>
-                                </div>
+								<div className="mt-4 flex items-center text-sm font-medium text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
+									Voir le shop <span className="ml-1">→</span>
+								</div>
 							</div>
 						</Link>
 					))}
 				</div>
 			) : (
 				<div className="text-center py-20 rounded-2xl bg-dark-900 border border-dark-800 border-dashed">
-					<h3 className="mt-2 text-sm font-semibold text-white">Aucun shop actif</h3>
+					<h3 className="mt-2 text-sm font-semibold text-white">
+						Aucune boquette disponible
+					</h3>
 					<p className="mt-1 text-sm text-gray-400">
-						Il n'y a pas encore de shops ouverts pour le moment.
+						Il n'y a pas encore de boquettes ouvertes pour le moment.
 					</p>
 				</div>
 			)}

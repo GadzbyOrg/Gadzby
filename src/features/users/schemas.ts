@@ -13,7 +13,8 @@ export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 export const adminUpdateUserSchema = updateUserSchema.extend({
     userId: z.string().uuid(),
-    appRole: z.enum(["USER", "TRESORIER", "ADMIN"]),
+    roleId: z.string().uuid().optional(),
+    appRole: z.enum(["USER", "TRESORIER", "ADMIN"]).optional(), // Deprecated but kept for now
     balance: z.number().int(), // Stored in cents
     isAsleep: z.boolean().default(false),
 });
@@ -28,6 +29,7 @@ export const createUserSchema = z.object({
 	promss: z.string().min(1, "La prom'ss est requise"),
 	nums: z.string().min(1, "Les nums sont requis"),
 	password: z.string().min(6, "Le mot de passe doit faire au moins 6 caractères"),
+    roleId: z.string().uuid().optional(),
 	appRole: z.enum(["USER", "TRESORIER", "ADMIN"]).default("USER"),
 	balance: z.number().int().default(0),
 });

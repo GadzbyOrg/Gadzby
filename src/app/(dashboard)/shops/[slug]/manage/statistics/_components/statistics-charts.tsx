@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 import { getShopStats } from "@/features/shops/actions";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { formatPrice } from "@/lib/utils";
@@ -12,14 +13,46 @@ interface StatisticsChartsProps {
 }
 
 export function StatisticsCharts({ slug }: StatisticsChartsProps) {
-    const [timeframe, setTimeframe] = useState<Timeframe>('30d');
-    const [customStart, setCustomStart] = useState<string>('');
-    const [customEnd, setCustomEnd] = useState<string>('');
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    const [isPending, startTransition] = useTransition();
+
+    const timeframe = (searchParams.get("timeframe") as Timeframe) || "30d";
+    const customStart = searchParams.get("from") || "";
+    const customEnd = searchParams.get("to") || "";
+
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<{
         summary: { totalRevenue: number; totalExpenses: number; profit: number };
         chartData: { date: string; revenue: number; expenses: number; profit: number }[];
     } | null>(null);
+
+    const updateParams = (newParams: Record<string, string | null>) => {
+        const params = new URLSearchParams(searchParams);
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value === null) {
+                params.delete(key);
+            } else {
+                params.set(key, value);
+            }
+        });
+        startTransition(() => {
+            router.replace(`${pathname}?${params.toString()}`);
+        });
+    };
+
+    const handleTimeframeChange = (t: Timeframe) => {
+        if (t === 'custom') {
+            updateParams({ timeframe: t });
+        } else {
+            updateParams({ timeframe: t, from: null, to: null });
+        }
+    };
+
+    const handleDateChange = (type: 'from' | 'to', value: string) => {
+        updateParams({ [type]: value });
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -35,7 +68,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 
                 if (timeframe === 'custom' && (!customStart || !customEnd)) {
                     setLoading(false);
-                    return;
+                    return; // Wait for both dates
                 }
 
                 const result = await getShopStats(slug, timeframe, startDate, endDate);
@@ -62,7 +95,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
                     {(['7d', '30d', '90d', 'all', 'custom'] as Timeframe[]).map((t) => (
                         <button
                             key={t}
-                            onClick={() => setTimeframe(t)}
+                            onClick={() => handleTimeframeChange(t)}
                             className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                                 timeframe === t
                                     ? 'bg-primary-600 text-white shadow-sm'
@@ -83,21 +116,21 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
                         <input
                             type="date"
                             value={customStart}
-                            onChange={(e) => setCustomStart(e.target.value)}
+                            onChange={(e) => handleDateChange('from', e.target.value)}
                             className="bg-dark-800 border-dark-700 text-white rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
                         />
                         <span className="text-gray-500">-</span>
                         <input
                             type="date"
                             value={customEnd}
-                            onChange={(e) => setCustomEnd(e.target.value)}
+                            onChange={(e) => handleDateChange('to', e.target.value)}
                             className="bg-dark-800 border-dark-700 text-white rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
                         />
                     </div>
                 )}
             </div>
 
-            {loading ? (
+            {(loading || isPending) ? (
                 <div className="h-64 flex items-center justify-center text-gray-400">
                     Chargement des statistiques...
                 </div>

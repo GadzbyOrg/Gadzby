@@ -1,13 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, roles, famss, products } from "@/db/schema";
 import { verifySession } from "@/lib/session";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { updateUserSchema, createUserSchema, importUserRowSchema } from "./schemas";
 import * as XLSX from "xlsx";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
 
 export type ActionResponse = {
     error?: string;
@@ -65,7 +66,9 @@ export async function getUsers(
     role: string | null = null
 ) {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || !(session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_USERS"))){
+         return { error: "Non autorisé" };
+    }
 
     const offset = (page - 1) * limit;
 
@@ -84,7 +87,11 @@ export async function getUsers(
             }
 
             if (role) {
-                conditions.push(eq(users.appRole, role));
+                // If it looks like a UUID, filter by roleId
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(role);
+                if (isUuid) {
+                    conditions.push(eq(users.roleId, role));
+                }
             }
 
             return and(...conditions);
@@ -105,6 +112,9 @@ export async function getUsers(
             orderBy: orderByClause as any,
             limit: limit,
             offset: offset,
+            with: {
+                role: true
+            }
         });
 
         // Need total count for pagination
@@ -120,7 +130,7 @@ export async function getUsers(
 
 export async function adminUpdateUserAction(prevState: any, formData: FormData): Promise<ActionResponse> {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || (!session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("MANAGE_USERS"))) return { error: "Non autorisé" };
 
     const data = Object.fromEntries(formData);
     
@@ -138,7 +148,7 @@ export async function adminUpdateUserAction(prevState: any, formData: FormData):
         return { error: parsed.error.issues[0].message }; 
     }
 
-    const { userId, nom, prenom, email, bucque, promss, nums, appRole, balance, isAsleep } = parsed.data;
+    const { userId, nom, prenom, email, bucque, promss, nums, appRole, roleId, balance, isAsleep } = parsed.data;
     const newUsername = `${nums}${promss}`;
 
     try {
@@ -176,11 +186,21 @@ export async function adminUpdateUserAction(prevState: any, formData: FormData):
                     promss,
                     nums,
                     username: newUsername,
-                    appRole,
+                    roleId,
                     balance,
                     isAsleep
                 })
                 .where(eq(users.id, userId));
+
+             // 4. Update Password if provided
+            const password = formData.get("newPassword") as string;
+            if (password && password.trim() !== "") {
+                const salt = await bcrypt.genSalt(10);
+                const hash = await bcrypt.hash(password, salt);
+                await tx.update(users)
+                    .set({ passwordHash: hash })
+                    .where(eq(users.id, userId));
+            }
         });
 
         revalidatePath("/admin/users");
@@ -191,12 +211,11 @@ export async function adminUpdateUserAction(prevState: any, formData: FormData):
     }
 }
 
-import { products, famss } from "@/db/schema";
 import { and, desc, sql } from "drizzle-orm";
 
 export async function getUserTransactions(userId: string, limit = 50) {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || !(session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("VIEW_TRANSACTIONS"))) return { error: "Non autorisé" };
 
     try {
         const history = await db.query.transactions.findMany({
@@ -241,7 +260,7 @@ export async function getUserTransactions(userId: string, limit = 50) {
 
 export async function cancelTransaction(transactionId: string) {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || (!session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("CANCEL_TRANSACTION"))) return { error: "Non autorisé" };
 
     try {
         await db.transaction(async (tx) => {
@@ -255,8 +274,8 @@ export async function cancelTransaction(transactionId: string) {
 
             if (!originalTx) throw new Error("Transaction introuvable");
 
-            if (originalTx.description?.includes("[CANCELLED]")) {
-                throw new Error("Transaction déjà annulée");
+            if (originalTx.status === "CANCELLED") {
+                return { error: "Transaction déjà annulée" };
             }
 
             // 2. Logic for reversal
@@ -306,7 +325,8 @@ export async function cancelTransaction(transactionId: string) {
             // 6. Mark original as cancelled in description to prevent double cancel
             await tx.update(transactions)
                 .set({ 
-                    description: originalTx.description ? `${originalTx.description} [CANCELLED]` : "[CANCELLED]" 
+                    description: originalTx.description ? `${originalTx.description} [CANCELLED]` : "[CANCELLED]",
+                    status: "CANCELLED"
                 })
                 .where(eq(transactions.id, transactionId));
         });
@@ -322,7 +342,7 @@ export async function cancelTransaction(transactionId: string) {
 
 export async function createUserAction(prevState: any, formData: FormData): Promise<ActionResponse> {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || !(session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("MANAGE_USERS"))) return { error: "Non autorisé" };
 
     const data = Object.fromEntries(formData);
     
@@ -339,7 +359,7 @@ export async function createUserAction(prevState: any, formData: FormData): Prom
         return { error: parsed.error.issues[0].message };
     }
 
-    const { nom, prenom, email, bucque, promss, nums, password, appRole, balance } = parsed.data;
+    const { nom, prenom, email, bucque, promss, nums, password, appRole, roleId, balance } = parsed.data;
     const username = `${nums}${promss}`;
 
     try {
@@ -362,7 +382,7 @@ export async function createUserAction(prevState: any, formData: FormData): Prom
             nums,
             username,
             passwordHash,
-            appRole,
+            roleId,
             balance, // Stored in cents
         });
 
@@ -376,10 +396,16 @@ export async function createUserAction(prevState: any, formData: FormData): Prom
 
 export async function importUsersAction(prevState: any, formData: FormData): Promise<ActionResponse> {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || !(session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("MANAGE_USERS"))) return { error: "Non autorisé" };
 
     const file = formData.get("file") as File;
     if (!file) return { error: "Aucun fichier fourni" };
+    
+    // Fetch default USER role
+    const userRole = await db.query.roles.findFirst({
+        where: eq(roles.name, "USER")
+    });
+
 
     try {
         const arrayBuffer = await file.arrayBuffer();
@@ -430,16 +456,19 @@ export async function importUsersAction(prevState: any, formData: FormData): Pro
                 continue;
             }
              
-            // Default password for imports: "gadz" + promss
-            const password = `gadz${promss}`;
+            // Generate random password for imports
+            const password = bcrypt.genSalt(10).toString();
             const passwordHash = await bcrypt.hash(password, 10);
 
-            // Use provided email or generate a placeholder/null if allowed
-            // Our schema says email is unique and not null. So we need one.
-            // If missing in excel, maybe generate dummy? "username@gadz.org"?
-            const finalEmail = email || `${username}@gadz.org`; 
+            // If email is missing, fail import
+            if (!email) {
+                failCount++;
+                errors.push(`Email manquant pour ${username}`);
+                continue;
+            }
+            const finalEmail = email;
 
-            // Double check email uniqueness if we generated it or if it was provided
+            // Double check email uniqueness if it was provided
             const existingEmail = await db.query.users.findFirst({
                 where: (users, { eq }) => eq(users.email, finalEmail)
             });
@@ -459,7 +488,7 @@ export async function importUsersAction(prevState: any, formData: FormData): Pro
                 nums,
                 username,
                 passwordHash,
-                appRole: "USER",
+                roleId: userRole?.id,
                 balance: Math.round((Number(balance) || 0) * 100),
             });
 
@@ -469,7 +498,6 @@ export async function importUsersAction(prevState: any, formData: FormData): Pro
         revalidatePath("/admin/users");
         
         if (failCount > 0) {
-            // Maybe handle this better (return detailed errors)
              return { success: `Import terminé: ${successCount} succès, ${failCount} erreurs.`, error: errors.slice(0, 5).join(", ") + (errors.length > 5 ? "..." : "") };
         }
 
@@ -477,13 +505,13 @@ export async function importUsersAction(prevState: any, formData: FormData): Pro
 
     } catch (error) {
         console.error("Failed to import users:", error);
-        return { error: "Erreur critique lors de l'import" };
+        return { error: "Erreur lors de l'import" };
     }
 }
 
 export async function toggleUserStatusAction(userId: string, isAsleep: boolean): Promise<ActionResponse> {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || (!session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("MANAGE_USERS"))) return { error: "Non autorisé" };
 
     try {
         await db.update(users)
@@ -532,5 +560,48 @@ export async function searchUsersPublicAction(query: string) {
         console.error("Failed to search users:", error);
         return { error: "Erreur lors de la recherche" };
     }
+}
+
+const changeSelfPasswordSchema = z.object({
+	currentPassword: z.string().min(1, "Mot de passe actuel requis"),
+	newPassword: z.string().min(6, "Le nouveau mot de passe doit faire au moins 6 caractères"),
+	confirmNewPassword: z.string().min(6, "Le nouveau mot de passe doit faire au moins 6 caractères"),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+	message: "Les nouveaux mots de passe ne correspondent pas",
+	path: ["confirmNewPassword"],
+});
+
+export async function changeSelfPasswordAction(initialState: any, formData: FormData) {
+	const session = await verifySession();
+	if (!session) return { error: "Non autorisé" };
+
+	const data = Object.fromEntries(formData);
+	const parsed = changeSelfPasswordSchema.safeParse(data);
+
+	if (!parsed.success) {
+		return { error: parsed.error.issues[0].message };
+	}
+
+	const { currentPassword, newPassword } = parsed.data;
+
+	const user = await db.query.users.findFirst({
+		where: eq(users.id, session.userId),
+	});
+
+	if (!user) return { error: "Utilisateur introuvable" };
+
+	const match = await bcrypt.compare(currentPassword, user.passwordHash);
+	if (!match) {
+		return { error: "Mot de passe actuel incorrect" };
+	}
+
+	const salt = await bcrypt.genSalt(10);
+	const hash = await bcrypt.hash(newPassword, salt);
+
+	await db.update(users)
+		.set({ passwordHash: hash })
+		.where(eq(users.id, session.userId));
+
+	return { success: "Mot de passe modifié avec succès" };
 }
 

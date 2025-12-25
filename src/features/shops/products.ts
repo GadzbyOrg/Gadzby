@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { products, productCategories, shops, shopUsers } from "@/db/schema";
+import { products, productCategories, shops, shopUsers, productRestocks } from "@/db/schema";
 import { verifySession } from "@/lib/session";
 import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -13,7 +13,10 @@ export type CreateProductInput = {
     price: number; // in cents
     stock: number;
     categoryId: string;
+    // 'unit' | 'liter' | 'kg'
+    unit?: string; 
     allowSelfService?: boolean;
+    fcv?: number;
 };
 
 export type UpdateProductInput = Partial<CreateProductInput>;
@@ -35,7 +38,7 @@ async function checkShopPermission(shopSlug: string) {
     
     if (!shop) return null;
 
-    if (session.role === "ADMIN") return { session, isAuthorized: true, shop };
+    if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) return { session, isAuthorized: true, shop };
 
     // Check membership
     const membership = shop.members[0];
@@ -127,20 +130,32 @@ export async function getShopCategories(shopSlug: string) {
 }
 
 
+
 export async function createProduct(shopSlug: string, data: CreateProductInput) {
     const perm = await checkShopPermission(shopSlug);
     if (!perm) return { error: "Non autorisé" };
 
-    if (perm.session.role !== "ADMIN") {
+    if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
         if (!hasShopPermission(perm.membership!.role as any, perm.shop.permissions, "canManageProducts")) {
             return { error: "Permissions insuffisantes (Gestion Produits)" };
         }
     }
 
     try {
-        await db.insert(products).values({
-            shopId: perm.shop.id,
-            ...data,
+        await db.transaction(async (tx) => {
+            const [newProduct] = await tx.insert(products).values({
+                shopId: perm.shop.id,
+                ...data,
+            }).returning();
+
+            if (data.stock > 0) {
+                 await tx.insert(productRestocks).values({
+                    productId: newProduct.id,
+                    shopId: perm.shop.id,
+                    quantity: data.stock,
+                    createdBy: perm.session.userId
+                 });
+            }
         });
 
         revalidatePath(`/shops/${shopSlug}/manage/products`);
@@ -155,7 +170,7 @@ export async function updateProduct(shopSlug: string, productId: string, data: U
     const perm = await checkShopPermission(shopSlug);
     if (!perm) return { error: "Non autorisé" };
 
-    if (perm.session.role !== "ADMIN") {
+    if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
         if (!hasShopPermission(perm.membership!.role as any, perm.shop.permissions, "canManageProducts")) {
             return { error: "Permissions insuffisantes (Gestion Produits)" };
         }
@@ -181,7 +196,7 @@ export async function deleteProduct(shopSlug: string, productId: string) {
     const perm = await checkShopPermission(shopSlug);
     if (!perm) return { error: "Non autorisé" };
 
-    if (perm.session.role !== "ADMIN") {
+    if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
         if (!hasShopPermission(perm.membership!.role as any, perm.shop.permissions, "canManageProducts")) {
             return { error: "Permissions insuffisantes (Gestion Produits)" };
         }
@@ -233,7 +248,7 @@ export async function createCategory(shopSlug: string, name: string) {
     const perm = await checkShopPermission(shopSlug);
     if (!perm) return { error: "Non autorisé" };
 
-    if (perm.session.role !== "ADMIN") {
+    if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
         if (!hasShopPermission(perm.membership!.role as any, perm.shop.permissions, "canManageProducts")) {
             return { error: "Permissions insuffisantes" };
         }

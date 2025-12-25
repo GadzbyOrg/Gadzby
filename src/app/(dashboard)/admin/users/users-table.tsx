@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { IconPencil, IconSearch, IconX, IconHistory, IconPlus, IconUpload, IconArrowsSort, IconFilter, IconPower, IconSortAscending, IconSortDescending } from "@tabler/icons-react";
+import { IconPencil, IconSearch, IconX, IconHistory, IconPlus, IconArrowsSort, IconPower, IconSortAscending, IconSortDescending } from "@tabler/icons-react";
 import { UserEditForm } from "./user-edit-form";
 import { CreateUserForm } from "./create-user-form";
 import { ExcelImportModal } from "@/components/excel-import-modal"; // New import
@@ -30,9 +30,10 @@ function useDebounce<T>(value: T, delay: number): T {
 
 interface UsersTableProps {
     users: any[];
+    roles: any[];
 }
 
-export function UsersTable({ users }: UsersTableProps) {
+export function UsersTable({ users, roles }: UsersTableProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -40,7 +41,6 @@ export function UsersTable({ users }: UsersTableProps) {
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [viewHistoryUser, setViewHistoryUser] = useState<any>(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    // Removed showImportModal state
 
     const [isPending, startTransition] = useTransition();
 
@@ -117,9 +117,11 @@ export function UsersTable({ users }: UsersTableProps) {
                         className="bg-dark-950 border border-dark-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
                     >
                         <option value="">Tous les rôles</option>
-                        <option value="USER">Utilisateur</option>
-                        <option value="TRESORIER">Trésorier</option>
-                        <option value="ADMIN">Administrateur</option>
+                        {roles.map((role) => (
+                            <option key={role.id} value={role.id}>
+                                {role.name}
+                            </option>
+                        ))}
                     </select>
                 </div>
 
@@ -190,11 +192,11 @@ export function UsersTable({ users }: UsersTableProps) {
                                             <div className="text-xs text-gray-500">{user.email}</div>
                                         </td>
                                         <td className="py-3 px-6">
-                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
-                                                ${user.appRole === 'ADMIN' ? 'bg-primary-900/30 text-primary-400 border border-primary-900/50' : 
-                                                  user.appRole === 'TRESORIER' ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-900/50' : 
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
+                                                ${user.role?.name === 'ADMIN' ? 'bg-primary-900/30 text-primary-400 border border-primary-900/50' : 
+                                                  user.role?.name === 'TRESORIER' ? 'bg-amber-900/30 text-amber-500 border border-amber-900/50' : 
                                                   'bg-dark-800 text-gray-400 border border-dark-700'}`}>
-                                                {user.appRole}
+                                                {user.role?.name || user.appRole}
                                             </span>
                                         </td>
                                         <td className="py-3 px-6 text-right font-mono text-gray-300">
@@ -252,6 +254,7 @@ export function UsersTable({ users }: UsersTableProps) {
                         <div className="p-6">
                             <UserEditForm 
                                 user={selectedUser} 
+                                roles={roles}
                                 onSuccess={() => setSelectedUser(null)}
                             />
                         </div>
@@ -286,6 +289,7 @@ export function UsersTable({ users }: UsersTableProps) {
                         
                         <div className="p-6">
                             <CreateUserForm 
+                                roles={roles}
                                 onSuccess={() => setShowCreateModal(false)}
                             />
                         </div>

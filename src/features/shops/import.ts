@@ -1,21 +1,24 @@
 "use server";
 
+// ... imports
 import { db } from "@/db";
-import { products, productCategories, shops, shopUsers } from "@/db/schema";
+import { products, productCategories, shops, shopUsers, productRestocks } from "@/db/schema";
 import { verifySession } from "@/lib/session";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import * as XLSX from "xlsx";
 import { hasShopPermission } from "./utils";
 
 // Helper to sanitize keys
 function sanitizeKey(key: string) {
-    return key.toLowerCase().trim().replace(/\s+/g, "");
+    return key
+        .normalize("NFD") // Split accents
+        .replace(/[\u0300-\u036f]/g, "") // Remove accents
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]/g, ""); // Remove non-alphanumeric (spaces, quotes, etc)
 }
 
-// MATCHES usage with useActionState
-// We now expect slug to be inside formData or bound. 
-// However, the cleanest way with the modal's "additionalData" is to just read it from formData.
 export async function importProducts(prevState: any, formData: FormData) {
     const session = await verifySession();
     if (!session) return { error: "Non autorisé" };
@@ -39,7 +42,7 @@ export async function importProducts(prevState: any, formData: FormData) {
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
              isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canManageProducts");
         }
@@ -60,77 +63,124 @@ export async function importProducts(prevState: any, formData: FormData) {
         });
         const categoryMap = new Map(existingCategories.map(c => [c.name.toLowerCase().trim(), c.id]));
 
+        // Get existing products map to check for duplicates
+        const existingProducts = await db.query.products.findMany({
+            where: and(eq(products.shopId, shop.id), eq(products.isArchived, false))
+        });
+        const productMap = new Map(existingProducts.map(p => [p.name.toLowerCase().trim(), p]));
+
         let successCount = 0;
+        let updateCount = 0;
         let errorCount = 0;
 
-        // Process rows
-        for (const row of rawJson) {
-            // Expected columns: Name, Cost (Prix dachat), Stock, Category
-            // Flexible keys mapping
-            let name, cost, stock, categoryName;
+        await db.transaction(async (tx) => {
+            for (const row of rawJson) {
+                // Expected rows
+                let name, cost, stock, categoryName;
 
-            for (const key of Object.keys(row)) {
-                const sKey = sanitizeKey(key);
-                if (sKey === "name" || sKey === "nom" || sKey === "produit") name = row[key];
-                if (sKey === "cost" || sKey === "cout" || sKey === "prixdachat" || sKey === "achat") cost = row[key];
-                if (sKey === "stock" || sKey === "quantite" || sKey === "qte") stock = row[key];
-                if (sKey === "category" || sKey === "categorie" || sKey === "cat") categoryName = row[key];
-            }
+                for (const key of Object.keys(row)) {
+                    const sKey = sanitizeKey(key);
+                    if (sKey === "name" || sKey === "nom" || sKey === "produit") name = row[key];
+                    if (sKey === "cost" || sKey === "cout" || sKey === "prixdachat" || sKey === "achat") cost = row[key];
+                    if (sKey === "stock" || sKey === "quantite" || sKey === "qte") stock = row[key];
+                    if (sKey === "category" || sKey === "categorie" || sKey === "cat") categoryName = row[key];
+                }
 
-            if (!name || cost === undefined) {
-                // Skip invalid rows?
-                errorCount++;
-                continue;
-            }
+                if (!name || cost === undefined) {
+                    console.log("Invalid row:", row);
+                    errorCount++;
+                    continue;
+                }
 
-            // Parse numbers
-            const costVal = parseFloat(String(cost));
-            const stockVal = stock ? parseInt(String(stock)) : 0;
-            
-            // Calculate Selling Price
-            // Cost is likely in Euros or Cents? Usually excel users put Euros.
-            // Let's assume Euros for Input, Store as Cents.
-            // Margin: Price = Cost * (1 + margin/100)
-            const margin = shop.defaultMargin || 0;
-            const sellingPriceParam = costVal * (1 + margin / 100);
-            const sellingPriceCents = Math.round(sellingPriceParam * 100); 
-
-            // Category handling
-            let categoryId: string;
-            
-            const sCat = categoryName ? String(categoryName).trim() : "Défaut";
-            const sCatLower = sCat.toLowerCase();
-            
-            if (categoryMap.has(sCatLower)) {
-                categoryId = categoryMap.get(sCatLower)!;
-            } else {
-                // Create new category
-                const [newCat] = await db.insert(productCategories).values({
-                    shopId: shop.id,
-                    name: sCat
-                }).returning();
+                const nameStr = String(name).trim();
+                const costVal = parseFloat(String(cost));
+                const stockVal = stock ? parseFloat(String(stock)) : 0;
                 
-                categoryId = newCat.id;
-                categoryMap.set(sCatLower, newCat.id);
+                // Calculate Selling Price
+                const margin = shop.defaultMargin || 0;
+                const sellingPriceParam = costVal * (1 + margin / 100);
+                const sellingPriceCents = Math.round(sellingPriceParam * 100); 
+
+                // Category handling
+                let categoryId: string;
+                const sCat = categoryName ? String(categoryName).trim() : "Défaut";
+                const sCatLower = sCat.toLowerCase();
+                
+                if (categoryMap.has(sCatLower)) {
+                    categoryId = categoryMap.get(sCatLower)!;
+                } else {
+                    const [newCat] = await tx.insert(productCategories).values({
+                        shopId: shop.id,
+                        name: sCat
+                    }).returning();
+                    
+                    categoryId = newCat.id;
+                    categoryMap.set(sCatLower, newCat.id);
+                }
+
+                // Check if product exists
+                const existingProduct = productMap.get(nameStr.toLowerCase());
+
+                if (existingProduct) {
+                    // UPDATE Logic
+                    // 1. Update fields (Price, Category)
+                    await tx.update(products)
+                        .set({
+                            price: sellingPriceCents,
+                            categoryId: categoryId,
+                            // Do NOT overwrite stock directly here, strict restock logic below
+                        })
+                        .where(eq(products.id, existingProduct.id));
+
+                    // 2. Restock if quantity > 0
+                    if (stockVal > 0) {
+                        await tx.insert(productRestocks).values({
+                            productId: existingProduct.id,
+                            shopId: shop.id,
+                            quantity: stockVal,
+                            createdBy: session.userId
+                        });
+                        
+                        await tx.update(products)
+                            .set({ stock: sql`${products.stock} + ${stockVal}` })
+                            .where(eq(products.id, existingProduct.id));
+                    }
+
+                    updateCount++;
+                } else {
+                    // CREATE Logic
+                    const [newProduct] = await tx.insert(products).values({
+                        shopId: shop.id,
+                        name: nameStr,
+                        price: sellingPriceCents,
+                        stock: 0, // Initial stock 0, we restock right after
+                        categoryId: categoryId,
+                        allowSelfService: true,
+                    }).returning();
+
+                    if (stockVal > 0) {
+                        await tx.insert(productRestocks).values({
+                            productId: newProduct.id,
+                            shopId: shop.id,
+                            quantity: stockVal,
+                            createdBy: session.userId
+                        });
+
+                        await tx.update(products)
+                            .set({ stock: stockVal })
+                            .where(eq(products.id, newProduct.id));
+                    }
+                    
+                    // Add to map for subsequent dupes in same file?
+                     productMap.set(nameStr.toLowerCase(), newProduct as any);
+                    successCount++;
+                }
             }
-
-            // Create Product
-            await db.insert(products).values({
-                shopId: shop.id,
-                name: String(name),
-                price: sellingPriceCents,
-                stock: stockVal,
-                categoryId: categoryId,
-                allowSelfService: true, // Default to true? Or false? Let's default true for ease.
-                // image: null, // Removed
-            });
-
-            successCount++;
-        }
+        });
 
         revalidatePath(`/shops/${slug}/manage/products`);
         return { 
-            success: `${successCount} produits importés. ${errorCount} erreurs.` 
+            success: `${successCount} créés, ${updateCount} mis à jour. ${errorCount} erreurs.` 
         };
 
     } catch (error) {

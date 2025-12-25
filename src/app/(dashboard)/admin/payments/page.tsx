@@ -1,8 +1,15 @@
 import { db } from "@/db";
 import { paymentMethods } from "@/db/schema/payment-methods";
 import { PaymentMethodCard } from "./_components/payment-method-card";
+import { verifySession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 export default async function AdminPaymentsPage() {
+  const session = await verifySession();
+  if (!session || (!session.permissions.includes("MANAGE_PAYMENTS") && !session.permissions.includes("ADMIN_ACCESS"))) {
+      redirect("/");
+  }
+
   const methods = await db.select().from(paymentMethods);
 
   // Cast to ensure type safety with component

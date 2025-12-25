@@ -9,8 +9,11 @@ import {
 	IconLock,
 	IconAlertTriangle,
 	IconLoader2,
+    IconEye,
+    IconEyeOff,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 function InputLabel({
 	htmlFor,
@@ -58,6 +61,7 @@ function SubmitButton() {
 
 export default function LoginPage() {
 	const [state, action] = useActionState(loginAction, { error: undefined });
+    const [showPassword, setShowPassword] = useState(false);
 
 	return (
 		<div className="flex min-h-screen flex-col justify-center bg-dark-950 px-6 py-12 lg:px-8">
@@ -125,6 +129,11 @@ export default function LoginPage() {
 						<div>
 							<div className="flex items-center justify-between">
 								<InputLabel htmlFor="password">Mot de passe</InputLabel>
+								<div className="text-sm">
+									<a href="/forgot-password" className="font-semibold text-primary-400 hover:text-primary-300">
+										Mot de passe oublié ?
+									</a>
+								</div>
 							</div>
 							<div className="relative mt-2">
 								<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -136,11 +145,18 @@ export default function LoginPage() {
 								<input
 									id="password"
 									name="password"
-									type="password"
+									type={showPassword ? "text" : "password"}
 									required
 									placeholder="••••••••"
-									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
+									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 pr-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
 								/>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-300"
+                                >
+                                    {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                                </button>
 							</div>
 						</div>
 

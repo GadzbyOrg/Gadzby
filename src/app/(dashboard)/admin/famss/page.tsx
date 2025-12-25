@@ -1,11 +1,18 @@
 import { getAdminFamss } from "@/features/famss/admin-actions";
 import { FamssTable } from "./famss-table";
+import { verifySession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 export default async function AdminFamssPage({
     searchParams,
 }: {
     searchParams: Promise<{ page?: string; search?: string }>;
 }) {
+    const session = await verifySession();
+    if (!session || (!session.permissions.includes("MANAGE_FAMSS") && !session.permissions.includes("ADMIN_ACCESS"))) {
+        redirect("/");
+    }
+
     const { page, search } = await searchParams;
     const currentPage = Number(page) || 1;
     const searchTerm = search || "";

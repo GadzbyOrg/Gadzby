@@ -2,14 +2,26 @@ import {
 	IconWallet,
 	IconShoppingBag,
 	IconTrendingUp,
-    IconTrendingDown
+    IconTrendingDown,
+    IconBuildingStore
 } from "@tabler/icons-react";
 import { getUserStats, getUserRecentActivity, getUserExpensesByShop, getUserExpensesOverTime } from "@/features/dashboard/actions";
+import { getShops } from "@/features/shops/actions";
 import { ExpensesByShopChart } from "@/components/dashboard/ExpensesByShopChart";
 import { ExpensesOverTimeChart } from "@/components/dashboard/ExpensesOverTimeChart";
 import { RecentActivityList } from "@/components/dashboard/RecentActivityList";
+import Link from "next/link";
 
-function StatCard({ title, value, sub, icon: Icon, color, trend }: any) {
+interface StatCardProps {
+    title: string;
+    value: string;
+    sub: string;
+    icon: React.ElementType;
+    color: string;
+    trend?: number;
+}
+
+function StatCard({ title, value, sub, icon: Icon, color, trend }: StatCardProps) {
 	return (
 		<div className="group relative overflow-hidden rounded-2xl border border-dark-800 bg-dark-900 p-6 transition-all hover:border-dark-700 hover:shadow-xl hover:shadow-black/20">
 			<div className="flex items-start justify-between">
@@ -40,16 +52,34 @@ function StatCard({ title, value, sub, icon: Icon, color, trend }: any) {
 	);
 }
 
+import { getEnrolledEvents } from "@/features/events/actions";
+import { verifySession } from "@/lib/session";
+import { UserEventsList } from "@/components/dashboard/UserEventsList";
+
+async function UserEventsSection() {
+    const session = await verifySession();
+    if (!session) return null;
+
+    const events = await getEnrolledEvents(session.userId);
+
+    if (events.length === 0) return null;
+
+    return <UserEventsList events={events as any} />;
+}
+
 export default async function DashboardPage() {
+    // ... items above
+
     const stats = await getUserStats();
     const recentActivity = await getUserRecentActivity();
     const expensesByShop = await getUserExpensesByShop();
     const expensesOverTime = await getUserExpensesOverTime();
+    const { shops } = await getShops();
 
 	return (
 		<div className="space-y-8">
 			<div className="mb-8">
-				<h2 className="text-2xl font-bold text-white">Vue d'ensemble</h2>
+				<h2 className="text-2xl font-bold text-white">Vue d&apos;ensemble</h2>
 				<p className="text-gray-400">Bienvenue sur Gadzby</p>
 			</div>
 
@@ -70,6 +100,41 @@ export default async function DashboardPage() {
 					color="bg-primary-500 text-primary-400"
 				/>
 			</div>
+
+            {/* Shop Shortcuts */}
+            {shops && shops.length > 0 && (
+                <div className="mt-8">
+                    <h3 className="mb-4 text-lg font-semibold text-white">Vos Boquettes</h3>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        {shops.map((shop) => (
+                            <Link
+                                key={shop.id}
+                                href={`/shops/${shop.slug}/self-service`}
+                                className="group relative overflow-hidden rounded-xl border border-dark-800 bg-dark-900 p-4 transition-all hover:border-primary-500/50 hover:shadow-lg hover:-translate-y-1 block"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-500/10 text-primary-500 group-hover:bg-primary-500 group-hover:text-white transition-colors">
+                                        <IconBuildingStore size={24} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-semibold text-white truncate group-hover:text-primary-400 transition-colors">
+                                            {shop.name}
+                                        </h4>
+                                        <p className="text-sm text-gray-400 truncate">
+                                            {shop.description || "Accéder au shop"}
+                                        </p>
+                                    </div>
+                                    {shop.isSelfServiceEnabled && (
+                                        <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                    )}
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <UserEventsSection />
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {/* Charts Section */}

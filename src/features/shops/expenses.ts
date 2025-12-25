@@ -24,7 +24,7 @@ export async function createShopExpense(slug: string, data: { description: strin
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
              // For expenses, we probably want VP or GRIPSS. 
              // Let's assume anyone with Sell or Settings permission for now, or maybe specific Expense.
@@ -73,7 +73,7 @@ export async function deleteShopExpense(slug: string, expenseId: string) {
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
              // Deletion: keep stricter
              if (shop.members[0].role === "GRIPSS") isAuthorized = true;
@@ -114,7 +114,7 @@ export async function getShopExpenses(slug: string) {
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
              isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canViewStats");
         }

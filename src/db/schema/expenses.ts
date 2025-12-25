@@ -22,8 +22,21 @@ export const shopExpenses = pgTable('shop_expenses', {
   date: timestamp('date').defaultNow().notNull(),
 });
 
-export const shopExpensesRelations = relations(shopExpenses, ({ one }) => ({
+export const shopExpensesRelations = relations(shopExpenses, ({ one, many }) => ({
   shop: one(shops, { fields: [shopExpenses.shopId], references: [shops.id] }),
   issuer: one(users, { fields: [shopExpenses.issuerId], references: [users.id] }),
   event: one(events, { fields: [shopExpenses.eventId], references: [events.id] }),
+  splits: many(eventExpenseSplits),
+}));
+
+export const eventExpenseSplits = pgTable('event_expense_splits', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  expenseId: uuid('expense_id').references(() => shopExpenses.id).notNull(),
+  eventId: uuid('event_id').references(() => events.id).notNull(),
+  amount: integer('amount').notNull(), // Montant de la dépense attribué à cet événement
+});
+
+export const eventExpenseSplitsRelations = relations(eventExpenseSplits, ({ one }) => ({
+  expense: one(shopExpenses, { fields: [eventExpenseSplits.expenseId], references: [shopExpenses.id] }),
+  event: one(events, { fields: [eventExpenseSplits.eventId], references: [events.id] }),
 }));

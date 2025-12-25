@@ -10,6 +10,11 @@ async function main() {
 	const password = "admin-password-secure";
 	const hashedPassword = await bcrypt.hash(password, 10);
 
+
+	const adminRole = await db.query.roles.findFirst({
+		where: (roles, { eq }) => eq(roles.name, "ADMIN")
+	});
+
 	await db.insert(users).values({
 		nom: "Super",
 		prenom: "Admin",
@@ -19,7 +24,7 @@ async function main() {
 		username: "4!Me223",
 		promss: "Me223",
 		passwordHash: hashedPassword,
-		appRole: "ADMIN",
+		roleId: adminRole?.id,
 		balance: 100000,
 	});
 

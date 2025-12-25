@@ -70,7 +70,8 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
         setCart(prev => {
             const current = prev[productId] || 0;
             const product = availableProducts.find(p => p.id === productId);
-            if (!product || current >= product.stock) return prev; // Check max stock locally
+            if (!product) return prev; 
+            // Removed stock check
             return {
                 ...prev,
                 [productId]: current + 1
@@ -243,7 +244,7 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                                                             ? 'bg-red-500/10 text-red-400 border border-red-500/20' 
                                                             : 'bg-green-500/10 text-green-400 border border-green-500/20'
                                                     }`}>
-                                                        {outOfStock ? 'Épuisé' : `En stock: ${product.stock}`}
+                                                        {outOfStock ? 'Stock bas' : `En stock: ${product.stock}`}
                                                     </span>
 
                                                     <div className="flex items-center gap-1">
@@ -258,8 +259,7 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                                                                 <span className="w-8 text-center font-bold text-white text-sm">{inCart}</span>
                                                                 <button 
                                                                     onClick={(e) => { e.stopPropagation(); addToCart(product.id); }}
-                                                                    disabled={outOfStock || inCart >= product.stock}
-                                                                    className="h-8 w-8 flex items-center justify-center rounded-md bg-primary-600 text-white hover:bg-primary-500 disabled:opacity-50 disabled:hover:bg-primary-600 transition-colors"
+                                                                    className="h-8 w-8 flex items-center justify-center rounded-md bg-primary-600 text-white hover:bg-primary-500 transition-colors"
                                                                 >
                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                                                                 </button>
@@ -267,13 +267,9 @@ export function SelfServiceView({ shopSlug, products, categories }: SelfServiceV
                                                         ) : (
                                                             <button 
                                                                 onClick={(e) => { e.stopPropagation(); addToCart(product.id); }}
-                                                                disabled={outOfStock}
                                                                 className={`
                                                                     h-10 px-4 rounded-xl text-sm font-semibold transition-all duration-200 border
-                                                                    ${outOfStock 
-                                                                        ? 'bg-dark-800 border-dark-800 text-gray-500 cursor-not-allowed' 
-                                                                        : 'bg-dark-900/50 border-dark-700 text-gray-200 hover:bg-dark-800 hover:border-gray-500 hover:text-white hover:scale-105 active:scale-95'
-                                                                    }
+                                                                    bg-dark-900/50 border-dark-700 text-gray-200 hover:bg-dark-800 hover:border-gray-500 hover:text-white hover:scale-105 active:scale-95
                                                                 `}
                                                             >
                                                                 Ajouter

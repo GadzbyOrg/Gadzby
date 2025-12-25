@@ -2,6 +2,7 @@
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 async function main() {
@@ -47,14 +48,23 @@ async function main() {
     ];
 
     for (const user of testUsers) {
-        try {
+        const existingUser = await db.query.users.findFirst({
+            where: (users, { eq, or }) => or(eq(users.username, user.username), eq(users.email, user.email))
+        });
+
+        if (existingUser) {
+             console.log(`⚠️ User ${user.username} (or email) already exists. Updating...`);
+             await db.update(users).set({
+                 ...user,
+                 passwordHash: hashedPassword,
+             }).where(eq(users.id, existingUser.id));
+             console.log(`✅ User ${user.username} updated!`);
+        } else {
             await db.insert(users).values({
                 ...user,
                 passwordHash: hashedPassword,
             });
-            console.log(`✅ User ${user.username} créé !`);
-        } catch (e) {
-            console.log(`⚠️ User ${user.username} existe probablement déjà.`);
+            console.log(`✅ User ${user.username} created!`);
         }
     }
 

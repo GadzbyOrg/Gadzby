@@ -1,4 +1,6 @@
 import { getUsers } from "@/features/users/actions";
+import { getRolesAction } from "@/features/roles/actions";
+import { verifySession } from "@/lib/session";
 import { UsersTable } from "./users-table";
 import { redirect } from "next/navigation";
 
@@ -7,11 +9,19 @@ export default async function AdminUsersPage({
 }: {
     searchParams: Promise<{ page?: string; search?: string; sort?: string; order?: "asc" | "desc"; role?: string }>;
 }) {
+    const session = await verifySession();
+    if (!session || (!session.permissions.includes("MANAGE_USERS") && !session.permissions.includes("ADMIN_ACCESS"))) {
+        redirect("/");
+    }
+
     const { page, search, sort, order, role } = await searchParams;
     const currentPage = Number(page) || 1;
     const searchTerm = search || "";
 
-    const { users, error } = await getUsers(currentPage, 50, searchTerm, sort || null, order || null, role || null);
+    const [{ users, error }, rolesRes] = await Promise.all([
+        getUsers(currentPage, 50, searchTerm, sort || null, order || null, role || null),
+        getRolesAction()
+    ]);
 
     if (error) {
         // Simple error handling, could also redirect or show error component
@@ -35,7 +45,7 @@ export default async function AdminUsersPage({
                 </div>
             </header>
 
-            <UsersTable users={users || []} />
+            <UsersTable users={users || []} roles={rolesRes.roles || []} />
         </div>
     );
 }

@@ -4,7 +4,7 @@
 import { db } from "@/db";
 import { transactions, famss, products, users } from "@/db/schema";
 import { verifySession } from "@/lib/session";
-import { eq, desc, and, or, ilike, sql, asc, isNull } from "drizzle-orm";
+import { eq, desc, and, or, ilike, sql, asc, isNull, gte, lte } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 
@@ -40,7 +40,9 @@ export async function getTransactionsQuery(
     type = "ALL", 
     sort = "DATE_DESC",
     limit?: number,
-    offset?: number
+    offset?: number,
+    startDate?: Date,
+    endDate?: Date
 ) {
     const whereConditions = [];
 
@@ -59,6 +61,17 @@ export async function getTransactionsQuery(
     // Filter by Type
     if (type !== "ALL") {
         whereConditions.push(eq(transactions.type, type as any));
+    }
+
+    // Filter by Date
+    if (startDate) {
+        whereConditions.push(gte(transactions.createdAt, startDate));
+    }
+    if (endDate) {
+        // Ensure end date covers the whole day if it's set to midnight? 
+        // Typically endDate passed in should be set to end of day if it comes from a "to" picker,
+        // or we rely on the caller to set the time correctly.
+        whereConditions.push(lte(transactions.createdAt, endDate));
     }
 
     // Sorting
@@ -91,7 +104,7 @@ export async function getAllTransactionsAction(
     sort = "DATE_DESC"
 ) {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || (session.permissions.includes("ADMIN") && session.permissions.includes("VIEW_TRANSACTIONS"))) return { error: "Non autorisé" };
 
     try {
         const offset = (page - 1) * limit;
@@ -113,7 +126,7 @@ export async function exportTransactionsAction(
     sort = "DATE_DESC"
 ) {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || !(session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("VIEW_TRANSACTIONS"))) return { error: "Non autorisé" };
 
     try {
         // No limit for export, but safeguard to 5000 maybe? let's stick to unlimited for now unless it breaks
@@ -144,7 +157,7 @@ export async function exportTransactionsAction(
 
 export async function cancelTransaction(transactionId: string) {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || (!session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("CANCEL_TRANSACTIONS"))) return { error: "Non autorisé" };
 
     try {
         await db.transaction(async (tx) => {
@@ -158,7 +171,7 @@ export async function cancelTransaction(transactionId: string) {
 
             if (!originalTx) throw new Error("Transaction introuvable");
 
-            if (originalTx.description?.includes("[CANCELLED]")) {
+            if (originalTx.status === "CANCELLED") {
                 throw new Error("Transaction déjà annulée");
             }
 
@@ -185,7 +198,7 @@ export async function cancelTransaction(transactionId: string) {
                      )
                  });
 
-                 if (counterpart && !counterpart.description?.includes("[CANCELLED]")) {
+                 if (counterpart && counterpart.status !== "CANCELLED") {
                      // Reverse Counterpart (Similar logic to generic cancellation)
                      const counterpartReverseAmount = -counterpart.amount;
                      
@@ -206,7 +219,8 @@ export async function cancelTransaction(transactionId: string) {
 
                      await tx.update(transactions)
                         .set({ 
-                            description: counterpart.description ? `${counterpart.description} [CANCELLED]` : "[CANCELLED]" 
+                            description: counterpart.description ? `${counterpart.description} [CANCELLED]` : "[CANCELLED]",
+                            status: "CANCELLED" 
                         })
                         .where(eq(transactions.id, counterpart.id));
                  }
@@ -256,10 +270,11 @@ export async function cancelTransaction(transactionId: string) {
                 description: `Annulation: ${originalTx.description || 'Transaction sans desc'}`,
             });
             
-            // 6. Mark original as cancelled in description to prevent double cancel
+            // 6. Mark original as cancelled in status to prevent double cancel
             await tx.update(transactions)
                 .set({ 
-                    description: originalTx.description ? `${originalTx.description} [CANCELLED]` : "[CANCELLED]" 
+                    description: originalTx.description ? `${originalTx.description} [CANCELLED]` : "[CANCELLED]",
+                    status: "CANCELLED" 
                 })
                 .where(eq(transactions.id, transactionId));
         });
@@ -275,6 +290,7 @@ export async function cancelTransaction(transactionId: string) {
 }
 
 import { transferMoneySchema } from "./schemas";
+import { topUpUserSchema } from "./schemas";
 
 export type TransferState = {
     error?: string;
@@ -383,3 +399,60 @@ export async function transferMoneyAction(prevState: TransferState, formData: Fo
     }
 }
 
+
+export async function topUpUserAction(prevState: any, formData: FormData) {
+	const session = await verifySession();
+	if (
+		!session ||
+		(!session.permissions.includes("TOPUP_USER") &&
+			!session.permissions.includes("ADMIN_ACCESS"))
+	) {
+		return { error: "Non autorisé" };
+	}
+
+	const data = Object.fromEntries(formData);
+    // Handle comma
+    const rawAmount = String(data.amount).replace(",", ".");
+    const amountInCents = Math.round(Number(rawAmount) * 100);
+
+	const parsed = topUpUserSchema.safeParse({
+		...data,
+		amount: amountInCents,
+	});
+
+	if (!parsed.success) {
+		return { error: parsed.error.issues[0].message };
+	}
+
+	const { targetUserId, amount, paymentMethod } = parsed.data;
+
+	try {
+		await db.transaction(async (tx) => {
+			const targetUser = await tx.query.users.findFirst({
+				where: eq(users.id, targetUserId),
+			});
+
+			if (!targetUser) throw new Error("Utilisateur introuvable");
+
+			await tx
+				.update(users)
+				.set({ balance: sql`${users.balance} + ${amount}` })
+				.where(eq(users.id, targetUserId));
+
+			await tx.insert(transactions).values({
+				amount: amount,
+				type: "TOPUP",
+				walletSource: "PERSONAL",
+				issuerId: session.userId,
+				targetUserId: targetUserId,
+				description: `Rechargement (${paymentMethod}) par ${session.role}`,
+			});
+		});
+
+		revalidatePath("/admin/users");
+		return { success: "Rechargement effectué avec succès" };
+	} catch (error: any) {
+		console.error("Failed to topup user:", error);
+		return { error: error.message || "Erreur lors du rechargement" };
+	}
+}

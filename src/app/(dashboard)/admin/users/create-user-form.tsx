@@ -5,6 +5,7 @@ import { createUserAction } from "@/features/users/actions";
 import { IconLoader2, IconCheck, IconAlertTriangle } from "@tabler/icons-react";
 
 interface CreateUserFormProps {
+    roles: any[];
     onSuccess: () => void;
 }
 
@@ -13,7 +14,7 @@ const initialState = {
     success: undefined,
 };
 
-export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
+export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
     const [state, formAction, isPending] = useActionState(createUserAction, initialState);
     
     useEffect(() => {
@@ -132,16 +133,17 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                     
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label htmlFor="appRole" className="text-sm font-medium text-primary-300">Rôle Application</label>
+                            <label htmlFor="roleId" className="text-sm font-medium text-primary-300">Rôle</label>
                             <select
-                                name="appRole"
-                                id="appRole"
-                                defaultValue="USER"
+                                name="roleId"
+                                id="roleId"
+                                defaultValue=""
                                 className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
                             >
-                                <option value="USER">Utilisateur</option>
-                                <option value="TRESORIER">Trésorier</option>
-                                <option value="ADMIN">Administrateur</option>
+                                <option value="" disabled>Sélectionner un rôle</option>
+                                {roles.map(role => (
+                                    <option key={role.id} value={role.id}>{role.name}</option>
+                                ))}
                             </select>
                         </div>
                          <div className="space-y-2">

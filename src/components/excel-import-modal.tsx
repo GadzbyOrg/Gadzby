@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { IconLoader2, IconCheck, IconAlertTriangle, IconUpload, IconFileSpreadsheet, IconX } from "@tabler/icons-react";
+import { IconLoader2, IconCheck, IconAlertTriangle, IconUpload, IconFileSpreadsheet, IconX, IconDownload } from "@tabler/icons-react";
+import * as XLSX from "xlsx";
 
 interface ExcelImportModalProps {
     action: (prevState: any, formData: FormData) => Promise<{ success?: string, error?: string, message?: string }>;
@@ -46,6 +47,15 @@ export function ExcelImportModal({
              // Success handling if needed
         }
     }, [state?.success, state?.error]);
+
+    const handleDownloadTemplate = () => {
+        const headers = expectedFormat.split(',').map(s => s.trim());
+        // Create sample data? Or empty
+        const ws = XLSX.utils.aoa_to_sheet([headers]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Modele");
+        XLSX.writeFile(wb, "modele_import_produits.xlsx");
+    };
 
     const handleClose = () => {
         setIsOpen(false);
@@ -129,7 +139,17 @@ export function ExcelImportModal({
                     </div>
 
                     <div className="bg-dark-900 rounded-lg p-3 text-xs text-gray-400 font-mono border border-dark-800">
-                        <p className="mb-1 font-semibold text-gray-300">Format attendu (colonnes):</p>
+                        <div className="flex justify-between items-center mb-1">
+                            <p className="font-semibold text-gray-300">Format attendu (colonnes):</p>
+                            <button 
+                                type="button"
+                                onClick={handleDownloadTemplate}
+                                className="text-primary-400 hover:text-primary-300 hover:underline flex items-center gap-1"
+                            >
+                                <IconDownload size={12} />
+                                Télécharger un modèle
+                            </button>
+                        </div>
                         {expectedFormat}
                     </div>
 

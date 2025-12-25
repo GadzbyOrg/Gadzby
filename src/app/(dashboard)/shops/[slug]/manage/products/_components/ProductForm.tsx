@@ -19,6 +19,8 @@ type Product = {
     stock: number;
     categoryId: string;
     allowSelfService: boolean | null;
+    unit: string;
+    fcv: number;
 };
 
 type ProductFormProps = {
@@ -49,7 +51,9 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
             name: formData.get("name") as string,
             description: formData.get("description") as string,
             price: Math.round(parseFloat(formData.get("price") as string) * 100), // Convert to cents
-            stock: parseInt(formData.get("stock") as string),
+            stock: parseFloat(formData.get("stock") as string),
+            unit: formData.get("unit") as string,
+            fcv: parseFloat(formData.get("fcv") as string),
             categoryId: formData.get("categoryId") as string,
             allowSelfService: formData.get("allowSelfService") === "on",
         };
@@ -131,7 +135,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                 </div>
 
                 {/* Price & Stock */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <div>
                         <label htmlFor="price" className="block text-sm font-medium text-gray-300 mb-1">
                             Prix (€)
@@ -149,19 +153,56 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                     </div>
                     <div>
                         <label htmlFor="stock" className="block text-sm font-medium text-gray-300 mb-1">
-                            Semillas (points) / Stock
+                            Stock
                         </label>
-                        {/* Note: The UI says Stock but the model has stock. Assuming simple integer. */}
                          <input
                             type="number"
                             name="stock"
                             id="stock"
+                            step="0.01" // Allow decimals
                             required
                             defaultValue={product?.stock || 0}
                             className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
                         />
                     </div>
+                    <div>
+                        <label htmlFor="unit" className="block text-sm font-medium text-gray-300 mb-1">
+                            Unité
+                        </label>
+                        <select
+                            name="unit"
+                            id="unit"
+                            required
+                            defaultValue={product?.unit || "unit"}
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                        >
+                            <option value="unit">Unités</option>
+                            <option value="liter">Litres</option>
+                            <option value="kg">Kilos</option>
+                        </select>
+                    </div>
                 </div>
+                
+                {/* IDK where to put FCV so a new row? Or add to grid above? 
+                   Let's change grid-cols-3 to grid-cols-2 lg:grid-cols-4
+                */}
+                 <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="fcv" className="block text-sm font-medium text-gray-300 mb-1">
+                            Facteur Correction (FCV)
+                        </label>
+                        <input
+                            type="number"
+                            name="fcv"
+                            id="fcv"
+                            step="0.01"
+                            required
+                            defaultValue={product?.fcv || 1.0}
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Multiplicateur de sortie stock (défaut: 1)</p>
+                    </div>
+                 </div>
 
                 {/* Category */}
                 <div>

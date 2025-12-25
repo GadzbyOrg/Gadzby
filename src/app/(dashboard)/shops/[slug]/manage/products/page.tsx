@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import ProductToolbar from "./_components/ProductToolbar";
 import DeleteProductButton from "./_components/DeleteProductButton";
+import RestockButton from "./_components/RestockButton";
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { importProducts } from "@/features/shops/import";
 
@@ -126,6 +127,12 @@ export default async function ShopProductsPage({
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-3">
+                                                <RestockButton
+                                                    shopSlug={slug}
+                                                    productId={product.id}
+                                                    productName={product.name}
+                                                    currentUnit={product.unit}
+                                                />
                                                 <Link 
                                                     href={`/shops/${slug}/manage/products/${product.id}`}
                                                     className="text-primary-400 hover:text-primary-300 hover:underline"

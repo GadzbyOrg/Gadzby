@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { shops, shopUsers, users, transactions, products, famss, famsMembers, shopExpenses } from "@/db/schema";
+import { shops, shopUsers, users, transactions, products, famss, famsMembers, shopExpenses, events } from "@/db/schema";
 import { verifySession } from "@/lib/session";
 import { eq, and, sql, gte, lte, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 
 
 import { hasShopPermission } from "./utils";
+import { getTransactionsQuery } from "../transactions/actions";
 
 // --- Helper for Permissions ---
 // Removed local definition
@@ -56,7 +57,7 @@ export async function getShops() {
             };
 
             // Calculate Permissions
-            if (session.role === "ADMIN") {
+            if (session.permissions.includes("ADMIN") || session.permissions.includes("MANAGE_SHOPS")) {
                 permissions = {
                     canSell: true,
                     canManageProducts: true,
@@ -91,7 +92,7 @@ export async function getShops() {
             let isVisible = false;
             
             // Visibility Logic: Member OR has self-service products OR is Admin
-            if (memberRole || session.role === "ADMIN") isVisible = true;
+            if (memberRole || session.permissions.includes("ADMIN") || session.permissions.includes("MANAGE_SHOPS")) isVisible = true;
             else if (shop.isSelfServiceEnabled && shop.products.length > 0) isVisible = true;
 
             const canManage = Object.values(permissions).some(Boolean);
@@ -103,7 +104,7 @@ export async function getShops() {
                     ...shopData,
                     canManage, // Keep for backward compatibility if needed
                     permissions,
-                    role: memberRole || (session.role === "ADMIN" ? "ADMIN" : undefined)
+                    role: memberRole || (session.permissions.includes("ADMIN") || session.permissions.includes("MANAGE_SHOPS") ? "ADMIN" : undefined)
                 });
             }
         }
@@ -158,7 +159,7 @@ export async function getShopDetailsForMember(slug: string) {
     let membership = shop.members[0];
     
     // Allow ADMIN override
-    if (!membership && session.role === "ADMIN") {
+    if (!membership && (session.permissions.includes("ADMIN") || session.permissions.includes("MANAGE_SHOPS"))) {
         return {
             shop,
             membership: {
@@ -216,7 +217,7 @@ export async function getUserFamss(userId?: string) {
     
     // If fetching for another user, ensure caller is Admin or Manager (simplified check for now)
     if (targetId !== session.userId) {
-         if (!["ADMIN", "VP", "TRESORIER", "PRESIDENT", "RESPO"].includes(session.role)) {
+         if (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_SHOPS")) {
              // We ideally should check if they manage the shop they are in context of, but this action is generic.
              // For now, allow global managers or just trust the UI context calling it? 
              // Let's allow general staff roles to fetch.
@@ -255,7 +256,7 @@ export async function processSale(shopSlug: string, targetUserId: string, items:
     if (!shop) return { error: "Shop introuvable" };
     
     let isAuthorized = false;
-    if (session.role === "ADMIN") isAuthorized = true;
+    if (session.permissions.includes("ADMIN") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
     else if (shop.members[0]) {
         // Use Granular Permissions
         isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canSell");
@@ -290,6 +291,18 @@ export async function processSale(shopSlug: string, targetUserId: string, items:
             const lineAmount = product.price * item.quantity;
             totalAmount += lineAmount;
 
+            let eventIdToLink = null;
+            if (product.eventId) {
+                const linkedEvent = await db.query.events.findFirst({
+                    where: eq(events.id, product.eventId),
+                    columns: { id: true, status: true }
+                });
+                
+                if (linkedEvent && linkedEvent.status === 'OPEN') {
+                    eventIdToLink = linkedEvent.id;
+                }
+            }
+
             transactionRecords.push({
                 amount: -lineAmount,
                 type: "PURCHASE" as const,
@@ -298,6 +311,7 @@ export async function processSale(shopSlug: string, targetUserId: string, items:
                 targetUserId: targetUserId,
                 shopId: shop.id,
                 productId: product.id,
+                eventId: eventIdToLink || undefined, 
                 quantity: item.quantity,
                 famsId: paymentSource === "FAMILY" ? famsId : null,
                 description: `Achat ${product.name} x${item.quantity}`
@@ -345,8 +359,10 @@ export async function processSale(shopSlug: string, targetUserId: string, items:
 
             // 5. Update Stock
             for (const item of items) {
+                 const product = dbProducts.find(p => p.id === item.productId);
+                 const fcv = product?.fcv || 1.0;
                  await tx.update(products)
-                    .set({ stock: sql`${products.stock} - ${item.quantity}` })
+                    .set({ stock: sql`${products.stock} - (${item.quantity}::integer * ${fcv}::double precision)` })
                     .where(eq(products.id, item.productId));
             }
 
@@ -365,7 +381,16 @@ export async function processSale(shopSlug: string, targetUserId: string, items:
 
 
 
-export async function getShopTransactions(slug: string, limit = 50) {
+export async function getShopTransactions(
+    slug: string, 
+    page = 1, 
+    limit = 50,
+    search = "", 
+    type = "ALL", 
+    sort = "DATE_DESC",
+    startDate?: Date,
+    endDate?: Date
+) {
     const session = await verifySession();
     if (!session) return { error: "Non autorisé" };
 
@@ -382,7 +407,7 @@ export async function getShopTransactions(slug: string, limit = 50) {
     
     // Check permissions
     let isAuthorized = false;
-    if (session.role === "ADMIN") isAuthorized = true;
+    if (session.permissions.includes("ADMIN") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
     else if (shop.members[0]) {
         isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canViewStats");
     }
@@ -390,35 +415,91 @@ export async function getShopTransactions(slug: string, limit = 50) {
     if (!isAuthorized) return { error: "Non autorisé" };
 
     try {
+        const offset = (page - 1) * limit;
+
+        // Get base query options from shared transaction logic
+        // set limit/offset here or manually? getTransactionsQuery handles them if passed
+        const baseQuery = await getTransactionsQuery(search, type, sort, limit, offset, startDate, endDate);
+
+        // We must enforce shopId
+        const whereClause = and(baseQuery.where, eq(transactions.shopId, shop.id));
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const history = await db.query.transactions.findMany({
-            where: eq(transactions.shopId, shop.id),
-            orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
-            limit: limit,
-            with: {
-                issuer: {
-                    columns: {
-                        id: true,
-                        username: true,
-                        nom: true,
-                        prenom: true,
-                    }
-                },
-                targetUser: {
-                    columns: {
-                        id: true,
-                        username: true,
-                        nom: true,
-                        prenom: true,
-                    }
-                },
-                product: true,
-            }
-        });
+            ...baseQuery,
+            where: whereClause,
+            // with is handled in getTransactionsQuery but likely includes things we might not need or miss things?
+            // getTransactionsQuery includes: shop, fams, product, issuer, receiverUser, targetUser.
+            // That matches our needs.
+        } as any);
 
         return { transactions: history, shop };
     } catch (error) {
         console.error("Failed to fetch transactions:", error);
         return { error: "Erreur lors de la récupération de l'historique" };
+    }
+}
+
+export async function exportShopTransactionsAction(
+    slug: string, 
+    search = "", 
+    type = "ALL", 
+    sort = "DATE_DESC",
+    startDate?: Date,
+    endDate?: Date
+) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    const shop = await db.query.shops.findFirst({
+        where: eq(shops.slug, slug),
+        with: {
+            members: {
+                where: eq(shopUsers.userId, session.userId)
+            }
+        }
+    });
+
+    if (!shop) return { error: "Shop introuvable" };
+    
+    // Check permissions
+    let isAuthorized = false;
+    if (session.permissions.includes("ADMIN") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
+    else if (shop.members[0]) {
+        isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canViewStats");
+    }
+
+    if (!isAuthorized) return { error: "Non autorisé" };
+
+    try {
+        const baseQuery = await getTransactionsQuery(search, type, sort, undefined, undefined, startDate, endDate);
+        const whereClause = and(baseQuery.where, eq(transactions.shopId, shop.id));
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data = await db.query.transactions.findMany({
+            ...baseQuery,
+            where: whereClause,
+            limit: undefined, // No limit for export
+            offset: undefined
+        } as any);
+
+        // Format for Excel
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const formattedData = data.map((t: any) => ({
+            Date: new Date(t.createdAt).toLocaleString("fr-FR"),
+            Type: t.type,
+            Montant: (t.amount / 100).toFixed(2),
+            Description: t.description,
+            "Utilisateur Cible": t.targetUser ? `${t.targetUser.nom} ${t.targetUser.prenom} (${t.targetUser.username})` : "",
+            "Auteur": t.issuer ? `${t.issuer.nom} ${t.issuer.prenom}` : "",
+            "Produit": t.product?.name || "",
+            "Fam'ss": t.fams?.name || "",
+        }));
+
+        return { success: true, data: formattedData };
+    } catch (error) {
+        console.error("Failed to export transactions:", error);
+        return { error: "Erreur lors de l'export" };
     }
 }
 
@@ -510,8 +591,10 @@ export async function processSelfServicePurchase(shopSlug: string, items: { prod
             }
 
             for (const item of items) {
+                 const product = dbProducts.find(p => p.id === item.productId);
+                 const fcv = product?.fcv || 1.0;
                  await tx.update(products)
-                    .set({ stock: sql`${products.stock} - ${item.quantity}` })
+                    .set({ stock: sql`${products.stock} - (${item.quantity}::integer * ${fcv}::double precision)` })
                     .where(eq(products.id, item.productId));
             }
 
@@ -545,7 +628,7 @@ export async function deleteProduct(shopSlug: string, productId: string) {
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
             isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canManageProducts");
         }
@@ -583,7 +666,7 @@ export async function updateShop(slug: string, data: { description?: string, isS
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
             // Only GRIPSS or those with canManageSettings can update basic info
             // BUT for permissions, usually only GRIPSS.
@@ -630,15 +713,9 @@ export async function addShopMember(shopSlug: string, emailOrUsername: string, r
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
              isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canManageSettings");
-        }
-        
-        // GRIPSS role assignment usually restricted?
-        if (role === "GRIPSS" && session.role !== "ADMIN") {
-             // Maybe allow existing GRIPSS to promote another? Use judgment.
-             // For now assume authorized if canManageSettings.
         }
 
         if (!isAuthorized) return { error: "Non autorisé" };
@@ -695,7 +772,7 @@ export async function removeShopMember(shopSlug: string, userId: string) {
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
              isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canManageSettings");
         }
@@ -733,7 +810,7 @@ export async function updateShopMemberRole(shopSlug: string, userId: string, new
         if (!shop) return { error: "Shop introuvable" };
 
         let isAuthorized = false;
-        if (session.role === "ADMIN") isAuthorized = true;
+        if (session.permissions.includes("ADMIN") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
         else if (shop.members[0]) {
              isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canManageSettings");
         }
@@ -771,7 +848,7 @@ export async function checkTeamMemberAccess(shopSlug: string, requiredPermission
 
     if (!shop) return { authorized: false, error: "Shop not found" };
 
-    if (session.role === "ADMIN") return { authorized: true, shop, role: "ADMIN", userId: session.userId };
+    if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) return { authorized: true, shop, role: "ADMIN", userId: session.userId };
 
     const member = shop.members[0];
     if (!member) return { authorized: false, error: "Not a member" };
@@ -788,7 +865,7 @@ export async function checkTeamMemberAccess(shopSlug: string, requiredPermission
 
 export async function createShopAction(data: { name: string, description?: string, category?: string, slug?: string }) {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || !session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("MANAGE_SHOPS")) return { error: "Non autorisé" };
 
     try {
         let slug = data.slug;
@@ -841,7 +918,7 @@ export async function getShopStats(
     
     // Check permissions
     let isAuthorized = false;
-    if (session.role === "ADMIN") isAuthorized = true;
+    if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
     else if (shop.members[0]) {
         isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canViewStats");
     }
@@ -978,7 +1055,7 @@ export async function getShopStats(
 
 export async function getAdminShops() {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || !session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("MANAGE_SHOPS")) return { error: "Non autorisé" };
 
     try {
         const allShops = await db.query.shops.findMany({
@@ -999,7 +1076,7 @@ export async function getAdminShops() {
 
 export async function toggleShopStatusAction(shopId: string, isActive: boolean) {
     const session = await verifySession();
-    if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
+    if (!session || !session.permissions.includes("ADMIN_ACCESS") && !session.permissions.includes("MANAGE_SHOPS")) return { error: "Non autorisé" };
 
     try {
         await db.update(shops)

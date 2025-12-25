@@ -103,7 +103,7 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
                                         </td>
                                         <td className="py-3 px-6 text-right">
                                              {/* Only show cancel for relevant transactions (e.g. not already cancelled) */}
-                                             {!tx.description?.includes("[CANCELLED]") && (
+                                             {tx.status !== "CANCELLED" && (
                                                 <button
                                                     onClick={() => handleCancel(tx.id)}
                                                     disabled={submitting === tx.id}
@@ -117,7 +117,7 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
                                                     )}
                                                 </button>
                                              )}
-                                             {tx.description?.includes("[CANCELLED]") && (
+                                             {tx.status === "CANCELLED" && (
                                                  <span className="text-xs text-gray-500 italic">Annulé</span>
                                              )}
                                         </td>

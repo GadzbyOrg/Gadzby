@@ -1,9 +1,14 @@
+
 import { z } from "zod";
 
-export const transferMoneySchema = z.object({
-	recipientId: z.string().uuid("L'identifiant du destinataire est invalide"),
-	amount: z.number().int().min(1, "Le montant doit être d'au moins 1 centime"),
-	description: z.string().optional(),
+export const topUpUserSchema = z.object({
+    targetUserId: z.string().min(1, "Utilisateur requis"),
+    amount: z.number().min(0.01, "Montant positif requis"),
+    paymentMethod: z.enum(["CASH", "CARD", "CHECK", "TRANSFER"]).default("CASH"),
 });
 
-export type TransferMoneyInput = z.infer<typeof transferMoneySchema>;
+export const transferMoneySchema = z.object({
+    recipientId: z.string().min(1, "Destinataire requis"),
+    amount: z.number().min(0.01, "Montant minimum 0.01€"),
+    description: z.string().optional(),
+});

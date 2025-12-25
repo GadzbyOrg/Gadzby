@@ -2,14 +2,48 @@ import { getShopTransactions, checkTeamMemberAccess } from "@/features/shops/act
 import { formatPrice } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { ShopExportButton } from "./_components/shop-export-button";
+import { ShopTransactionToolbar } from "./_components/shop-transaction-toolbar";
 import { StatisticsCharts } from "./_components/statistics-charts";
 
 export default async function ShopTransactionsPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ slug: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
     const { slug } = await params;
+    const resolvedSearchParams = await searchParams;
+    const search = typeof resolvedSearchParams.search === 'string' ? resolvedSearchParams.search : "";
+    // const type = typeof resolvedSearchParams.type === 'string' ? resolvedSearchParams.type : "ALL"; 
+    const sort = typeof resolvedSearchParams.sort === 'string' ? resolvedSearchParams.sort : "DATE_DESC";
+    const page = typeof resolvedSearchParams.page === 'string' ? parseInt(resolvedSearchParams.page) : 1;
+    const timeframe = typeof resolvedSearchParams.timeframe === 'string' ? resolvedSearchParams.timeframe : "30d";
+    const fromParam = typeof resolvedSearchParams.from === 'string' ? resolvedSearchParams.from : undefined;
+    const toParam = typeof resolvedSearchParams.to === 'string' ? resolvedSearchParams.to : undefined;
+
+    let startDate: Date | undefined;
+    let endDate: Date | undefined;
+    const now = new Date();
+
+    if (timeframe === 'custom' && fromParam && toParam) {
+        startDate = new Date(fromParam);
+        endDate = new Date(toParam);
+        // Set end date to end of day
+        endDate.setHours(23, 59, 59, 999);
+    } else if (timeframe !== 'all' && timeframe !== 'custom') {
+        const days = timeframe === '7d' ? 7 : timeframe === '90d' ? 90 : 30;
+        startDate = new Date();
+        startDate.setDate(now.getDate() - days);
+        // Reset to start of that day? Or just 30 days ago exact?
+        // Usually stats start from beginning of day X days ago.
+        startDate.setHours(0, 0, 0, 0);
+        
+        endDate = new Date();
+        endDate.setHours(23, 59, 59, 999);
+    }
+
     
     // Explicit Page access check
     const access = await checkTeamMemberAccess(slug, "canViewStats");
@@ -17,7 +51,7 @@ export default async function ShopTransactionsPage({
         redirect(`/shops/${slug}`);
     }
 
-    const result = await getShopTransactions(slug);
+    const result = await getShopTransactions(slug, page, 50, search, "ALL", sort, startDate, endDate);
 
     if ('error' in result) {
         redirect(`/shops/${slug}`);
@@ -46,10 +80,18 @@ export default async function ShopTransactionsPage({
 
             <StatisticsCharts slug={slug} />
 
-            <div className="rounded-2xl bg-dark-900 border border-dark-800 overflow-hidden">
-                <div className="p-6 border-b border-dark-800">
-                    <h2 className="text-lg font-semibold text-white">Historique détaillé</h2>
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-white">Historique</h2>
+                    <ShopExportButton slug={slug} />
                 </div>
+                
+                <ShopTransactionToolbar />
+
+                <div className="rounded-2xl bg-dark-900 border border-dark-800 overflow-hidden">
+                    <div className="p-6 border-b border-dark-800">
+                        <h2 className="text-lg font-semibold text-white">Liste des opérations</h2>
+                    </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-dark-800 text-gray-400 font-medium">
@@ -69,7 +111,8 @@ export default async function ShopTransactionsPage({
                                     </td>
                                 </tr>
                             ) : (
-                                transactions.map((tx) => (
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                (transactions as any[]).map((tx) => (
                                     <tr key={tx.id} className="hover:bg-dark-800/50 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap text-gray-400">
                                             {new Date(tx.createdAt).toLocaleDateString('fr-FR', {
@@ -118,7 +161,9 @@ export default async function ShopTransactionsPage({
                         </tbody>
                     </table>
                 </div>
+                </div>
             </div>
-        </div>
+            </div>
+
     );
 }
