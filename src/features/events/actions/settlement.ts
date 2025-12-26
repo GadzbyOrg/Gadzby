@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { events } from "@/db/schema/events";
 import { users } from "@/db/schema/users";
 import { shopUsers } from "@/db/schema/shops";
-import { shopExpenses } from "@/db/schema/expenses";
+import { shopExpenses, eventExpenseSplits } from "@/db/schema/expenses";
 import { transactions } from "@/db/schema/transactions";
 import { authenticatedAction } from "@/lib/actions";
 import { settlementSchema } from "../schemas";
@@ -53,7 +53,16 @@ async function calculateSettlement(eventId: string) {
 		.from(shopExpenses)
 		.where(eq(shopExpenses.eventId, eventId));
 
-	const totalExpenses = expensesResult[0]?.total || 0;
+	const totalDirectExpenses = Number(expensesResult[0]?.total) || 0;
+	
+	const splitsResult = await db
+		.select({ total: sql<number>`sum(${eventExpenseSplits.amount})` })
+		.from(eventExpenseSplits)
+		.where(eq(eventExpenseSplits.eventId, eventId));
+
+	const totalSplitExpenses = Number(splitsResult[0]?.total) || 0;
+
+	const totalExpenses = totalDirectExpenses + totalSplitExpenses;
 
 	const totalWeight = event.participants.reduce(
 		(sum, p) => sum + (p.weight || 1),

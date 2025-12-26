@@ -11,7 +11,9 @@ import {
 	IconLoader2,
 	IconAlertTriangle,
 	IconTrash,
+
 	IconLock,
+	IconX,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { EventDashboard } from "./_components/event-dashboard";
@@ -25,6 +27,8 @@ import {
 	closeEvent,
 	activateEvent,
 	deleteEvent,
+	previewSettlement,
+	executeSettlement,
 } from "@/features/events/actions";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -47,6 +51,11 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 	>(event.type === "COMMERCIAL" ? "dashboard" : "participants");
 	const [isPending, startTransition] = useTransition();
 	const { toast } = useToast();
+
+	// Settlement State
+	const [settleOpen, setSettleOpen] = useState(false);
+	const [settlementPreview, setSettlementPreview] = useState<any>(null);
+	const [isSettling, setIsSettling] = useState(false);
 
 	const isPayUpfront = event.acompte > 0;
 
@@ -82,6 +91,12 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 		const confirmMessage = isPayUpfront
 			? "Voulez-vous vraiment solder cet événement ?\nCela calculera le bilan final pour chaque participant."
 			: "Voulez-vous vraiment clôturer cet événement ?";
+
+
+		if (isPayUpfront) {
+			handlePreviewSettlement();
+			return;
+		}
 
 		if (!confirm(confirmMessage)) return;
 		startTransition(async () => {
@@ -138,6 +153,57 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 				});
 			}
 		});
+	};
+
+	const handlePreviewSettlement = async () => {
+		const result = await previewSettlement({
+			shopId: event.shopId,
+			eventId: event.id,
+		});
+		if (result?.error) {
+			toast({
+				title: "Erreur",
+				description: result.error,
+				variant: "destructive",
+			});
+			return;
+		}
+		setSettlementPreview(result);
+		setSettleOpen(true);
+	};
+
+	const handleExecuteSettlement = async () => {
+		if (
+			!confirm(
+				"Ceci va appliquer les remboursements/paiements et clôturer l'événement. Continuer ?"
+			)
+		)
+			return;
+		setIsSettling(true);
+		try {
+			const result = await executeSettlement({
+				shopId: event.shopId,
+				eventId: event.id,
+			});
+
+			if (result?.error) throw new Error(result.error);
+
+			toast({
+				title: "Succès",
+				description: "Événement soldé et clôturé",
+				variant: "default",
+			});
+			setSettleOpen(false);
+			router.refresh();
+		} catch (error: any) {
+			toast({
+				title: "Erreur",
+				description: error.message || "Erreur lors du solde",
+				variant: "destructive",
+			});
+		} finally {
+			setIsSettling(false);
+		}
 	};
 
 	const getStatusBadge = (status: string) => {
@@ -383,6 +449,115 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 					</div>
 				)}
 			</div>
+
+
+			{/* Settlement Modal */}
+			{settleOpen && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+					<div className="bg-dark-800 border border-dark-700 rounded-lg shadow-xl w-full max-w-2xl p-6 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+						<div className="flex justify-between items-center">
+							<h3 className="text-lg font-bold text-white">
+								Prévisualisation du Solde
+							</h3>
+							<button
+								onClick={() => setSettleOpen(false)}
+								className="text-gray-500 hover:text-white"
+							>
+								<IconX size={20} />
+							</button>
+						</div>
+
+						{settlementPreview && (
+							<div className="flex flex-col gap-6">
+								<div className="grid grid-cols-3 gap-4">
+									<div className="bg-dark-900 border border-dark-700 p-3 rounded-lg text-center">
+										<div className="text-xs text-gray-500 uppercase">
+											Coût Total
+										</div>
+										<div className="text-lg font-bold text-white">
+											{(settlementPreview.totalExpenses / 100).toFixed(2)} €
+										</div>
+									</div>
+									<div className="bg-dark-900 border border-dark-700 p-3 rounded-lg text-center">
+										<div className="text-xs text-gray-500 uppercase">
+											Poids Total
+										</div>
+										<div className="text-lg font-bold text-white">
+											{settlementPreview.totalWeight}
+										</div>
+									</div>
+									<div className="bg-dark-900 border border-dark-700 p-3 rounded-lg text-center">
+										<div className="text-xs text-gray-500 uppercase">
+											Coût / Part
+										</div>
+										<div className="text-lg font-bold text-white">
+											{(settlementPreview.costPerUnit / 100).toFixed(2)} €
+										</div>
+									</div>
+								</div>
+
+								<div className="border border-dark-700 rounded-lg overflow-hidden max-h-60 overflow-y-auto custom-scrollbar">
+									<table className="w-full text-sm text-left text-gray-400">
+										<thead className="bg-dark-900 text-gray-200 uppercase text-xs sticky top-0">
+											<tr>
+												<th className="px-4 py-2">User</th>
+												<th className="px-4 py-2">Part</th>
+												<th className="px-4 py-2">Déjà Payé</th>
+												<th className="px-4 py-2">Différence</th>
+											</tr>
+										</thead>
+										<tbody className="divide-y divide-dark-700">
+											{settlementPreview.breakdown.map((item: any) => (
+												<tr key={item.userId}>
+													<td className="px-4 py-2">{item.name}</td>
+													<td className="px-4 py-2">
+														{(
+															(settlementPreview.costPerUnit * item.weight) /
+															100
+														).toFixed(2)}{" "}
+														€
+													</td>
+													<td className="px-4 py-2">
+														{(item.alreadyPaid / 100).toFixed(2)} €
+													</td>
+													<td
+														className={`px-4 py-2 font-medium ${
+															item.diff > 0
+																? "text-green-400"
+																: item.diff < 0
+																? "text-red-400"
+																: "text-gray-500"
+														}`}
+													>
+														{item.diff > 0 ? "+" : ""}
+														{(item.diff / 100).toFixed(2)} €
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+
+								<div className="flex justify-end gap-3">
+									<button
+										onClick={() => setSettleOpen(false)}
+										className="px-4 py-2 rounded-md bg-dark-700 text-gray-300 hover:bg-dark-600 transition-colors text-sm"
+									>
+										Annuler
+									</button>
+									<button
+										onClick={handleExecuteSettlement}
+										disabled={isSettling}
+										className="px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 transition-colors text-sm font-medium disabled:opacity-50"
+									>
+										{isSettling ? "..." : "Confirmer et Solder"}
+									</button>
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
