@@ -4,6 +4,9 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ENV } from "@/lib/env";
+import { db } from "@/db";
+import { users, roles } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 const key = new TextEncoder().encode(ENV.JWT_SECRET);
 export const COOKIE_NAME = "tyrion_session";
@@ -49,6 +52,33 @@ export async function verifySession() {
 
 	try {
 		const { payload } = await jwtVerify(cookie, key, { algorithms: ["HS256"] });
+
+		// 1. Validate structure
+		if (!payload.userId) return null;
+
+		// 2. DB Check: Ensure user still exists and is not banned/asleep
+		const user = await db.query.users.findFirst({
+			where: eq(users.id, payload.userId as string),
+			columns: { isAsleep: true, isDeleted: true, roleId: true },
+		});
+
+		// If user has no role for some reason, set role to USER:
+		if (user && !payload.role) {
+			const userRole = await db.query.roles.findFirst({
+				where: eq(roles.name, "USER"),
+			});
+			await db
+				.update(users)
+				.set({
+					roleId: userRole?.id,
+				})
+				.where(eq(users.id, payload.userId as string));
+		}
+
+		if (!user || user.isAsleep || user.isDeleted) {
+			return null;
+		}
+
 		return payload as SessionPayload;
 	} catch (error) {
 		console.log("Failed to verify session : ", error);

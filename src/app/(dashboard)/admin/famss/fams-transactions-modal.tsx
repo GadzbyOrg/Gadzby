@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { IconX, IconArrowLeft, IconArrowRight, IconRefresh, IconTrash } from "@tabler/icons-react";
 import { getFamsTransactions } from "@/features/famss/admin-actions";
-import { cancelTransaction } from "@/features/transactions/actions";
+import { cancelTransactionAction } from "@/features/transactions/actions";
 
 interface FamsTransactionsModalProps {
     fams: any;
@@ -36,7 +36,7 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
         if (!confirm("Voulez-vous vraiment annuler cette transaction ?")) return;
 
         setSubmitting(transactionId);
-        const res = await cancelTransaction(transactionId);
+        const res = await cancelTransactionAction({ transactionId });
         
         if (res.error) {
             setError(res.error);

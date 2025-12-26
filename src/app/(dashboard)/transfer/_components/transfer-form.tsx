@@ -1,14 +1,10 @@
 "use client";
 
 import { useActionState, useEffect, useState, useRef } from "react";
-import {
-	transferMoneyAction,
-	TransferState,
-} from "@/features/transactions/actions";
+import { transferMoneyAction } from "@/features/transactions/actions";
 import { searchUsersPublicAction } from "@/features/users/actions";
 import { IconCurrencyEuro, IconSearch } from "@tabler/icons-react";
 import { useDebounce } from "use-debounce";
-import { cn } from "@/lib/utils";
 
 // Types
 type UserResult = {
@@ -20,7 +16,7 @@ type UserResult = {
 	promss: string;
 };
 
-const initialState: TransferState = {
+const initialState: any = {
 	error: "",
 	success: "",
 };

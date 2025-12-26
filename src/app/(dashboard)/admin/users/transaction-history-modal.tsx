@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { IconX, IconRefresh, IconArrowLeft, IconArrowRight, IconTrash } from "@tabler/icons-react";
 import { getUserTransactions } from "@/features/users/actions";
-import { cancelTransaction } from "@/features/transactions/actions";
+import { cancelTransactionAction } from "@/features/transactions/actions";
 
 interface TransactionHistoryModalProps {
 
@@ -20,7 +20,7 @@ export function TransactionHistoryModal({ user, onClose }: TransactionHistoryMod
     const fetchTransactions = async () => {
         setLoading(true);
         setError("");
-        const res = await getUserTransactions(user.id);
+        const res = await getUserTransactions({ userId: user.id });
         if (res.error) {
             setError(res.error);
         } else {
@@ -37,7 +37,7 @@ export function TransactionHistoryModal({ user, onClose }: TransactionHistoryMod
         if (!confirm("Êtes-vous sûr de vouloir annuler cette transaction ? Cette action est irréversible (elle créera une contre-transaction).")) return; // Simple confirmation
 
         setSubmitting(transactionId);
-        const res = await cancelTransaction(transactionId);
+        const res = await cancelTransactionAction({ transactionId });
         
         if (res.error) {
             setError(res.error);

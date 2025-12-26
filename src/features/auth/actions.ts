@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { createSession, deleteSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { publicAction, publicActionNoInput } from "@/lib/actions";
 
 const loginSchema = z.object({
 	username: z.string().min(1, "Identifiant requis"),
@@ -14,7 +15,7 @@ const loginSchema = z.object({
 });
 
 const forgotPasswordSchema = z.object({
-	email: z.string().email("Email invalide"),
+	email: z.email("Email invalide"),
 });
 
 const resetPasswordSchema = z
@@ -32,155 +33,131 @@ const resetPasswordSchema = z
 		path: ["confirmPassword"],
 	});
 
-export async function loginAction(
-	initialState: any,
-	formData: FormData
-): Promise<{ error?: string }> {
-	const data = Object.fromEntries(formData);
-	console.log("Login attempt for:", data.username);
+export const loginAction = publicAction(
+	loginSchema,
+	async (data) => {
+		const { username, password } = data;
+		console.log("Login attempt for:", username);
 
-	const parsed = loginSchema.safeParse(data);
+		const user = await db.query.users.findFirst({
+			where: eq(users.username, username),
+			with: { role: true },
+		});
 
-	if (!parsed.success) {
-		console.log("Validation failed:", parsed.error);
-		return { error: "Données invalides" };
+		if (!user) {
+			console.log("User not found:", username);
+			return { error: "Identifiants incorrects" };
+		}
+
+		if (!user.passwordHash) {
+			console.log("User has no password hash:", username);
+			return { error: "Identifiants incorrects" };
+		}
+
+		const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+
+		if (!passwordMatch) {
+			console.log("Invalid password for:", username);
+			return { error: "Identifiants incorrects" };
+		}
+
+		if (user.isAsleep) {
+			console.log("User is asleep (inactive):", username);
+			return { error: "Votre compte a été désactivé" };
+		}
+
+		const roleName = user.role?.name || "USER";
+		const permissions = user.role?.permissions || [];
+
+		await createSession(user.id, roleName, permissions);
+
+		console.log("Login successful:", username);
+		redirect("/");
 	}
+);
 
-	const { username, password } = parsed.data;
-
-	const user = await db.query.users.findFirst({
-		where: eq(users.username, username),
-		with: { role: true },
-	});
-
-	if (!user) {
-		console.log("User not found:", username);
-		return { error: "Identifiants incorrects" };
-	}
-
-	if (!user.passwordHash) {
-		console.log("User has no password hash:", username);
-		return { error: "Identifiants incorrects" };
-	}
-
-	const passwordMatch = await bcrypt.compare(password, user.passwordHash);
-
-	if (!passwordMatch) {
-		console.log("Invalid password for:", username);
-		return { error: "Identifiants incorrects" };
-	}
-
-	if (user.isAsleep) {
-		console.log("User is asleep (inactive):", username);
-		return { error: "Votre compte a été désactivé" };
-	}
-
-	const roleName = user.role?.name || "USER";
-	const permissions = user.role?.permissions || [];
-
-	await createSession(user.id, roleName, permissions);
-
-	console.log("Login successful:", username);
-	redirect("/");
-}
-
-export async function logoutAction() {
+export const logoutAction = publicActionNoInput(async () => {
 	deleteSession();
 	redirect("/login");
-}
+});
 
-export async function forgotPasswordAction(
-	initialState: any,
-	formData: FormData
-): Promise<{ error?: string; success?: string }> {
-	const data = Object.fromEntries(formData);
-	const parsed = forgotPasswordSchema.safeParse(data);
+export const forgotPasswordAction = publicAction(
+	forgotPasswordSchema,
+	async (data) => {
+		const { email } = data;
 
-	if (!parsed.success) {
-		return { error: parsed.error.issues[0].message };
-	}
+		// Find user by email
+		const user = await db.query.users.findFirst({
+			where: eq(users.email, email),
+		});
 
-	const { email } = parsed.data;
+		if (!user) {
+			return {
+				success:
+					"Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
+			};
+		}
 
-	// Find user by email
-	const user = await db.query.users.findFirst({
-		where: eq(users.email, email),
-	});
+		// Generate token
+		const token = crypto.randomUUID();
+		const expires = new Date(Date.now() + 3600 * 1000); // 1 hour
 
-	if (!user) {
-		// For security reasons, do not reveal if the email exists or not
+		await db
+			.update(users)
+			.set({
+				resetPasswordToken: token,
+				resetPasswordExpires: expires,
+			})
+			.where(eq(users.id, user.id));
+
+		// Send email
+		try {
+			const { sendPasswordResetEmail } = await import("@/lib/email");
+			await sendPasswordResetEmail(email, token);
+		} catch (e) {
+			console.error(e);
+			return { error: "Erreur lors de l'envoi de l'email" };
+		}
+
 		return {
 			success:
 				"Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
 		};
 	}
+);
 
-	// Generate token
-	const token = crypto.randomUUID();
-	const expires = new Date(Date.now() + 3600 * 1000); // 1 hour
+export const resetPasswordAction = publicAction(
+	resetPasswordSchema,
+	async (data) => {
+		const { token, password } = data;
 
-	await db
-		.update(users)
-		.set({
-			resetPasswordToken: token,
-			resetPasswordExpires: expires,
-		})
-		.where(eq(users.id, user.id));
+		const user = await db.query.users.findFirst({
+			where: eq(users.resetPasswordToken, token),
+		});
 
-	// Send email
-	try {
-		const { sendPasswordResetEmail } = await import("@/lib/email");
-		await sendPasswordResetEmail(email, token);
-	} catch (e) {
-		console.error(e);
-		return { error: "Erreur lors de l'envoi de l'email" };
+		if (!user) {
+			return { error: "Token invalide ou expiré" };
+		}
+
+		if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+			return { error: "Token expiré" };
+		}
+
+		const salt = await bcrypt.genSalt(10);
+		const hash = await bcrypt.hash(password, salt);
+
+		await db
+			.update(users)
+			.set({
+				passwordHash: hash,
+				resetPasswordToken: null,
+				resetPasswordExpires: null,
+			})
+			.where(eq(users.id, user.id));
+
+		return {
+			success:
+				"Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
+		};
 	}
-
-	return {
-		success:
-			"Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
-	};
-}
-
-export async function resetPasswordAction(
-	initialState: any,
-	formData: FormData
-): Promise<{ error?: string; success?: string }> {
-	const data = Object.fromEntries(formData);
-	const parsed = resetPasswordSchema.safeParse(data);
-
-	if (!parsed.success) {
-		return { error: parsed.error.issues[0].message };
-	}
-
-	const { token, password } = parsed.data;
-
-	const user = await db.query.users.findFirst({
-		where: eq(users.resetPasswordToken, token),
-	});
-
-	if (!user) {
-		return { error: "Token invalide ou expiré" };
-	}
-
-	if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
-		return { error: "Token expiré" };
-	}
-
-	const salt = await bcrypt.genSalt(10);
-	const hash = await bcrypt.hash(password, salt);
-
-	await db
-		.update(users)
-		.set({
-			passwordHash: hash,
-			resetPasswordToken: null,
-			resetPasswordExpires: null,
-		})
-		.where(eq(users.id, user.id));
-
-	return {
-		success:
-			"Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
-	};
-}
+);

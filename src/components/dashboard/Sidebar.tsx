@@ -8,22 +8,31 @@ import {
 	IconBuildingStore,
 	IconSettings,
 	IconReceipt2,
-	IconLogout,
 	IconChevronRight,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
 // --- Types ---
-type LinkItem = { label: string; url: string; type?: "link"; permission?: string };
+type LinkItem = {
+	label: string;
+	url: string;
+	type?: "link";
+	permission?: string;
+};
 type SeparatorItem = { type: "separator" };
-type DropdownItem = { type: "dropdown"; label: string; url?: string; items: { label: string; url: string }[] };
+type DropdownItem = {
+	type: "dropdown";
+	label: string;
+	url?: string;
+	items: { label: string; url: string }[];
+};
 type NavItem = LinkItem | SeparatorItem | DropdownItem;
 
 type NavGroup = {
 	main: string;
 	icon: React.ElementType;
 	role?: string;
-    permissions?: string[];
+	permissions?: string[];
 	links: NavItem[];
 };
 
@@ -35,11 +44,10 @@ const getNavStructure = (): NavGroup[] => [
 			{ label: "Tableau de bord", url: "/" },
 			{ label: "Historique", url: "/transactions" },
 			{ label: "Mes fam'ss", url: "/famss" },
-            { type: "separator" },
+			{ type: "separator" },
 			{ label: "Virement", url: "/transfer" },
 			{ label: "Recharger", url: "/topup" },
 			{ label: "Créditer", url: "/credit", permission: "TOPUP_USER" },
-
 		],
 	},
 	{
@@ -50,113 +58,155 @@ const getNavStructure = (): NavGroup[] => [
 	{
 		main: "Admin",
 		icon: IconSettings,
-		// Role check removed here, dealt with in filtering by links presence
 		links: [
-			{ label: "Vue d'ensemble", url: "/admin", permission: "VIEW_TRANSACTIONS" },
-            { label: "Rôles", url: "/admin/roles", permission: "MANAGE_ROLES" },
-			{ label: "Utilisateurs", url: "/admin/users", permission: "MANAGE_USERS" },
+			{
+				label: "Vue d'ensemble",
+				url: "/admin",
+				permission: "VIEW_TRANSACTIONS",
+			},
+			{ label: "Rôles", url: "/admin/roles", permission: "MANAGE_ROLES" },
+			{
+				label: "Utilisateurs",
+				url: "/admin/users",
+				permission: "MANAGE_USERS",
+			},
 			{ label: "Shops", url: "/admin/shops", permission: "MANAGE_SHOPS" },
 			{ label: "Fam'ss", url: "/admin/famss", permission: "MANAGE_FAMSS" },
-			{ label: "Moyens de paiement", url: "/admin/payments", permission: "MANAGE_PAYMENTS" },
-            { label: "Emails", url: "/admin/settings/email", permission: "ADMIN_ACCESS" },
+			{
+				label: "Moyens de paiement",
+				url: "/admin/payments",
+				permission: "MANAGE_PAYMENTS",
+			},
+			{
+				label: "Emails",
+				url: "/admin/settings/email",
+				permission: "ADMIN_ACCESS",
+			},
 		],
 	},
 ];
 
 type SidebarProps = {
 	userRole: string;
-    permissions: string[];
+	permissions: string[];
 	shops: {
-        name: string;
-        slug: string;
-        canManage?: boolean;
-        permissions?: {
-            canSell: boolean;
-            canManageProducts: boolean;
-            canManageInventory: boolean;
-            canViewStats: boolean;
-            canManageSettings: boolean;
-        }
-    }[];
+		name: string;
+		slug: string;
+		canManage?: boolean;
+		permissions?: {
+			canSell: boolean;
+			canManageProducts: boolean;
+			canManageInventory: boolean;
+			canViewStats: boolean;
+			canManageSettings: boolean;
+			canManageEvents: boolean;
+		};
+	}[];
 };
 
 export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 	const pathname = usePathname();
 	const [activeMain, setActiveMain] = useState("Général");
-    const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+	const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
+		{}
+	);
 
-    const toggleDropdown = (label: string) => {
-        setOpenDropdowns(prev => ({ ...prev, [label]: !prev[label] }));
-    };
+	const toggleDropdown = (label: string) => {
+		setOpenDropdowns((prev) => ({ ...prev, [label]: !prev[label] }));
+	};
 
 	const availableGroups = useMemo(() => {
-        const hasAdminAccess = permissions.includes("ADMIN_ACCESS") || userRole === "ADMIN";
+		const hasAdminAccess =
+			permissions.includes("ADMIN_ACCESS") || userRole === "ADMIN";
 
-		return getNavStructure().map((group) => {
-			// Clone shallow pour ne pas muter la constante globale
-             // Filter links based on permission
-			const links = group.links.filter(link => {
-                if ("permission" in link && link.permission) {
-                    return hasAdminAccess || permissions.includes(link.permission); 
-                }
-                return true;
-            });
+		return getNavStructure()
+			.map((group) => {
+				// Filter links based on permission
+				const links = group.links.filter((link) => {
+					if ("permission" in link && link.permission) {
+						return hasAdminAccess || permissions.includes(link.permission);
+					}
+					return true;
+				});
 
-			const newGroup = { ...group, links: [...links] };
+				const newGroup = { ...group, links: [...links] };
 
 				// Ajouter les shops dynamiques
 				if (newGroup.main === "Boutiques" && shops.length > 0) {
 					newGroup.links.push({ type: "separator" });
 					shops.forEach((shop) => {
-                        // For shops, we might want to check shop-specific permissions OR global admin access
-                        // But usually shop permissions are distinct. However, super admin might want to see everything.
-                        // Assuming ADMIN_ACCESS grants access to everything including shop management:
-                        
-                        const items = [{ label: "Caisse libre-service", url: `/shops/${shop.slug}/self-service` }];
-                        
-                        if (shop.permissions || hasAdminAccess) {
-                            // If hasAdminAccess, we assume they can do everything, OR we need to know if the backend actually allows it.
-                            // Usually ADMIN_ACCESS implies full control. 
-                            // Let's assume for UI we show all if ADMIN_ACCESS.
-                            const canSell = hasAdminAccess || shop.permissions?.canSell;
-                            const canManageProducts = hasAdminAccess || shop.permissions?.canManageProducts;
-                            const canManageInventory = hasAdminAccess || shop.permissions?.canManageInventory;
-                            const canViewStats = hasAdminAccess || shop.permissions?.canViewStats;
-                            const canManageSettings = hasAdminAccess || shop.permissions?.canManageSettings;
+						const items = [
+							{
+								label: "Caisse libre-service",
+								url: `/shops/${shop.slug}/self-service`,
+							},
+						];
 
-                            if (canSell) items.push({ label: "Vendre", url: `/shops/${shop.slug}/manage/sell` });
-                            if (canManageProducts) items.push({ label: "Produits", url: `/shops/${shop.slug}/manage/products` });
-                            if (canManageProducts) items.push({ label: "Manips", url: `/admin/shops/${shop.slug}/events` });
-                            if (canManageInventory) items.push({ label: "Inventaire", url: `/shops/${shop.slug}/manage/inventory` });
-                            if (canViewStats) items.push({ label: "Statistiques", url: `/shops/${shop.slug}/manage/statistics` });
-                            if (canViewStats) items.push({ label: "Dépenses", url: `/shops/${shop.slug}/manage/expenses` }); 
-                            if (canManageSettings) items.push({ label: "Paramètres", url: `/shops/${shop.slug}/manage/settings` });
-                        }
+						if (shop.permissions || hasAdminAccess) {
+							const canSell = hasAdminAccess || shop.permissions?.canSell;
+							const canManageProducts =
+								hasAdminAccess || shop.permissions?.canManageProducts;
+							const canManageInventory =
+								hasAdminAccess || shop.permissions?.canManageInventory;
+							const canViewStats =
+								hasAdminAccess || shop.permissions?.canViewStats;
+							const canManageSettings =
+								hasAdminAccess || shop.permissions?.canManageSettings;
+							const canManageEvents =
+								shop.permissions?.canManageEvents || hasAdminAccess;
+
+							if (canSell)
+								items.push({
+									label: "Vendre",
+									url: `/shops/${shop.slug}/manage/sell`,
+								});
+							if (canManageProducts)
+								items.push({
+									label: "Produits",
+									url: `/shops/${shop.slug}/manage/products`,
+								});
+							if (canManageEvents)
+								items.push({
+									label: "Manips",
+									url: `/shops/${shop.slug}/manage/events`,
+								});
+							if (canManageInventory)
+								items.push({
+									label: "Inventaire",
+									url: `/shops/${shop.slug}/manage/inventory`,
+								});
+							if (canViewStats)
+								items.push({
+									label: "Statistiques",
+									url: `/shops/${shop.slug}/manage/statistics`,
+								});
+							if (canViewStats)
+								items.push({
+									label: "Dépenses",
+									url: `/shops/${shop.slug}/manage/expenses`,
+								});
+							if (canManageSettings)
+								items.push({
+									label: "Paramètres",
+									url: `/shops/${shop.slug}/manage/settings`,
+								});
+						}
 
 						newGroup.links.push({
-                            type: "dropdown",
+							type: "dropdown",
 							label: shop.name,
-							items: items
+							items: items,
 						});
 					});
 				}
 
-			return newGroup;
-		}).filter((group) => {
-            // If the group has links, show it. 
-            // The "links" array has already been filtered above based on permissions.
-            // Special handling for "Admin" group might not be needed if we rely solely on link precense,
-            // BUT "Vue d'ensemble" might be public in the list but we want to hide the whole group if the user isn't an admin?
-            // Actually, "Vue d'ensemble" should probably be restricted too.
-            
-            // Let's rely on the links. If no links are visible (or only separator), hide group.
-            // But wait, "Vue d'ensemble" doesn't have a permission in the definition yet. I need to add it.
-            // See next step for updating definition.
-            
-            // Filter out groups with no relevant links
-             const hasLinks = group.links.some(l => l.type !== "separator");
-             return hasLinks;
-		});
+				return newGroup;
+			})
+			.filter((group) => {
+				// Filter out groups with no relevant links
+				const hasLinks = group.links.some((l) => l.type !== "separator");
+				return hasLinks;
+			});
 	}, [userRole, permissions, shops]);
 
 	// Sync state avec URL
@@ -166,7 +216,6 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 				if ("type" in l && l.type === "dropdown") {
 					return l.items.some((sub) => pathname.startsWith(sub.url));
 				}
-				// FIX: "/" matches everything with startsWith, so we check equality for it
 				if ("url" in l) {
 					if (l.url === "/") return pathname === "/";
 					return pathname.startsWith(l.url);
@@ -249,55 +298,68 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 							);
 						}
 
-                        if ("type" in item && item.type === "dropdown") {
-                            const isOpen = openDropdowns[item.label];
-                            // Check if any child is active to highlight parent potentially?
-                             const isChildActive = item.items.some(sub => pathname.startsWith(sub.url));
+						if ("type" in item && item.type === "dropdown") {
+							const isOpen = openDropdowns[item.label];
+							// Check if any child is active to highlight parent potentially?
+							const isChildActive = item.items.some((sub) =>
+								pathname.startsWith(sub.url)
+							);
 
-                            return (
-                                <div key={item.label} className="flex flex-col">
-                                    <button
-                                        onClick={() => toggleDropdown(item.label)}
-                                        className={cn(
-                                            "flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
-                                            isChildActive || isOpen
-                                                ? "text-gray-200 bg-dark-800/50" 
-                                                : "text-gray-400 hover:bg-dark-800 hover:text-gray-100"
-                                        )}
-                                    >
-                                        <span>{item.label}</span>
-                                        <IconChevronRight size={14} className={cn("transition-transform", isOpen ? "rotate-90" : "")} />
-                                    </button>
-                                    
-                                    {isOpen && (
-                                        <div className="ml-4 mt-1 flex flex-col gap-1 border-l border-dark-800 pl-2">
-                                            {item.items.map(subItem => {
-                                                const isSubActive = pathname === subItem.url || (subItem.url.includes("/manage") && pathname.startsWith(subItem.url));
-                                                return (
-                                                    <Link
-                                                        key={subItem.url}
-                                                        href={subItem.url}
-                                                        className={cn(
-                                                            "rounded-lg px-3 py-2 text-sm transition-colors",
-                                                            isSubActive
-                                                                ? "text-primary-400 font-medium" 
-                                                                : "text-gray-500 hover:text-gray-300"
-                                                        )}
-                                                    >
-                                                        {subItem.label}
-                                                    </Link>
-                                                )
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            )
-                        }
+							return (
+								<div key={item.label} className="flex flex-col">
+									<button
+										onClick={() => toggleDropdown(item.label)}
+										className={cn(
+											"flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
+											isChildActive || isOpen
+												? "text-gray-200 bg-dark-800/50"
+												: "text-gray-400 hover:bg-dark-800 hover:text-gray-100"
+										)}
+									>
+										<span>{item.label}</span>
+										<IconChevronRight
+											size={14}
+											className={cn(
+												"transition-transform",
+												isOpen ? "rotate-90" : ""
+											)}
+										/>
+									</button>
+
+									{isOpen && (
+										<div className="ml-4 mt-1 flex flex-col gap-1 border-l border-dark-800 pl-2">
+											{item.items.map((subItem) => {
+												const isSubActive =
+													pathname === subItem.url ||
+													(subItem.url.includes("/manage") &&
+														pathname.startsWith(subItem.url));
+												return (
+													<Link
+														key={subItem.url}
+														href={subItem.url}
+														className={cn(
+															"rounded-lg px-3 py-2 text-sm transition-colors",
+															isSubActive
+																? "text-primary-400 font-medium"
+																: "text-gray-500 hover:text-gray-300"
+														)}
+													>
+														{subItem.label}
+													</Link>
+												);
+											})}
+										</div>
+									)}
+								</div>
+							);
+						}
 
 						const link = item as LinkItem;
 						const isActive =
 							pathname === link.url ||
-							(link.url !== "/shops" && link.url !== "/admin" && pathname.startsWith(link.url + "/"));
+							(link.url !== "/shops" &&
+								link.url !== "/admin" &&
+								pathname.startsWith(link.url + "/"));
 						return (
 							<Link
 								key={link.url}

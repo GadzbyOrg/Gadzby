@@ -1,8 +1,6 @@
 
 import { getAdminShops } from "@/features/shops/actions";
 import { IconBuildingStore, IconUsers } from "@tabler/icons-react";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { CreateShopModal } from "./create-shop-modal";
 import { ShopCard } from "./shop-card";
 import { verifySession } from "@/lib/session";

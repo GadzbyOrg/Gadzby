@@ -36,7 +36,8 @@ export default async function AdminDashboardPage({
     const type = params?.type || "ALL";
     const sort = params?.sort || "DATE_DESC";
 
-	const result = await getAllTransactionsAction(page, 50, search, type, sort);
+	const result = await getAllTransactionsAction({ page, limit: 50, search, type, sort });
+    
     const transactions = result.success ? result.data : [];
 
 	return (
@@ -65,6 +66,13 @@ export default async function AdminDashboardPage({
                                 <th className="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
+                        {result.error ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                        {result.error}
+                                    </td>
+                                </tr>
+                        ) : (
                         <tbody className="divide-y divide-dark-800">
                             {transactions?.length === 0 ? (
                                 <tr>
@@ -181,6 +189,7 @@ export default async function AdminDashboardPage({
                                 })
                             )}
                         </tbody>
+                        )}
                     </table>
                 </div>
             </div>

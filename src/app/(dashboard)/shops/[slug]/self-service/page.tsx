@@ -19,7 +19,8 @@ export default async function ShopSelfServicePage({
 	const session = await verifySession();
 
 	// Fetch shop details checking visibility
-	const shopResult = await getShopBySlug(slug);
+	const shopResult = await getShopBySlug({ slug });
+	console.log("Shop Result:", shopResult);
 	if ("error" in shopResult || !shopResult.shop) {
 		return notFound();
 	}
@@ -28,7 +29,7 @@ export default async function ShopSelfServicePage({
 	// Check if user is manager to show "Manage" button
 	let isManager = false;
 	if (session) {
-		const memberData = await getShopDetailsForMember(slug);
+		const memberData = await getShopDetailsForMember({ slug });
 		if (memberData) {
 			const { membership } = memberData;
 			isManager =

@@ -8,11 +8,8 @@ import {
 	integer,
 	boolean,
 	timestamp,
-	pgEnum,
 	uuid,
 } from "drizzle-orm/pg-core";
-
-export const appRoleEnum = pgEnum("app_role", ["USER", "TRESORIER", "ADMIN"]);
 
 export const users = pgTable("users", {
 	id: uuid("id").defaultRandom().primaryKey(),
@@ -37,6 +34,7 @@ export const users = pgTable("users", {
 
 	// Compte mort
 	isAsleep: boolean("is_asleep").default(false),
+	isDeleted: boolean("is_deleted").default(false), // Hard delete flag
 
 	// Password Recovery
 	resetPasswordToken: text("reset_password_token"),

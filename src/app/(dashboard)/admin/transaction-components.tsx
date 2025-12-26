@@ -11,7 +11,7 @@ import {
     IconLoader2,
     IconTrash
 } from "@tabler/icons-react";
-import { cancelTransaction } from "@/features/transactions/actions";
+
 
 export function TransactionToolbar() {
     const searchParams = useSearchParams();
@@ -98,7 +98,7 @@ export function TransactionToolbar() {
 }
 
 import * as XLSX from "xlsx";
-import { exportTransactionsAction } from "@/features/transactions/actions";
+import { exportTransactionsAction, cancelTransactionAction } from "@/features/transactions/actions";
 import { IconDownload } from "@tabler/icons-react";
 
 export function ExportButton() {
@@ -111,7 +111,7 @@ export function ExportButton() {
             const type = searchParams.get("type") || "ALL";
             const sort = searchParams.get("sort") || "DATE_DESC";
 
-            const res = await exportTransactionsAction(search, type, sort);
+            const res = await exportTransactionsAction({ search, type, sort });
             
             if (res.error) {
                 alert(res.error);
@@ -148,7 +148,7 @@ export function CancelButton({ transactionId, isCancelled }: { transactionId: st
         if(!confirm("Êtes-vous sûr de vouloir annuler cette transaction ?")) return;
 
         startTransition(async() => {
-             const res = await cancelTransaction(transactionId);
+             const res = await cancelTransactionAction({ transactionId });
              if(res.error) {
                  alert(res.error);
              }

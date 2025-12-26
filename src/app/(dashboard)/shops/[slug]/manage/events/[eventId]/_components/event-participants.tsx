@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { IconUserPlus, IconTrash, IconCalculator, IconCheck, IconX } from '@tabler/icons-react';
-import { importParticipants, importParticipantsFromList, updateParticipant, leaveEvent, executeSettlement, previewSettlement } from '@/features/events/actions';
+import { importParticipants, importParticipantsFromList, updateParticipant, leaveEvent, executeSettlement, previewSettlement, joinEvent } from '@/features/events/actions';
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
+import { UserSearch } from './user-search';
 
 interface Props {
     event: any;
@@ -15,6 +16,17 @@ interface Props {
 export function EventParticipants({ event, slug }: Props) {
     const router = useRouter();
     const { toast } = useToast();
+    
+    // Add User Logic
+    const handleAddUser = async (user: any) => {
+        try {
+            await joinEvent(event.id, user.id);
+            toast({ title: 'Succès', description: 'Participant ajouté', variant: 'default' });
+            router.refresh();
+        } catch (error: any) {
+            toast({ title: 'Erreur', description: error.message || 'Impossible d\'ajouter le participant', variant: 'destructive' });
+        }
+    };
     
     // Modals state
     const [importOpen, setImportOpen] = useState(false);
@@ -137,6 +149,10 @@ export function EventParticipants({ event, slug }: Props) {
                             Solder l'événement
                         </button>
                     )}
+                    <UserSearch 
+                        onSelect={handleAddUser}
+                        excludeIds={event.participants.map((p: any) => p.userId)}
+                    />
                     <button 
                          onClick={() => setImportOpen(true)}
                          className="flex items-center gap-2 px-3 py-2 rounded-md bg-dark-700 text-gray-300 hover:bg-dark-600 transition-colors text-sm"

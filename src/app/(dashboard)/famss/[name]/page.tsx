@@ -3,9 +3,11 @@ import { famss, transactions } from "@/db/schema";
 import { verifySession } from "@/lib/session";
 import { eq, desc } from "drizzle-orm";
 import { redirect, notFound } from "next/navigation";
-import { AddMemberForm, TransferForm, RemoveMemberButton, PromoteMemberButton } from "./details-components";
+import { AddMemberForm, TransferForm, RemoveMemberButton, PromoteMemberButton, MembershipRequestsList } from "./details-components";
 
 export default async function FamsDetailsPage({ params }: { params: Promise<{ name: string }> }) {
+    // ... existing code ...
+
     const session = await verifySession();
     if (!session) redirect("/login");
     const resolvedParams = await params;
@@ -13,16 +15,21 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
     // Decode name as it might be URL encoded
     const famsName = decodeURIComponent(resolvedParams.name);
 
-    const fams = await db.query.famss.findFirst({
-        where: eq(famss.name, famsName),
-        with: {
-            members: {
-                with: {
-                    user: true
-                }
-            }
-        }
-    });
+	const fams = await db.query.famss.findFirst({
+		where: eq(famss.name, famsName),
+		with: {
+			members: {
+				with: {
+					user: true,
+				},
+			},
+			requests: {
+				with: {
+					user: true,
+				},
+			},
+		},
+	});
 
     if (!fams) notFound();
 
@@ -78,6 +85,10 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Actions & Members */}
                 <div className="space-y-8 lg:col-span-1">
+                    {membership.isAdmin && fams.requests.length > 0 && (
+                        <MembershipRequestsList famsName={fams.name} requests={fams.requests} />
+                    )}
+
                     <TransferForm famsName={fams.name} />
 
                     <div className="bg-dark-900 border border-dark-800 p-6 rounded-xl space-y-4">

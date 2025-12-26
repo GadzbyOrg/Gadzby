@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { UserDropdown } from "./UserDropdown";
-import Link from "next/link";
-import { IconMenu2, IconBell } from "@tabler/icons-react";
+import { IconMenu2 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
 type UserProp = {
@@ -12,20 +11,21 @@ type UserProp = {
 	bucque: string | null;
 	balance: number;
 	appRole: string;
-    permissions: string[];
+	permissions: string[];
 };
 
 type ShopProp = {
 	name: string;
 	slug: string;
-    canManage?: boolean;
-    permissions?: {
-        canSell: boolean;
-        canManageProducts: boolean;
-        canManageInventory: boolean;
-        canViewStats: boolean;
-        canManageSettings: boolean;
-    };
+	canManage?: boolean;
+	permissions?: {
+		canSell: boolean;
+		canManageProducts: boolean;
+		canManageInventory: boolean;
+		canViewStats: boolean;
+		canManageSettings: boolean;
+		canManageEvents: boolean;
+	};
 };
 
 export function DashboardShell({
@@ -46,7 +46,11 @@ export function DashboardShell({
 		<div className="flex h-screen min-h-screen w-full bg-dark-950 text-gray-100 font-sans selection:bg-primary-900 selection:text-white">
 			{/* --- SIDEBAR DESKTOP --- */}
 			<div className="hidden md:block">
-				<Sidebar userRole={user.appRole} permissions={user.permissions} shops={shops} />
+				<Sidebar
+					userRole={user.appRole}
+					permissions={user.permissions}
+					shops={shops}
+				/>
 			</div>
 
 			{/* --- SIDEBAR MOBILE (Overlay) --- */}
@@ -57,7 +61,11 @@ export function DashboardShell({
 				)}
 			>
 				<div className="relative z-50">
-					<Sidebar userRole={user.appRole} permissions={user.permissions} shops={shops} />
+					<Sidebar
+						userRole={user.appRole}
+						permissions={user.permissions}
+						shops={shops}
+					/>
 				</div>
 				{/* Backdrop pour fermer */}
 				<div

@@ -17,3 +17,11 @@ export const roleSchema = z.object({
     name: z.string().min(1, "Nom requis"),
     permissions: z.array(z.string()).default([]),
 });
+
+export const updateRoleSchema = roleSchema.extend({
+    id: z.string().min(1, "ID requis"),
+});
+
+export const deleteRoleSchema = z.object({
+    id: z.string().min(1, "ID requis"),
+});

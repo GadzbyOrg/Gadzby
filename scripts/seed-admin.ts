@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 async function main() {
 	console.log("🌱 Création du Super Admin...");
 
-	const password = "admin-password-secure";
+	const password = "admin-password";
 	const hashedPassword = await bcrypt.hash(password, 10);
 
 

@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { getShopStats } from "@/features/shops/actions";
+import { getShopEvents } from "@/features/events/actions";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { formatPrice } from "@/lib/utils";
 
@@ -21,8 +22,10 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
     const timeframe = (searchParams.get("timeframe") as Timeframe) || "30d";
     const customStart = searchParams.get("from") || "";
     const customEnd = searchParams.get("to") || "";
+    const eventIdParam = searchParams.get("eventId") || "all";
 
     const [loading, setLoading] = useState(true);
+    const [events, setEvents] = useState<{ id: string; name: string }[]>([]);
     const [data, setData] = useState<{
         summary: { totalRevenue: number; totalExpenses: number; profit: number };
         chartData: { date: string; revenue: number; expenses: number; profit: number }[];
@@ -54,6 +57,47 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
         updateParams({ [type]: value });
     };
 
+    const handleEventChange = (value: string) => {
+        updateParams({ eventId: value === 'all' ? null : value });
+    };
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                 // We need shopId, but we only have slug. 
+                 // Note: getShopEvents requires shopId, but getShopStats uses slug. 
+                 // We might need to fetch shop first or update getShopEvents to accept slug or we can guess shopId if available?
+                 // Actually getShopEvents takes shopId. We don't have it in props. 
+                 // Let's rely on getShopBySlug or assume we can get it.
+                 // Ideally we should pass shopId to this component or fetch it.
+                 // For now let's assume we can't easily get shopId without fetching shop.
+                 // Wait, getShopBySlug is available.
+            } catch (e) {
+                console.error(e);
+            }
+        };
+        // fetchEvents(); // We'll do it inside the main effect or separate
+    }, [slug]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Fetch events if not loaded? 
+                // We'll just do it here for simplicity or separate it. 
+                // Since this effect runs on dependency change, we should be careful.
+                
+                // Let's fetch shop id first if we don't have it, to get events?
+                // Or better: update getShopEvents to take slug? 
+                // Or update the parent to pass initial data?
+                // Let's modify this component to finding the shop first if needed, 
+                // BUT actually, we can just use a server action that takes slug for events?
+                // Or just import the action that takes shopId and fetch shop first.
+            } catch(e) {}
+        };
+    }, []);
+
+    // Re-writing the effect to handle data fetching properly
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -71,7 +115,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
                     return; // Wait for both dates
                 }
 
-                const result = await getShopStats(slug, timeframe, startDate, endDate);
+                const result = await getShopStats(slug, timeframe, startDate, endDate, eventIdParam === 'all' ? undefined : eventIdParam);
                 if ('error' in result) {
                     console.error(result.error);
                 } else {
@@ -85,7 +129,22 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
         };
 
         fetchData();
-    }, [slug, timeframe, customStart, customEnd]);
+    }, [slug, timeframe, customStart, customEnd, eventIdParam]);
+
+    // Separate effect for loading events list once
+    useEffect(() => {
+        const loadEvents = async () => {
+             // We need a way to get shopId or use an action that takes slug.
+             // Let's use getShopBySlug to get the ID then get events.
+             const { getShopBySlug } = await import("@/features/shops/actions");
+             const shopRes = await getShopBySlug(slug);
+             if (shopRes.shop) {
+                 const eventsRes = await getShopEvents(shopRes.shop.id);
+                 setEvents(eventsRes);
+             }
+        };
+        loadEvents();
+    }, [slug]);
 
     return (
         <div className="space-y-6">
@@ -128,6 +187,21 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
                         />
                     </div>
                 )}
+
+                <div className="w-[200px]">
+                    <select
+                        value={eventIdParam}
+                        onChange={(e) => handleEventChange(e.target.value)}
+                        className="w-full bg-dark-800 border border-dark-700 text-white text-sm rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 appearance-none cursor-pointer"
+                    >
+                        <option value="all">Tous les événements</option>
+                        {events.map((e) => (
+                            <option key={e.id} value={e.id}>
+                                {e.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {(loading || isPending) ? (

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { famss, famsMembers, users, transactions } from "@/db/schema";
+import { famss, famsMembers, users, transactions, famsRequests } from "@/db/schema";
 import { verifySession } from "@/lib/session";
 import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -231,5 +231,157 @@ export async function promoteMemberAction(famsName: string, userId: string) {
 	} catch (error) {
 		console.error("Failed to promote member:", error);
 		return { error: "Erreur lors de la promotion" };
+	}
+}
+
+const requestSchema = z.object({
+	famsName: z.string(),
+});
+
+export async function requestToJoinFamsAction(famsName: string) {
+	const session = await verifySession();
+	if (!session) return { error: "Non autorisé" };
+
+	const parsed = requestSchema.safeParse({ famsName });
+	if (!parsed.success) return { error: "Données invalides" };
+
+	try {
+		const fams = await db.query.famss.findFirst({
+			where: eq(famss.name, parsed.data.famsName),
+		});
+		if (!fams) return { error: "Fam'ss introuvable" };
+
+		// Check if already member
+		const existingMember = await db.query.famsMembers.findFirst({
+			where: and(eq(famsMembers.famsId, fams.id), eq(famsMembers.userId, session.userId)),
+		});
+		if (existingMember) return { error: "Déjà membre" };
+
+		// Check if request pending
+		const existingRequest = await db.query.famsRequests.findFirst({
+			where: and(eq(famsRequests.famsId, fams.id), eq(famsRequests.userId, session.userId)),
+		});
+		if (existingRequest) return { error: "Demande déjà envoyée" };
+
+		await db.insert(famsRequests).values({
+			famsId: fams.id,
+			userId: session.userId,
+		});
+
+		revalidatePath("/famss");
+		return { success: true };
+	} catch (error) {
+		console.error("Failed to request join:", error);
+		return { error: "Erreur lors de la demande" };
+	}
+}
+
+export async function cancelRequestAction(famsName: string) {
+	const session = await verifySession();
+	if (!session) return { error: "Non autorisé" };
+
+	const parsed = requestSchema.safeParse({ famsName });
+	if (!parsed.success) return { error: "Données invalides" };
+
+	try {
+		const fams = await db.query.famss.findFirst({
+			where: eq(famss.name, parsed.data.famsName),
+		});
+		if (!fams) return { error: "Fam'ss introuvable" };
+
+		await db.delete(famsRequests).where(
+			and(eq(famsRequests.famsId, fams.id), eq(famsRequests.userId, session.userId))
+		);
+
+		revalidatePath("/famss");
+		return { success: true };
+	} catch (error) {
+		console.error("Failed to cancel request:", error);
+		return { error: "Erreur lors de l'annulation" };
+	}
+}
+
+const manageRequestSchema = z.object({
+	famsName: z.string(),
+	userId: z.string(),
+});
+
+export async function acceptRequestAction(famsName: string, userId: string) {
+	const session = await verifySession();
+	if (!session) return { error: "Non autorisé" };
+
+	const parsed = manageRequestSchema.safeParse({ famsName, userId });
+	if (!parsed.success) return { error: "Données invalides" };
+
+	try {
+		const fams = await db.query.famss.findFirst({
+			where: eq(famss.name, parsed.data.famsName),
+		});
+		if (!fams) return { error: "Fam'ss introuvable" };
+
+		// Check admin
+		const adminMembership = await db.query.famsMembers.findFirst({
+			where: and(
+				eq(famsMembers.famsId, fams.id),
+				eq(famsMembers.userId, session.userId),
+				eq(famsMembers.isAdmin, true)
+			),
+		});
+		if (!adminMembership) return { error: "Accès refusé" };
+
+		// Transaction: Add member and delete request
+		await db.transaction(async (tx) => {
+			await tx.insert(famsMembers).values({
+				famsId: fams.id,
+				userId: parsed.data.userId,
+				isAdmin: false,
+			});
+
+			await tx.delete(famsRequests).where(
+				and(eq(famsRequests.famsId, fams.id), eq(famsRequests.userId, parsed.data.userId))
+			);
+		});
+
+		revalidatePath(`/famss/${famsName}`);
+		return { success: true };
+	} catch (error) {
+		console.error("Failed to accept request:", error);
+		// Check for specific error like duplicate key if re-clicked
+		return { error: "Erreur lors de l'acceptation" };
+	}
+}
+
+export async function rejectRequestAction(famsName: string, userId: string) {
+	const session = await verifySession();
+	if (!session) return { error: "Non autorisé" };
+
+	const parsed = manageRequestSchema.safeParse({ famsName, userId });
+	if (!parsed.success) return { error: "Données invalides" };
+
+	try {
+		const fams = await db.query.famss.findFirst({
+			where: eq(famss.name, parsed.data.famsName),
+		});
+		if (!fams) return { error: "Fam'ss introuvable" };
+
+		// Check admin
+		const adminMembership = await db.query.famsMembers.findFirst({
+			where: and(
+				eq(famsMembers.famsId, fams.id),
+				eq(famsMembers.userId, session.userId),
+				eq(famsMembers.isAdmin, true)
+			),
+		});
+		if (!adminMembership) return { error: "Accès refusé" };
+
+		await db.delete(famsRequests).where(
+			and(eq(famsRequests.famsId, fams.id), eq(famsRequests.userId, parsed.data.userId))
+		);
+
+		revalidatePath(`/famss/${famsName}`);
+		return { success: true };
+	} catch (error) {
+		console.error("Failed to reject request:", error);
+		return { error: "Erreur lors du rejet" };
 	}
 }

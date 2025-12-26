@@ -123,8 +123,16 @@ export function TransferForm({ famsName }: { famsName: string }) {
     );
 }
 
-import { IconTrash, IconStar } from "@tabler/icons-react";
-import { removeMemberAction, promoteMemberAction } from "@/features/famss/actions";
+
+import { IconTrash, IconStar, IconCheck, IconX } from "@tabler/icons-react";
+import { 
+    removeMemberAction, 
+    promoteMemberAction, 
+    requestToJoinFamsAction, 
+    cancelRequestAction,
+    acceptRequestAction,
+    rejectRequestAction
+} from "@/features/famss/actions";
 
 export function RemoveMemberButton({ famsName, userId }: { famsName: string, userId: string }) {
     const [loading, setLoading] = useState(false);
@@ -179,5 +187,128 @@ export function PromoteMemberButton({ famsName, userId }: { famsName: string, us
         >
             <IconStar size={16} />
         </button>
+    );
+}
+
+export function JoinFamsButton({ famsName }: { famsName: string }) {
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
+    async function handleJoin() {
+        setLoading(true);
+        const res = await requestToJoinFamsAction(famsName);
+        if (res?.error) {
+            alert(res.error);
+        } else {
+            router.refresh();
+        }
+        setLoading(false);
+    }
+
+    return (
+        <button
+            onClick={handleJoin}
+            disabled={loading}
+            className="w-full mt-4 bg-primary-600/20 hover:bg-primary-600/30 text-primary-400 border border-primary-600/50 rounded-lg py-2 text-sm font-medium transition-colors"
+        >
+            {loading ? "..." : "Rejoindre"}
+        </button>
+    );
+}
+
+export function CancelRequestButton({ famsName }: { famsName: string }) {
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
+    async function handleCancel() {
+        setLoading(true);
+        const res = await cancelRequestAction(famsName);
+        if (res?.error) {
+            alert(res.error);
+        } else {
+            router.refresh();
+        }
+        setLoading(false);
+    }
+
+    return (
+        <button
+            onClick={handleCancel}
+            disabled={loading}
+            className="w-full mt-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg py-2 text-sm font-medium transition-colors"
+        >
+            {loading ? "..." : "Annuler la demande"}
+        </button>
+    );
+}
+
+export function MembershipRequestsList({ famsName, requests }: { famsName: string, requests: any[] }) {
+    const [loadingId, setLoadingId] = useState<string | null>(null);
+    const router = useRouter();
+
+    if (requests.length === 0) return null;
+
+    async function handleAccept(userId: string) {
+        setLoadingId(userId);
+        const res = await acceptRequestAction(famsName, userId);
+        if (res?.error) alert(res.error);
+        else router.refresh();
+        setLoadingId(null);
+    }
+
+    async function handleReject(userId: string) {
+        if (!confirm("Refuser cette demande ?")) return;
+        setLoadingId(userId);
+        const res = await rejectRequestAction(famsName, userId);
+        if (res?.error) alert(res.error);
+        else router.refresh();
+        setLoadingId(null);
+    }
+
+    return (
+        <div className="bg-dark-900 border border-dark-800 p-6 rounded-xl space-y-4 mb-6">
+             <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    Demandes d'adhésion
+                    <span className="bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">{requests.length}</span>
+                </h3>
+            </div>
+            
+            <div className="space-y-3">
+                {requests.map(req => (
+                    <div key={req.userId} className="flex justify-between items-center text-sm p-3 bg-dark-950/50 rounded-lg border border-dark-800">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-dark-800 flex items-center justify-center text-xs font-bold text-gray-500">
+                                {req.user.username.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                                <div className="text-gray-200 font-medium">{req.user.username}</div>
+                                <div className="text-xs text-gray-500">
+                                    {new Date(req.createdAt).toLocaleDateString()}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => handleAccept(req.userId)}
+                                disabled={loadingId === req.userId}
+                                className="p-2 hover:bg-green-500/20 text-gray-400 hover:text-green-400 rounded transition-colors"
+                                title="Accepter"
+                            >
+                                <IconCheck size={18} />
+                            </button>
+                            <button
+                                onClick={() => handleReject(req.userId)}
+                                disabled={loadingId === req.userId}
+                                className="p-2 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded transition-colors"
+                                title="Refuser"
+                            >
+                                <IconX size={18} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }
