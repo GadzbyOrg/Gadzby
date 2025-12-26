@@ -2,39 +2,38 @@
 
 import { db } from "@/db";
 import { paymentMethods } from "@/db/schema/payment-methods";
-import { verifySession } from "@/lib/session";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { authenticatedAction } from "@/lib/actions";
+import { paymentMethodConfigSchema, TogglePaymentMethodSchema } from "./schema";
 
-export async function togglePaymentMethod(id: string, isEnabled: boolean) {
-  const session = await verifySession();
-  if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_PAYMENTS"))) {
-    throw new Error("Unauthorized");
-  }
+export const togglePaymentMethod = authenticatedAction(
+	TogglePaymentMethodSchema,
+	async (data) => {
+		const { id, isEnabled } = data;
+		await db
+			.update(paymentMethods)
+			.set({ isEnabled })
+			.where(eq(paymentMethods.id, id));
 
-  await db.update(paymentMethods)
-    .set({ isEnabled })
-    .where(eq(paymentMethods.id, id));
+		revalidatePath("/admin/payments");
+	},
+	{ permissions: ["ADMIN_ACCESS", "MANAGE_PAYMENTS"] }
+);
 
-  revalidatePath("/admin/payments");
-}
+export const updatePaymentMethodConfig = authenticatedAction(
+	paymentMethodConfigSchema,
+	async (data) => {
+		const { id, fees, config } = data;
+		await db
+			.update(paymentMethods)
+			.set({
+				fees,
+				config,
+			})
+			.where(eq(paymentMethods.id, id));
 
-export async function updatePaymentMethodConfig(
-  id: string, 
-  fees: { fixed: number, percentage: number }, 
-  config: Record<string, string>
-) {
-  const session = await verifySession();
-  if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_PAYMENTS"))) {
-    throw new Error("Unauthorized");
-  }
-
-  await db.update(paymentMethods)
-    .set({ 
-        fees,
-        config
-    })
-    .where(eq(paymentMethods.id, id));
-
-  revalidatePath("/admin/payments");
-}
+		revalidatePath("/admin/payments");
+	},
+	{ permissions: ["ADMIN_ACCESS", "MANAGE_PAYMENTS"] }
+);

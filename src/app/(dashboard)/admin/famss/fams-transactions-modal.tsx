@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { IconX, IconArrowLeft, IconArrowRight, IconRefresh, IconTrash } from "@tabler/icons-react";
-import { getFamsTransactions } from "@/features/famss/admin-actions";
+import { getFamsTransactionsAction } from "@/features/famss/admin-actions";
 import { cancelTransactionAction } from "@/features/transactions/actions";
 
 interface FamsTransactionsModalProps {
@@ -23,7 +23,7 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
 
     async function loadTransactions() {
         setLoading(true);
-        const res = await getFamsTransactions(fams.id);
+        const res = await getFamsTransactionsAction({ famsId: fams.id });
         if (res.transactions) {
             setTransactions(res.transactions);
         } else {

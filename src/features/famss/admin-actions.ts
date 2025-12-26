@@ -2,255 +2,239 @@
 
 import { db } from "@/db";
 import { famss, famsMembers, transactions, users } from "@/db/schema";
-import { verifySession } from "@/lib/session";
-import { eq, sql, ilike, and, desc } from "drizzle-orm";
+import { eq, ilike, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import {
+	adminFamsSchema,
+	getAdminFamssSchema,
+	famsIdSchema,
+	addAdminMemberSchema,
+	updateMemberRoleSchema,
+	removeMemberSchema,
+} from "./schema";
+import { authenticatedAction } from "@/lib/actions"; // Assuming this is where it is
 import { z } from "zod";
 
-const adminFamsSchema = z.object({
-	name: z.string().min(1, "Nom requis"),
-	balance: z.number().default(0),
-});
+const ADMIN_PERMISSIONS = ["MANAGE_FAMSS"];
 
-export async function getAdminFamss(page = 1, limit = 20, search = "") {
-	const session = await verifySession();
-	if (!session || session.permissions.includes("ADMIN") && session.permissions.includes("MANAGE_FAMSS")) return { error: "Non autorisé" };
+export const getAdminFamssAction = authenticatedAction(
+	getAdminFamssSchema,
+	async ({ page, limit, search }, { session }) => {
+		const offset = (page - 1) * limit;
 
-	const offset = (page - 1) * limit;
-
-	try {
-        const whereClause = search ? ilike(famss.name, `%${search}%`) : undefined;
+		const whereClause = search ? ilike(famss.name, `%${search}%`) : undefined;
 
 		const data = await db.query.famss.findMany({
-            where: whereClause,
+			where: whereClause,
 			limit,
 			offset,
-            with: {
-                members: true
-            },
-            orderBy: (famss, { asc }) => [asc(famss.name)],
+			with: {
+				members: true,
+			},
+			orderBy: (famss, { asc }) => [asc(famss.name)],
 		});
 
-        const formatted = data.map(f => ({
-            ...f,
-            memberCount: f.members.length
-        }));
+		const formatted = data.map((f) => ({
+			...f,
+			memberCount: f.members.length,
+		}));
 
 		return { famss: formatted };
-	} catch (error) {
-		console.error("Failed to fetch famss:", error);
-		return { error: "Erreur lors du chargement des Fam'ss" };
-	}
-}
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);
 
-export async function adminCreateFams(formData: FormData) {
-	const session = await verifySession();
-	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
+export const createFamsAction = authenticatedAction(
+	adminFamsSchema,
+	async (data, { session }) => {
+		try {
+			await db.insert(famss).values({
+				name: data.name,
+				balance: Math.round(data.balance * 100),
+			});
 
-	const rawName = formData.get("name") as string;
-    const rawBalance = formData.get("balance");
+			revalidatePath("/admin/famss");
+			return { success: "Fam'ss créée avec succès" };
+		} catch (error: any) {
+			console.error("Failed to create fams:", error);
+			if (error.code === "23505") return { error: "Ce nom existe déjà" };
+			throw new Error("Erreur lors de la création");
+		}
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);
 
-    const parsed = adminFamsSchema.safeParse({
-        name: rawName,
-        balance: rawBalance ? parseFloat(rawBalance.toString()) : 0
-    });
+const updateFamsSchema = adminFamsSchema.extend({
+	id: z.string(),
+});
 
-	if (!parsed.success) return { error: "Données invalides" };
+export const updateFamsAction = authenticatedAction(
+	updateFamsSchema,
+	async (data, { session }) => {
+		const newBalanceInCents = Math.round(data.balance * 100);
 
-	try {
-		await db.insert(famss).values({
-			name: parsed.data.name,
-            balance: Math.round(parsed.data.balance * 100),
-		});
+		try {
+			await db.transaction(async (tx) => {
+				// 1. Get current
+				const currentFams = await tx.query.famss.findFirst({
+					where: eq(famss.id, data.id),
+					columns: { balance: true },
+				});
+				if (!currentFams) throw new Error("Fams not found");
 
-		revalidatePath("/admin/famss");
-		return { success: "Fam'ss créée avec succès" };
-	} catch (error: any) {
-		console.error("Failed to create fams:", error);
-        if (error.code === '23505') return { error: "Ce nom existe déjà" };
-		return { error: "Erreur lors de la création" };
-	}
-}
+				const diff = newBalanceInCents - currentFams.balance;
 
-export async function adminUpdateFams(prevState: any, formData: FormData) {
-	const session = await verifySession();
-	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
+				// 2. Transaction if balance changed
+				if (diff !== 0) {
+					await tx.insert(transactions).values({
+						amount: diff,
+						type: "ADJUSTMENT",
+						walletSource: "FAMILY",
+						issuerId: session.userId,
+						targetUserId: session.userId,
+						famsId: data.id,
+						description: "Ajustement manuel (Admin)",
+					});
+				}
 
-    const id = formData.get("id") as string;
-    if (!id) return { error: "ID manquant" };
+				// 3. Update
+				await tx
+					.update(famss)
+					.set({
+						name: data.name,
+						balance: newBalanceInCents,
+					})
+					.where(eq(famss.id, data.id));
+			});
 
-	const rawName = formData.get("name") as string;
-    const rawBalance = formData.get("balance");
+			revalidatePath("/admin/famss");
+			return { success: "Fam'ss mise à jour" };
+		} catch (error: any) {
+			console.error("Failed to update fams:", error);
+			if (error.code === "23505") return { error: "Ce nom existe déjà" };
+			if (error.message === "Fams not found")
+				return { error: "Fam'ss introuvable" };
+			throw new Error("Erreur lors de la mise à jour");
+		}
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);
 
-    const parsed = adminFamsSchema.safeParse({
-        name: rawName,
-        balance: rawBalance ? parseFloat(rawBalance.toString()) : 0
-    });
+export const deleteFamsAction = authenticatedAction(
+	famsIdSchema,
+	async ({ famsId }, { session }) => {
+		try {
+			await db.delete(famsMembers).where(eq(famsMembers.famsId, famsId));
+			await db.delete(famss).where(eq(famss.id, famsId));
 
-	if (!parsed.success) return { error: "Données invalides" };
-
-    const newBalanceInCents = Math.round(parsed.data.balance * 100);
-
-	try {
-        await db.transaction(async (tx) => {
-            // 1. Get current
-            const currentFams = await tx.query.famss.findFirst({
-                where: eq(famss.id, id),
-                columns: { balance: true }
-            });
-            if (!currentFams) throw new Error("Fams not found");
-
-            const diff = newBalanceInCents - currentFams.balance;
-
-            // 2. Transaction if balance changed
-            if (diff !== 0) {
-                 await tx.insert(transactions).values({
-                    amount: diff,
-                    type: "ADJUSTMENT",
-                    walletSource: "FAMILY",
-                    issuerId: session.userId,
-                    targetUserId: session.userId, 
-                    famsId: id,
-                    description: "Ajustement manuel (Admin)",
-                });
-            }
-
-            // 3. Update
-            await tx
-                .update(famss)
-                .set({
-                    name: parsed.data.name,
-                    balance: newBalanceInCents,
-                })
-                .where(eq(famss.id, id));
-        });
-
-		revalidatePath("/admin/famss");
-		return { success: "Fam'ss mise à jour" };
-	} catch (error: any) {
-		console.error("Failed to update fams:", error);
-        if (error.code === '23505') return { error: "Ce nom existe déjà" };
-		return { error: "Erreur lors de la mise à jour" };
-	}
-}
-
-export async function adminDeleteFams(id: string) {
-	const session = await verifySession();
-	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
-
-	try {
-        await db.delete(famsMembers).where(eq(famsMembers.famsId, id));
-		await db.delete(famss).where(eq(famss.id, id));
-
-		revalidatePath("/admin/famss");
-		return { success: "Fam'ss supprimée" };
-	} catch (error: any) {
-		console.error("Failed to delete fams:", error);
-        if (error.code === '23503') return { error: "Impossible de supprimer une Fam'ss avec des transactions liées" };
-		return { error: "Erreur lors de la suppression" };
-	}
-}
+			revalidatePath("/admin/famss");
+			return { success: "Fam'ss supprimée" };
+		} catch (error: any) {
+			console.error("Failed to delete fams:", error);
+			if (error.code === "23503")
+				return {
+					error:
+						"Impossible de supprimer une Fam'ss avec des transactions liées",
+				};
+			throw new Error("Erreur lors de la suppression");
+		}
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);
 
 // --- Membership Actions ---
 
-export async function getFamsMembers(famsId: string) {
-    const session = await verifySession();
-	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
+export const getFamsMembersAction = authenticatedAction(
+	famsIdSchema,
+	async ({ famsId }, { session }) => {
+		const members = await db.query.famsMembers.findMany({
+			where: eq(famsMembers.famsId, famsId),
+			with: {
+				user: true,
+			},
+		});
 
-    try {
-        const members = await db.query.famsMembers.findMany({
-            where: eq(famsMembers.famsId, famsId),
-            with: {
-                user: true
-            }
-        });
-        
-        return { members: members.map(m => ({ 
-            ...m.user, 
-            isAdmin: m.isAdmin 
-        })) };
-    } catch (error) {
-        console.error("Failed to fetch members:", error);
-        return { error: "Erreur lors de la récupération des membres" };
-    }
-}
+		return {
+			members: members.map((m) => ({
+				...m.user,
+				isAdmin: m.isAdmin,
+			})),
+		};
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);
 
-export async function adminAddMember(famsId: string, username: string) {
-    const session = await verifySession();
-	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
+export const addMemberAction = authenticatedAction(
+	addAdminMemberSchema,
+	async ({ famsId, username }, { session }) => {
+		const user = await db.query.users.findFirst({
+			where: eq(users.username, username),
+		});
 
-    try {
-        const user = await db.query.users.findFirst({
-            where: eq(users.username, username)
-        });
+		if (!user) return { error: "Utilisateur introuvable" };
 
-        if (!user) return { error: "Utilisateur introuvable" };
+		try {
+			await db.insert(famsMembers).values({
+				famsId: famsId,
+				userId: user.id,
+				isAdmin: false,
+			});
 
-        await db.insert(famsMembers).values({
-            famsId: famsId,
-            userId: user.id,
-            isAdmin: false
-        });
+			revalidatePath("/admin/famss");
+			return { success: "Membre ajouté" };
+		} catch (error: any) {
+			console.error("Failed to add member:", error);
+			if (error.code === "23505") return { error: "Déjà membre" };
+			throw new Error("Erreur lors de l'ajout");
+		}
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);
 
-        revalidatePath("/admin/famss");
-        return { success: "Membre ajouté" };
-    } catch (error: any) {
-        console.error("Failed to add member:", error);
-        if (error.code === '23505') return { error: "Déjà membre" };
-        return { error: "Erreur lors de l'ajout" };
-    }
-}
-
-export async function adminUpdateMemberRole(famsId: string, userId: string, isAdmin: boolean) {
-	const session = await verifySession();
-	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
-
-	try {
-		await db.update(famsMembers)
+export const updateMemberRoleAction = authenticatedAction(
+	updateMemberRoleSchema,
+	async ({ famsId, userId, isAdmin }, { session }) => {
+		await db
+			.update(famsMembers)
 			.set({ isAdmin })
-			.where(and(eq(famsMembers.famsId, famsId), eq(famsMembers.userId, userId)));
+			.where(
+				and(eq(famsMembers.famsId, famsId), eq(famsMembers.userId, userId))
+			);
 
 		return { success: "Rôle mis à jour" };
-	} catch (error) {
-		console.error("Failed to update role:", error);
-		return { error: "Erreur lors de la mise à jour" };
-	}
-}
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);
 
-export async function adminRemoveMember(famsId: string, userId: string) {
-    const session = await verifySession();
-	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
+export const removeMemberAction = authenticatedAction(
+	removeMemberSchema,
+	async ({ famsId, userId }, { session }) => {
+		await db
+			.delete(famsMembers)
+			.where(
+				and(eq(famsMembers.famsId, famsId), eq(famsMembers.userId, userId))
+			);
 
-    try {
-        await db.delete(famsMembers)
-            .where(and(eq(famsMembers.famsId, famsId), eq(famsMembers.userId, userId)));
-
-        revalidatePath("/admin/famss");
-        return { success: "Membre retiré" };
-    } catch (error) {
-        console.error("Failed to remove member:", error);
-        return { error: "Erreur lors de la suppression" };
-    }
-}
+		revalidatePath("/admin/famss");
+		return { success: "Membre retiré" };
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);
 
 // --- Transaction History ---
 
-export async function getFamsTransactions(famsId: string) {
-    const session = await verifySession();
-	if (!session || (!session.permissions.includes("ADMIN") && !session.permissions.includes("MANAGE_FAMSS"))) return { error: "Non autorisé" };
-
-    try {
-        const history = await db.query.transactions.findMany({
-            where: eq(transactions.famsId, famsId),
-            orderBy: [desc(transactions.createdAt)],
-            limit: 50, // Limit to last 50 for modal
-            with: {
-                issuer: true,
-            }
-        });
-        return { transactions: history };
-    } catch (error) {
-        console.error("Failed to fetch fams transactions:", error);
-        return { error: "Erreur lors du chargement de l'historique" };
-    }
-}
+export const getFamsTransactionsAction = authenticatedAction(
+	famsIdSchema,
+	async ({ famsId }, { session }) => {
+		const history = await db.query.transactions.findMany({
+			where: eq(transactions.famsId, famsId),
+			orderBy: [desc(transactions.createdAt)],
+			limit: 50, // Limit to last 50 for modal
+			with: {
+				issuer: true,
+			},
+		});
+		return { transactions: history };
+	},
+	{ permissions: ADMIN_PERMISSIONS }
+);

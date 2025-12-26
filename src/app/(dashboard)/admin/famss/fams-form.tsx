@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { adminCreateFams, adminUpdateFams } from "@/features/famss/admin-actions";
+import { createFamsAction, updateFamsAction } from "@/features/famss/admin-actions";
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
     const { pending } = useFormStatus();
@@ -29,14 +29,24 @@ export function FamsForm({ fams, onSuccess }: FamsFormProps) {
     async function action(formData: FormData) {
         setError(null);
         
+        const rawName = formData.get("name") as string;
+        const rawBalance = formData.get("balance");
+        const balance = rawBalance ? parseFloat(rawBalance.toString()) : 0;
+
         let result;
         if (fams) {
             // Edit
-            formData.append("id", fams.id);
-            result = await adminUpdateFams(null, formData);
+            result = await updateFamsAction({
+                id: fams.id,
+                name: rawName,
+                balance
+            });
         } else {
             // Create
-            result = await adminCreateFams(formData);
+            result = await createFamsAction({
+                name: rawName,
+                balance
+            });
         }
 
         if (result?.error) {

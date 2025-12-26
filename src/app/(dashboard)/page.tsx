@@ -16,6 +16,9 @@ import { ExpensesByShopChart } from "@/components/dashboard/ExpensesByShopChart"
 import { ExpensesOverTimeChart } from "@/components/dashboard/ExpensesOverTimeChart";
 import { RecentActivityList } from "@/components/dashboard/RecentActivityList";
 import Link from "next/link";
+import { getEnrolledEvents } from "@/features/events/actions";
+import { verifySession } from "@/lib/session";
+import { UserEventsList } from "@/components/dashboard/UserEventsList";
 
 interface StatCardProps {
 	title: string;
@@ -72,10 +75,6 @@ function StatCard({
 	);
 }
 
-import { getEnrolledEvents } from "@/features/events/actions";
-import { verifySession } from "@/lib/session";
-import { UserEventsList } from "@/components/dashboard/UserEventsList";
-
 async function UserEventsSection() {
 	const session = await verifySession();
 	if (!session) return null;
@@ -88,8 +87,6 @@ async function UserEventsSection() {
 }
 
 export default async function DashboardPage() {
-	// ... items above
-
 	const stats = await getUserStats();
 	const recentActivity = await getUserRecentActivity();
 	const expensesByShop = await getUserExpensesByShop();

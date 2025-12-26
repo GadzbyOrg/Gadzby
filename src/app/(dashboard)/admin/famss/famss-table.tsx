@@ -6,7 +6,7 @@ import { IconPencil, IconSearch, IconX, IconTrash, IconPlus, IconUsersGroup, Ico
 import { FamsForm } from "./fams-form";
 import { FamsMembersModal } from "./fams-members-modal";
 import { FamsTransactionsModal } from "./fams-transactions-modal";
-import { adminDeleteFams } from "@/features/famss/admin-actions";
+import { deleteFamsAction } from "@/features/famss/admin-actions";
 
 interface FamssTableProps {
     famss: any[];
@@ -59,7 +59,7 @@ export function FamssTable({ famss }: FamssTableProps) {
 
     const handleDelete = async (id: string, name: string) => {
         if (confirm(`Êtes-vous sûr de vouloir supprimer la Fam'ss "${name}" ? \nCette action est irréversible.`)) {
-             const res = await adminDeleteFams(id);
+             const res = await deleteFamsAction({ famsId: id });
              if (res?.error) {
                  alert(res.error);
              }

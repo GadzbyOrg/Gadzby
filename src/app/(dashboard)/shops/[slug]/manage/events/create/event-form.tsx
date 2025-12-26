@@ -71,20 +71,38 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 					allowSelfRegistration: data.allowSelfRegistration,
 				};
 
+				let result;
 				if (initialData) {
-					await updateEvent(shopId, initialData.id, payload);
-					toast({
-						title: "Succès",
-						description: "Événement mis à jour",
-						variant: "default",
+					result = await updateEvent({
+						shopId,
+						eventId: initialData.id,
+						...payload,
 					});
 				} else {
-					await createEvent(shopId, payload);
-					toast({
-						title: "Succès",
-						description: "Événement créé",
-						variant: "default",
+					result = await createEvent({
+						shopId,
+						...payload,
 					});
+				}
+
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
+
+				toast({
+					title: "Succès",
+					description: initialData
+						? "Événement mis à jour"
+						: "Événement créé",
+					variant: "default",
+				});
+
+				if (!initialData) {
 					router.push(`/shops/${slug}/manage/events`);
 				}
 			} catch (error) {

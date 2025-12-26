@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { IconX, IconTrash, IconUserPlus, IconShield, IconShieldOff } from "@tabler/icons-react";
-import { getFamsMembers, adminAddMember, adminRemoveMember, adminUpdateMemberRole } from "@/features/famss/admin-actions";
+import { getFamsMembersAction, addMemberAction, removeMemberAction, updateMemberRoleAction } from "@/features/famss/admin-actions";
 
 interface FamsMembersModalProps {
     fams: any;
@@ -22,9 +22,9 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 
     async function loadMembers() {
         setLoading(true);
-        const res = await getFamsMembers(fams.id);
-        if (res.members) {
-            setMembers(res.members);
+        const res = await getFamsMembersAction({ famsId: fams.id });
+        if (res.data?.members) {
+            setMembers(res.data.members);
         } else {
             setError(res.error || "Erreur de chargement");
         }
@@ -36,7 +36,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
         setError(null);
         if (!newMemberUsername.trim()) return;
 
-        const res = await adminAddMember(fams.id, newMemberUsername.trim());
+        const res = await addMemberAction({ famsId: fams.id, username: newMemberUsername.trim() });
         if (res.error) {
             setError(res.error);
         } else {
@@ -48,7 +48,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
     async function handleRemove(userId: string) {
         if (!confirm("Retirer ce membre ?")) return;
         
-        const res = await adminRemoveMember(fams.id, userId);
+        const res = await removeMemberAction({ famsId: fams.id, userId });
         if (res.error) {
             setError(res.error);
         } else {
@@ -59,7 +59,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
     async function toggleAdmin(member: any) {
         // Optimistic update could be safer but simple fetch refresh is fine here
         const newStatus = !member.isAdmin;
-        const res = await adminUpdateMemberRole(fams.id, member.id, newStatus);
+        const res = await updateMemberRoleAction({ famsId: fams.id, userId: member.id, isAdmin: newStatus });
         
         if (res.error) {
             setError(res.error);

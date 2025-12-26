@@ -54,7 +54,18 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 		if (!confirm("Voulez-vous vraiment activer cet événement ?")) return;
 		startTransition(async () => {
 			try {
-				await activateEvent(event.shopId, event.id);
+				const result = await activateEvent({
+					shopId: event.shopId,
+					eventId: event.id,
+				});
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
 				toast({ title: "Succès", description: "Événement activé" });
 			} catch (e: any) {
 				toast({
@@ -75,7 +86,15 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 		if (!confirm(confirmMessage)) return;
 		startTransition(async () => {
 			try {
-				await closeEvent(event.id);
+				const result = await closeEvent({ eventId: event.id });
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
 				toast({
 					title: "Succès",
 					description: isPayUpfront ? "Événement soldé" : "Événement clôturé",
@@ -97,7 +116,18 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 
 		startTransition(async () => {
 			try {
-				await deleteEvent(event.shopId, event.id);
+				const result = await deleteEvent({
+					shopId: event.shopId,
+					eventId: event.id,
+				});
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
 				toast({ title: "Succès", description: "Événement supprimé" });
 				router.push(`/shops/${slug}/manage/events`);
 			} catch (e: any) {

@@ -3,7 +3,7 @@ import {
 	getShopDetailsForMember,
 } from "@/features/shops/actions";
 import { getShopProducts, getShopCategories } from "@/features/shops/products";
-import { getShopPublicEvents } from "@/features/events/actions";
+import { getShopPublicEvents } from "@/features/events/queries";
 import { notFound, redirect } from "next/navigation";
 import { SelfServiceView } from "../_components/self-service-view";
 import { ShopPublicEvents } from "../_components/shop-public-events";

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { IconLink, IconUnlink, IconLoader2, IconSlice } from '@tabler/icons-react';
-import { linkExpenseToEvent, unlinkExpenseFromEvent, getAvailableExpenses, splitExpense, deleteExpenseSplit } from '@/features/events/actions';
+import { linkExpenseToEvent, unlinkExpenseFromEvent, getAvailableExpensesAction, splitExpense, deleteExpenseSplit } from '@/features/events/actions';
 import { useToast } from "@/components/ui/use-toast";
 
 interface Props {
@@ -21,8 +21,12 @@ export function EventExpenses({ event }: Props) {
     const [splitAmount, setSplitAmount] = useState<string>('');
 
     const handleOpenLink = async () => {
-        const expenses = await getAvailableExpenses(event.shopId);
-        setAvailableExpenses(expenses);
+        const result = await getAvailableExpensesAction({ shopId: event.shopId });
+        if (result?.error) {
+             toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+             return;
+        }
+        setAvailableExpenses(result.data || []);
         setLinkOpen(true);
         setLinkMode('FULL');
         setSplitAmount('');
@@ -34,17 +38,32 @@ export function EventExpenses({ event }: Props) {
         
         startTransition(async () => {
             try {
+                let result;
                 if (linkMode === 'FULL') {
-                    await linkExpenseToEvent(event.shopId, event.id, selectedExpenseId);
+                    result = await linkExpenseToEvent({
+                        shopId: event.shopId,
+                        eventId: event.id,
+                        expenseId: selectedExpenseId
+                    });
                 } else {
                      const amount = Math.round(parseFloat(splitAmount) * 100);
                      if (isNaN(amount) || amount <= 0) {
                          toast({ title: 'Erreur', description: 'Montant invalide', variant: 'destructive' });
                          return;
                      }
-                     await splitExpense(event.shopId, event.id, selectedExpenseId, amount);
+                     result = await splitExpense({
+                        shopId: event.shopId,
+                        eventId: event.id,
+                        expenseId: selectedExpenseId,
+                        amount
+                     });
                 }
                 
+                if (result?.error) {
+                    toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+                    return;
+                }
+
                 toast({ title: 'Succès', description: 'Dépense liée', variant: 'default' });
                 setLinkOpen(false);
                 setSelectedExpenseId('');
@@ -59,10 +78,23 @@ export function EventExpenses({ event }: Props) {
          
          startTransition(async () => {
              try {
+                 let result;
                  if (type === 'DIRECT') {
-                     await unlinkExpenseFromEvent(event.shopId, event.id, id);
+                     result = await unlinkExpenseFromEvent({
+                        shopId: event.shopId,
+                        eventId: event.id,
+                        expenseId: id
+                     });
                  } else {
-                     await deleteExpenseSplit(event.shopId, event.id, id);
+                     result = await deleteExpenseSplit({
+                        shopId: event.shopId,
+                        eventId: event.id,
+                        splitId: id
+                     });
+                 }
+                 if (result?.error) {
+                    toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+                    return;
                  }
                  toast({ title: 'Succès', description: 'Dépense déliée', variant: 'default' });
              } catch (error) {

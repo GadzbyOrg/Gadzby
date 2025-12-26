@@ -1,4 +1,4 @@
-import { getAdminFamss } from "@/features/famss/admin-actions";
+import { getAdminFamssAction } from "@/features/famss/admin-actions";
 import { FamssTable } from "./famss-table";
 import { verifySession } from "@/lib/session";
 import { redirect } from "next/navigation";
@@ -17,7 +17,11 @@ export default async function AdminFamssPage({
     const currentPage = Number(page) || 1;
     const searchTerm = search || "";
 
-    const { famss, error } = await getAdminFamss(currentPage, 50, searchTerm);
+    const { famss, error } = await getAdminFamssAction({
+        page: currentPage,
+        limit: 50,
+        search: searchTerm,
+    });
 
     if (error) {
         return (
@@ -26,6 +30,9 @@ export default async function AdminFamssPage({
             </div>
         );
     }
+    
+    // Safety check just in case, though data should clearly appear if no error
+    const safeFamss = famss || [];
 
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
@@ -40,7 +47,7 @@ export default async function AdminFamssPage({
                 </div>
             </header>
 
-            <FamssTable famss={famss || []} />
+            <FamssTable famss={safeFamss} />
         </div>
     );
 }

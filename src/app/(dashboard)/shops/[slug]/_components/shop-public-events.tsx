@@ -7,7 +7,7 @@ import {
 	IconLoader2,
 	IconLogout,
 } from "@tabler/icons-react";
-import { joinPublicEvent, leavePublicEvent } from "@/features/events/actions";
+import { joinEvent, leaveEvent } from "@/features/events/actions";
 import { useToast } from "@/components/ui/use-toast";
 
 interface PublicEvent {
@@ -30,7 +30,15 @@ export function ShopPublicEvents({ events }: Props) {
 	const handleJoin = (eventId: string) => {
 		startTransition(async () => {
 			try {
-				await joinPublicEvent(eventId);
+				const result = await joinEvent({ eventId });
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
 				toast({
 					title: "Succès",
 					description: "Inscription validée !",
@@ -50,7 +58,15 @@ export function ShopPublicEvents({ events }: Props) {
 		if (!confirm("Se désinscrire de cet événement ?")) return;
 		startTransition(async () => {
 			try {
-				await leavePublicEvent(eventId);
+				const result = await leaveEvent({ eventId });
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
 				toast({
 					title: "Succès",
 					description: "Désinscription effectuée",

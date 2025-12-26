@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { IconLink, IconUnlink } from '@tabler/icons-react';
-import { linkProductsToEvent, unlinkProductFromEvent, getAvailableProducts } from '@/features/events/actions';
+import { linkProductsToEvent, unlinkProductFromEvent, getAvailableProductsAction } from '@/features/events/actions';
 import { useToast } from "@/components/ui/use-toast";
 
 interface Props {
@@ -17,8 +17,12 @@ export function EventProducts({ event }: Props) {
     const [loading, setLoading] = useState(false);
 
     const handleOpenLink = async () => {
-        const products = await getAvailableProducts(event.shopId);
-        setAvailableProducts(products);
+        const result = await getAvailableProductsAction({ shopId: event.shopId });
+        if (result?.error) {
+            toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+            return;
+        }
+        setAvailableProducts(result.data || []);
         setLinkOpen(true);
         setSelectedProducts([]);
     };
@@ -27,7 +31,17 @@ export function EventProducts({ event }: Props) {
         if (selectedProducts.length === 0) return;
         setLoading(true);
         try {
-            await linkProductsToEvent(event.shopId, event.id, selectedProducts);
+            const result = await linkProductsToEvent({
+                shopId: event.shopId,
+                eventId: event.id,
+                productIds: selectedProducts
+            });
+            
+            if (result?.error) {
+                 toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+                 return;
+            }
+
             toast({ title: 'Succès', description: `${selectedProducts.length} produits liés`, variant: 'default' });
             setLinkOpen(false);
             setSelectedProducts([]);
@@ -49,7 +63,15 @@ export function EventProducts({ event }: Props) {
     const handleUnlink = async (productId: string) => {
         if (!confirm('Délier ce produit ?')) return;
         try {
-            await unlinkProductFromEvent(event.shopId, event.id, productId);
+            const result = await unlinkProductFromEvent({
+                shopId: event.shopId,
+                eventId: event.id,
+                productId
+            });
+            if (result?.error) {
+                toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+                return;
+            }
             toast({ title: 'Succès', description: 'Produit délié', variant: 'default' });
         } catch (error) {
             toast({ title: 'Erreur', description: 'Impossible de délier', variant: 'destructive' });

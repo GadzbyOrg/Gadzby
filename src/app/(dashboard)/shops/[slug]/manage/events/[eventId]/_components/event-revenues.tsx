@@ -42,10 +42,20 @@ export function EventRevenues({ event, revenues = [] }: Props) {
 
 		startTransition(async () => {
 			try {
-				await createEventRevenue(event.shopId, event.id, {
+				const result = await createEventRevenue({
+					shopId: event.shopId,
+					eventId: event.id,
 					description: formData.description,
 					amount: amount,
 				});
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
 				toast({ title: "Succès", description: "Revenu ajouté" });
 				setFormData({ description: "", amount: "" });
 			} catch (e: any) {
@@ -62,7 +72,19 @@ export function EventRevenues({ event, revenues = [] }: Props) {
 		if (!confirm("Voulez-vous vraiment supprimer ce revenu ?")) return;
 		startTransition(async () => {
 			try {
-				await deleteEventRevenue(event.shopId, event.id, id);
+				const result = await deleteEventRevenue({
+					shopId: event.shopId,
+					eventId: event.id,
+					revenueId: id,
+				});
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
 				toast({ title: "Succès", description: "Revenu supprimé" });
 			} catch (e: any) {
 				toast({

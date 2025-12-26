@@ -46,7 +46,10 @@ export function TopUpForm({ methods }: { methods: PaymentMethod[] }) {
 
 		setIsLoading(true);
 		try {
-			const url = await initiateTopUp(selectedMethod, amount * 100);
+			const url = await initiateTopUp({
+				providerSlug: selectedMethod,
+				amountCents: amount * 100,
+			});
 			window.location.href = url; // Redirect to provider
 		} catch (err) {
 			alert("Une erreur est survenue lors de l'initialisation du paiement.");

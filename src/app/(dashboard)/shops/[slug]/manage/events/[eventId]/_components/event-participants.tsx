@@ -20,7 +20,12 @@ export function EventParticipants({ event, slug }: Props) {
     // Add User Logic
     const handleAddUser = async (user: any) => {
         try {
-            await joinEvent(event.id, user.id);
+            const result = await joinEvent({
+                shopId: event.shopId,
+                eventId: event.id,
+                userId: user.id
+            });
+            if (result?.error) throw new Error(result.error);
             toast({ title: 'Succès', description: 'Participant ajouté', variant: 'default' });
             router.refresh();
         } catch (error: any) {
@@ -67,12 +72,19 @@ export function EventParticipants({ event, slug }: Props) {
                 return;
             }
 
-            const result = await importParticipantsFromList(event.id, importData);
-            toast({ title: 'Succès', description: `${result?.count || 0} participants importés`, variant: 'default' });
+            const result = await importParticipantsFromList({
+                shopId: event.shopId,
+                eventId: event.id,
+                participants: importData
+            });
+            
+            if (result?.error) throw new Error(result.error);
+            
+            toast({ title: 'Succès', description: `${result?.data?.count || 0} participants importés`, variant: 'default' });
             setImportOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            toast({ title: 'Erreur', description: 'Erreur lors de la lecture du fichier', variant: 'destructive' });
+            toast({ title: 'Erreur', description: error.message || 'Erreur lors de la lecture du fichier', variant: 'destructive' });
         } finally {
             setIsImporting(false);
             // Reset input?
@@ -83,12 +95,17 @@ export function EventParticipants({ event, slug }: Props) {
     const handlePromssImport = async () => {
          setIsImporting(true);
         try {
-            await importParticipants(event.id, { promss: promss || undefined, });
+            const result = await importParticipants({
+                shopId: event.shopId,
+                eventId: event.id,
+                promss: promss || undefined,
+            });
+            if (result?.error) throw new Error(result.error);
             toast({ title: 'Succès', description: 'Participants importés via Prom\'ss', variant: 'default' });
             setImportOpen(false);
             setPromss('');
-        } catch (error) {
-            toast({ title: 'Erreur', description: 'Erreur lors de l\'import', variant: 'destructive' });
+        } catch (error: any) {
+            toast({ title: 'Erreur', description: error.message || 'Erreur lors de l\'import', variant: 'destructive' });
         } finally {
             setIsImporting(false);
         }
@@ -96,26 +113,44 @@ export function EventParticipants({ event, slug }: Props) {
 
     const handleWeightChange = async (userId: string, weight: number) => {
         try {
-            await updateParticipant(event.id, userId, { weight });
+            const result = await updateParticipant({
+                shopId: event.shopId,
+                eventId: event.id,
+                userId,
+                data: { weight }
+            });
+            if (result?.error) throw new Error(result.error);
             toast({ title: 'Succès', description: 'Poids mis à jour', variant: 'default' });
-        } catch (error) {
-            toast({ title: 'Erreur', description: 'Impossible de mettre à jour', variant: 'destructive' });
+        } catch (error: any) {
+            toast({ title: 'Erreur', description: error.message || 'Impossible de mettre à jour', variant: 'destructive' });
         }
     };
 
     const handleRemove = async (userId: string) => {
         if (!confirm('Voulez-vous vraiment retirer ce participant ?')) return;
         try {
-            await leaveEvent(event.id, userId);
+            const result = await leaveEvent({
+                shopId: event.shopId,
+                eventId: event.id,
+                userId
+            });
+            if (result?.error) throw new Error(result.error);
             toast({ title: 'Succès', description: 'Participant retiré', variant: 'default' });
-        } catch (error) {
-            toast({ title: 'Erreur', description: 'Impossible de retirer le participant', variant: 'destructive' });
+        } catch (error: any) {
+            toast({ title: 'Erreur', description: error.message || 'Impossible de retirer le participant', variant: 'destructive' });
         }
     };
 
     const handlePreviewSettlement = async () => {
-        const preview = await previewSettlement(event.id);
-        setSettlementPreview(preview);
+        const result = await previewSettlement({
+            shopId: event.shopId,
+            eventId: event.id
+        });
+        if (result?.error) {
+            toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+            return;
+        }
+        setSettlementPreview(result.data);
         setSettleOpen(true);
     }
 
@@ -123,12 +158,18 @@ export function EventParticipants({ event, slug }: Props) {
         if (!confirm('Ceci va appliquer les remboursements/paiements et clôturer l\'événement. Continuer ?')) return;
         setIsSettling(true);
         try {
-            await executeSettlement(event.id);
+            const result = await executeSettlement({
+                shopId: event.shopId,
+                eventId: event.id
+            });
+            
+            if (result?.error) throw new Error(result.error);
+            
             toast({ title: 'Succès', description: 'Événement soldé et clôturé', variant: 'default' });
             setSettleOpen(false);
             router.refresh();
-        } catch (error) {
-            toast({ title: 'Erreur', description: 'Erreur lors du solde', variant: 'destructive' });
+        } catch (error: any) {
+            toast({ title: 'Erreur', description: error.message || 'Erreur lors du solde', variant: 'destructive' });
         } finally {
             setIsSettling(false);
         }
