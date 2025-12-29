@@ -4,39 +4,36 @@ import { db } from "@/db";
 import {
 	shops,
 	shopUsers,
-	users,
 	transactions,
 	products,
 	shopExpenses,
-	events,
+	shopRoles,
 } from "@/db/schema";
-import {
-	authenticatedAction,
-	authenticatedActionNoInput,
-	publicActionNoInput, // Assuming this exists or I'll use publicAction with void schema if not
-} from "@/lib/actions";
+import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
 import { verifySession } from "@/lib/session";
 import { eq, and, sql, gte, lte } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-import { hasShopPermission } from "./utils";
+import {
+	getUserShopPermissions,
+	hasShopPermission,
+	checkShopPermission,
+} from "./utils";
 import { getTransactionsQuery } from "../transactions/queries";
 import { TransactionService } from "@/services/transaction-service";
 import * as schemas from "./schemas";
+import { SHOP_PERMISSIONS } from "./schemas";
 
-// --- Queries / Getters (Wrapped or Manual) ---
+// --- Queries / Getters ---
 
-// Replaced getShops with authenticatedActionNoInput variant
 export const getShops = authenticatedActionNoInput(async ({ session }) => {
-	// 1. Get user's shop memberships with ROLE
 	const userMemberships = await db.query.shopUsers.findMany({
 		where: eq(shopUsers.userId, session.userId),
-		columns: { shopId: true, role: true },
+		with: { shopRole: true },
 	});
 
-	const membershipMap = new Map(userMemberships.map((m) => [m.shopId, m.role]));
+	const membershipMap = new Map(userMemberships.map((m) => [m.shopId, m]));
 
-	// 2. Fetch shops with check for self-service products
 	const allShops = await db.query.shops.findMany({
 		where: eq(shops.isActive, true),
 		orderBy: (shops, { asc }) => [asc(shops.name)],
@@ -49,65 +46,37 @@ export const getShops = authenticatedActionNoInput(async ({ session }) => {
 		},
 	});
 
-	// 3. Filter and Enhance
 	const result = [];
 
 	for (const shop of allShops) {
-		const memberRole = membershipMap.get(shop.id);
+		const membership = membershipMap.get(shop.id);
+		let permissionList: string[] = [];
 
-		// Default permissions
-		let permissions = {
-			canSell: false,
-			canManageProducts: false,
-			canManageInventory: false,
-			canViewStats: false,
-			canManageSettings: false,
-			canManageEvents: false,
-		};
-
-		// Calculate Permissions
 		if (
 			session.permissions.includes("ADMIN_ACCESS") ||
 			session.permissions.includes("MANAGE_SHOPS")
 		) {
-			permissions = {
-				canSell: true,
-				canManageProducts: true,
-				canManageInventory: true,
-				canViewStats: true,
-				canManageSettings: true,
-				canManageEvents: true,
-			};
-		} else if (memberRole) {
-			if (memberRole === "GRIPSS") {
-				permissions = {
-					canSell: true,
-					canManageProducts: true,
-					canManageInventory: true,
-					canViewStats: true,
-					canManageSettings: true,
-					canManageEvents: true,
-				};
-			} else if (memberRole === "VP" || memberRole === "MEMBRE") {
-				const p = (shop.permissions as any)?.[memberRole.toLowerCase()];
-				if (p) {
-					permissions = {
-						canSell: !!p.canSell,
-						canManageProducts: !!p.canManageProducts,
-						canManageInventory: !!p.canManageInventory,
-						canViewStats: !!p.canViewStats,
-						canManageSettings: !!p.canManageSettings,
-						canManageEvents: !!p.canManageEvents,
-					};
-				}
+			permissionList = [...SHOP_PERMISSIONS];
+		} else if (membership) {
+			if (membership.shopRole) {
+				permissionList = membership.shopRole.permissions;
 			}
 		}
 
-		// Determine visibility
+		const permissions = {
+			canSell: permissionList.includes("SELL"),
+			canManageProducts: permissionList.includes("MANAGE_PRODUCTS"),
+			canManageInventory: permissionList.includes("MANAGE_INVENTORY"),
+			canViewStats: permissionList.includes("VIEW_STATS"),
+			canManageSettings: permissionList.includes("MANAGE_SETTINGS"),
+			canManageEvents: permissionList.includes("MANAGE_EVENTS"),
+			canManageExpenses: permissionList.includes("MANAGE_EXPENSES"),
+		};
+
 		let isVisible = false;
 
 		if (
-			memberRole ||
+			membership ||
 			session.permissions.includes("ADMIN_ACCESS") ||
 			session.permissions.includes("MANAGE_SHOPS")
 		)
@@ -125,7 +94,7 @@ export const getShops = authenticatedActionNoInput(async ({ session }) => {
 				canManage,
 				permissions,
 				role:
-					memberRole ||
+					membership?.shopRole?.name ||
 					(session.permissions.includes("ADMIN_ACCESS") ||
 					session.permissions.includes("MANAGE_SHOPS")
 						? "ADMIN"
@@ -146,14 +115,13 @@ export const getShopBySlug = authenticatedAction(
 				members: {
 					with: {
 						user: true,
+						shopRole: true,
 					},
 				},
 			},
 		});
 
 		if (!shop) throw new Error("Shop introuvable");
-		// We return { shop } to match previous signature if needed, or just returns shop.
-		// Existing code returned { shop: ... }
 		return { shop };
 	}
 );
@@ -166,16 +134,15 @@ export const getShopDetailsForMember = authenticatedAction(
 			with: {
 				members: {
 					where: eq(shopUsers.userId, session.userId),
+					with: { shopRole: true },
 				},
 			},
 		});
 
 		if (!shop) return null;
 
-		// Check if user is a member
 		const membership = shop.members[0];
 
-		// Allow ADMIN override
 		if (
 			!membership &&
 			(session.permissions.includes("ADMIN_ACCESS") ||
@@ -186,12 +153,13 @@ export const getShopDetailsForMember = authenticatedAction(
 				membership: {
 					userId: session.userId,
 					shopId: shop.id,
-					role: "GRIPSS", // Admin acts as boquette grip'ss
+					role: "GRIPSS",
+					shopRole: { name: "ADMIN", permissions: [...SHOP_PERMISSIONS] },
 				},
 			};
 		}
 
-		if (!membership) return null; // Not a member
+		if (!membership) return null;
 
 		return { shop, membership };
 	}
@@ -230,22 +198,137 @@ export const getUserFamss = authenticatedAction(
 	async ({ userId }, { session }) => {
 		const targetId = userId || session.userId;
 
-		// If fetching for another user, ensure caller is Admin or Manager
-		if (targetId !== session.userId) {
-			if (
-				!session.permissions.includes("ADMIN_ACCESS") &&
-				!session.permissions.includes("MANAGE_SHOPS")
-			) {
-				return { error: "Non autorisé" };
-			}
-		}
-
 		const members = await db.query.famsMembers.findMany({
 			where: (t, { eq }) => eq(t.userId, targetId),
 			with: { family: true },
 		});
 
 		return { famss: members.map((m: any) => m.family) };
+	}
+);
+
+// --- Shop Role Management ---
+
+export const getShopRoles = authenticatedAction(
+	schemas.getShopBySlugSchema,
+	async ({ slug }, { session }) => {
+		const shop = await db.query.shops.findFirst({
+			where: eq(shops.slug, slug),
+		});
+		if (!shop) throw new Error("Shop introuvable");
+
+		const authorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_SETTINGS"
+		);
+
+		if (!authorized) {
+			throw new Error("Non autorisé");
+		}
+
+		const roles = await db.query.shopRoles.findMany({
+			where: eq(shopRoles.shopId, shop.id),
+			orderBy: (roles, { asc }) => [asc(roles.name)],
+			with: {
+				users: true,
+			},
+		});
+
+		return { roles };
+	}
+);
+
+export const createShopRole = authenticatedAction(
+	schemas.createShopRoleSchema,
+	async ({ shopSlug, name, permissions }, { session }) => {
+		const shop = await db.query.shops.findFirst({
+			where: eq(shops.slug, shopSlug),
+		});
+		if (!shop) throw new Error("Shop introuvable");
+
+		const authorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_SETTINGS"
+		);
+
+		if (!authorized) {
+			throw new Error("Non autorisé");
+		}
+
+		await db.insert(shopRoles).values({
+			shopId: shop.id,
+			name,
+			permissions,
+		});
+
+		revalidatePath(`/shops/${shopSlug}/manage/roles`);
+		return { success: "Rôle créé" };
+	}
+);
+
+export const updateShopRole = authenticatedAction(
+	schemas.updateShopRoleSchema,
+	async ({ shopSlug, roleId, name, permissions }, { session }) => {
+		const shop = await db.query.shops.findFirst({
+			where: eq(shops.slug, shopSlug),
+		});
+		if (!shop) throw new Error("Shop introuvable");
+
+		const authorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_SETTINGS"
+		);
+
+		if (!authorized) {
+			throw new Error("Non autorisé");
+		}
+
+		await db
+			.update(shopRoles)
+			.set({ name, permissions, updatedAt: new Date() })
+			.where(and(eq(shopRoles.id, roleId), eq(shopRoles.shopId, shop.id)));
+
+		revalidatePath(`/shops/${shopSlug}/manage/roles`);
+		return { success: "Rôle mis à jour" };
+	}
+);
+
+export const deleteShopRole = authenticatedAction(
+	schemas.deleteShopRoleSchema,
+	async ({ shopSlug, roleId }, { session }) => {
+		const shop = await db.query.shops.findFirst({
+			where: eq(shops.slug, shopSlug),
+		});
+		if (!shop) throw new Error("Shop introuvable");
+
+		const authorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_SETTINGS"
+		);
+
+		if (!authorized) {
+			throw new Error("Non autorisé");
+		}
+
+		const assigned = await db.query.shopUsers.findFirst({
+			where: eq(shopUsers.shopRoleId, roleId),
+		});
+		if (assigned) return { error: "Ce rôle est assigné à des membres" };
+
+		await db
+			.delete(shopRoles)
+			.where(and(eq(shopRoles.id, roleId), eq(shopRoles.shopId, shop.id)));
+
+		revalidatePath(`/shops/${shopSlug}/manage/roles`);
+		return { success: "Rôle supprimé" };
 	}
 );
 
@@ -257,41 +340,20 @@ export const processSale = authenticatedAction(
 		{ shopSlug, targetUserId, items, paymentSource, famsId },
 		{ session }
 	) => {
-		// 1. Check Permissions
-		console.log(
-			"Processing sale in shop:",
-			shopSlug,
-			"for target user:",
-			targetUserId
-		);
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, shopSlug),
-			with: {
-				members: {
-					where: eq(shopUsers.userId, session.userId),
-				},
-			},
 		});
-
 		if (!shop) throw new Error("Shop introuvable");
 
-		let isAuthorized = false;
-		if (
-			session.permissions.includes("ADMIN_ACCESS") ||
-			session.permissions.includes("MANAGE_SHOPS")
-		)
-			isAuthorized = true;
-		else if (shop.members[0]) {
-			isAuthorized = hasShopPermission(
-				shop.members[0].role as any,
-				shop.permissions,
-				"canSell"
-			);
-		}
+		const isAuthorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"SELL"
+		);
 
 		if (!isAuthorized) throw new Error("Non autorisé à vendre dans ce shop");
 
-		// 2. Delegate to Service
 		await TransactionService.processShopPurchase(
 			shop.id,
 			session.userId,
@@ -323,35 +385,25 @@ export const getShopTransactions = authenticatedAction(
 
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, slug),
-			with: {
-				members: {
-					where: eq(shopUsers.userId, session.userId),
-				},
-			},
 		});
 
 		if (!shop) throw new Error("Shop introuvable");
 
-		// Check permissions
 		let isAuthorized = false;
 		if (
 			session.permissions.includes("ADMIN_ACCESS") ||
 			session.permissions.includes("MANAGE_SHOPS")
-		)
+		) {
 			isAuthorized = true;
-		else if (shop.members[0]) {
-			isAuthorized = hasShopPermission(
-				shop.members[0].role as any,
-				shop.permissions,
-				"canViewStats"
-			);
+		} else {
+			const perms = await getUserShopPermissions(session.userId, shop.id);
+			isAuthorized = hasShopPermission(perms, "VIEW_STATS");
 		}
 
 		if (!isAuthorized) throw new Error("Non autorisé");
 
 		const offset = (page - 1) * limit;
 
-		// Get base query options from shared transaction logic
 		const baseQuery = await getTransactionsQuery(
 			search,
 			type,
@@ -363,7 +415,6 @@ export const getShopTransactions = authenticatedAction(
 			eventId
 		);
 
-		// We must enforce shopId
 		const whereClause = and(baseQuery.where, eq(transactions.shopId, shop.id));
 
 		const history = await db.query.transactions.findMany({
@@ -376,17 +427,12 @@ export const getShopTransactions = authenticatedAction(
 );
 
 export const exportShopTransactionsAction = authenticatedAction(
-	schemas.getShopTransactionsSchema, // Reuse same schema roughly, ignoring page/limit
+	schemas.getShopTransactionsSchema,
 	async (params, { session }) => {
 		const { slug, search, type, sort, startDate, endDate, eventId } = params;
 
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, slug),
-			with: {
-				members: {
-					where: eq(shopUsers.userId, session.userId),
-				},
-			},
 		});
 
 		if (!shop) throw new Error("Shop introuvable");
@@ -395,14 +441,11 @@ export const exportShopTransactionsAction = authenticatedAction(
 		if (
 			session.permissions.includes("ADMIN_ACCESS") ||
 			session.permissions.includes("MANAGE_SHOPS")
-		)
+		) {
 			isAuthorized = true;
-		else if (shop.members[0]) {
-			isAuthorized = hasShopPermission(
-				shop.members[0].role as any,
-				shop.permissions,
-				"canViewStats"
-			);
+		} else {
+			const perms = await getUserShopPermissions(session.userId, shop.id);
+			isAuthorized = hasShopPermission(perms, "VIEW_STATS");
 		}
 
 		if (!isAuthorized) throw new Error("Non autorisé");
@@ -422,11 +465,10 @@ export const exportShopTransactionsAction = authenticatedAction(
 		const data = await db.query.transactions.findMany({
 			...baseQuery,
 			where: whereClause,
-			limit: undefined, // No limit for export
+			limit: undefined,
 			offset: undefined,
 		} as any);
 
-		// Format for Excel
 		const formattedData = data.map((t: any) => ({
 			Date: new Date(t.createdAt).toLocaleString("fr-FR"),
 			Type: t.type,
@@ -455,10 +497,6 @@ export const processSelfServicePurchase = authenticatedAction(
 		if (!shop.isSelfServiceEnabled)
 			throw new Error("Self-service désactivé pour ce shop");
 
-		// Check for self-service items only? Service doesn't check 'allowSelfService'.
-		// We should check it here before calling service, or assume the UI filters it.
-		// Best to check here for security.
-
 		const productIds = items.map((i) => i.productId);
 		const dbProducts = await db.query.products.findMany({
 			where: (products, { inArray, and }) =>
@@ -478,7 +516,7 @@ export const processSelfServicePurchase = authenticatedAction(
 		await TransactionService.processShopPurchase(
 			shop.id,
 			session.userId,
-			session.userId, // Target is self for self-service
+			session.userId,
 			items,
 			paymentSource,
 			famsId,
@@ -497,28 +535,16 @@ export const deleteProduct = authenticatedAction(
 	async ({ shopSlug, productId }, { session }) => {
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, shopSlug),
-			with: {
-				members: {
-					where: eq(shopUsers.userId, session.userId),
-				},
-			},
 		});
 
 		if (!shop) throw new Error("Shop introuvable");
 
-		let isAuthorized = false;
-		if (
-			session.permissions.includes("ADMIN_ACCESS") ||
-			session.permissions.includes("MANAGE_SHOPS")
-		)
-			isAuthorized = true;
-		else if (shop.members[0]) {
-			isAuthorized = hasShopPermission(
-				shop.members[0].role as any,
-				shop.permissions,
-				"canManageProducts"
-			);
-		}
+		const isAuthorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_PRODUCTS"
+		);
 
 		if (!isAuthorized) throw new Error("Non autorisé");
 
@@ -536,35 +562,16 @@ export const updateShop = authenticatedAction(
 	async ({ slug, data }, { session }) => {
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, slug),
-			with: {
-				members: {
-					where: eq(shopUsers.userId, session.userId),
-				},
-			},
 		});
 
 		if (!shop) throw new Error("Shop introuvable");
 
-		let isAuthorized = false;
-		if (
-			session.permissions.includes("ADMIN_ACCESS") ||
-			session.permissions.includes("MANAGE_SHOPS")
-		)
-			isAuthorized = true;
-		else if (shop.members[0]) {
-			// Only GRIPSS or those with canManageSettings can update basic info
-			// BUT for permissions, usually only GRIPSS.
-			if (data.permissions) {
-				// ONLY GRIPSS
-				if (shop.members[0].role === "GRIPSS") isAuthorized = true;
-			} else {
-				isAuthorized = hasShopPermission(
-					shop.members[0].role as any,
-					shop.permissions,
-					"canManageSettings"
-				);
-			}
-		}
+		const isAuthorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_SETTINGS"
+		);
 
 		if (!isAuthorized) throw new Error("Non autorisé");
 
@@ -583,63 +590,28 @@ export const updateShop = authenticatedAction(
 );
 
 // --- Helpers / Other Actions ---
-// Keeping these as manual session checks or converting if simple schemas
 
 export async function addShopMember(
 	shopSlug: string,
 	emailOrUsername: string,
-	role: "VP" | "MEMBRE" | "GRIPSS"
+	roleOrRoleId: string
 ) {
 	const session = await verifySession();
-	// Using manual check to avoid creating schemas for every single action if not needed strictly,
-	// but better to standardize.
-	// I'll stick to manual for these last few to verify 'authenticatedAction' usage first in main flows.
-	// Or I should refactor all to be consistent? The prompt says "Refactor @[src/features/shops/actions.ts]".
-	// It is best to be consistent.
-
-	// I will refactor these too.
 	if (!session) return { error: "Non autorisé" };
 
 	try {
-		// ... logic ...
-		// Since I'm essentially rewriting the file, I'll keep them as is BUT ensure imports are correct.
-		// I need to import schemas if I use authenticatedAction.
-		// I haven't made schemas for these yet.
-		// I will create schemas inline for these, or just keep them manual
-		// to avoid bloating schemas.ts with very specific admin actions if implementation_plan didn't explicitly list them
-		// (it listed "updateShop" but checking task list... it says "addShopMember" was NOT in my task list explicitly?
-		// Let me check my task list.
-		// Task list items: getShops, getShopBySlug, getShopDetailsForMember, searchUsers, getUserFamss, processSale, getShopTransactions, export..., processSelfService..., deleteProduct, updateShop.
-		// It seems I missed listing addShopMember etc.
-		// I should ideally refactor them too.
-		// I'll leave them as manual verifySession for now to match the strict scope of my task list
-		// and to not risk breaking them without schemas.
-
-		// Original Implementation below
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, shopSlug),
-			with: {
-				members: {
-					where: eq(shopUsers.userId, session.userId),
-				},
-			},
 		});
 
 		if (!shop) return { error: "Shop introuvable" };
 
-		let isAuthorized = false;
-		if (
-			session.permissions.includes("ADMIN_ACCESS") ||
-			session.permissions.includes("MANAGE_SHOPS")
-		)
-			isAuthorized = true;
-		else if (shop.members[0]) {
-			isAuthorized = hasShopPermission(
-				shop.members[0].role as any,
-				shop.permissions,
-				"canManageSettings"
-			);
-		}
+		const isAuthorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_SETTINGS"
+		);
 
 		if (!isAuthorized) return { error: "Non autorisé" };
 
@@ -654,7 +626,6 @@ export async function addShopMember(
 
 		if (!targetUser) return { error: "Utilisateur introuvable" };
 
-		// Check if already member
 		const existingMember = await db.query.shopUsers.findFirst({
 			where: and(
 				eq(shopUsers.shopId, shop.id),
@@ -665,10 +636,20 @@ export async function addShopMember(
 		if (existingMember)
 			return { error: "Cet utilisateur est déjà dans l'équipe" };
 
+		let newRole = "MEMBRE" as "MEMBRE" | "VP" | "GRIPSS";
+		let newRoleId: string | null = null;
+
+		if (["VP", "MEMBRE", "GRIPSS"].includes(roleOrRoleId)) {
+			newRole = roleOrRoleId as any;
+		} else {
+			newRoleId = roleOrRoleId;
+			newRole = "MEMBRE";
+		}
+
 		await db.insert(shopUsers).values({
 			userId: targetUser.id,
 			shopId: shop.id,
-			role: role,
+			shopRoleId: newRoleId,
 		});
 
 		revalidatePath(`/shops/${shopSlug}/manage/settings`);
@@ -686,28 +667,16 @@ export async function removeShopMember(shopSlug: string, userId: string) {
 	try {
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, shopSlug),
-			with: {
-				members: {
-					where: eq(shopUsers.userId, session.userId),
-				},
-			},
 		});
 
 		if (!shop) return { error: "Shop introuvable" };
 
-		let isAuthorized = false;
-		if (
-			session.permissions.includes("ADMIN_ACCESS") ||
-			session.permissions.includes("MANAGE_SHOPS")
-		)
-			isAuthorized = true;
-		else if (shop.members[0]) {
-			isAuthorized = hasShopPermission(
-				shop.members[0].role as any,
-				shop.permissions,
-				"canManageSettings"
-			);
-		}
+		const isAuthorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_SETTINGS"
+		);
 
 		if (!isAuthorized) return { error: "Non autorisé" };
 
@@ -726,7 +695,7 @@ export async function removeShopMember(shopSlug: string, userId: string) {
 export async function updateShopMemberRole(
 	shopSlug: string,
 	userId: string,
-	newRole: "VP" | "MEMBRE" | "GRIPSS"
+	roleOrRoleId: string
 ) {
 	const session = await verifySession();
 	if (!session) return { error: "Non autorisé" };
@@ -734,34 +703,32 @@ export async function updateShopMemberRole(
 	try {
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, shopSlug),
-			with: {
-				members: {
-					where: eq(shopUsers.userId, session.userId),
-				},
-			},
 		});
 
 		if (!shop) return { error: "Shop introuvable" };
 
-		let isAuthorized = false;
-		if (
-			session.permissions.includes("ADMIN_ACCESS") ||
-			session.permissions.includes("MANAGE_SHOPS")
-		)
-			isAuthorized = true;
-		else if (shop.members[0]) {
-			isAuthorized = hasShopPermission(
-				shop.members[0].role as any,
-				shop.permissions,
-				"canManageSettings"
-			);
-		}
+		const isAuthorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"MANAGE_SETTINGS"
+		);
 
 		if (!isAuthorized) return { error: "Non autorisé" };
 
+		let newRole = "MEMBRE" as "MEMBRE" | "VP" | "GRIPSS";
+		let newRoleId: string | null = null;
+
+		if (["VP", "MEMBRE", "GRIPSS"].includes(roleOrRoleId)) {
+			newRole = roleOrRoleId as any;
+		} else {
+			newRoleId = roleOrRoleId;
+			newRole = "MEMBRE";
+		}
+
 		await db
 			.update(shopUsers)
-			.set({ role: newRole })
+			.set({ shopRoleId: newRoleId })
 			.where(and(eq(shopUsers.shopId, shop.id), eq(shopUsers.userId, userId)));
 
 		revalidatePath(`/shops/${shopSlug}/manage/settings`);
@@ -775,11 +742,13 @@ export async function updateShopMemberRole(
 export async function checkTeamMemberAccess(
 	shopSlug: string,
 	requiredPermission?:
-		| "canSell"
-		| "canManageProducts"
-		| "canManageInventory"
-		| "canViewStats"
-		| "canManageSettings"
+		| "SELL"
+		| "MANAGE_PRODUCTS"
+		| "MANAGE_INVENTORY"
+		| "VIEW_STATS"
+		| "MANAGE_SETTINGS"
+		| "MANAGE_EVENTS"
+		| "MANAGE_EXPENSES"
 ) {
 	const session = await verifySession();
 	if (!session) return { authorized: false };
@@ -789,6 +758,7 @@ export async function checkTeamMemberAccess(
 		with: {
 			members: {
 				where: eq(shopUsers.userId, session.userId),
+				with: { shopRole: true },
 			},
 		},
 	});
@@ -798,28 +768,31 @@ export async function checkTeamMemberAccess(
 	if (
 		session.permissions.includes("ADMIN_ACCESS") ||
 		session.permissions.includes("MANAGE_SHOPS")
-	)
-		return { authorized: true, shop, role: "ADMIN", userId: session.userId };
-
-	const member = shop.members[0];
-	if (!member) return { authorized: false, error: "Not a member" };
-
-	if (member.role === "GRIPSS")
-		return { authorized: true, shop, role: "GRIPSS", userId: session.userId };
-
-	if (
-		requiredPermission &&
-		(member.role === "VP" || member.role === "MEMBRE")
 	) {
-		const hasPerm = hasShopPermission(
-			member.role,
-			shop.permissions,
-			requiredPermission
-		);
-		if (!hasPerm) return { authorized: false, error: "Permission denied" };
+		return {
+			authorized: true,
+			shop,
+			role: "ADMIN",
+			userId: session.userId,
+		};
 	}
 
-	return { authorized: true, shop, role: member.role, userId: session.userId };
+	const authorized = await checkShopPermission(
+		session.userId,
+		session.permissions,
+		shop.id,
+		requiredPermission || ""
+	);
+
+	if (!authorized) return { authorized: false, error: "Permission denied" };
+
+	const member = shop.members[0];
+	return {
+		authorized: true,
+		shop,
+		userId: session.userId,
+		permissions: member?.shopRole?.permissions || [],
+	};
 }
 
 export async function createShopAction(data: {
@@ -851,12 +824,36 @@ export async function createShopAction(data: {
 
 		if (existingShop) return { error: "Ce slug est déjà utilisé" };
 
-		await db.insert(shops).values({
-			name: data.name,
-			slug: slug,
-			description: data.description,
-			category: data.category,
-		});
+		const [newShop] = await db
+			.insert(shops)
+			.values({
+				name: data.name,
+				slug: slug,
+				description: data.description,
+				category: data.category,
+			})
+			.returning();
+
+		// Create Default Roles
+		await db.insert(shopRoles).values([
+			{
+				shopId: newShop.id,
+				name: "Chef",
+				permissions: [...SHOP_PERMISSIONS],
+			},
+			{
+				shopId: newShop.id,
+				name: "VP",
+				permissions: ["SELL", "MANAGE_INVENTORY", "MANAGE_PRODUCTS"],
+			},
+			{
+				shopId: newShop.id,
+				name: "Membre",
+				permissions: SHOP_PERMISSIONS.filter(
+					(p) => !["MANAGE_SETTINGS", "MANAGE_EVENTS"].includes(p)
+				),
+			},
+		]);
 
 		revalidatePath("/shops");
 		return { success: true };
@@ -866,7 +863,6 @@ export async function createShopAction(data: {
 	}
 }
 
-// Overwriting the above failed attempt with the original implementation:
 export async function getShopStats(
 	slug: string,
 	timeframe: "7d" | "30d" | "90d" | "all" | "custom",
@@ -879,57 +875,42 @@ export async function getShopStats(
 
 	const shop = await db.query.shops.findFirst({
 		where: eq(shops.slug, slug),
-		with: {
-			members: {
-				where: eq(shopUsers.userId, session.userId),
-			},
-		},
 	});
 
 	if (!shop) return { error: "Shop introuvable" };
 
-	// Check permissions
 	let isAuthorized = false;
 	if (
 		session.permissions.includes("ADMIN_ACCESS") ||
 		session.permissions.includes("MANAGE_SHOPS")
-	)
+	) {
 		isAuthorized = true;
-	else if (shop.members[0]) {
-		isAuthorized = hasShopPermission(
-			shop.members[0].role as any,
-			shop.permissions,
-			"canViewStats"
-		);
+	} else {
+		const perms = await getUserShopPermissions(session.userId, shop.id);
+		isAuthorized = hasShopPermission(perms, "VIEW_STATS");
 	}
 
 	if (!isAuthorized) return { error: "Non autorisé" };
 
 	try {
 		let startDate: Date;
-		let endDate: Date = new Date(); // now
+		let endDate: Date = new Date();
 
 		if (timeframe === "custom" && customStartDate && customEndDate) {
 			startDate = customStartDate;
 			endDate = customEndDate;
-			// Ensure end of day for endDate
 			endDate.setHours(23, 59, 59, 999);
-			// Ensure start of day for startDate
 			startDate.setHours(0, 0, 0, 0);
 		} else {
 			startDate = new Date();
-			// Reset to start of day for consistency? Or keep sliding window?
-			// Let's go with exact days back from now, but maybe snap to start of day for cleanliness
 			startDate.setHours(0, 0, 0, 0);
 
 			if (timeframe === "7d") startDate.setDate(startDate.getDate() - 7);
 			else if (timeframe === "30d") startDate.setDate(startDate.getDate() - 30);
 			else if (timeframe === "90d") startDate.setDate(startDate.getDate() - 90);
-			else if (timeframe === "all") startDate = new Date(0); // Epoch
+			else if (timeframe === "all") startDate = new Date(0);
 		}
 
-		// Fetch Revenues (Transactions of type PURCHASE)
-		// Amount is negative for purchases
 		const revenueTransactions = await db.query.transactions.findMany({
 			where: and(
 				eq(transactions.shopId, shop.id),
@@ -944,7 +925,6 @@ export async function getShopStats(
 			},
 		});
 
-		// Fetch Expenses
 		const expenseRecords = await db.query.shopExpenses.findMany({
 			where: and(
 				eq(shopExpenses.shopId, shop.id),
@@ -958,13 +938,11 @@ export async function getShopStats(
 			},
 		});
 
-		// Aggregate by Date
 		const statsByDate = new Map<
 			string,
 			{ date: string; revenue: number; expenses: number; profit: number }
 		>();
 
-		// Helper to format date key YYYY-MM-DD
 		const getDateKey = (date: Date) => {
 			const y = date.getFullYear();
 			const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -972,14 +950,9 @@ export async function getShopStats(
 			return `${y}-${m}-${d}`;
 		};
 
-		// Initialize map with all dates in range?
-		// Or just sparse? Let's do sparse for now, chart lib usually handles gaps or we fill them in frontend.
-		// Actually for a nice chart, filling gaps is better.
-
 		const currentDate = new Date(startDate);
 		const endLoopDate = new Date(endDate);
 		if (timeframe !== "all") {
-			// Don't fill 50 years if all is selected
 			while (currentDate <= endLoopDate) {
 				const key = getDateKey(currentDate);
 				statsByDate.set(key, { date: key, revenue: 0, expenses: 0, profit: 0 });
@@ -991,7 +964,6 @@ export async function getShopStats(
 		let totalExpenses = 0;
 
 		revenueTransactions.forEach((tx) => {
-			// tx.amount is negative
 			const key = getDateKey(new Date(tx.createdAt));
 			if (!statsByDate.has(key) && timeframe === "all") {
 				statsByDate.set(key, { date: key, revenue: 0, expenses: 0, profit: 0 });
@@ -999,10 +971,10 @@ export async function getShopStats(
 
 			if (statsByDate.has(key)) {
 				const dayStat = statsByDate.get(key)!;
-				const revenueAmount = Math.abs(tx.amount); // Convert to positive for revenue display
+				const revenueAmount = Math.abs(tx.amount);
 				dayStat.revenue += revenueAmount;
 				totalRevenue += revenueAmount;
-				dayStat.profit += revenueAmount; // Profit = Revenue - Expenses (Expenses deducted later)
+				dayStat.profit += revenueAmount;
 			}
 		});
 
@@ -1020,7 +992,6 @@ export async function getShopStats(
 			}
 		});
 
-		// Sort by date
 		const sortedChartData = Array.from(statsByDate.values()).sort((a, b) =>
 			a.date.localeCompare(b.date)
 		);

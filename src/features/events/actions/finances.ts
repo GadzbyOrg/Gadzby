@@ -3,7 +3,6 @@
 import { db } from "@/db";
 import { eventRevenues } from "@/db/schema/events";
 import { shopExpenses, eventExpenseSplits } from "@/db/schema/expenses";
-import { shopUsers } from "@/db/schema/shops";
 import { authenticatedAction } from "@/lib/actions";
 import {
 	createRevenueSchema,
@@ -14,7 +13,10 @@ import {
 	deleteSplitSchema,
 	shopIdSchema,
 } from "../schemas";
-import { hasShopPermission } from "@/features/shops/utils";
+import {
+	hasShopPermission,
+	getUserShopPermissions,
+} from "@/features/shops/utils";
 import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -23,24 +25,17 @@ async function checkShopPermission(
 	userId: string,
 	permissions: string[],
 	shopId: string,
-	action: "canManageProducts" | "canViewStats"
+	action: string
 ) {
-	if (permissions.includes("ADMIN") || permissions.includes("MANAGE_SHOPS")) {
+	if (
+		permissions.includes("ADMIN_ACCESS") ||
+		permissions.includes("MANAGE_SHOPS")
+	) {
 		return true;
 	}
 
-	const membership = await db.query.shopUsers.findFirst({
-		where: and(eq(shopUsers.shopId, shopId), eq(shopUsers.userId, userId)),
-		with: { shop: true },
-	});
-
-	if (!membership) return false;
-
-	return hasShopPermission(
-		membership.role as any,
-		membership.shop.permissions,
-		action
-	);
+	const userPerms = await getUserShopPermissions(userId, shopId);
+	return hasShopPermission(userPerms, action);
 }
 
 // Revenues
@@ -51,7 +46,7 @@ export const createEventRevenue = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -61,7 +56,7 @@ export const createEventRevenue = authenticatedAction(
 			description: data.description,
 			amount: data.amount,
 			issuerId: session.userId,
-            date: new Date(),
+			date: new Date(),
 		});
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
@@ -76,7 +71,7 @@ export const deleteEventRevenue = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -95,7 +90,7 @@ export const getAvailableExpensesAction = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -117,7 +112,7 @@ export const linkExpenseToEvent = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -138,7 +133,7 @@ export const unlinkExpenseFromEvent = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -159,7 +154,7 @@ export const splitExpense = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -181,7 +176,7 @@ export const deleteExpenseSplit = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 

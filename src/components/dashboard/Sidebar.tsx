@@ -82,6 +82,11 @@ const getNavStructure = (): NavGroup[] => [
 				url: "/admin/settings/email",
 				permission: "ADMIN_ACCESS",
 			},
+            {
+                label: "Prélèvement de masse",
+                url: "/admin/mass-payment",
+                permission: "ADMIN_ACCESS",
+            },
 		],
 	},
 ];
@@ -100,6 +105,7 @@ type SidebarProps = {
 			canViewStats: boolean;
 			canManageSettings: boolean;
 			canManageEvents: boolean;
+			canManageExpenses: boolean;
 		};
 	}[];
 };
@@ -154,6 +160,8 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 								hasAdminAccess || shop.permissions?.canManageSettings;
 							const canManageEvents =
 								shop.permissions?.canManageEvents || hasAdminAccess;
+							const canManageExpenses =
+								shop.permissions?.canManageExpenses || hasAdminAccess;
 
 							if (canSell)
 								items.push({
@@ -180,7 +188,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 									label: "Statistiques",
 									url: `/shops/${shop.slug}/manage/statistics`,
 								});
-							if (canViewStats)
+							if (canManageExpenses)
 								items.push({
 									label: "Dépenses",
 									url: `/shops/${shop.slug}/manage/expenses`,

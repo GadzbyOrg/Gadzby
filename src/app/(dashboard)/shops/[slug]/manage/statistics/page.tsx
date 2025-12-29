@@ -2,12 +2,12 @@ import {
 	getShopTransactions,
 	checkTeamMemberAccess,
 } from "@/features/shops/actions";
-import { formatPrice } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ShopExportButton } from "./_components/shop-export-button";
 import { ShopTransactionToolbar } from "./_components/shop-transaction-toolbar";
 import { StatisticsCharts } from "./_components/statistics-charts";
+import { TransactionTable } from "@/components/transactions/transaction-table";
 
 export default async function ShopTransactionsPage({
 	params,
@@ -22,7 +22,7 @@ export default async function ShopTransactionsPage({
 		typeof resolvedSearchParams.search === "string"
 			? resolvedSearchParams.search
 			: "";
-	// const type = typeof resolvedSearchParams.type === 'string' ? resolvedSearchParams.type : "ALL";
+
 	const sort =
 		typeof resolvedSearchParams.sort === "string"
 			? resolvedSearchParams.sort
@@ -66,10 +66,13 @@ export default async function ShopTransactionsPage({
 	}
 
 	// Explicit Page access check
-	const access = await checkTeamMemberAccess(slug, "canViewStats");
+	const access = await checkTeamMemberAccess(slug, "VIEW_STATS");
 	if (!access.authorized) {
 		redirect(`/shops/${slug}`);
 	}
+
+	// TODO: Check if user has permission to cancel transactions and display button accordingly
+	const isAppAdmin = true; // Temporay
 
 	const eventIdParam =
 		typeof resolvedSearchParams.eventId === "string"
@@ -135,91 +138,8 @@ export default async function ShopTransactionsPage({
 							Liste des opérations
 						</h2>
 					</div>
-					<div className="overflow-x-auto">
-						<table className="w-full text-left text-sm">
-							<thead className="bg-dark-800 text-gray-400 font-medium">
-								<tr>
-									<th className="px-6 py-4">Date</th>
-									<th className="px-6 py-4">Client</th>
-									<th className="px-6 py-4">Produit/Action</th>
-									<th className="px-6 py-4">Vendeur</th>
-									<th className="px-6 py-4 text-right">Montant</th>
-								</tr>
-							</thead>
-							<tbody className="divide-y divide-dark-800 text-gray-300">
-								{transactions.length === 0 ? (
-									<tr>
-										<td
-											colSpan={5}
-											className="px-6 py-8 text-center text-gray-500"
-										>
-											Aucune transaction trouvée
-										</td>
-									</tr>
-								) : (
-									// eslint-disable-next-line @typescript-eslint/no-explicit-any
-									(transactions as any[]).map((tx) => (
-										<tr
-											key={tx.id}
-											className="hover:bg-dark-800/50 transition-colors"
-										>
-											<td className="px-6 py-4 whitespace-nowrap text-gray-400">
-												{new Date(tx.createdAt).toLocaleDateString("fr-FR", {
-													day: "2-digit",
-													month: "2-digit",
-													year: "numeric",
-													hour: "2-digit",
-													minute: "2-digit",
-												})}
-											</td>
-											<td className="px-6 py-4">
-												{tx.targetUser ? (
-													<div className="font-medium text-white">
-														{tx.targetUser.prenom} {tx.targetUser.nom}
-														<span className="block text-xs text-gray-500">
-															@{tx.targetUser.username}
-														</span>
-													</div>
-												) : (
-													<span className="text-gray-500">-</span>
-												)}
-											</td>
-											<td className="px-6 py-4">
-												{tx.product ? (
-													<div>
-														<span className="text-white">
-															{tx.product.name}
-														</span>
-														{(tx.quantity || 0) > 1 && (
-															<span className="ml-2 text-xs bg-dark-800 px-2 py-0.5 rounded text-gray-400">
-																x{tx.quantity}
-															</span>
-														)}
-													</div>
-												) : (
-													<span className="text-gray-400">
-														{tx.description || tx.type}
-													</span>
-												)}
-											</td>
-											<td className="px-6 py-4 text-gray-500">
-												{tx.issuer.id === tx.targetUser?.id
-													? "Soi-même"
-													: tx.issuer.username}
-											</td>
-											<td
-												className={`px-6 py-4 text-right font-mono font-medium ${
-													tx.amount > 0 ? "text-green-500" : "text-white"
-												}`}
-											>
-												{formatPrice(tx.amount)}
-											</td>
-										</tr>
-									))
-								)}
-							</tbody>
-						</table>
-					</div>
+
+					<TransactionTable transactions={transactions} isAdmin={isAppAdmin} />
 				</div>
 			</div>
 		</div>

@@ -6,7 +6,6 @@ import {
 import { getShopBySlug, checkTeamMemberAccess } from "@/features/shops/actions";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 
 export default async function ShopExpensesPage({
 	params,
@@ -16,7 +15,7 @@ export default async function ShopExpensesPage({
 	const { slug } = await params;
 
 	// Check access
-	const access = await checkTeamMemberAccess(slug, "canViewStats"); // Reusing stats permission
+	const access = await checkTeamMemberAccess(slug, "MANAGE_EXPENSES");
 	if (!access.authorized) {
 		redirect(`/shops/${slug}`);
 	}
@@ -115,7 +114,7 @@ export default async function ShopExpensesPage({
 									step="0.01"
 									min="0"
 									required
-									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 no-spinner"
 									placeholder="0.00"
 								/>
 							</div>

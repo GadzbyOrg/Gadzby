@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { IconUserPlus, IconTrash, IconCheck, IconX } from "@tabler/icons-react";
+import {
+	IconUserPlus,
+	IconTrash,
+	IconX,
+	IconAlertTriangle,
+} from "@tabler/icons-react";
 import {
 	importParticipants,
 	importParticipantsFromList,
@@ -221,6 +226,7 @@ export function EventParticipants({ event, slug }: Props) {
 					<thead className="bg-dark-800 text-gray-200 uppercase text-xs">
 						<tr>
 							<th className="px-4 py-3">Utilisateur</th>
+							<th className="px-4 py-3">Solde</th>
 							<th className="px-4 py-3">Status</th>
 							{event.type === "SHARED_COST" && (
 								<th className="px-4 py-3">Poids (Parts)</th>
@@ -232,11 +238,42 @@ export function EventParticipants({ event, slug }: Props) {
 						{event.participants.map((p: any) => (
 							<tr key={p.userId} className="hover:bg-dark-800/50">
 								<td className="px-4 py-3">
-									<div className="font-medium text-white">
+									<div className="font-medium text-white flex items-center gap-2">
 										{p.user.prenom} {p.user.nom}
 									</div>
 									<div className="text-xs text-gray-500">
 										{p.user.bucque || p.user.username}
+									</div>
+								</td>
+								<td className="px-4 py-3">
+									<div
+										className={`flex items-center ${
+											(event.acompte || 0) > 0 && p.user.balance < event.acompte
+												? "text-orange-400 font-semibold  px-2 py-1 rounded"
+												: ""
+										}`}
+									>
+										{(event.acompte || 0) > 0 &&
+											p.user.balance < event.acompte && (
+												<div
+													title={`Solde insuffisant (Manque ${(
+														(event.acompte - p.user.balance) /
+														100
+													).toFixed(2)}€)`}
+													className="text-orange-400 mr-1"
+												>
+													<IconAlertTriangle size={16} />
+												</div>
+											)}
+										{(p.user.balance / 100).toFixed(2)}€{" "}
+										{(event.acompte || 0) > 0 &&
+											p.user.balance < event.acompte && (
+												<span className="text-xs text-orange-200 ml-2">
+													Solde insuffisant (manque{" "}
+													{((event.acompte - p.user.balance) / 100).toFixed(2)}
+													€)
+												</span>
+											)}
 									</div>
 								</td>
 								<td className="px-4 py-3">

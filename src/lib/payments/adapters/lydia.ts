@@ -13,6 +13,7 @@ interface LydiaFees {
 }
 
 interface LydiaInitiateResponse {
+	status?: string;
 	error: string;
 	request_id: string;
 	message: string;
@@ -24,13 +25,7 @@ export class LydiaAdapter implements PaymentProvider {
 	private apiEndpoint: string;
 
 	constructor(private config: LydiaConfig, private fees: LydiaFees) {
-		// Determine API URL based on environment
-		if (process.env.NODE_ENV === "development") {
-			this.apiEndpoint =
-				"https://homologation.lydia-app.com/api/request/do.json";
-		} else {
-			this.apiEndpoint = "https://lydia-app.com/api/request/do.json";
-		}
+		this.apiEndpoint = "https://lydia-app.com/api/request/do.json";
 	}
 
 	/**
@@ -46,10 +41,17 @@ export class LydiaAdapter implements PaymentProvider {
 
 	async createPayment(
 		amountCents: number,
-		recipientNumber: string, // phone number
 		description: string,
-		internalTransactionId: string
+		internalTransactionId: string,
+		providerOptions: Record<string, string> = {}
 	): Promise<PaymentResult> {
+		const recipientNumber = providerOptions["phone"];
+
+		if (!recipientNumber) {
+			console.error("Lydia payment requires recipient phone number");
+			throw new Error("Lydia payment requires recipient phone number");
+		}
+
 		// 1. Calculate the inflated amount (User pays fees)
 		const totalAmountCents = this.calculateTotalCharge(amountCents);
 		const amountFloat = (totalAmountCents / 100).toFixed(2); // Lydia expects "10.50"
@@ -75,7 +77,12 @@ export class LydiaAdapter implements PaymentProvider {
 		formData.append("browser_success_url", successUrl);
 		formData.append("browser_fail_url", failUrl);
 		formData.append("callback_url", confirmUrl);
+		formData.append("type", "phone");
 
+		console.log(
+			"[Lydia] Sending payment initiation request:",
+			formData.toString()
+		);
 		// 4. Call Lydia API
 		try {
 			const response = await fetch(this.apiEndpoint, {
@@ -94,13 +101,17 @@ export class LydiaAdapter implements PaymentProvider {
 				throw new Error(`Lydia Error: ${data.message || "Unknown"}`);
 			}
 
-			const webUrl = data.web_url as string;
-			// TODO: If user is mobile, we can use mobile_url for a better experience
-			// const mobileUrl = data.mobile_url as string;
+			if (data.status && data.status === "error") {
+				console.error("[Lydia] API Error:", data);
+				throw new Error(`Lydia Error: ${data.message || "Unknown"}`);
+			}
+
+			const mobileUrl = data.mobile_url as string;
+			console.log("[Lydia] Payment initiated successfully:", data);
 
 			return {
 				paymentId: data.request_id,
-				redirectUrl: webUrl,
+				redirectUrl: mobileUrl,
 				totalAmountCents: totalAmountCents,
 			};
 		} catch (error) {
@@ -131,13 +142,13 @@ export class LydiaAdapter implements PaymentProvider {
 			}
 
 			// Signature Verification
-			const signatureSource = `${currency}${request_id}${amount}${signed}${transaction_identifier}${vendor_token}${this.config.privateToken}`;
+			const signatureSource = `${currency}${request_id}${amount}${signed}${transaction_identifier}${vendor_token}${sig}`;
 			const calculatedHash = crypto
 				.createHash("md5")
 				.update(signatureSource)
 				.digest("hex");
 
-			if (calculatedHash !== sig) {
+			if (calculatedHash !== this.config.privateToken) {
 				console.warn("[Lydia] Invalid signature", { calculatedHash, sig });
 				return { isValid: false };
 			}

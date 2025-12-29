@@ -37,7 +37,7 @@ export function ShopManagerView({
 			setClientFamss([]);
 			setSelectedFamsId("");
 
-			getUserFamss(selectedClient.id).then((res) => {
+			getUserFamss({ userId: selectedClient.id }).then((res) => {
 				if (res.famss) {
 					setClientFamss(res.famss);
 				}
@@ -147,14 +147,25 @@ export function ShopManagerView({
 									const product = products.find((p) => p.id === productId);
 									if (!product) return null;
 									return (
-										<li key={productId} className="flex justify-between">
+										<li
+											key={productId}
+											className="flex justify-between items-center"
+										>
 											<span>
 												{product.name}{" "}
 												<span className="text-gray-500">x{qty}</span>
 											</span>
-											<span className="font-mono">
-												{((product.price * qty) / 100).toFixed(2)}€
-											</span>
+											<div className="flex items-center">
+												<span className="font-mono">
+													{((product.price * qty) / 100).toFixed(2)}€
+												</span>
+												<button
+													onClick={() => handleAddToCart(product, -1)}
+													className="h-8 w-8 ml-2 bg-red-400 text-white rounded flex items-center justify-center hover:bg-red-500 transition-colors"
+												>
+													-
+												</button>
+											</div>
 										</li>
 									);
 								})}

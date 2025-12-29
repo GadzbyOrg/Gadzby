@@ -25,6 +25,7 @@ type ShopProp = {
 		canViewStats: boolean;
 		canManageSettings: boolean;
 		canManageEvents: boolean;
+		canManageExpenses: boolean;
 	};
 };
 

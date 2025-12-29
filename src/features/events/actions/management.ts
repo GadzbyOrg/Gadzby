@@ -3,7 +3,6 @@
 import { db } from "@/db";
 import { events } from "@/db/schema/events";
 import { users } from "@/db/schema/users";
-import { shopUsers } from "@/db/schema/shops";
 import { products } from "@/db/schema/products";
 import { transactions } from "@/db/schema/transactions";
 import { authenticatedAction } from "@/lib/actions";
@@ -13,34 +12,9 @@ import {
 	eventActionSchema,
 	eventIdSchema,
 } from "../schemas";
-import { hasShopPermission } from "@/features/shops/utils";
+import { checkShopPermission } from "@/features/shops/utils";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-
-// Helper for permissions within actions
-async function checkShopPermission(
-	userId: string,
-	permissions: string[],
-	shopId: string,
-	action: "canManageProducts" | "canViewStats"
-) {
-	if (permissions.includes("ADMIN") || permissions.includes("MANAGE_SHOPS")) {
-		return true;
-	}
-
-	const membership = await db.query.shopUsers.findFirst({
-		where: and(eq(shopUsers.shopId, shopId), eq(shopUsers.userId, userId)),
-		with: { shop: true },
-	});
-
-	if (!membership) return false;
-
-	return hasShopPermission(
-		membership.role as any,
-		membership.shop.permissions,
-		action
-	);
-}
 
 export const createEvent = authenticatedAction(
 	createEventSchema,
@@ -49,7 +23,7 @@ export const createEvent = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -68,7 +42,7 @@ export const createEvent = authenticatedAction(
 			})
 			.returning();
 
-		revalidatePath(`/admin/shops/${data.shopId}/events`);
+		revalidatePath(`/shops/${data.shopId}/manage/events`);
 		return newEvent;
 	}
 );
@@ -80,7 +54,7 @@ export const updateEvent = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -99,25 +73,25 @@ export const updateEvent = authenticatedAction(
 			.where(eq(events.id, data.eventId))
 			.returning();
 
-		revalidatePath(`/admin/shops/${data.shopId}/events`);
-		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+		revalidatePath(`/shops/${data.shopId}/manage/events`);
+		revalidatePath(`/shops/${data.shopId}/manage/events/${data.eventId}`);
 		return updated;
 	}
 );
 
 export const deleteEvent = authenticatedAction(
-	eventActionSchema, // Uses shopId and eventId
+	eventActionSchema,
 	async (data, { session }) => {
 		const authorized = await checkShopPermission(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
 		await db.delete(events).where(eq(events.id, data.eventId));
-		revalidatePath(`/admin/shops/${data.shopId}/events`);
+		revalidatePath(`/shops/${data.shopId}/manage/events`);
 		return { success: "Event deleted" };
 	}
 );
@@ -129,7 +103,7 @@ export const activateEvent = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -184,10 +158,13 @@ export const activateEvent = authenticatedAction(
 					);
 
 					if (insufficientFundsUsers.length > 0) {
-						const names = insufficientFundsUsers
-							.map((u) => `${u.prenom} ${u.nom}`)
-							.join(", ");
-						warningMessage = `Attention, les utilisateurs suivants ont un solde négatif : ${names}`;
+						return {
+							insufficientUsers: insufficientFundsUsers.map((u) => ({
+								id: u.id,
+								name: `${u.prenom} ${u.nom}`,
+								balance: u.balance,
+							})),
+						};
 					}
 
 					await db.transaction(async (tx) => {
@@ -222,8 +199,8 @@ export const activateEvent = authenticatedAction(
 						.where(eq(events.id, data.eventId));
 				}
 
-				revalidatePath(`/admin/shops/${data.shopId}/events`);
-				revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+				revalidatePath(`/shops/${data.shopId}/manage/events`);
+				revalidatePath(`/shops/${data.shopId}/manage/events/${data.eventId}`);
 				return { message: "Event activated", warning: warningMessage };
 			} else {
 				// No participants
@@ -240,8 +217,8 @@ export const activateEvent = authenticatedAction(
 				.where(eq(events.id, data.eventId));
 		}
 
-		revalidatePath(`/admin/shops/${data.shopId}/events`);
-		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+		revalidatePath(`/shops/${data.shopId}/manage/events`);
+		revalidatePath(`/shops/${data.shopId}/manage/events/${data.eventId}`);
 		return { message: "Event activated" };
 	}
 );
@@ -258,7 +235,7 @@ export const closeEvent = authenticatedAction(
 			session.userId,
 			session.permissions,
 			event.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -274,7 +251,7 @@ export const closeEvent = authenticatedAction(
 				.where(eq(events.id, data.eventId));
 		});
 
-		revalidatePath(`/admin/shops/${event.shopId}/events/${data.eventId}`);
+		revalidatePath(`/shops/${event.shopId}/manage/events/${data.eventId}`);
 		return { success: "Event closed" };
 	}
 );

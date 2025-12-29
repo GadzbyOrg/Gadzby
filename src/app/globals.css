@@ -63,3 +63,18 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary-600);
 }
+
+@layer utilities {
+
+  /* Hide spinner in Chrome, Safari, Edge, Opera */
+  .no-spinner::-webkit-outer-spin-button,
+  .no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Hide spinner in Firefox */
+  .no-spinner {
+    -moz-appearance: textfield;
+  }
+}

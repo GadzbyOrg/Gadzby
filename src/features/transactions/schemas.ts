@@ -19,3 +19,13 @@ export const transactionQuerySchema = z.object({
     type: z.string().default("ALL"),
     sort: z.string().default("DATE_DESC"),
 });
+
+export const massChargeSchema = z.object({
+    userIds: z.array(z.string()).min(1, "Au moins un utilisateur requis"),
+    amount: z.coerce.number().min(0.01, "Montant positif requis"),
+    description: z.string().min(1, "Description requise"),
+});
+
+export const cancelMassOperationSchema = z.object({
+    groupId: z.string().uuid(),
+});

@@ -14,34 +14,9 @@ import {
 	importParticipantsSchema,
 	importParticipantsListSchema,
 } from "../schemas";
-import { hasShopPermission } from "@/features/shops/utils";
+import { checkShopPermission } from "@/features/shops/utils";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-
-// Helper for permissions (DUPLICATE, MOVE TO UTILS)
-async function checkShopPermission(
-	userId: string,
-	permissions: string[],
-	shopId: string,
-	action: "canManageProducts" | "canViewStats"
-) {
-	if (permissions.includes("ADMIN") || permissions.includes("MANAGE_SHOPS")) {
-		return true;
-	}
-
-	const membership = await db.query.shopUsers.findFirst({
-		where: and(eq(shopUsers.shopId, shopId), eq(shopUsers.userId, userId)),
-		with: { shop: true },
-	});
-
-	if (!membership) return false;
-
-	return hasShopPermission(
-		membership.role as any,
-		membership.shop.permissions,
-		action
-	);
-}
 
 export const joinEvent = authenticatedAction(
 	joinEventSchema,
@@ -66,7 +41,7 @@ export const joinEvent = authenticatedAction(
 					session.userId,
 					session.permissions,
 					event.shopId,
-					"canManageProducts"
+					"MANAGE_EVENTS"
 				);
 				if (!authorized) return { error: "Self-registration not allowed" };
 			}
@@ -75,7 +50,7 @@ export const joinEvent = authenticatedAction(
 				session.userId,
 				session.permissions,
 				event.shopId,
-				"canManageProducts"
+				"MANAGE_EVENTS"
 			);
 			if (!authorized) return { error: "Unauthorized to add other users" };
 		}
@@ -90,7 +65,8 @@ export const joinEvent = authenticatedAction(
 		if (existing) return { success: "Already joined" };
 
 		const acompte = event.acompte || 0;
-		if (acompte > 0) {
+		// Only charge if event is OPEN
+		if (acompte > 0 && event.status === "OPEN") {
 			const user = await db.query.users.findFirst({
 				where: eq(users.id, targetUserId),
 				columns: { balance: true, isAsleep: true },
@@ -157,7 +133,7 @@ export const leaveEvent = authenticatedAction(
 				session.userId,
 				session.permissions,
 				event.shopId,
-				"canManageProducts"
+				"MANAGE_EVENTS"
 			);
 			if (!authorized) return { error: "Unauthorized" };
 		}
@@ -188,7 +164,7 @@ export const updateParticipant = authenticatedAction(
 			session.userId,
 			session.permissions,
 			event.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -222,7 +198,7 @@ export const importParticipants = authenticatedAction(
 			session.userId,
 			session.permissions,
 			event.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -276,7 +252,7 @@ export const importParticipantsFromList = authenticatedAction(
 			session.userId,
 			session.permissions,
 			event.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 

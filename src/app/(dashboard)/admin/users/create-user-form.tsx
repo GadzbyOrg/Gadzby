@@ -89,6 +89,20 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 					/>
 				</div>
 
+				<div className="space-y-2">
+					<label htmlFor="phone" className="text-sm font-medium text-gray-300">
+						Numéro de téléphone
+					</label>
+					<input
+						required
+						type="tel"
+						name="phone"
+						id="phone"
+						placeholder="Ex: 06 12 34 56 78"
+						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+					/>
+				</div>
+
 				<div className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
 						<label

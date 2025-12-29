@@ -11,7 +11,7 @@ export default async function ShopPosPage({
 }) {
     const { slug } = await params;
     
-    const access = await checkTeamMemberAccess(slug, "canSell");
+    const access = await checkTeamMemberAccess(slug, "SELL");
     if (!access.authorized || !access.shop) {
         redirect(`/shops/${slug}`);
     }

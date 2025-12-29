@@ -26,8 +26,15 @@ import {
 import { getTransactionsQuery } from "./queries";
 import { z } from "zod";
 
-export const getUserTransactionsAction = authenticatedActionNoInput(
-	async ({ session }) => {
+export const getUserTransactionsAction = authenticatedAction(
+	z.object({
+		page: z.number().default(1),
+		limit: z.number().default(50),
+	}),
+	async (data, { session }) => {
+		const { page, limit } = data;
+		const offset = (page - 1) * limit;
+
 		// Query using Drizzle's query builder to get relations automatically
 		const userTransactions = await db.query.transactions.findMany({
 			where: eq(transactions.targetUserId, session.userId),
@@ -40,7 +47,8 @@ export const getUserTransactionsAction = authenticatedActionNoInput(
 				receiverUser: true,
 				targetUser: true,
 			},
-			limit: 100,
+			limit: limit,
+			offset: offset,
 		});
 
 		return { success: "OK", data: userTransactions };

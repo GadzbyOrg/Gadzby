@@ -2,7 +2,14 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { updateUserAction } from "@/features/users/actions";
-import { IconUser, IconMail, IconId, IconSchool, IconLoader2 } from "@tabler/icons-react";
+import {
+	IconUser,
+	IconMail,
+	IconPhone,
+	IconId,
+	IconSchool,
+	IconLoader2,
+} from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
 function SubmitButton() {
@@ -48,7 +55,10 @@ function InputLabel({
 }
 
 export function SettingsForm({ user }: { user: any }) {
-	const [state, action] = useFormState(updateUserAction, { error: undefined, success: undefined });
+	const [state, action] = useFormState(updateUserAction, {
+		error: undefined,
+		success: undefined,
+	});
 
 	return (
 		<form action={action} className="space-y-6">
@@ -107,6 +117,21 @@ export function SettingsForm({ user }: { user: any }) {
 							name="email"
 							id="email"
 							defaultValue={user.email}
+							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+						/>
+					</div>
+				</div>
+				<div className="sm:col-span-2">
+					<InputLabel htmlFor="phone">Téléphone</InputLabel>
+					<div className="relative mt-2">
+						<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+							<IconPhone className="h-5 w-5 text-gray-500" />
+						</div>
+						<input
+							type="tel"
+							name="phone"
+							id="phone"
+							defaultValue={user.phone}
 							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
 						/>
 					</div>

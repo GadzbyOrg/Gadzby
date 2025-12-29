@@ -45,16 +45,17 @@ export function TopUpForm({ methods }: { methods: PaymentMethod[] }) {
 		if (!selectedMethod || amount <= 0) return;
 
 		setIsLoading(true);
-		try {
-			const url = await initiateTopUp({
-				providerSlug: selectedMethod,
-				amountCents: amount * 100,
-			});
-			window.location.href = url; // Redirect to provider
-		} catch (err) {
+		const { url, error } = await initiateTopUp({
+			providerSlug: selectedMethod,
+			amountCents: amount * 100,
+		});
+
+		if (!url || error) {
 			alert("Une erreur est survenue lors de l'initialisation du paiement.");
 			setIsLoading(false);
+			return;
 		}
+		window.location.href = url; // Redirect to provider
 	};
 
 	if (methods.length === 0) {

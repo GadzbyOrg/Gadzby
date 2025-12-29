@@ -22,7 +22,7 @@ export function CreateShopModal() {
         const slug = formData.get("slug") as string;
         
         const res = await createShopAction({ name, description, slug: slug || undefined });
-        setLoading(false);
+        
 
         if (res.error) {
             toast({
@@ -30,7 +30,9 @@ export function CreateShopModal() {
                 description: res.error,
                 variant: "destructive"
             });
+            setLoading(false);
         } else {
+            setLoading(false);
             toast({
                 title: "Succès",
                 description: "Le shop a été créé avec succès",

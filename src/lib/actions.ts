@@ -111,7 +111,6 @@ export function authenticatedAction<T extends z.ZodType, R>(
 		}
 
 		// Parse with Zod
-		console.log(formData); // REMOVE THIS IN PROD I BEG YOU
 		const parsed = schema.safeParse(rawData);
 
 		if (!parsed.success) {

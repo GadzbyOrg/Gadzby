@@ -146,6 +146,10 @@ export class TransactionService {
 			if (!originalTx) throw new Error("Transaction introuvable");
 			if (originalTx.status === "CANCELLED")
 				throw new Error("Transaction déjà annulée");
+			if (originalTx.status === "PENDING")
+				throw new Error("Transaction en attente");
+			if (originalTx.status === "FAILED")
+				throw new Error("Transaction échouée");
 
 			// Special Handling for TRANSFER: Must cancel both legs if found
 			if (originalTx.type === "TRANSFER") {
@@ -393,6 +397,80 @@ export class TransactionService {
 			await tx.insert(transactions).values(transactionRecords);
 
 			return { success: true };
+		});
+	}
+	/**
+	 * Admin adjustment (positive or negative).
+	 * Can be used for Mass Charges or manual corrections.
+	 */
+	static async adminAdjustment(
+		issuerId: string,
+		targetUserId: string,
+		amountInEuros: number,
+		description: string,
+		groupId?: string
+	) {
+		if (amountInEuros === 0) throw new Error("Montant nul invalide");
+
+		const amountInCents = Math.round(amountInEuros * 100);
+
+		return await db.transaction(async (tx) => {
+			const targetUser = await tx.query.users.findFirst({
+				where: eq(users.id, targetUserId),
+			});
+			if (!targetUser) throw new Error("Utilisateur introuvable");
+			// Check isDeleted but allow isAsleep for debt collection if needed? 
+			// For now, let's block isAsleep for consistency or allow? 
+			// If it's a charge (debt), even aslept users might owe money. 
+			// Let's enforce standard checks:
+			if (targetUser.isDeleted) throw new Error("Utilisateur supprimé");
+
+			await tx
+				.update(users)
+				.set({ balance: sql`${users.balance} + ${amountInCents}` })
+				.where(eq(users.id, targetUserId));
+
+			await tx.insert(transactions).values({
+				amount: amountInCents,
+				type: "ADJUSTMENT",
+				walletSource: "PERSONAL",
+				issuerId: issuerId,
+				targetUserId: targetUserId,
+				description: description,
+				groupId: groupId || null,
+			});
+
+			return { success: true };
+		});
+	}
+
+	/**
+	 * Cancel a group of transactions (e.g. Mass Operation).
+	 */
+	static async cancelTransactionGroup(groupId: string, performedByUserId: string) {
+		return await db.transaction(async (tx) => {
+			// Find all transactions in group that are not cancelled
+			const groupTxs = await tx.query.transactions.findMany({
+				where: and(
+					eq(transactions.groupId, groupId),
+					sql`${transactions.status} != 'CANCELLED'`
+				),
+			});
+
+			if (groupTxs.length === 0) {
+				throw new Error("Aucune transaction trouvée pour ce groupe (ou déjà annulées)");
+			}
+
+			for (const txRecord of groupTxs) {
+				await TransactionService.reverseSingleTransaction(
+					tx,
+					txRecord,
+					performedByUserId,
+					false
+				);
+			}
+
+			return { success: true, count: groupTxs.length };
 		});
 	}
 }

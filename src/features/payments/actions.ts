@@ -44,12 +44,16 @@ export const initiateTopUp = authenticatedAction(
 		}
 
 		let paymentResult;
+		let providerOptions = {};
+		if (providerSlug === "lydia") {
+			providerOptions = { phone: user.phone || "" };
+		}
 		try {
 			paymentResult = await provider.createPayment(
 				amountCents,
-				user.email,
 				`Rechargement compte Gadzby`,
-				tx.id
+				tx.id,
+				providerOptions
 			);
 		} catch (error) {
 			console.error("Error creating payment:", error);

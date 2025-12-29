@@ -23,7 +23,7 @@ import { transactions } from "@/db/schema";
 export const updateUserAction = authenticatedAction(
 	updateUserSchema,
 	async (data, { session }) => {
-		const { nom, prenom, email, bucque, promss, nums } = data;
+		const { nom, prenom, email, phone, bucque, promss, nums } = data;
 		const newUsername = `${nums}${promss}`;
 
 		try {
@@ -33,6 +33,7 @@ export const updateUserAction = authenticatedAction(
 					nom,
 					prenom,
 					email,
+					phone,
 					bucque,
 					promss,
 					nums,
@@ -140,6 +141,7 @@ export const adminUpdateUserAction = authenticatedAction(
 			nom,
 			prenom,
 			email,
+			phone,
 			bucque,
 			promss,
 			nums,
@@ -181,6 +183,7 @@ export const adminUpdateUserAction = authenticatedAction(
 					nom,
 					prenom,
 					email,
+					phone,
 					bucque,
 					promss,
 					nums,
@@ -264,6 +267,7 @@ export const createUserAction = authenticatedAction(
 			nom,
 			prenom,
 			email,
+			phone,
 			bucque,
 			promss,
 			nums,
@@ -276,12 +280,17 @@ export const createUserAction = authenticatedAction(
 		try {
 			const existingUser = await db.query.users.findFirst({
 				where: (users, { eq, or }) =>
-					or(eq(users.username, username), eq(users.email, email)),
+					or(
+						eq(users.username, username),
+						eq(users.email, email),
+						eq(users.phone, phone)
+					),
 			});
 
 			if (existingUser) {
 				return {
-					error: "Un utilisateur avec ce username ou email existe déjà",
+					error:
+						"Un utilisateur avec ce username, email ou téléphone existe déjà",
 				};
 			}
 
@@ -291,6 +300,7 @@ export const createUserAction = authenticatedAction(
 				nom,
 				prenom,
 				email,
+				phone,
 				bucque,
 				promss,
 				nums,
@@ -338,6 +348,11 @@ export const importUsersAction = authenticatedAction(
 					nom: row["Nom"] || row["nom"],
 					prenom: row["Prenom"] || row["Prénom"] || row["prenom"],
 					email: row["Email"] || row["email"],
+					phone:
+						row["Phone"] ||
+						row["phone"] ||
+						row["Téléphone"] ||
+						row["téléphone"],
 					bucque: row["Bucque"] || row["bucque"],
 					promss: String(row["Promss"] || row["promss"] || ""),
 					nums: String(row["Nums"] || row["nums"] || ""),
@@ -356,7 +371,7 @@ export const importUsersAction = authenticatedAction(
 					continue;
 				}
 
-				const { nom, prenom, email, bucque, promss, nums, balance } =
+				const { nom, prenom, email, phone, bucque, promss, nums, balance } =
 					parsed.data;
 				const username = `${nums}${promss}`;
 
@@ -394,10 +409,21 @@ export const importUsersAction = authenticatedAction(
 					continue;
 				}
 
+				const existingPhone = await db.query.users.findFirst({
+					where: (users, { eq }) => eq(users.phone, phone),
+				});
+
+				if (existingPhone) {
+					failCount++;
+					errors.push(`Téléphone déjà utilisé: ${phone}`);
+					continue;
+				}
+
 				await db.insert(users).values({
 					nom,
 					prenom,
 					email: finalEmail,
+					phone,
 					bucque,
 					promss,
 					nums,
@@ -479,6 +505,7 @@ export const hardDeleteUserAction = authenticatedAction(
 					isAsleep: true,
 					emailVerified: null,
 					email: `deleted_${timestamp}@gadzby.local`,
+					phone: null,
 					image: null,
 					isDeleted: true,
 				})

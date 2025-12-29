@@ -261,7 +261,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 										</div>
 										<div className="flex-[3]">
 											<input
-												type="text"
+												type="password"
 												placeholder="Valeur"
 												value={field.value}
 												onChange={(e) =>

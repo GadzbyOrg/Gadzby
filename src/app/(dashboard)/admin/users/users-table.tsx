@@ -140,7 +140,7 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 						action={importUsersAction}
 						triggerLabel="Importer"
 						modalTitle="Importer des utilisateurs"
-						expectedFormat="Nom, Prenom, Email, Bucque, Promss, Nums, Balance"
+						expectedFormat="Nom, Prenom, Email, Phone, Bucque, Promss, Nums, Balance"
 						fileName="import_users"
 					/>
 					<button

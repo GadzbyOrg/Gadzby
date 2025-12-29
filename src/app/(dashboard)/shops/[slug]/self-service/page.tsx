@@ -4,7 +4,7 @@ import {
 } from "@/features/shops/actions";
 import { getShopProducts, getShopCategories } from "@/features/shops/products";
 import { getShopPublicEvents } from "@/features/events/queries";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { SelfServiceView } from "../_components/self-service-view";
 import { ShopPublicEvents } from "../_components/shop-public-events";
 import Link from "next/link";
@@ -38,7 +38,9 @@ export default async function ShopSelfServicePage({
 		}
 	}
 
-	const publicEvents = await getShopPublicEvents(shop.id, session?.userId);
+	const publicEvents = (
+		await getShopPublicEvents(shop.id, session?.userId)
+	).filter((e) => e.type === "SHARED_COST");
 
 	// Access Control & Data Fetching
 	const isEnabled = shop.isSelfServiceEnabled;
@@ -71,10 +73,6 @@ export default async function ShopSelfServicePage({
 	} else {
 		// Disabled Mode
 		if (isManager) {
-			// Manager Override: Fetch all products to preview/manage
-			// But we specifically want to see what the self-service VIEW looks like.
-			// If we use standard getShopProducts, we get everything.
-			// We should probably show what WOULD be available if it were enabled.
 			const [pRes, cRes] = await Promise.all([
 				getShopProducts(slug),
 				getShopCategories(slug),

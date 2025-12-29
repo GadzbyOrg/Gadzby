@@ -18,6 +18,7 @@ interface UserEditFormProps {
 		nom: string;
 		prenom: string;
 		email: string;
+		phone: string;
 		bucque: string;
 		nums: string;
 		promss: string;
@@ -137,6 +138,19 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 						name="email"
 						id="email"
 						defaultValue={user.email}
+						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+					/>
+				</div>
+				<div className="space-y-2">
+					<label htmlFor="phone" className="text-sm font-medium text-gray-300">
+						Téléphone
+					</label>
+					<input
+						required
+						type="tel"
+						name="phone"
+						id="phone"
+						defaultValue={user.phone}
 						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 					/>
 				</div>

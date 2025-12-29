@@ -7,7 +7,7 @@ import { verifySession } from "@/lib/session";
 import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import * as XLSX from "xlsx";
-import { hasShopPermission } from "./utils";
+import { hasShopPermission, getUserShopPermissions } from "./utils";
 
 // Helper to sanitize keys
 function sanitizeKey(key: string) {
@@ -32,22 +32,16 @@ export async function importProducts(prevState: any, formData: FormData) {
     try {
         const shop = await db.query.shops.findFirst({
             where: eq(shops.slug, slug),
-            with: {
-                members: {
-                    where: eq(shopUsers.userId, session.userId)
-                }
-            }
         });
 
         if (!shop) return { error: "Shop introuvable" };
 
-        let isAuthorized = false;
-        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) isAuthorized = true;
-        else if (shop.members[0]) {
-             isAuthorized = hasShopPermission(shop.members[0].role as any, shop.permissions, "canManageProducts");
-        }
+        const userPerms = await getUserShopPermissions(session.userId, shop.id);
+        const isAdmin = session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS");
 
-        if (!isAuthorized) return { error: "Non autorisé" };
+        if (!isAdmin && !hasShopPermission(userPerms, "MANAGE_PRODUCTS")) {
+             return { error: "Non autorisé" };
+        }
 
         // Parse Excel
         const arrayBuffer = await file.arrayBuffer();

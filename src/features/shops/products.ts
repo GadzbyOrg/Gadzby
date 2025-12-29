@@ -5,6 +5,7 @@ import { products, productCategories, shops, shopUsers, productRestocks } from "
 import { verifySession } from "@/lib/session";
 import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { hasShopPermission } from "./utils";
 
 // Type definitions for inputs
 export type CreateProductInput = {
@@ -21,6 +22,7 @@ export type CreateProductInput = {
 
 export type UpdateProductInput = Partial<CreateProductInput>;
 
+
 // Helper to check permissions
 async function checkShopPermission(shopSlug: string) {
     const session = await verifySession();
@@ -31,31 +33,22 @@ async function checkShopPermission(shopSlug: string) {
         where: eq(shops.slug, shopSlug),
         with: {
             members: {
-                where: eq(shopUsers.userId, session.userId)
+                where: eq(shopUsers.userId, session.userId),
+                with: { shopRole: true }
             }
         }
     });
     
     if (!shop) return null;
 
-    if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) return { session, isAuthorized: true, shop };
-
+    if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) return { session, isAuthorized: true, shop, permissions: [] as string[] };
     // Check membership
     const membership = shop.members[0];
     if (!membership) return null;
 
-    return { session, isAuthorized: true, shop, membership };
-}
+    const permissions = membership.shopRole ? membership.shopRole.permissions : [];
 
-function hasShopPermission(
-    role: "GRIPSS" | "VP" | "MEMBRE", 
-    permissions: any, 
-    action: "canSell" | "canManageProducts" | "canManageInventory" | "canViewStats" | "canManageSettings"
-): boolean {
-    if (role === "GRIPSS") return true;
-    if (role === "VP") return permissions.vp[action];
-    if (role === "MEMBRE") return permissions.member[action];
-    return false;
+    return { session, isAuthorized: true, shop, membership, permissions };
 }
 
 export type ProductOptions = {
@@ -136,7 +129,7 @@ export async function createProduct(shopSlug: string, data: CreateProductInput) 
     if (!perm) return { error: "Non autorisé" };
 
     if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
-        if (!hasShopPermission(perm.membership!.role as any, perm.shop.permissions, "canManageProducts")) {
+        if (!hasShopPermission(perm.permissions, "MANAGE_PRODUCTS")) {
             return { error: "Permissions insuffisantes (Gestion Produits)" };
         }
     }
@@ -171,7 +164,7 @@ export async function updateProduct(shopSlug: string, productId: string, data: U
     if (!perm) return { error: "Non autorisé" };
 
     if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
-        if (!hasShopPermission(perm.membership!.role as any, perm.shop.permissions, "canManageProducts")) {
+        if (!hasShopPermission(perm.permissions, "MANAGE_PRODUCTS")) {
             return { error: "Permissions insuffisantes (Gestion Produits)" };
         }
     }
@@ -197,7 +190,7 @@ export async function deleteProduct(shopSlug: string, productId: string) {
     if (!perm) return { error: "Non autorisé" };
 
     if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
-        if (!hasShopPermission(perm.membership!.role as any, perm.shop.permissions, "canManageProducts")) {
+        if (!hasShopPermission(perm.permissions, "MANAGE_PRODUCTS")) {
             return { error: "Permissions insuffisantes (Gestion Produits)" };
         }
     }
@@ -249,7 +242,7 @@ export async function createCategory(shopSlug: string, name: string) {
     if (!perm) return { error: "Non autorisé" };
 
     if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
-        if (!hasShopPermission(perm.membership!.role as any, perm.shop.permissions, "canManageProducts")) {
+        if (!hasShopPermission(perm.permissions, "MANAGE_PRODUCTS")) {
             return { error: "Permissions insuffisantes" };
         }
     }

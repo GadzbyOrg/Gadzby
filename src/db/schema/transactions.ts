@@ -57,6 +57,7 @@ export const transactions = pgTable('transactions', {
   // MÉTHADONNÉES
   createdAt: timestamp('created_at').defaultNow().notNull(),
   description: text('description'), // Ex: "Rechargement Lydia", "Pénalité retard"
+  groupId: uuid('group_id'), // For grouping transactions (e.g. Mass Operations)
 });
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({

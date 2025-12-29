@@ -1,9 +1,9 @@
-import { checkTeamMemberAccess, getShopBySlug } from "@/features/shops/actions";
+import { checkTeamMemberAccess, getShopBySlug, getShopRoles } from "@/features/shops/actions";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ShopSettingsForm } from "./shop-settings-form";
 import { ShopTeamManager } from "./shop-team-manager";
-import { ShopPermissionsManager } from "./shop-permissions-manager";
+import { IconSettings } from "@tabler/icons-react";
 
 export default async function ShopSettingsPage({
 	params,
@@ -13,7 +13,7 @@ export default async function ShopSettingsPage({
 	const { slug } = await params;
 
 	// First check basic access to settings page
-	const access = await checkTeamMemberAccess(slug, "canManageSettings");
+	const access = await checkTeamMemberAccess(slug, "MANAGE_SETTINGS");
 	if (!access.authorized || !access.shop) {
 		redirect(`/shops/${slug}`);
 	}
@@ -22,6 +22,9 @@ export default async function ShopSettingsPage({
 
 	// Fetch full shop data including all members for the team manager
 	const { shop: fullShop } = await getShopBySlug({ slug });
+    // Fetch available roles
+    const { roles: availableRoles } = await getShopRoles({ slug });
+
 	if (!fullShop) {
 		redirect("/shops");
 	}
@@ -75,27 +78,38 @@ export default async function ShopSettingsPage({
 							slug={fullShop.slug}
 							members={fullShop.members.map((m: any) => ({
 								role: m.role,
+                                shopRole: m.shopRole,
+                                shopRoleId: m.shopRoleId,
 								user: m.user,
 							}))}
 							currentUserId={access.userId}
+                            availableRoles={availableRoles}
 						/>
 					</section>
 				)}
 
-				{/* Permissions Management - GRIPSS ONLY */}
-				{role === "GRIPSS" && (
+				{/* Roles & Permissions Link */}
+				{(role === "GRIPSS" || role === "ADMIN") && (
 					<section>
 						<h2 className="text-xl font-semibold text-white mb-4">
-							Permissions
+							Rôles et Permissions
 						</h2>
-						<p className="text-sm text-gray-400 mb-6 max-w-2xl">
-							Configurez avec précision ce que chaque rôle peut faire dans votre
-							shop.
-						</p>
-						<ShopPermissionsManager
-							slug={fullShop.slug}
-							initialPermissions={fullShop.permissions as any}
-						/>
+                        <Link 
+                            href={`/shops/${fullShop.slug}/manage/roles`}
+                            className="block p-6 bg-dark-900 border border-dark-800 rounded-xl hover:bg-dark-800 transition-colors group"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <h3 className="font-medium text-white group-hover:text-primary-400 transition-colors">
+                                        Gérer les rôles
+                                    </h3>
+                                    <p className="text-sm text-gray-500">
+                                        Configurez les rôles personnalisés et leurs permissions.
+                                    </p>
+                                </div>
+                                <IconSettings className="text-gray-500 group-hover:text-primary-400" />
+                            </div>
+                        </Link>
 					</section>
 				)}
 			</div>

@@ -17,7 +17,7 @@ export default async function ShopProductsPage({
 }) {
 	const { slug } = await params;
 
-	const access = await checkTeamMemberAccess(slug, "canManageProducts");
+	const access = await checkTeamMemberAccess(slug, "MANAGE_PRODUCTS");
 	if (!access.authorized) {
 		redirect(`/shops/${slug}`);
 	}

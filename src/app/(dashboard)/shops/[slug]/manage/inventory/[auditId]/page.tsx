@@ -11,7 +11,7 @@ export default async function AuditPage({
 }) {
     const { slug, auditId } = await params;
     
-    const access = await checkTeamMemberAccess(slug, "canManageInventory");
+    const access = await checkTeamMemberAccess(slug, "MANAGE_INVENTORY");
     if (!access.authorized || !access.shop) {
         redirect(`/shops/${slug}`);
     }

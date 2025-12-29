@@ -9,56 +9,36 @@ import {
 	unlinkProductSchema,
 	shopIdSchema,
 } from "../schemas";
-import { hasShopPermission } from "@/features/shops/utils";
+import {
+	checkShopPermission,
+} from "@/features/shops/utils";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-// Helper for permissions (duplicated from management.ts)
-async function checkShopPermission(
-	userId: string,
-	permissions: string[],
-	shopId: string,
-	action: "canManageProducts" | "canViewStats"
-) {
-	if (permissions.includes("ADMIN") || permissions.includes("MANAGE_SHOPS")) {
-		return true;
-	}
-
-	const membership = await db.query.shopUsers.findFirst({
-		where: and(eq(shopUsers.shopId, shopId), eq(shopUsers.userId, userId)),
-		with: { shop: true },
-	});
-
-	if (!membership) return false;
-
-	return hasShopPermission(
-		membership.role as any,
-		membership.shop.permissions,
-		action
-	);
-}
+// Helper for permissions (duplicated from management.ts) - REMOVED
+// Uses shared checkShopPermission from utils
 
 export const getAvailableProductsAction = authenticatedAction(
-    shopIdSchema,
-    async (data, { session }) => {
-        const authorized = await checkShopPermission(
-            session.userId,
-            session.permissions,
-            data.shopId,
-            "canManageProducts"
-        );
-        if (!authorized) return { error: "Unauthorized" };
+	shopIdSchema,
+	async (data, { session }) => {
+		const authorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			data.shopId,
+			"MANAGE_EVENTS"
+		);
+		if (!authorized) return { error: "Unauthorized" };
 
-        const available = await db.query.products.findMany({
-            where: and(
-                eq(products.shopId, data.shopId),
-                isNull(products.eventId),
-                eq(products.isArchived, false) 
-            ),
-        });
+		const available = await db.query.products.findMany({
+			where: and(
+				eq(products.shopId, data.shopId),
+				isNull(products.eventId),
+				eq(products.isArchived, false)
+			),
+		});
 
-        return { success: "Products retrieved", data: available };
-    }
+		return { success: "Products retrieved", data: available };
+	}
 );
 
 export const linkProductsToEvent = authenticatedAction(
@@ -68,7 +48,7 @@ export const linkProductsToEvent = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
@@ -89,7 +69,7 @@ export const unlinkProductFromEvent = authenticatedAction(
 			session.userId,
 			session.permissions,
 			data.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 

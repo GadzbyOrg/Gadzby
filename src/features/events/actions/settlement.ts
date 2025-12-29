@@ -8,7 +8,10 @@ import { shopExpenses, eventExpenseSplits } from "@/db/schema/expenses";
 import { transactions } from "@/db/schema/transactions";
 import { authenticatedAction } from "@/lib/actions";
 import { settlementSchema } from "../schemas";
-import { hasShopPermission } from "@/features/shops/utils";
+import {
+	hasShopPermission,
+	getUserShopPermissions,
+} from "@/features/shops/utils";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -17,24 +20,17 @@ async function checkShopPermission(
 	userId: string,
 	permissions: string[],
 	shopId: string,
-	action: "canManageProducts" | "canViewStats"
+	action: string
 ) {
-	if (permissions.includes("ADMIN") || permissions.includes("MANAGE_SHOPS")) {
+	if (
+		permissions.includes("ADMIN_ACCESS") ||
+		permissions.includes("MANAGE_SHOPS")
+	) {
 		return true;
 	}
 
-	const membership = await db.query.shopUsers.findFirst({
-		where: and(eq(shopUsers.shopId, shopId), eq(shopUsers.userId, userId)),
-		with: { shop: true },
-	});
-
-	if (!membership) return false;
-
-	return hasShopPermission(
-		membership.role as any,
-		membership.shop.permissions,
-		action
-	);
+	const userPerms = await getUserShopPermissions(userId, shopId);
+	return hasShopPermission(userPerms, action);
 }
 
 // Logic extracted for preview reuse
@@ -54,7 +50,7 @@ async function calculateSettlement(eventId: string) {
 		.where(eq(shopExpenses.eventId, eventId));
 
 	const totalDirectExpenses = Number(expensesResult[0]?.total) || 0;
-	
+
 	const splitsResult = await db
 		.select({ total: sql<number>`sum(${eventExpenseSplits.amount})` })
 		.from(eventExpenseSplits)
@@ -98,29 +94,19 @@ async function calculateSettlement(eventId: string) {
 	};
 }
 
-// Note: previewSettlement is often used as a read-only action, but it returns sensitive financial data.
-// authenticatedAction is good here.
 export const previewSettlement = authenticatedAction(
 	settlementSchema,
 	async (data, { session }) => {
 		const calc = await calculateSettlement(data.eventId);
 		if (!calc) return { error: "Event not found" };
 
-
-        const authorized = await checkShopPermission(
-            session.userId,
-            session.permissions,
-            calc.event.shopId,
-            "canViewStats" 
-        );
-        
-        const hasPerm = await checkShopPermission(
-            session.userId,
-            session.permissions,
-            calc.event.shopId,
-            "canViewStats" // or manage
-        );
-        if (!hasPerm) return { error: "Unauthorized" };
+		const hasPerm = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			calc.event.shopId,
+			"MANAGE_EVENTS"
+		);
+		if (!hasPerm) return { error: "Unauthorized" };
 
 		return {
 			totalExpenses: calc.totalExpenses,
@@ -141,7 +127,7 @@ export const executeSettlement = authenticatedAction(
 			session.userId,
 			session.permissions,
 			calc.event.shopId,
-			"canManageProducts"
+			"MANAGE_EVENTS"
 		);
 		if (!authorized) return { error: "Unauthorized" };
 

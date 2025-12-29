@@ -1,4 +1,15 @@
-import { pgTable, text, uuid, pgEnum, primaryKey, boolean, timestamp, json, integer } from "drizzle-orm/pg-core";
+import {
+	pgTable,
+	text,
+	uuid,
+	pgEnum,
+	primaryKey,
+	boolean,
+	timestamp,
+	json,
+	integer,
+	jsonb,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { shopExpenses } from "./expenses";
@@ -13,15 +24,6 @@ export const shops = pgTable("shops", {
 	description: text("description"),
 	category: text("category"),
 
-	// Permissions Configuration
-	permissions: json("permissions").$type<{
-		vp: { canSell: boolean; canManageProducts: boolean; canManageInventory: boolean; canViewStats: boolean; canManageSettings: boolean };
-		member: { canSell: boolean; canManageProducts: boolean; canManageInventory: boolean; canViewStats: boolean; canManageSettings: boolean };
-	}>().default({
-		vp: { canSell: true, canManageProducts: false, canManageInventory: false, canViewStats: false, canManageSettings: false },
-		member: { canSell: true, canManageProducts: true, canManageInventory: true, canViewStats: true, canManageSettings: false },
-	}).notNull(),
-
 	defaultMargin: integer("default_margin").default(0).notNull(),
 
 	isSelfServiceEnabled: boolean("is_self_service_enabled").default(false),
@@ -29,8 +31,26 @@ export const shops = pgTable("shops", {
 	isActive: boolean("is_active").default(true),
 
 	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow().$onUpdateFn(() => new Date()),
+	updatedAt: timestamp("updated_at")
+		.defaultNow()
+		.$onUpdateFn(() => new Date()),
 });
+
+export const shopRoles = pgTable("shop_roles", {
+	id: uuid("id").defaultRandom().primaryKey(),
+	shopId: uuid("shop_id")
+		.references(() => shops.id, { onDelete: "cascade" })
+		.notNull(),
+	name: text("name").notNull(),
+	permissions: jsonb("permissions").$type<string[]>().default([]).notNull(),
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at")
+		.defaultNow()
+		.$onUpdateFn(() => new Date()),
+});
+
+// Helper type for string array permissions
+export type ShopRolePermissions = string[];
 
 export const shopUsers = pgTable(
 	"shop_users",
@@ -41,7 +61,9 @@ export const shopUsers = pgTable(
 		shopId: uuid("shop_id")
 			.references(() => shops.id)
 			.notNull(),
-		role: shopRoleEnum().notNull(),
+		shopRoleId: uuid("shop_role_id").references(() => shopRoles.id, {
+			onDelete: "set null",
+		}),
 	},
 	(t) => [primaryKey({ columns: [t.userId, t.shopId] })]
 );
@@ -51,9 +73,19 @@ export const shopRelations = relations(shops, ({ many }) => ({
 	expenses: many(shopExpenses),
 	products: many(products),
 	categories: many(productCategories),
+	roles: many(shopRoles),
+}));
+
+export const shopRolesRelations = relations(shopRoles, ({ one, many }) => ({
+	shop: one(shops, { fields: [shopRoles.shopId], references: [shops.id] }),
+	users: many(shopUsers),
 }));
 
 export const shopUsersRelations = relations(shopUsers, ({ one }) => ({
 	user: one(users, { fields: [shopUsers.userId], references: [users.id] }),
 	shop: one(shops, { fields: [shopUsers.shopId], references: [shops.id] }),
+	shopRole: one(shopRoles, {
+		fields: [shopUsers.shopRoleId],
+		references: [shopRoles.id],
+	}),
 }));

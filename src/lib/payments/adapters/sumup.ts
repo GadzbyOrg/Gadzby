@@ -48,7 +48,6 @@ export class SumUpAdapter implements PaymentProvider {
 
 	async createPayment(
 		amountCents: number,
-		_email: string, // SumUp doesn't strictly adhere to email for checkout creation in this flow necessarily, but could be passed if needed for customer
 		description: string,
 		internalTransactionId: string
 	): Promise<PaymentResult> {

@@ -4,6 +4,7 @@ export const updateUserSchema = z.object({
 	nom: z.string().min(1, "Le nom est requis"),
 	prenom: z.string().min(1, "Le prénom est requis"),
 	email: z.email("Email invalide"),
+	phone: z.string().min(1, "Le numéro de téléphone est requis"),
 	bucque: z.string().min(1, "La bucque est requise"),
 	promss: z.string().min(1, "La prom'ss est requise"),
 	nums: z.string().min(1, "Les nums sont requis"),
@@ -30,6 +31,7 @@ export const createUserSchema = z.object({
 	nom: z.string().min(1, "Le nom est requis"),
 	prenom: z.string().min(1, "Le prénom est requis"),
 	email: z.email("Email invalide"),
+	phone: z.string().min(1, "Le numéro de téléphone est requis"),
 	bucque: z.string().min(1, "La bucque est requise"),
 	promss: z.string().min(1, "La prom'ss est requise"),
 	nums: z.string().min(1, "Les nums sont requis"),
@@ -48,6 +50,7 @@ export const importUserRowSchema = z.object({
 	nom: z.string().min(1),
 	prenom: z.string().min(1),
 	email: z.email().optional().or(z.literal("")),
+	phone: z.string().min(1),
 	bucque: z.string().min(1),
 	promss: z.string().min(1), // Can be number in excel, will handle conv
 	nums: z.string().min(1), // Can be number

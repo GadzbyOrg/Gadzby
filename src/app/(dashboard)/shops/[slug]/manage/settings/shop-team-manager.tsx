@@ -9,13 +9,16 @@ import {
 import { UserSearch } from "../events/[eventId]/_components/user-search";
 
 interface ShopMember {
-	role: "VP" | "MEMBRE" | "GRIPSS" | string;
+	role: string;
+    shopRoleId?: string | null;
+    shopRole?: { name: string } | null;
 	user: {
 		id: string;
 		username: string;
 		nom: string | null;
 		prenom: string | null;
 		image: string | null;
+        bucque: string;
 	};
 }
 
@@ -23,18 +26,21 @@ interface ShopTeamManagerProps {
 	slug: string;
 	members: ShopMember[];
 	currentUserId: string;
+    availableRoles: { id: string; name: string }[];
 }
 
 export function ShopTeamManager({
 	slug,
 	members,
 	currentUserId,
+    availableRoles,
 }: ShopTeamManagerProps) {
 	const [selectedUser, setSelectedUser] = useState<any | null>(null);
-	const [selectedRole, setSelectedRole] = useState<"VP" | "MEMBRE" | "GRIPSS">(
-		"MEMBRE"
-	);
-	const [isLoading, setIsLoading] = useState(false);
+    // Default to first 'Membre' like role or just the first one
+    const defaultRole = availableRoles.find(r => r.name === "Membre" || r.name === "MEMBRE")?.id || availableRoles[0]?.id || "";
+	const [selectedRoleId, setSelectedRoleId] = useState<string>(defaultRole);
+	
+    const [isLoading, setIsLoading] = useState(false);
 	const [message, setMessage] = useState<{
 		text: string;
 		type: "success" | "error";
@@ -45,7 +51,7 @@ export function ShopTeamManager({
 		setIsLoading(true);
 		setMessage(null);
 
-		const res = await addShopMember(slug, selectedUser.username, selectedRole);
+		const res = await addShopMember(slug, selectedUser.username, selectedRoleId);
 
 		if (res.error) {
 			setMessage({ text: res.error, type: "error" });
@@ -69,15 +75,26 @@ export function ShopTeamManager({
 
 	const handleUpdateRole = async (
 		userId: string,
-		newRole: "VP" | "MEMBRE" | "GRIPSS"
+		newRoleId: string
 	) => {
 		setIsLoading(true);
-		const res = await updateShopMemberRole(slug, userId, newRole);
+		const res = await updateShopMemberRole(slug, userId, newRoleId);
 		if (res.error) {
 			alert(res.error);
 		}
 		setIsLoading(false);
 	};
+
+    // Helper to get role ID for current members (legacy or new)
+    const getMemberRoleId = (member: ShopMember) => {
+       if (member.shopRoleId) return member.shopRoleId;
+       // Fallback for legacy: try to find a matching role name?
+       // OR if we migrated, they SHOULD have shopRoleId.
+       // If not migrated yet, we might have issues displaying.
+       // Let's assume migration is run or we fallback to matching name.
+       const match = availableRoles.find(r => r.name.toUpperCase() === member.role.toUpperCase());
+       return match ? match.id : "";
+    };
 
 	return (
 		<div className="rounded-2xl bg-dark-900 border border-dark-800 p-6 space-y-8">
@@ -109,16 +126,19 @@ export function ShopTeamManager({
 
 							<div className="flex items-center gap-4">
 								<select
-									value={member.role}
+									value={getMemberRoleId(member)}
 									onChange={(e) =>
-										handleUpdateRole(member.user.id, e.target.value as any)
+										handleUpdateRole(member.user.id, e.target.value)
 									}
 									disabled={isLoading || member.user.id === currentUserId}
 									className="bg-dark-950 border border-dark-700 rounded-lg px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-primary-500"
 								>
-									<option value="VP">VP</option>
-									<option value="MEMBRE">Membre</option>
-									<option value="GRIPSS">Grip'ss</option>
+                                    <option value="" disabled>Inconnu</option>
+									{availableRoles.map(role => (
+                                        <option key={role.id} value={role.id}>
+                                            {role.name}
+                                        </option>
+                                    ))}
 								</select>
 
 								<button
@@ -205,18 +225,20 @@ export function ShopTeamManager({
 					<div className="flex gap-4">
 						<div className="flex-1">
 							<select
-								value={selectedRole}
-								onChange={(e) => setSelectedRole(e.target.value as any)}
+								value={selectedRoleId}
+								onChange={(e) => setSelectedRoleId(e.target.value)}
 								className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
 							>
-								<option value="MEMBRE">Membre</option>
-								<option value="VP">VP</option>
-								<option value="GRIPSS">Grip'ss</option>
+                                {availableRoles.map(role => (
+                                    <option key={role.id} value={role.id}>
+                                        {role.name}
+                                    </option>
+                                ))}
 							</select>
 						</div>
 						<button
 							onClick={handleAddMember}
-							disabled={!selectedUser || isLoading}
+							disabled={!selectedUser || isLoading || !selectedRoleId}
 							className="bg-primary-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 						>
 							{isLoading ? "..." : "Ajouter"}

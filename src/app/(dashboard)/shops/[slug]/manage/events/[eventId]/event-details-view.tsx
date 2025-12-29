@@ -29,6 +29,7 @@ import {
 	deleteEvent,
 	previewSettlement,
 	executeSettlement,
+	leaveEvent,
 } from "@/features/events/actions";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -63,10 +64,49 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 		if (!confirm("Voulez-vous vraiment activer cet événement ?")) return;
 		startTransition(async () => {
 			try {
-				const result = await activateEvent({
+				let result = (await activateEvent({
 					shopId: event.shopId,
 					eventId: event.id,
-				});
+				})) as any;
+
+				if (result?.insufficientUsers) {
+					const names = result.insufficientUsers
+						.map((u: any) => u.name)
+						.join("\n- ");
+					const confirmRemove = confirm(
+						`Les utilisateurs suivants n'ont pas assez de solde pour l'acompte :\n- ${names}\n\nVoulez-vous les retirer de l'événement et continuer l'activation ?`
+					);
+
+					if (confirmRemove) {
+						let removeErrors = false;
+						for (const user of result.insufficientUsers) {
+							const removeResult = await leaveEvent({
+								shopId: event.shopId,
+								eventId: event.id,
+								userId: user.id,
+							});
+							if (removeResult?.error) {
+								toast({
+									title: "Erreur suppression",
+									description: `Impossible de retirer ${user.name}: ${removeResult.error}`,
+									variant: "destructive",
+								});
+								removeErrors = true;
+							}
+						}
+
+						if (removeErrors) return; // Stop if removal failed
+
+						// Retry activation
+						result = await activateEvent({
+							shopId: event.shopId,
+							eventId: event.id,
+						});
+					} else {
+						return; // User cancelled
+					}
+				}
+
 				if (result?.error) {
 					toast({
 						title: "Erreur",
