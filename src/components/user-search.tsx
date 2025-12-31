@@ -3,22 +3,42 @@ import { useState, useEffect, useRef } from 'react';
 import { IconSearch, IconUser, IconLoader2 } from '@tabler/icons-react';
 import { searchUsersPublicAction } from '@/features/users/actions';
 
+import { cn } from "@/lib/utils";
+
 export interface UserSearchProps {
     onSelect: (user: any) => void;
     placeholder?: string;
     excludeIds?: string[];
+    className?: string;
+    inputClassName?: string;
+    name?: string;
+    clearOnSelect?: boolean;
 }
 
-export function UserSearch({ onSelect, placeholder = "Ajouter un participant...", excludeIds = [] }: UserSearchProps) {
+export function UserSearch({ 
+    onSelect, 
+    placeholder = "Ajouter un participant...", 
+    excludeIds = [],
+    className,
+    inputClassName,
+    name,
+    clearOnSelect = true
+}: UserSearchProps) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const preventSearchRef = useRef(false);
 
     // Simple debounce
     useEffect(() => {
         const timer = setTimeout(async () => {
+            if (preventSearchRef.current) {
+                preventSearchRef.current = false;
+                return;
+            }
+
             if (query.length < 2) {
                 setResults([]);
                 return;
@@ -55,23 +75,32 @@ export function UserSearch({ onSelect, placeholder = "Ajouter un participant..."
 
     const handleSelect = (user: any) => {
         onSelect(user);
-        setQuery('');
+        if (clearOnSelect) {
+            setQuery('');
+        } else {
+            preventSearchRef.current = true;
+            setQuery(user.username);
+        }
         setIsOpen(false);
     };
 
     return (
-        <div ref={wrapperRef} className="relative w-full max-w-sm">
+        <div ref={wrapperRef} className={cn("relative w-full max-w-sm", className)}>
             <div className="relative">
                 <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                 <input
                     type="text"
+                    name={name}
                     value={query}
                     onChange={(e) => {
                         setQuery(e.target.value);
                         if (!isOpen && e.target.value.length >= 2) setIsOpen(true);
                     }}
                     placeholder={placeholder}
-                    className="w-full bg-dark-900 border border-dark-700 rounded-md py-2 pl-9 pr-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-primary-500 transition-colors"
+                    className={cn(
+                        "w-full bg-dark-900 border border-dark-700 rounded-md py-2 pl-9 pr-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-primary-500 transition-colors",
+                        inputClassName
+                    )}
                 />
                 {isLoading && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -84,6 +113,7 @@ export function UserSearch({ onSelect, placeholder = "Ajouter un participant..."
                 <div className="absolute z-50 w-full mt-1 bg-dark-800 border border-dark-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {results.map((user) => (
                         <button
+                            type="button"
                             key={user.id}
                             onClick={() => handleSelect(user)}
                             className="w-full text-left px-4 py-2 hover:bg-dark-700 transition-colors flex items-center gap-3 group"

@@ -167,6 +167,8 @@ export const activateEvent = authenticatedAction(
 						};
 					}
 
+					const groupId = crypto.randomUUID();
+
 					await db.transaction(async (tx) => {
 						for (const user of usersData) {
 							await tx
@@ -184,6 +186,7 @@ export const activateEvent = authenticatedAction(
 								eventId: event.id,
 								description: `Acompte événement: ${event.name}`,
 								status: "COMPLETED",
+								groupId: groupId,
 							});
 						}
 

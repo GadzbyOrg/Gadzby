@@ -26,9 +26,12 @@ export const users = pgTable("users", {
 	//Permission globale
 	roleId: uuid("role_id").references(() => roles.id),
 
-	bucque: text("bucque").notNull(),
-	nums: text("nums").notNull(),
+	bucque: text("bucque"),
+	nums: text("nums"),
 	promss: text("promss").notNull(),
+	
+	// Campus / Tabagn'ss
+	tabagnss: text("tabagnss").default("Chalon'ss").notNull(),
 
 	// Balance stockée en centimes d'euros
 	balance: integer("balance").default(0).notNull(),

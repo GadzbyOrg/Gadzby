@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { createUserAction } from "@/features/users/actions";
 import { IconLoader2, IconCheck, IconAlertTriangle } from "@tabler/icons-react";
+import { TabagnssSelector } from "@/components/tabagnss-selector";
 
 interface CreateUserFormProps {
 	roles: any[];
@@ -151,6 +152,8 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 					/>
 				</div>
+
+				<TabagnssSelector required />
 
 				<div className="space-y-2">
 					<label

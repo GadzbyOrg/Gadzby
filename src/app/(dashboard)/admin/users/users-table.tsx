@@ -12,21 +12,182 @@ import {
 	IconPower,
 	IconSortAscending,
 	IconSortDescending,
+    IconChevronLeft,
+    IconChevronRight,
+    IconMail,
+    IconPhone,
+    IconId,
+    IconCoin,
+    IconSchool,
 } from "@tabler/icons-react";
 import { UserEditForm } from "./user-edit-form";
 import { CreateUserForm } from "./create-user-form";
-import { ExcelImportModal } from "@/components/excel-import-modal"; // New import
-import { importUsersAction } from "@/features/users/actions"; // Action import
+import { ExcelImportModal } from "@/components/excel-import-modal";
+import { importUsersAction, importUsersBatchAction } from "@/features/users/actions";
 import { TransactionHistoryModal } from "./transaction-history-modal";
 import { toggleUserStatusAction } from "@/features/users/actions";
 import { useTransition } from "react";
+import { PromssSelector } from "@/components/promss-selector";
 
 interface UsersTableProps {
 	users: any[];
 	roles: any[];
+    totalPages?: number;
+    currentPage?: number;
+    promssList?: string[];
 }
 
-export function UsersTable({ users, roles }: UsersTableProps) {
+function TablePagination({ 
+    total, 
+    current, 
+    onChange 
+}: { 
+    total: number; 
+    current: number; 
+    onChange: (page: number) => void;
+}) {
+    if (total <= 1) return null;
+
+    return (
+        <div className="flex items-center justify-between p-4 border-t border-dark-800 bg-dark-900/50">
+            <div className="text-sm text-gray-500">
+                Page {current} sur {total}
+            </div>
+            <div className="flex gap-2">
+                <button
+                    onClick={() => onChange(current - 1)}
+                    disabled={current <= 1}
+                    className="p-2 rounded-lg border border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    <IconChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                    onClick={() => onChange(current + 1)}
+                    disabled={current >= total}
+                    className="p-2 rounded-lg border border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    <IconChevronRight className="w-4 h-4" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+function UserMobileCard({ 
+    user, 
+    onEdit, 
+    onHistory, 
+    onToggleStatus,
+    isPending
+}: { 
+    user: any; 
+    onEdit: () => void; 
+    onHistory: () => void;
+    onToggleStatus: () => void;
+    isPending: boolean;
+}) {
+    return (
+        <div className={`bg-dark-900 border border-dark-800 rounded-xl overflow-hidden ${user.isAsleep ? "bg-dark-900/50" : ""}`}>
+             {/* Header Section */}
+            <div className="p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-white text-lg truncate">
+                            {user.prenom} {user.nom}
+                        </h3>
+                        {user.isAsleep && (
+                             <span className="text-[10px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-medium uppercase tracking-wider">
+                                Inactif
+                            </span>
+                        )}
+                    </div>
+                    <div className="text-sm text-gray-500 font-medium">@{user.username}</div>
+                </div>
+                
+                <div className="text-right shrink-0">
+                    <div className="font-mono text-xl text-white font-bold tracking-tight">
+                        {(user.balance / 100).toFixed(2)} €
+                    </div>
+                </div>
+            </div>
+            
+            {/* Info Grid */}
+            <div className="px-4 pb-4 space-y-3">
+                 {/* Badges Row */}
+                <div className="flex flex-wrap gap-2">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium 
+                        ${
+                            user.role?.name === "ADMIN"
+                                ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
+                                : user.role?.name === "TRESORIER"
+                                ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                                : "bg-dark-800 text-gray-400 border border-dark-700"
+                        }`}
+                    >
+                        {user.role?.name || user.appRole}
+                    </span>
+                    {user.promss && (
+                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-dark-800 text-gray-300 border border-dark-700 font-mono">
+                            {user.promss}
+                        </span>
+                    )}
+                    {user.tabagnss && (
+                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-dark-800 text-gray-300 border border-dark-700">
+                             <IconSchool className="w-3 h-3 mr-1" />
+                            {user.tabagnss}
+                        </span>
+                    )}
+                </div>
+
+                {/* Details */}
+                <div className="grid grid-cols-1 gap-2 text-sm pt-2 border-t border-dark-800/50">
+                    {user.bucque && (
+                        <div className="flex items-center gap-3 text-gray-400">
+                             <IconId className="w-4 h-4 shrink-0 opacity-70" />
+                             <span className="truncate text-gray-300">{user.bucque}</span>
+                        </div>
+                    )}
+                     <div className="flex items-center gap-3 text-gray-400">
+                         <IconMail className="w-4 h-4 shrink-0 opacity-70" />
+                         <span className="truncate text-gray-300">{user.email}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Actions Footer */}
+            <div className="p-3 bg-dark-950/30 border-t border-dark-800 flex items-center gap-2">
+                <button
+                    onClick={onHistory}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-dark-800 hover:bg-dark-700 text-gray-300 rounded-lg transition-colors text-sm font-medium border border-dark-700/50"
+                >
+                    <IconHistory className="w-4 h-4" />
+                    Historique
+                </button>
+                <button
+                    onClick={onEdit}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-dark-800 hover:bg-dark-700 text-gray-300 rounded-lg transition-colors text-sm font-medium border border-dark-700/50"
+                >
+                    <IconPencil className="w-4 h-4" />
+                     Modifier
+                </button>
+                <button
+                    onClick={onToggleStatus}
+                    disabled={isPending}
+                    className={`px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center border ${
+                        user.isAsleep
+                            ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
+                            : "bg-dark-800 text-gray-400 border-dark-700 hover:text-red-400 hover:bg-dark-700"
+                    }`}
+                    title={user.isAsleep ? "Réactiver" : "Désactiver"}
+                >
+                    <IconPower className="w-5 h-5" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, promssList = [] }: UsersTableProps) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -44,8 +205,26 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 		} else {
 			params.delete("search");
 		}
+        params.set("page", "1"); // Reset page on search
 		router.replace(`${pathname}?${params.toString()}`);
 	};
+
+    const handlePageChange = (newPage: number) => {
+        const params = new URLSearchParams(searchParams);
+        params.set("page", newPage.toString());
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handlePromssChange = (promss: string) => {
+        const params = new URLSearchParams(searchParams);
+        if (promss) {
+            params.set("promss", promss);
+        } else {
+            params.delete("promss");
+        }
+        params.set("page", "1");
+        router.push(`${pathname}?${params.toString()}`);
+    };
 
 	const handleSort = (column: string) => {
 		const params = new URLSearchParams(searchParams);
@@ -92,6 +271,7 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 	const currentSort = searchParams.get("sort");
 	const currentOrder = searchParams.get("order");
 	const currentRole = searchParams.get("role") || "";
+    const currentPromss = searchParams.get("promss") || "";
 
 	const SortIcon = ({ column }: { column: string }) => {
 		if (currentSort !== column)
@@ -108,23 +288,29 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 	return (
 		<div className="space-y-4">
 			{/* Toolbar */}
-			<div className="flex items-center gap-4 bg-dark-900 border border-dark-800 p-3 rounded-xl">
-				<div className="relative flex-1 max-w-sm">
+			<div className="flex flex-col md:flex-row items-center gap-4 bg-dark-900 border border-dark-800 p-3 rounded-xl">
+				<div className="relative w-full md:flex-1 md:max-w-sm">
 					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
 					<input
 						type="search"
-						placeholder="Rechercher un utilisateur..."
+						placeholder="Rechercher..."
 						className="w-full bg-dark-950 border border-dark-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
 						defaultValue={searchParams.get("search")?.toString()}
 						onChange={(e) => handleSearch(e.target.value)}
 					/>
 				</div>
 
-				<div className="flex gap-2">
+				<div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
+                    <PromssSelector 
+                        promssList={promssList}
+                        selectedPromss={currentPromss}
+                        onChange={handlePromssChange}
+                    />
+
 					<select
 						value={currentRole}
 						onChange={(e) => handleRoleFilter(e.target.value)}
-						className="bg-dark-950 border border-dark-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
+						className="w-full sm:w-auto bg-dark-950 border border-dark-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
 					>
 						<option value="">Tous les rôles</option>
 						{roles.map((role) => (
@@ -135,26 +321,57 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 					</select>
 				</div>
 
-				<div className="flex gap-2 ml-auto">
+				<div className="w-full md:w-auto flex gap-2 md:ml-auto">
 					<ExcelImportModal
 						action={importUsersAction}
+						batchAction={importUsersBatchAction}
 						triggerLabel="Importer"
 						modalTitle="Importer des utilisateurs"
-						expectedFormat="Nom, Prenom, Email, Phone, Bucque, Promss, Nums, Balance"
+						expectedFormat="Nom, Prenom, Email, Phone, Bucque, Promss, Nums, Tabagn'ss, Balance"
 						fileName="import_users"
 					/>
 					<button
 						onClick={() => setShowCreateModal(true)}
-						className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-primary-900/20"
+						className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-primary-900/20"
 					>
 						<IconPlus className="w-4 h-4" />
-						<span className="hidden sm:inline">Créer</span>
+						<span className="inline">Créer</span>
 					</button>
 				</div>
 			</div>
 
-			{/* Table */}
-			<div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden shadow-sm">
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {users.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 bg-dark-900 rounded-xl border border-dark-800">
+                        Aucun utilisateur trouvé
+                    </div>
+                ) : (
+                    users
+                        .filter((u) => !u.isDeleted)
+                        .map((user) => (
+                            <UserMobileCard 
+                                key={user.id} 
+                                user={user}
+                                onEdit={() => setSelectedUser(user)}
+                                onHistory={() => setViewHistoryUser(user)}
+                                onToggleStatus={() => handleToggleStatus(user.id, user.isAsleep)}
+                                isPending={isPending}
+                            />
+                        ))
+                )}
+                {/* Mobile Pagination */}
+                <div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden">
+                     <TablePagination 
+                        total={totalPages} 
+                        current={currentPage} 
+                        onChange={handlePageChange} 
+                    />
+                </div>
+            </div>
+
+			{/* Desktop Table */}
+			<div className="hidden md:block bg-dark-900 border border-dark-800 rounded-xl overflow-hidden shadow-sm">
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm">
 						<thead>
@@ -175,6 +392,15 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 										Bucque / Email <SortIcon column="bucque" />
 									</div>
 								</th>
+                                <th className="py-3 px-6 font-medium">Tabagn'ss</th>
+                                <th
+									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+									onClick={() => handleSort("promss")}
+								>
+									<div className="flex items-center gap-1">
+										Promss <SortIcon column="promss" />
+									</div>
+								</th>
 								<th className="py-3 px-6 font-medium">Rôle</th>
 								<th
 									className="py-3 px-6 font-medium text-right cursor-pointer hover:text-white group transition-colors"
@@ -190,7 +416,7 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 						<tbody className="divide-y divide-dark-800">
 							{users.length === 0 ? (
 								<tr>
-									<td colSpan={5} className="py-8 text-center text-gray-500">
+									<td colSpan={6} className="py-8 text-center text-gray-500">
 										Aucun utilisateur trouvé
 									</td>
 								</tr>
@@ -225,17 +451,28 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 													{user.email}
 												</div>
 											</td>
+                                            <td className="py-3 px-6 text-gray-400 text-sm">
+                                                {user.tabagnss && (
+                                                    <span className="flex items-center gap-1">
+                                                        <IconSchool className="w-3.5 h-3.5" />
+                                                        {user.tabagnss}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="py-3 px-6 font-mono text-gray-400 text-xs">
+                                                {user.promss}
+                                            </td>
 											<td className="py-3 px-6">
 												<span
 													className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
                                                 ${
-																									user.role?.name === "ADMIN"
-																										? "bg-primary-900/30 text-primary-400 border border-primary-900/50"
-																										: user.role?.name ===
-																										  "TRESORIER"
-																										? "bg-amber-900/30 text-amber-500 border border-amber-900/50"
-																										: "bg-dark-800 text-gray-400 border border-dark-700"
-																								}`}
+                                                    user.role?.name === "ADMIN"
+                                                        ? "bg-primary-900/30 text-primary-400 border border-primary-900/50"
+                                                        : user.role?.name ===
+                                                            "TRESORIER"
+                                                        ? "bg-amber-900/30 text-amber-500 border border-amber-900/50"
+                                                        : "bg-dark-800 text-gray-400 border border-dark-700"
+                                                }`}
 												>
 													{user.role?.name || user.appRole}
 												</span>
@@ -279,6 +516,13 @@ export function UsersTable({ users, roles }: UsersTableProps) {
 						</tbody>
 					</table>
 				</div>
+
+                {/* Desktop Pagination */}
+                <TablePagination 
+                    total={totalPages} 
+                    current={currentPage} 
+                    onChange={handlePageChange} 
+                />
 			</div>
 
 			{/* Edit Modal (Simple overlay for now) */}

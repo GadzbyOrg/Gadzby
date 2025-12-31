@@ -55,7 +55,7 @@ async function main() {
 		console.log(`\n> Running ${script}...`);
 		try {
 			// Inherit stdio to see logs from the scripts
-			execSync(`npx tsx ${script}`, { stdio: "inherit" });
+			execSync(`npx tsx ${script}`, { stdio: "inherit", env: process.env });
 		} catch (e) {
 			console.error(`❌ Failed to run ${script}`);
 			process.exit(1);

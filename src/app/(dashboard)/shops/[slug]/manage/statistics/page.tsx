@@ -7,7 +7,7 @@ import Link from "next/link";
 import { ShopExportButton } from "./_components/shop-export-button";
 import { ShopTransactionToolbar } from "./_components/shop-transaction-toolbar";
 import { StatisticsCharts } from "./_components/statistics-charts";
-import { TransactionTable } from "@/components/transactions/transaction-table";
+import { ShopTransactionTableWrapper } from "./_components/shop-transaction-table-wrapper";
 
 export default async function ShopTransactionsPage({
 	params,
@@ -96,7 +96,7 @@ export default async function ShopTransactionsPage({
 		redirect(`/shops/${slug}`);
 	}
 
-	const { transactions, shop } = result;
+	const { transactions, shop, totalCount } = result;
 
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
@@ -139,7 +139,12 @@ export default async function ShopTransactionsPage({
 						</h2>
 					</div>
 
-					<TransactionTable transactions={transactions} isAdmin={isAppAdmin} />
+					<ShopTransactionTableWrapper
+						transactions={transactions}
+						isAdmin={isAppAdmin}
+						totalCount={totalCount || 0}
+						currentPage={page}
+					/>
 				</div>
 			</div>
 		</div>

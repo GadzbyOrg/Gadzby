@@ -83,7 +83,7 @@ async function main() {
 			roles: ["USER"],
 			balance: 2000,
 		},
-        {
+		{
 			nom: "Targaryen",
 			prenom: "Viserys",
 			email: "viserys@dragonstone.com",
@@ -107,7 +107,7 @@ async function main() {
 			roles: ["USER"],
 			balance: 500,
 		},
-        {
+		{
 			nom: "Baratheon",
 			prenom: "Stannis",
 			email: "stannis@dragonstone.com",
@@ -118,7 +118,7 @@ async function main() {
 			roles: ["USER"],
 			balance: 5000,
 		},
-        {
+		{
 			nom: "Baratheon",
 			prenom: "Renly",
 			email: "renly@stormsend.com",
@@ -181,6 +181,54 @@ async function main() {
 			});
 			console.log(`✅ User ${user.username} created!`);
 		}
+	}
+
+	// --- LARGE SEEDING ---
+	if (process.env.SEED_LARGE === "true") {
+		console.log("🚀 Generating 1000 random users...");
+		const { fakerFR: faker } = await import("@faker-js/faker");
+
+		const legacyUserRole = await db.query.roles.findFirst({
+			where: (roles, { eq }) => eq(roles.name, "USER"),
+		});
+
+		if (!legacyUserRole) throw new Error("USER role not found");
+
+		const newUsers = [];
+		for (let i = 0; i < 1000; i++) {
+			const firstName = faker.person.firstName();
+			const lastName = faker.person.lastName();
+
+			newUsers.push({
+				nom: lastName,
+				prenom: firstName,
+				email: faker.internet.email({ firstName, lastName }),
+				bucque: faker.lorem.word(),
+				nums: faker.number.int({ min: 1, max: 999 }).toString(),
+				username: faker.internet
+					.username({ firstName, lastName })
+					.toLowerCase()
+					.replace(/[^a-z0-9]/g, "")
+					.slice(0, 20),
+				promss: "Me" + faker.number.int({ min: 200, max: 225 }),
+				passwordHash: hashedPassword,
+				roleId: legacyUserRole.id, // defaulting to USER role
+				balance: faker.number.int({ min: 0, max: 10000 }),
+			});
+		}
+
+		// Batch insert in chunks of 100
+		const chunkSize = 100;
+		for (let i = 0; i < newUsers.length; i += chunkSize) {
+			const chunk = newUsers.slice(i, i + chunkSize);
+			await db.insert(users).values(chunk).onConflictDoNothing();
+			console.log(
+				`  + Inserted batch ${i / chunkSize + 1}/${Math.ceil(
+					newUsers.length / chunkSize
+				)}`
+			);
+		}
+		console.log("✅ 1000 random users created!");
 	}
 
 	console.log("✅ Seeding terminé ! Password global: " + password);

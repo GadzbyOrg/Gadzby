@@ -22,8 +22,7 @@ export const getPromssListAction = authenticatedAction(
 			.orderBy(desc(users.promss));
 		
 		return { promss: result.map((r) => r.promss).filter(Boolean) as string[] };
-	},
-	{ permissions: ["ADMIN_ACCESS"] }
+	}
 );
 
 // 2. Get Users by Promss

@@ -249,7 +249,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 		availableGroups.find((g) => g.main === activeMain) || availableGroups[0];
 
 	return (
-		<nav className="flex h-screen w-[300px] border-r border-dark-800 bg-dark-900 text-gray-300">
+		<nav className="flex h-screen md:h-screen supports-[height:100dvh]:h-[100dvh] w-[85vw] max-w-[300px] md:w-[300px] border-r border-dark-800 bg-dark-900 text-gray-300">
 			{/* --- COLONNE 1 : ICONES (80px) --- */}
 			<div className="flex w-[80px] flex-col items-center border-r border-dark-800 bg-dark-950 py-6">
 				{/* Logo */}

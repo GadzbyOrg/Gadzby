@@ -6,9 +6,9 @@ import {
 	transferToFamsAction,
 } from "@/features/famss/actions";
 import { useRouter } from "next/navigation";
+import { UserSearch } from "@/components/user-search";
 
 export function AddMemberForm({ famsName }: { famsName: string }) {
-	const [username, setUsername] = useState("");
 	const [status, setStatus] = useState<{
 		msg: string;
 		type: "error" | "success";
@@ -16,17 +16,15 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
-	async function handleSubmit(e: React.FormEvent) {
-		e.preventDefault();
+	async function handleSelect(user: any) {
 		setLoading(true);
 		setStatus(null);
 
-		const res = await addMemberAction({ famsName, username });
+		const res = await addMemberAction({ famsName, username: user.username });
 		if (res?.error) {
 			setStatus({ msg: res.error, type: "error" });
 		} else {
 			setStatus({ msg: "Membre ajouté !", type: "success" });
-			setUsername("");
 			router.refresh();
 			setTimeout(() => setStatus(null), 3000);
 		}
@@ -34,35 +32,34 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="flex gap-2 items-end">
-			<div className="flex flex-col gap-1 w-full">
-				<label className="text-xs font-medium text-gray-400">
-					Ajouter un membre (username)
-				</label>
-				<input
-					className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-primary-500 outline-none w-full transition-colors text-sm"
-					placeholder="Username..."
-					value={username}
-					onChange={(e) => setUsername(e.target.value)}
-					required
+		<div className="space-y-2">
+			<label className="text-xs font-medium text-gray-400">
+				Ajouter un membre
+			</label>
+			<div className="flex flex-col gap-2">
+				<UserSearch
+					onSelect={handleSelect}
+					placeholder="Rechercher un utilisateur..."
+					className="w-full max-w-none"
+					clearOnSelect={true}
 				/>
+				
+				{(status || loading) && (
+					<div className="flex items-center gap-2">
+						{loading && <span className="text-xs text-gray-400">Ajout en cours...</span>}
+						{status && (
+							<span
+								className={`text-xs ${
+									status.type === "error" ? "text-red-500" : "text-green-500"
+								}`}
+							>
+								{status.msg}
+							</span>
+						)}
+					</div>
+				)}
 			</div>
-			<button
-				disabled={loading}
-				className="bg-dark-800 text-white border border-dark-700 px-3 py-2 rounded font-medium hover:bg-dark-700 disabled:opacity-50 transition-colors cursor-pointer"
-			>
-				{loading ? "..." : "+"}
-			</button>
-			{status && (
-				<span
-					className={`text-xs ml-1 ${
-						status.type === "error" ? "text-red-500" : "text-green-500"
-					}`}
-				>
-					{status.msg}
-				</span>
-			)}
-		</form>
+		</div>
 	);
 }
 

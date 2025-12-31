@@ -60,9 +60,14 @@ function SubmitButton() {
 
 // --- Page Principale ---
 
+import { UserSearch } from "@/components/user-search";
+
+// ... existing imports
+
 export default function LoginPage() {
 	const [state, action] = useActionState(loginAction, { error: undefined });
 	const [showPassword, setShowPassword] = useState(false);
+	const [username, setUsername] = useState("");
 
 	return (
 		<div className="flex min-h-screen flex-col justify-center bg-dark-950 px-6 py-12 lg:px-8">
@@ -104,25 +109,27 @@ export default function LoginPage() {
 								</div>
 							</div>
 						)}
-
-						{/* Champ Bucque */}
+						{/* Champ Username (UserSearch integree) */}
 						<div>
 							<InputLabel htmlFor="username">Identifiant</InputLabel>
 							<div className="relative mt-2">
-								<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-									<IconUser
-										className="h-5 w-5 text-gray-500"
-										aria-hidden="true"
-									/>
-								</div>
-								<input
-									id="username"
-									name="username"
-									type="text"
-									required
-									placeholder="112-95"
-									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
+								<UserSearch
+									placeholder="112-95 ou Rechercher..."
+									onSelect={() => {}} // No need to set external state since we use the input's name
+                                    name="username"
+                                    clearOnSelect={false}
+                                    className="max-w-none"
+                                    inputClassName="bg-dark-950 border-0 ring-1 ring-inset ring-dark-700 focus:ring-2 focus:ring-inset focus:ring-primary-600 rounded-md py-2.5 pl-10 h-[46px]" // Styling to match original input
 								/>
+                                {/* UserSearch includes IconSearch, but we want IconUser or similar to match the design? 
+                                   UserSearch hardcodes IconSearch. We can accept it or modify UserSearch to allow custom icon.
+                                   The prompt asks to INTEGRATE logic. 
+                                   The UserSearch input has padding-left 9 (2.25rem). 
+                                   The original input had padding-left 10 (2.5rem).
+                                   UserSearch icon is at left-3.
+                                   Original icon was at left-0 + pl-3.
+                                   It should be visually close enough.
+                                */}
 							</div>
 						</div>
 

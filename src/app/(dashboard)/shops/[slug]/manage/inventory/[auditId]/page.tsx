@@ -45,25 +45,26 @@ export default async function AuditPage({
             </div>
 
             <header>
-                <div className="flex items-center gap-3 mb-2">
-                     <h1 className="text-3xl font-bold text-white tracking-tight">
-                        Rapport d'inventaire
-                    </h1>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                        audit.status === 'COMPLETED' 
-                            ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                            : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                    }`}>
-                        {audit.status === 'COMPLETED' ? 'Terminé' : 'En cours'}
-                    </span>
-                </div>
-                <p className="text-gray-400">
-                    {audit.status === 'COMPLETED'
-                        ? `Validé le ${new Date(audit.completedAt!).toLocaleDateString()} à ${new Date(audit.completedAt!).toLocaleTimeString()}`
-                        : "Veuillez compter les stocks réels et saisir les valeurs ci-dessous."
-                    }
-                </p>
-            </header>
+				<div className="flex flex-wrap items-center gap-3 mb-2">
+					<h1 className="text-3xl font-bold text-white tracking-tight">
+						Rapport d'inventaire
+					</h1>
+					<span
+						className={`px-3 py-1 rounded-full text-xs font-medium border ${
+							audit.status === "COMPLETED"
+								? "bg-green-500/10 text-green-400 border-green-500/20"
+								: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+						}`}
+					>
+						{audit.status === "COMPLETED" ? "Terminé" : "En cours"}
+					</span>
+				</div>
+				<p className="text-gray-400">
+					{audit.status === "COMPLETED"
+						? `Validé le ${new Date(audit.completedAt!).toLocaleDateString()} à ${new Date(audit.completedAt!).toLocaleTimeString()}`
+						: "Veuillez compter les stocks réels et saisir les valeurs ci-dessous."}
+				</p>
+			</header>
 
             <AuditForm audit={audit as any} shopSlug={shop.slug} />
         </div>

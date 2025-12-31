@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
 	IconUserPlus,
 	IconTrash,
@@ -14,6 +14,8 @@ import {
 	leaveEvent,
 	joinEvent,
 } from "@/features/events/actions";
+import { getPromssListAction } from "@/features/transactions/mass-payment-actions";
+import { PromssSelector } from "@/components/promss-selector";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
@@ -57,7 +59,14 @@ export function EventParticipants({ event, slug }: Props) {
 
 	// Import State
 	const [promss, setPromss] = useState("");
+	const [promssList, setPromssList] = useState<string[]>([]);
 	const [isImporting, setIsImporting] = useState(false);
+
+	useEffect(() => {
+		getPromssListAction({}).then((res) => {
+			if (res?.promss) setPromssList(res.promss);
+		});
+	}, []);
 
 	// Excel Handler
 	const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -336,12 +345,12 @@ export function EventParticipants({ event, slug }: Props) {
 									Via Prom'ss
 								</label>
 								<div className="flex gap-2">
-									<input
-										type="text"
-										placeholder="Ex: 224"
-										className="flex-1 bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
-										value={promss}
-										onChange={(e) => setPromss(e.target.value)}
+									<PromssSelector
+										promssList={promssList}
+										selectedPromss={promss}
+										onChange={setPromss}
+										placeholder="Choisir une promo..."
+										className="flex-1"
 									/>
 									<button
 										onClick={handlePromssImport}

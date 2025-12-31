@@ -1,8 +1,6 @@
 
-
 import { getAllTransactionsAction } from "@/features/transactions/actions";
-import { TransactionTable } from "@/components/transactions/transaction-table";
-import { TransactionToolbar, ExportButton } from "./transaction-components";
+import { TransactionToolbar, ExportButton, AdminTransactionTable } from "./transaction-components";
 import { verifySession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
@@ -14,6 +12,8 @@ export default async function AdminDashboardPage({
         page?: string;
         type?: string;
         sort?: string;
+        startDate?: string;
+        endDate?: string;
     }>;
 }) {
     const session = await verifySession();
@@ -26,10 +26,22 @@ export default async function AdminDashboardPage({
     const page = Number(params?.page) || 1;
     const type = params?.type || "ALL";
     const sort = params?.sort || "DATE_DESC";
+    const startDate = params?.startDate;
+    const endDate = params?.endDate;
 
-	const result = await getAllTransactionsAction({ page, limit: 50, search, type, sort });
+	const result = await getAllTransactionsAction({ 
+        page, 
+        limit: 50, 
+        search, 
+        type, 
+        sort,
+        startDate,
+        endDate
+    });
     
     const transactions = result.success ? result.data : [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const totalCount = result.success ? (result as any).totalCount : 0;
 
 	return (
 		<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -51,7 +63,7 @@ export default async function AdminDashboardPage({
                         {result.error}
                     </div>
                 ) : (
-                    <TransactionTable transactions={transactions} isAdmin={true} />
+                    <AdminTransactionTable transactions={transactions} totalCount={totalCount} />
                 )}
             </div>
 		</div>

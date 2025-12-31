@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { UserSearch } from "@/components/user-search";
+import { PromssSelector } from "@/components/promss-selector";
 import { IconTrash, IconFileSpreadsheet, IconUserPlus, IconLoader2, IconAlertCircle } from "@tabler/icons-react";
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import {
@@ -122,18 +123,12 @@ export function NewOperationView() {
 							Ajouter une promotion
 						</label>
 						<div className="flex gap-2">
-							<select
-								className="bg-dark-950 border border-dark-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500"
-								value={selectedPromss}
-								onChange={(e) => setSelectedPromss(e.target.value)}
-							>
-								<option value="">Choisir...</option>
-								{promssList.map((p) => (
-									<option key={p} value={p}>
-										{p}
-									</option>
-								))}
-							</select>
+							<PromssSelector
+								promssList={promssList}
+								selectedPromss={selectedPromss}
+								onChange={setSelectedPromss}
+								placeholder="Choisir..."
+							/>
 							<button
                                 onClick={handleAddPromss}
                                 disabled={!selectedPromss}

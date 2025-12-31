@@ -133,69 +133,171 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
             </div>
 
             {/* Table */}
-            <div className="bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-dark-950 text-gray-400 uppercase text-xs">
-                            <tr>
-                                <th className="px-6 py-4 font-medium">Produit</th>
-                                <th className="px-6 py-4 font-medium text-right">Stock Système</th>
-                                <th className="px-6 py-4 font-medium text-right w-48">Stock Réel (Compte)</th>
-                                <th className="px-6 py-4 font-medium text-right">Écart</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-dark-800">
-                            {items.map((item) => {
-                                const isUpdating = updatingItems[item.id];
-                                return (
-                                    <tr key={item.id} className="hover:bg-dark-800/30">
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium text-white">{item.product.name}</div>
-                                            <div className="text-xs text-gray-500">
-                                                {(item.product.price / 100).toFixed(2)}€ / unit
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right text-gray-400">
-                                            {item.systemStock} {item.product.unit || 'unit'}
-                                            {/* Note: item.product.unit might be undefined if not selected, fallback to unit or fetch properly */}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            {isReadOnly ? (
-                                                 <span className="text-white font-mono">{item.actualStock}</span>
-                                            ) : (
-                                                <div className="relative">
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        className={`w-full bg-dark-950 border ${
-                                                            item.difference !== 0 ? 'border-yellow-500/30 focus:border-yellow-500' : 'border-dark-700 focus:border-primary-500'
-                                                        } rounded-lg px-3 py-2 text-right text-white font-mono focus:ring-1 focus:ring-primary-500 outline-none transition-colors`}
-                                                        value={item.actualStock}
-                                                        onChange={(e) => handleStockChange(item.id, e.target.value)}
-                                                    />
-                                                    {isUpdating && (
-                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                                                            <div className="w-3 h-3 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className={`font-mono font-medium ${
-                                                item.difference === 0 ? 'text-gray-500' :
-                                                item.difference > 0 ? 'text-green-400' : 'text-red-400'
-                                            }`}>
-                                                {item.difference > 0 ? '+' : ''}{parseFloat(item.difference.toFixed(2))}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            {/* Items List */}
+			<div className="space-y-4">
+				{/* Mobile View */}
+				<div className="md:hidden space-y-4">
+					{items.map((item) => {
+						const isUpdating = updatingItems[item.id];
+						return (
+							<div
+								key={item.id}
+								className="bg-dark-900 border border-dark-800 p-4 rounded-xl space-y-4"
+							>
+								<div className="flex justify-between items-start">
+									<div>
+										<div className="font-medium text-white text-lg">
+											{item.product.name}
+										</div>
+										<div className="text-sm text-gray-500">
+											{(item.product.price / 100).toFixed(2)}€ / unit
+										</div>
+									</div>
+									<div
+										className={`text-sm font-mono font-medium ${
+											item.difference === 0
+												? "text-gray-500"
+												: item.difference > 0
+												? "text-green-400"
+												: "text-red-400"
+										}`}
+									>
+										{item.difference > 0 ? "+" : ""}
+										{parseFloat(item.difference.toFixed(2))}
+									</div>
+								</div>
+
+								<div className="grid grid-cols-2 gap-4">
+									<div className="bg-dark-950/50 p-3 rounded-lg border border-dark-800/50">
+										<div className="text-xs text-gray-400 uppercase font-medium mb-1">
+											Système
+										</div>
+										<div className="text-gray-300 font-mono text-lg">
+											{item.systemStock} {item.product.unit || "u"}
+										</div>
+									</div>
+
+									<div>
+										<div className="text-xs text-gray-400 uppercase font-medium mb-1">
+											Réel
+										</div>
+										{isReadOnly ? (
+											<div className="text-white font-mono text-lg bg-dark-950/50 p-3 rounded-lg border border-dark-800/50">
+												{item.actualStock}
+											</div>
+										) : (
+											<div className="relative">
+												<input
+													type="number"
+													inputMode="decimal"
+													step="0.01"
+													className={`w-full bg-dark-950 border ${
+														item.difference !== 0
+															? "border-yellow-500/30 focus:border-yellow-500"
+															: "border-dark-700 focus:border-primary-500"
+													} rounded-lg px-3 py-3 text-right text-white font-mono text-lg focus:ring-1 focus:ring-primary-500 outline-none transition-colors`}
+													value={item.actualStock}
+													onChange={(e) =>
+														handleStockChange(item.id, e.target.value)
+													}
+												/>
+												{isUpdating && (
+													<div className="absolute left-3 top-1/2 -translate-y-1/2">
+														<div className="w-4 h-4 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+													</div>
+												)}
+											</div>
+										)}
+									</div>
+								</div>
+							</div>
+						);
+					})}
+				</div>
+
+				{/* Desktop View */}
+				<div className="hidden md:block bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden">
+					<div className="overflow-x-auto">
+						<table className="w-full text-left text-sm">
+							<thead className="bg-dark-950 text-gray-400 uppercase text-xs">
+								<tr>
+									<th className="px-6 py-4 font-medium">Produit</th>
+									<th className="px-6 py-4 font-medium text-right">
+										Stock Système
+									</th>
+									<th className="px-6 py-4 font-medium text-right w-48">
+										Stock Réel (Compte)
+									</th>
+									<th className="px-6 py-4 font-medium text-right">Écart</th>
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-dark-800">
+								{items.map((item) => {
+									const isUpdating = updatingItems[item.id];
+									return (
+										<tr key={item.id} className="hover:bg-dark-800/30">
+											<td className="px-6 py-4">
+												<div className="font-medium text-white">
+													{item.product.name}
+												</div>
+												<div className="text-xs text-gray-500">
+													{(item.product.price / 100).toFixed(2)}€ / unit
+												</div>
+											</td>
+											<td className="px-6 py-4 text-right text-gray-400">
+												{item.systemStock} {item.product.unit || "unit"}
+												{/* Note: item.product.unit might be undefined if not selected, fallback to unit or fetch properly */}
+											</td>
+											<td className="px-6 py-4 text-right">
+												{isReadOnly ? (
+													<span className="text-white font-mono">
+														{item.actualStock}
+													</span>
+												) : (
+													<div className="relative">
+														<input
+															type="number"
+															step="0.01"
+															className={`w-full bg-dark-950 border ${
+																item.difference !== 0
+																	? "border-yellow-500/30 focus:border-yellow-500"
+																	: "border-dark-700 focus:border-primary-500"
+															} rounded-lg px-3 py-2 text-right text-white font-mono focus:ring-1 focus:ring-primary-500 outline-none transition-colors`}
+															value={item.actualStock}
+															onChange={(e) =>
+																handleStockChange(item.id, e.target.value)
+															}
+														/>
+														{isUpdating && (
+															<div className="absolute right-2 top-1/2 -translate-y-1/2">
+																<div className="w-3 h-3 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+															</div>
+														)}
+													</div>
+												)}
+											</td>
+											<td className="px-6 py-4 text-right">
+												<span
+													className={`font-mono font-medium ${
+														item.difference === 0
+															? "text-gray-500"
+															: item.difference > 0
+															? "text-green-400"
+															: "text-red-400"
+													}`}
+												>
+													{item.difference > 0 ? "+" : ""}
+													{parseFloat(item.difference.toFixed(2))}
+												</span>
+											</td>
+										</tr>
+									);
+								})}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
 
             {/* Actions */}
             {!isReadOnly && (

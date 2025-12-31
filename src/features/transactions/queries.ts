@@ -50,18 +50,18 @@ export async function getTransactionsQuery(
     if (sort === "AMOUNT_DESC") orderByClause = [desc(transactions.amount)];
     if (sort === "AMOUNT_ASC") orderByClause = [asc(transactions.amount)];
 
-    return {
-        where: and(...whereConditions),
-        orderBy: orderByClause,
-        with: {
-            shop: true,
-            fams: true,
-            product: true,
-            issuer: true,
-            receiverUser: true,
-            targetUser: true,
-        },
-        limit: limit,
-        offset: offset,
-    };
+    	return {
+		where: and(...whereConditions),
+		orderBy: orderByClause,
+		with: {
+			shop: true,
+			fams: true,
+			product: true,
+			issuer: true,
+			receiverUser: true,
+			targetUser: true,
+		},
+		limit: limit,
+		offset: offset,
+	};
 }

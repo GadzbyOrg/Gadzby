@@ -18,6 +18,8 @@ export const transactionQuerySchema = z.object({
     search: z.string().default(""),
     type: z.string().default("ALL"),
     sort: z.string().default("DATE_DESC"),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
 });
 
 export const massChargeSchema = z.object({

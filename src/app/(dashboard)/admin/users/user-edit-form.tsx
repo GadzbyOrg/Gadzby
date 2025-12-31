@@ -11,6 +11,7 @@ import {
 	IconAlertTriangle,
 	IconTrash,
 } from "@tabler/icons-react";
+import { TabagnssSelector } from "@/components/tabagnss-selector";
 
 interface UserEditFormProps {
 	user: {
@@ -22,6 +23,7 @@ interface UserEditFormProps {
 		bucque: string;
 		nums: string;
 		promss: string;
+		tabagnss?: string;
 		appRole: "USER" | "TRESORIER" | "ADMIN";
 		roleId: string | null;
 		balance: number;
@@ -203,6 +205,8 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 					/>
 				</div>
+
+				<TabagnssSelector defaultValue={user.tabagnss} required />
 
 				<div className="pt-4 border-t border-dark-800 mt-4">
 					<h3 className="text-white text-sm font-semibold mb-4">

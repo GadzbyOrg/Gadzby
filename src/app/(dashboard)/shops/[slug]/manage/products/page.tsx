@@ -84,30 +84,30 @@ export default async function ShopProductsPage({
 						Gérez l'inventaire de {shop.name} ({products.length} produits)
 					</p>
 				</div>
-				<div className="flex gap-4">
+				<div className="flex gap-4 items-center">
+					<ExcelImportModal
+						action={importProducts}
+						triggerLabel="Importer Excel"
+						modalTitle="Importer des produits"
+						expectedFormat="Nom, Prix d'achat, Stock, Catégorie"
+						fileName="import_produits"
+						additionalData={{ slug }}
+					/>
 					<Link
 						href={`/shops/${slug}/manage/products/new`}
-						className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors font-medium text-center"
+						className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors font-medium text-center whitespace-nowrap"
 					>
 						+ Nouveau Produit
 					</Link>
 				</div>
 			</header>
 
-			<div className="flex justify-end">
-				<ExcelImportModal
-					action={importProducts}
-					triggerLabel="Importer Excel"
-					modalTitle="Importer des produits"
-					expectedFormat="Nom, Prix d'achat, Stock, Catégorie"
-					fileName="import_produits"
-					additionalData={{ slug }}
-				/>
-			</div>
+
 
 			<ProductToolbar categories={categories} />
 
-			<div className="bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden">
+			{/* Desktop View */}
+			<div className="hidden md:block bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden">
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm text-gray-400">
 						<thead className="bg-dark-800 text-gray-200 uppercase font-medium">
@@ -187,6 +187,88 @@ export default async function ShopProductsPage({
 						</tbody>
 					</table>
 				</div>
+			</div>
+
+			{/* Mobile View */}
+			<div className="md:hidden space-y-4">
+				{products && products.length > 0 ? (
+					products.map((product) => (
+						<div
+							key={product.id}
+							className="bg-dark-900 border border-dark-800 rounded-xl p-4 flex flex-col gap-4 shadow-sm"
+						>
+							<div className="flex justify-between items-start">
+								<div>
+									<h3 className="font-bold text-lg text-white mb-1">
+										{product.name}
+									</h3>
+									<span className="inline-block px-2 py-1 rounded-full bg-dark-800 text-gray-300 text-xs">
+										{product.category?.name || "Sans catégorie"}
+									</span>
+								</div>
+								<div className="text-right">
+									<div className="text-xl font-bold text-white mb-0.5">
+										{(product.price / 100).toFixed(2)} €
+									</div>
+								</div>
+							</div>
+
+							<div
+								className={`flex items-center justify-between p-3 rounded-lg ${
+									product.stock <= 5
+										? "bg-red-500/10 border border-red-500/20"
+										: "bg-dark-800"
+								}`}
+							>
+								<span className="text-gray-400 text-sm">Stock disponible</span>
+								<span
+									className={`text-2xl font-bold flex items-center gap-2 ${
+										product.stock <= 5 ? "text-red-400" : "text-emerald-400"
+									}`}
+								>
+									{product.stock <= 5 && (
+										<span className="relative flex h-3 w-3">
+											<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+											<span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+										</span>
+									)}
+									{product.stock}
+								</span>
+							</div>
+
+							<div className="flex items-center gap-3 pt-2 border-t border-dark-800">
+								<div className="flex-1">
+									<RestockButton
+										shopSlug={slug}
+										productId={product.id}
+										productName={product.name}
+										currentUnit={product.unit}
+									/>
+								</div>
+								<div className="flex items-center gap-3 border-l border-dark-800 pl-3">
+									<Link
+										href={`/shops/${slug}/manage/products/${product.id}`}
+										className="p-2 text-primary-400 bg-primary-500/10 hover:bg-primary-500/20 rounded-lg transition-colors"
+										title="Modifier"
+									>
+										Modifier
+									</Link>
+									<div className="p-2 text-gray-500 hover:text-red-400 transition-colors">
+										<DeleteProductButton
+											shopSlug={slug}
+											productId={product.id}
+											productName={product.name}
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
+					))
+				) : (
+					<div className="text-center py-12 text-gray-500 bg-dark-900 border border-dark-800 rounded-xl">
+						Aucun produit trouvé.
+					</div>
+				)}
 			</div>
 		</div>
 	);

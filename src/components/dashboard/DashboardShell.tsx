@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { UserDropdown } from "./UserDropdown";
 import { IconMenu2 } from "@tabler/icons-react";
@@ -40,6 +41,12 @@ export function DashboardShell({
 }) {
 	// État pour le mobile (Sidebar drawer)
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const pathname = usePathname();
+
+	// Fermer le menu mobile lors de la navigation
+	useEffect(() => {
+		setMobileMenuOpen(false);
+	}, [pathname]);
 
 	const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " €";
 

@@ -50,6 +50,7 @@ export default async function ShopInventoryPage({
 
 			<div className="grid gap-6">
 				{/* Historique */}
+				{/* Historique */}
 				<div className="bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden">
 					<div className="px-6 py-4 border-b border-dark-800 flex items-center gap-3">
 						<IconHistory className="text-gray-400" size={20} />
@@ -63,59 +64,108 @@ export default async function ShopInventoryPage({
 							Aucun inventaire réalisé pour le moment.
 						</div>
 					) : (
-						<div className="overflow-x-auto">
-							<table className="w-full text-left text-sm">
-								<thead className="bg-dark-950 text-gray-400 uppercase text-xs">
-									<tr>
-										<th className="px-6 py-3 font-medium">Date</th>
-										<th className="px-6 py-3 font-medium">Réalisé par</th>
-										<th className="px-6 py-3 font-medium">Statut</th>
-										<th className="px-6 py-3 font-medium text-right">Action</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-dark-800">
-									{audits.map((audit) => (
-										<tr
-											key={audit.id}
-											className="hover:bg-dark-800/50 transition-colors"
-										>
-											<td className="px-6 py-4 text-gray-300">
-												{new Date(audit.createdAt).toLocaleDateString()} à{" "}
-												{new Date(audit.createdAt).toLocaleTimeString()}
-											</td>
-											<td className="px-6 py-4 text-gray-300">
-												{audit.creator
-													? `${audit.creator.prenom} ${audit.creator.nom}`
-													: "Inconnu"}
-											</td>
-											<td className="px-6 py-4">
-												<span
-													className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-														audit.status === "COMPLETED"
-															? "bg-green-500/10 text-green-400 border border-green-500/20"
-															: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
-													}`}
-												>
-													{audit.status === "COMPLETED"
-														? "Terminé"
-														: "En cours"}
+						<>
+							{/* Mobile View */}
+							<div className="md:hidden divide-y divide-dark-800">
+								{audits.map((audit) => (
+									<div key={audit.id} className="p-4 space-y-3">
+										<div className="flex justify-between items-start">
+											<div>
+												<div className="text-gray-300 font-medium">
+													{new Date(audit.createdAt).toLocaleDateString()}
+												</div>
+												<div className="text-sm text-gray-500">
+													{new Date(audit.createdAt).toLocaleTimeString()}
+												</div>
+											</div>
+											<span
+												className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+													audit.status === "COMPLETED"
+														? "bg-green-500/10 text-green-400 border-green-500/20"
+														: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+												}`}
+											>
+												{audit.status === "COMPLETED" ? "Terminé" : "En cours"}
+											</span>
+										</div>
+
+										<div className="flex justify-between items-center text-sm">
+											<div className="text-gray-400">
+												Par :{" "}
+												<span className="text-gray-300">
+													{audit.creator
+														? `${audit.creator.prenom} ${audit.creator.nom}`
+														: "Inconnu"}
 												</span>
-											</td>
-											<td className="px-6 py-4 text-right">
-												<Link
-													href={`/shops/${shop.slug}/manage/inventory/${audit.id}`}
-													className="text-primary-400 hover:text-primary-300 font-medium"
-												>
-													{audit.status === "COMPLETED"
-														? "Voir le rapport"
-														: "Continuer"}
-												</Link>
-											</td>
+											</div>
+											<Link
+												href={`/shops/${shop.slug}/manage/inventory/${audit.id}`}
+												className="text-primary-400 hover:text-primary-300 font-medium"
+											>
+												{audit.status === "COMPLETED"
+													? "Voir le rapport"
+													: "Continuer"}
+											</Link>
+										</div>
+									</div>
+								))}
+							</div>
+
+							{/* Desktop View */}
+							<div className="hidden md:block overflow-x-auto">
+								<table className="w-full text-left text-sm">
+									<thead className="bg-dark-950 text-gray-400 uppercase text-xs">
+										<tr>
+											<th className="px-6 py-3 font-medium">Date</th>
+											<th className="px-6 py-3 font-medium">Réalisé par</th>
+											<th className="px-6 py-3 font-medium">Statut</th>
+											<th className="px-6 py-3 font-medium text-right">Action</th>
 										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
+									</thead>
+									<tbody className="divide-y divide-dark-800">
+										{audits.map((audit) => (
+											<tr
+												key={audit.id}
+												className="hover:bg-dark-800/50 transition-colors"
+											>
+												<td className="px-6 py-4 text-gray-300">
+													{new Date(audit.createdAt).toLocaleDateString()} à{" "}
+													{new Date(audit.createdAt).toLocaleTimeString()}
+												</td>
+												<td className="px-6 py-4 text-gray-300">
+													{audit.creator
+														? `${audit.creator.prenom} ${audit.creator.nom}`
+														: "Inconnu"}
+												</td>
+												<td className="px-6 py-4">
+													<span
+														className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+															audit.status === "COMPLETED"
+																? "bg-green-500/10 text-green-400 border-green-500/20"
+																: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+														}`}
+													>
+														{audit.status === "COMPLETED"
+															? "Terminé"
+															: "En cours"}
+													</span>
+												</td>
+												<td className="px-6 py-4 text-right">
+													<Link
+														href={`/shops/${shop.slug}/manage/inventory/${audit.id}`}
+														className="text-primary-400 hover:text-primary-300 font-medium"
+													>
+														{audit.status === "COMPLETED"
+															? "Voir le rapport"
+															: "Continuer"}
+													</Link>
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						</>
 					)}
 				</div>
 			</div>

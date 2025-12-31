@@ -11,7 +11,7 @@ import {
 } from "@/db/schema";
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
 import { verifySession } from "@/lib/session";
-import { eq, and, sql, gte, lte } from "drizzle-orm";
+import { eq, and, sql, gte, lte, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import {
@@ -422,7 +422,12 @@ export const getShopTransactions = authenticatedAction(
 			where: whereClause,
 		} as any);
 
-		return { transactions: history, shop };
+		const totalCountResult = await db
+			.select({ count: count() })
+			.from(transactions)
+			.where(whereClause);
+
+		return { transactions: history, shop, totalCount: totalCountResult[0].count };
 	}
 );
 

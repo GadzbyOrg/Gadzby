@@ -77,7 +77,7 @@ export const loginAction = publicAction(
 );
 
 export const logoutAction = publicActionNoInput(async () => {
-	deleteSession();
+	await deleteSession();
 	redirect("/login");
 });
 
