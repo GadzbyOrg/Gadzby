@@ -17,10 +17,8 @@
   --color-primary-950: #451a03;
 
   /* --- PALETTE BACKGROUND (Cream/Tablecloth) --- */
-  /* Replaces previous Dark palette logic, now Light/Warm */
   --color-dark-50: #ffffff;
   --color-dark-100: #fffbf0;
-  /* Warm Cream */
   --color-dark-200: #fefce8;
   --color-dark-300: #fef08a;
 

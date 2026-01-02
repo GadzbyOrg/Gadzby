@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { loginAction } from "@/features/auth/actions";
 import {
-	IconReceipt2,
 	IconUser,
 	IconLock,
 	IconAlertTriangle,
@@ -15,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 function InputLabel({
 	htmlFor,
@@ -73,8 +73,14 @@ export default function LoginPage() {
 		<div className="flex min-h-screen flex-col justify-center bg-dark-950 px-6 py-12 lg:px-8">
 			{/* En-tête avec Logo */}
 			<div className="sm:mx-auto sm:w-full sm:max-w-sm">
-				<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-900/30 text-primary-500 ring-1 ring-primary-900/50 shadow-[0_0_30px_-5px_var(--primary-900)]">
-					<IconReceipt2 size={32} stroke={1.5} />
+				<div className="mx-auto flex h-24 w-24 items-center justify-center">
+					<Image
+						src="/Gadzby_logo.svg"
+						alt="Gadzby Logo"
+						width={96}
+						height={96}
+						className="h-full w-full object-contain"
+					/>
 				</div>
 				<h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-white">
 					Gadzby
