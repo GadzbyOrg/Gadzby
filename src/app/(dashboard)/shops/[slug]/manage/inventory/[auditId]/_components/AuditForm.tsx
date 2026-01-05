@@ -195,7 +195,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
 														item.difference !== 0
 															? "border-yellow-500/30 focus:border-yellow-500"
 															: "border-dark-700 focus:border-primary-500"
-													} rounded-lg px-3 py-3 text-right text-white font-mono text-lg focus:ring-1 focus:ring-primary-500 outline-none transition-colors`}
+													} rounded-lg px-3 py-3 text-right text-white font-mono text-lg focus:ring-1 focus:ring-primary-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
 													value={item.actualStock}
 													onChange={(e) =>
 														handleStockChange(item.id, e.target.value)
@@ -262,7 +262,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
 																item.difference !== 0
 																	? "border-yellow-500/30 focus:border-yellow-500"
 																	: "border-dark-700 focus:border-primary-500"
-															} rounded-lg px-3 py-2 text-right text-white font-mono focus:ring-1 focus:ring-primary-500 outline-none transition-colors`}
+															} rounded-lg px-3 py-2 text-right text-white font-mono focus:ring-1 focus:ring-primary-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
 															value={item.actualStock}
 															onChange={(e) =>
 																handleStockChange(item.id, e.target.value)

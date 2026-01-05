@@ -2,11 +2,9 @@ import {
 	pgTable,
 	text,
 	uuid,
-	pgEnum,
 	primaryKey,
 	boolean,
 	timestamp,
-	json,
 	integer,
 	jsonb,
 } from "drizzle-orm/pg-core";
@@ -14,8 +12,6 @@ import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { shopExpenses } from "./expenses";
 import { productCategories, products } from "./products";
-
-export const shopRoleEnum = pgEnum("shop_role", ["VP", "MEMBRE", "GRIPSS"]);
 
 export const shops = pgTable("shops", {
 	id: uuid("id").defaultRandom().primaryKey(),

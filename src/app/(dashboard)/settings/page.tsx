@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { IconUser, IconMail, IconId, IconSchool } from "@tabler/icons-react";
 import { SettingsForm } from "./settings-form";
+import { AvatarUpload } from "@/components/avatar-upload";
 import { ChangePasswordForm } from "./change-password-form";
 
 export default async function SettingsPage() {
@@ -31,12 +32,7 @@ export default async function SettingsPage() {
 
 			<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm">
 				<div className="mb-8 flex items-center gap-4 border-b border-dark-800 pb-8">
-					<div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-900/30 text-primary-500 ring-2 ring-primary-900/50">
-						<span className="text-3xl font-bold">
-							{user.prenom[0]}
-							{user.nom[0]}
-						</span>
-					</div>
+					<AvatarUpload user={user} />
 					<div>
 						<h2 className="text-xl font-semibold text-white">
 							{user.prenom} {user.nom}

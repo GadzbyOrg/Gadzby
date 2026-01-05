@@ -42,6 +42,13 @@ export const loginAction = publicAction(
 		const user = await db.query.users.findFirst({
 			where: eq(users.username, username),
 			with: { role: true },
+			columns: {
+				id: true,
+				username: true,
+				passwordHash: true,
+				isAsleep: true,
+				preferredDashboardPath: true,
+			}
 		});
 
 		if (!user) {
@@ -69,7 +76,7 @@ export const loginAction = publicAction(
 		const roleName = user.role?.name || "USER";
 		const permissions = user.role?.permissions || [];
 
-		await createSession(user.id, roleName, permissions);
+		await createSession(user.id, roleName, permissions, user.preferredDashboardPath);
 
 		console.log("Login successful:", username);
 		redirect("/");
@@ -134,6 +141,8 @@ export const resetPasswordAction = publicAction(
 		const user = await db.query.users.findFirst({
 			where: eq(users.resetPasswordToken, token),
 		});
+
+		console.log(token)
 
 		if (!user) {
 			return { error: "Token invalide ou expiré" };

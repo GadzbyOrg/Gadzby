@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { IconSearch, IconUser, IconLoader2 } from '@tabler/icons-react';
 import { searchUsersPublicAction } from '@/features/users/actions';
+import { UserAvatar } from "@/components/user-avatar";
 
 import { cn } from "@/lib/utils";
 
@@ -118,9 +119,15 @@ export function UserSearch({
                             onClick={() => handleSelect(user)}
                             className="w-full text-left px-4 py-2 hover:bg-dark-700 transition-colors flex items-center gap-3 group"
                         >
-                            <div className="w-8 h-8 rounded-full bg-dark-600 flex items-center justify-center text-gray-400 group-hover:bg-dark-500 group-hover:text-gray-300">
-                                <IconUser size={16} />
-                            </div>
+                            <UserAvatar
+                                user={{
+                                    id: user.id,
+                                    name: user.username,
+                                    username: user.username,
+                                    image: user.image,
+                                }}
+                                className="h-8 w-8"
+                            />
                             <div>
                                 <div className="text-sm font-medium text-gray-200">
                                     {user.prenom} {user.nom}

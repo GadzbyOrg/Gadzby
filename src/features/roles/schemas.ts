@@ -10,7 +10,8 @@ export const AVAILABLE_PERMISSIONS = [
     "MANAGE_SHOPS", 
     "VIEW_TRANSACTIONS", 
     "CANCEL_TRANSACTION",
-    "TOPUP_USER", 
+    "TOPUP_USER",
+    "MANAGE_MANDATS",
 ];
 
 export const roleSchema = z.object({

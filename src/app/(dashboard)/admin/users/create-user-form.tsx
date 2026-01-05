@@ -70,7 +70,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							type="text"
 							name="nom"
 							id="nom"
-							placeholder="Ex: Dupont"
+							placeholder="Ex: Chabanon"
 							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 						/>
 					</div>
@@ -85,7 +85,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						type="email"
 						name="email"
 						id="email"
-						placeholder="Ex: louis.dupont@gadz.org"
+						placeholder="Ex: louis.chabanon@gadz.org"
 						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 					/>
 				</div>
@@ -148,7 +148,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						type="text"
 						name="nums"
 						id="nums"
-						placeholder="Ex: 123"
+						placeholder="Ex: 4!"
 						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 					/>
 				</div>

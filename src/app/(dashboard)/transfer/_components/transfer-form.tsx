@@ -5,6 +5,7 @@ import { transferMoneyAction } from "@/features/transactions/actions";
 import { searchUsersPublicAction } from "@/features/users/actions";
 import { IconCurrencyEuro, IconSearch } from "@tabler/icons-react";
 import { useDebounce } from "use-debounce";
+import { UserAvatar } from "@/components/user-avatar";
 
 // Types
 type UserResult = {
@@ -14,6 +15,7 @@ type UserResult = {
 	prenom: string;
 	bucque: string | null;
 	promss: string;
+	image?: string | null;
 };
 
 const initialState: any = {
@@ -125,14 +127,25 @@ export function TransferForm({ balance }: { balance: number }) {
 
 							{selectedUser ? (
 								<div className="flex items-center justify-between p-3 rounded-lg border border-dark-700 bg-dark-800 text-white">
-									<div className="flex flex-col">
-										<span className="font-semibold">
-											{selectedUser.prenom} {selectedUser.nom}
-										</span>
-										<span className="text-xs text-gray-400">
-											{selectedUser.username}{" "}
-											{selectedUser.bucque && `- ${selectedUser.bucque}`}
-										</span>
+									<div className="flex items-center gap-3">
+										<UserAvatar
+											user={{
+												id: selectedUser.id,
+												name: selectedUser.username,
+												username: selectedUser.username,
+												image: selectedUser.image,
+											}}
+											className="h-10 w-10"
+										/>
+										<div className="flex flex-col">
+											<span className="font-semibold">
+												{selectedUser.prenom} {selectedUser.nom}
+											</span>
+											<span className="text-xs text-gray-400">
+												{selectedUser.username}{" "}
+												{selectedUser.bucque && `- ${selectedUser.bucque}`}
+											</span>
+										</div>
 									</div>
 									<button
 										type="button"
@@ -150,7 +163,7 @@ export function TransferForm({ balance }: { balance: number }) {
 									<IconSearch className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
 									<input
 										type="text"
-										placeholder="Rechercher (Nom, surnom, bucque...)"
+										placeholder="Rechercher (Nom, bucque, num'ss...)"
 										value={query}
 										onChange={(e) => {
 											setQuery(e.target.value);
@@ -176,14 +189,26 @@ export function TransferForm({ balance }: { balance: number }) {
 														setSelectedUser(user);
 														setDropdownOpen(false);
 													}}
-													className="cursor-pointer px-4 py-2 hover:bg-dark-800 text-sm text-gray-200 flex flex-col"
+													className="cursor-pointer px-4 py-2 hover:bg-dark-800 text-sm text-gray-200 flex items-center gap-3"
 												>
-													<span className="font-medium text-white">
-														{user.prenom} {user.nom}
-													</span>
-													<span className="text-xs text-gray-500">
-														{user.username} {user.bucque && `· ${user.bucque}`}
-													</span>
+													<UserAvatar
+														user={{
+															id: user.id,
+															name: user.username,
+															username: user.username,
+															image: user.image,
+														}}
+														className="h-8 w-8"
+													/>
+													<div className="flex flex-col">
+														<span className="font-medium text-white">
+															{user.prenom} {user.nom}
+														</span>
+														<span className="text-xs text-gray-500">
+															{user.username}{" "}
+															{user.bucque && `· ${user.bucque}`}
+														</span>
+													</div>
 												</li>
 											))}
 										</ul>
@@ -221,7 +246,7 @@ export function TransferForm({ balance }: { balance: number }) {
 									value={amount}
 									onChange={(e) => setAmount(e.target.value)}
 									required
-									className="w-full rounded-lg border border-dark-700 bg-dark-950 py-2.5 pl-10 pr-4 text-white placeholder:text-gray-600 focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+									className="w-full rounded-lg border border-dark-700 bg-dark-950 py-2.5 pl-10 pr-4 text-white placeholder:text-gray-600 focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 								/>
 							</div>
 						</div>

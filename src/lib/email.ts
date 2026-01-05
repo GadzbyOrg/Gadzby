@@ -4,7 +4,18 @@ import { db } from "@/db";
 import { systemSettings } from "@/db/schema/settings";
 import { eq } from "drizzle-orm";
 
-async function getEmailConfig() {
+export type EmailConfig = {
+    provider: "smtp" | "resend";
+    smtpHost?: string;
+    smtpPort?: number;
+    smtpSecure?: boolean;
+    smtpUser?: string;
+    smtpPassword?: string;
+    smtpFrom: string;
+    resendApiKey?: string;
+};
+
+export async function getEmailConfig(): Promise<EmailConfig> {
     // 1. Try DB first
     try {
         const setting = await db.query.systemSettings.findFirst({
@@ -17,7 +28,7 @@ async function getEmailConfig() {
 
     // 2. Fallback to Env
     return {
-        provider: process.env.EMAIL_PROVIDER || "smtp",
+        provider: (process.env.EMAIL_PROVIDER as "smtp" | "resend") || "smtp",
         smtpHost: process.env.SMTP_HOST,
         smtpPort: Number(process.env.SMTP_PORT),
         smtpSecure: process.env.SMTP_SECURE === "true",
@@ -26,6 +37,71 @@ async function getEmailConfig() {
         smtpFrom: process.env.SMTP_FROM || "noreply@gadzby.com",
         resendApiKey: process.env.RESEND_API_KEY,
     };
+}
+
+export async function sendEmail(config: EmailConfig, to: string, subject: string, html: string) {
+    if (config.provider === "resend") {
+        if (!config.resendApiKey) throw new Error("Clé API Resend manquante");
+        
+        const resend = new Resend(config.resendApiKey);
+        const { error } = await resend.emails.send({
+            from: config.smtpFrom,
+            to,
+            subject,
+            html,
+        });
+        
+        if (error) {
+            console.error("[RESEND] Error:", error);
+            throw new Error(error.message);
+        }
+        
+        console.log(`[RESEND] Email sent to ${to}`);
+    } else {
+        // SMTP
+        if (!config.smtpHost || !config.smtpPort) {
+             throw new Error("Configuration SMTP incomplète (Host ou Port manquant)");
+        }
+
+        const transporter = nodemailer.createTransport({
+            host: config.smtpHost,
+            port: Number(config.smtpPort),
+            secure: config.smtpSecure,
+            auth: {
+                user: config.smtpUser,
+                pass: config.smtpPassword,
+            },
+        });
+
+        // Verify connection configuration
+        await transporter.verify();
+
+        await transporter.sendMail({
+            from: `"Gadzby" <${config.smtpFrom}>`,
+            to,
+            subject,
+            html,
+        });
+        
+        console.log(`[SMTP] Email sent to ${to}`);
+    }
+}
+
+export async function sendTestEmail(config: EmailConfig, to: string) {
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                <h1 style="color: #0d6efd; margin-bottom: 20px;">Test de configuration</h1>
+                <p style="font-size: 16px; line-height: 1.5;">Si vous recevez cet email, cela signifie que votre configuration email est correcte !</p>
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 14px;">
+                    <p>Configuration utilisée : <strong>${config.provider === "resend" ? "Resend" : "SMTP"}</strong></p>
+                    ${config.provider === "smtp" ? `<p>Host : ${config.smtpHost}:${config.smtpPort}</p>` : ""}
+                </div>
+            </div>
+        </div>
+    `;
+
+    await sendEmail(config, to, "Test de configuration Gadzby", htmlContent);
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
@@ -44,39 +120,9 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     `;
 
     try {
-        if (config.provider === "resend") {
-            if (!config.resendApiKey) throw new Error("Resend API Key missing");
-            const resend = new Resend(config.resendApiKey);
-            await resend.emails.send({
-                from: config.smtpFrom, // Resend requires verified domain, but let's use the configured from
-                to: email,
-                subject: "Réinitialisation de votre mot de passe",
-                html: htmlContent,
-            });
-             console.log(`[RESEND] Password reset email sent to ${email}`);
-
-        } else {
-             // SMTP
-            const transporter = nodemailer.createTransport({
-                host: config.smtpHost,
-                port: Number(config.smtpPort),
-                secure: config.smtpSecure,
-                auth: {
-                    user: config.smtpUser,
-                    pass: config.smtpPassword,
-                },
-            });
-
-            await transporter.sendMail({
-                from: `"Gadzby" <${config.smtpFrom}>`,
-                to: email,
-                subject: "Réinitialisation de votre mot de passe",
-                html: htmlContent,
-            });
-             console.log(`[SMTP] Password reset email sent to ${email}`);
-        }
+        await sendEmail(config, email, "Réinitialisation de votre mot de passe", htmlContent);
     } catch (error) {
-		console.error("Error sending email:", error);
+		console.error("Error sending password reset email:", error);
 		throw new Error("Erreur lors de l'envoi de l'email");
 	}
 }

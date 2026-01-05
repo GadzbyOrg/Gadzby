@@ -97,7 +97,7 @@ export function TopUpForm({ methods }: { methods: PaymentMethod[] }) {
 							type="number"
 							value={amount}
 							onChange={(e) => setAmount(Number(e.target.value))}
-							className="w-full rounded-xl border border-dark-800 bg-dark-950 px-4 py-3 text-lg font-bold text-white focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+							className="w-full rounded-xl border border-dark-800 bg-dark-950 px-4 py-3 text-lg font-bold text-white focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 							placeholder="Montant personnalisé"
 							min="0.01"
 							step="0.01"

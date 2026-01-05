@@ -4,12 +4,15 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { UserDropdown } from "./UserDropdown";
+import { Footer } from "./Footer";
 import { IconMenu2 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
 type UserProp = {
+    id: string;
 	username: string;
 	bucque: string | null;
+    image?: string | null;
 	balance: number;
 	appRole: string;
 	permissions: string[];
@@ -122,10 +125,13 @@ export function DashboardShell({
 				</header>
 
 				{/* PAGE CONTENT (Scrollable) */}
-				<div className="flex-1 overflow-y-auto p-6 md:p-8 bg-dark-950">
-					<div className="mx-auto max-w-6xl animate-in fade-in zoom-in-95 duration-300">
-						{children}
+				<div className="flex-1 overflow-y-auto bg-dark-950 flex flex-col">
+					<div className="flex-1 p-6 md:p-8">
+						<div className="mx-auto max-w-6xl animate-in fade-in zoom-in-95 duration-300">
+							{children}
+						</div>
 					</div>
+					<Footer />
 				</div>
 			</main>
 		</div>

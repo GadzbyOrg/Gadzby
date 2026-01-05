@@ -23,6 +23,7 @@ async function main() {
 			promss: "Li223",
 			roles: ["USER"],
 			balance: 5000,
+			tabagnss: "ME"
 		},
 		{
 			nom: "Stark",
@@ -34,6 +35,7 @@ async function main() {
 			promss: "Li223",
 			roles: ["USER"],
 			balance: 10000,
+			tabagnss: "ME"
 		},
 		{
 			nom: "Snow",
@@ -45,6 +47,7 @@ async function main() {
 			promss: "Wa000",
 			roles: ["USER"],
 			balance: 0,
+			tabagnss: "ME"
 		},
 
 		// LANNISTER (Admins / Shop Managers)
@@ -58,6 +61,7 @@ async function main() {
 			promss: "An220",
 			roles: ["TRESORIER"],
 			balance: 100000,
+			tabagnss: "ME"
 		},
 		{
 			nom: "Lannister",
@@ -69,6 +73,7 @@ async function main() {
 			promss: "Bo215",
 			roles: ["ZiFoy'ss"],
 			balance: 50000,
+			tabagnss: "ME"
 		},
 
 		// TARGARYEN (Users)
@@ -82,6 +87,7 @@ async function main() {
 			promss: "Me222",
 			roles: ["USER"],
 			balance: 2000,
+			tabagnss: "ME"
 		},
 		{
 			nom: "Targaryen",
@@ -93,6 +99,7 @@ async function main() {
 			promss: "Me222",
 			roles: ["USER"],
 			balance: 100,
+			tabagnss: "ME"
 		},
 
 		// BARATHEON (Users)
@@ -106,6 +113,7 @@ async function main() {
 			promss: "Ai210",
 			roles: ["USER"],
 			balance: 500,
+			tabagnss: "ME"
 		},
 		{
 			nom: "Baratheon",
@@ -117,6 +125,7 @@ async function main() {
 			promss: "Ai210",
 			roles: ["USER"],
 			balance: 5000,
+			tabagnss: "ME"
 		},
 		{
 			nom: "Baratheon",
@@ -128,8 +137,9 @@ async function main() {
 			promss: "Ai211",
 			roles: ["USER"],
 			balance: 8000,
+			tabagnss: "ME"
 		},
-	];
+	] as const;
 
 	// 1. Get roles
 	const userRole = await db.query.roles.findFirst({
@@ -155,8 +165,8 @@ async function main() {
 
 		// Determine Role ID based on the first role in the array (simplified for now)
 		let roleId = userRole.id;
-		if (user.roles.includes("ADMIN")) roleId = adminRole.id;
-		else if (user.roles.includes("ZiFoy'ss")) roleId = zifoyRole.id;
+		if ((user.roles as readonly string[]).includes("ADMIN")) roleId = adminRole.id;
+		else if ((user.roles as readonly string[]).includes("ZiFoy'ss")) roleId = zifoyRole.id;
 
 		const { roles: _roles, ...userData } = user;
 
@@ -194,10 +204,14 @@ async function main() {
 
 		if (!legacyUserRole) throw new Error("USER role not found");
 
+		const tabagnssOptions = ["ME", "CL", "CH", "KA", "PA", "BO", "LI", "AN"] as const;
+
 		const newUsers = [];
 		for (let i = 0; i < 1000; i++) {
 			const firstName = faker.person.firstName();
 			const lastName = faker.person.lastName();
+			const randomTabagnss =
+				tabagnssOptions[Math.floor(Math.random() * tabagnssOptions.length)];
 
 			newUsers.push({
 				nom: lastName,
@@ -214,6 +228,7 @@ async function main() {
 				passwordHash: hashedPassword,
 				roleId: legacyUserRole.id, // defaulting to USER role
 				balance: faker.number.int({ min: 0, max: 10000 }),
+				tabagnss: randomTabagnss,
 			});
 		}
 

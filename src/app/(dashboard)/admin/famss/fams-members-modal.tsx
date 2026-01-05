@@ -14,6 +14,7 @@ import {
 	removeMemberAction,
 	updateMemberRoleAction,
 } from "@/features/famss/admin-actions";
+import { UserAvatar } from "@/components/user-avatar";
 
 interface FamsMembersModalProps {
 	fams: any;
@@ -143,10 +144,15 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 									className="flex items-center justify-between p-3 bg-dark-900/50 border border-dark-800/50 rounded-xl hover:border-dark-700 transition-colors"
 								>
 									<div className="flex items-center gap-3">
-										<div className="h-8 w-8 rounded-full bg-primary-900/30 flex items-center justify-center text-primary-400 font-bold text-xs">
-											{member.prenom?.[0]}
-											{member.nom?.[0]}
-										</div>
+										<UserAvatar
+											user={{
+												id: member.id,
+												name: member.username,
+												username: member.username,
+												image: member.image,
+											}}
+											className="h-8 w-8"
+										/>
 										<div>
 											<div className="flex items-center gap-2">
 												<div className="text-sm font-medium text-white">

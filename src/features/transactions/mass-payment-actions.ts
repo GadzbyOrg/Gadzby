@@ -36,8 +36,8 @@ export const getUsersByPromssAction = authenticatedAction(
 				username: true,
 				nom: true,
 				prenom: true,
-				balance: true,
                 bucque: true,
+                image: true,
 			},
 		});
 		return { users: foundUsers };
@@ -76,12 +76,12 @@ export const resolveUsersFromExcelAction = authenticatedAction(
 				if (username) {
 					user = await db.query.users.findFirst({
 						where: (u, { eq, and }) => and(eq(u.username, String(username)), eq(u.isDeleted, false)),
-                        columns: { id: true, username: true, nom: true, prenom: true, balance: true, bucque: true }
+                        columns: { id: true, username: true, nom: true, prenom: true, balance: true, bucque: true, image: true }
 					});
 				} else if (email) {
 					user = await db.query.users.findFirst({
 						where: (u, { eq, and }) => and(eq(u.email, String(email)), eq(u.isDeleted, false)),
-                        columns: { id: true, username: true, nom: true, prenom: true, balance: true, bucque: true }
+                        columns: { id: true, username: true, nom: true, prenom: true, balance: true, bucque: true, image: true }
 					});
 				}
 

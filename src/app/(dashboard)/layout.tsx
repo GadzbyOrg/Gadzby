@@ -27,6 +27,9 @@ export default async function Layout({
 			username: true,
 			bucque: true,
 			balance: true,
+			image: true,
+            nom: true,
+			id: true,
 		},
 	});
 

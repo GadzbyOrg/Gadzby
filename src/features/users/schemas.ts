@@ -8,7 +8,8 @@ export const updateUserSchema = z.object({
 	bucque: z.string().optional().or(z.literal("")),
 	promss: z.string().min(1, "La prom'ss est requise"),
 	nums: z.string().optional().or(z.literal("")),
-	tabagnss: z.string().min(1, "Le tabagn'ss est requis"),
+	tabagnss: z.string().optional().or(z.literal("")),
+	preferredDashboardPath: z.string().optional().or(z.literal("")),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

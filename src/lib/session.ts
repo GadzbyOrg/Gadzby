@@ -16,12 +16,14 @@ type SessionPayload = {
 	role: string;
 	permissions: string[];
 	expiresAt: Date;
+	preferredDashboardPath?: string | null;
 };
 
 export async function createSession(
 	userId: string,
 	role: string,
 	permissions: string[],
+	preferredDashboardPath: string | null = null,
 	redirectTo = "/"
 ) {
 	const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 2);
@@ -29,6 +31,7 @@ export async function createSession(
 		userId,
 		role,
 		permissions,
+		preferredDashboardPath,
 		expiresAt,
 	})
 		.setProtectedHeader({ alg: "HS256" })
@@ -43,7 +46,16 @@ export async function createSession(
 		expires: expiresAt,
 		path: "/",
 	});
-	redirect(redirectTo);
+	// If the user has a preferred path, redirect there, unless overridden by redirectTo (if distinct from "/")
+	// But actually, we probably want to prioritize the passed redirectTo if it's not default.
+	// However, usually redirectTo is just passed from login action.
+	// Let's rely on the caller to decide the redirect, but 'createSession' logic has 'redirectTo' arg.
+	const finalRedirect =
+		redirectTo === "/" && preferredDashboardPath
+			? preferredDashboardPath
+			: redirectTo;
+			
+	redirect(finalRedirect);
 }
 
 export async function verifySession() {

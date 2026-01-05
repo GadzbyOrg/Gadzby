@@ -23,7 +23,9 @@ export default async function middleware(req: NextRequest) {
 
 			if (isPublicRoute) {
 				console.log("Redirecting to dashboard");
-				return NextResponse.redirect("/");
+				const payload = await jwtVerify(session, secret);
+				const preferredPath = (payload.payload as any).preferredDashboardPath;
+				return NextResponse.redirect(new URL(preferredPath || "/", req.url));
 			}
 		} catch (err) {
 			const response = NextResponse.redirect(new URL("/login", req.url));

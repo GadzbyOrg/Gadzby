@@ -20,11 +20,16 @@ import * as XLSX from "xlsx";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { transactions } from "@/db/schema";
+import { unlink } from "fs/promises";
+import { join } from "path";
+import { existsSync } from "fs";
+
+const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
 
 export const updateUserAction = authenticatedAction(
 	updateUserSchema,
 	async (data, { session }) => {
-		const { nom, prenom, email, phone, bucque, promss, nums, tabagnss } = data;
+		const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, preferredDashboardPath } = data;
 		const newUsername = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
 
 		try {
@@ -38,7 +43,7 @@ export const updateUserAction = authenticatedAction(
 					bucque: bucque || null,
 					promss,
 					nums: nums || null,
-					tabagnss,
+					preferredDashboardPath: data.preferredDashboardPath || null,
 
 					username: newUsername,
 				})
@@ -208,9 +213,8 @@ export const adminUpdateUserAction = authenticatedAction(
 					phone: phone || null,
 					bucque: bucque || null,
 					promss,
-
 					nums: nums || null,
-					tabagnss,
+					tabagnss: tabagnss as any,
 					username: newUsername,
 					roleId,
 					balance,
@@ -335,7 +339,7 @@ export const createUserAction = authenticatedAction(
 				promss,
 
 				nums: nums || null,
-				tabagnss,
+				tabagnss: tabagnss as any,
 				username,
 				passwordHash,
 				roleId,
@@ -530,7 +534,7 @@ export const importUsersAction = authenticatedAction(
 
                             promss,
                             nums: nums || null,
-                            tabagnss,
+                            tabagnss: tabagnss as any,
                             username: item.username,
                             passwordHash: hash,
                             roleId: userRole?.id,
@@ -575,7 +579,7 @@ export const hardDeleteUserAction = authenticatedAction(
 		await db.transaction(async (tx) => {
 			const user = await tx.query.users.findFirst({
 				where: eq(users.id, userId),
-				columns: { balance: true, roleId: true },
+				columns: { balance: true, roleId: true, image: true },
 			});
 
 			if (!user) throw new Error("Utilisateur non trouvé");
@@ -599,6 +603,19 @@ export const hardDeleteUserAction = authenticatedAction(
 
 			await tx.delete(shopUsers).where(eq(shopUsers.userId, userId));
 			await tx.delete(famsMembers).where(eq(famsMembers.userId, userId));
+			
+			// Delete avatar file if exists
+			if (user.image) {
+				const filePath = join(UPLOAD_DIR, user.image);
+				if (existsSync(filePath)) {
+					try {
+						await unlink(filePath);
+					} catch (e) {
+						console.error("Failed to delete avatar file:", e);
+					}
+				}
+			}
+
 			const timestamp = Date.now();
 
 			await tx
@@ -677,6 +694,7 @@ export async function searchUsersPublicAction(query: string) {
 				prenom: true,
 				bucque: true,
 				promss: true,
+				image: true,
 			},
 		});
 
@@ -777,6 +795,9 @@ export const importUsersBatchAction = authenticatedAction(
 					skipped.push(`Doublon dans le fichier (Username): ${item.username}`);
 					isDuplicate = true;
 				}
+
+
+
 				if (item.email && seenEmails.has(item.email)) {
 					skippedCount++;
 					skipped.push(`Doublon dans le fichier (Email): ${item.email}`);
@@ -886,4 +907,25 @@ export const importUsersBatchAction = authenticatedAction(
 		}
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
+);
+
+export const updateUserPreferencesAction = authenticatedAction(
+	z.object({
+		preferredDashboardPath: z.string().nullable(),
+	}),
+	async (data, { session }) => {
+		const { preferredDashboardPath } = data;
+		try {
+			await db
+				.update(users)
+				.set({ preferredDashboardPath })
+				.where(eq(users.id, session.userId));
+			
+			revalidatePath("/settings");
+			return { success: "Préférence enregistrée" };
+		} catch (error) {
+			console.error("Failed to update preferences:", error);
+			return { error: "Erreur lors de la sauvegarde" };
+		}
+	}
 );

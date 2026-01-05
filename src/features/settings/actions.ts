@@ -2,6 +2,7 @@
 
 import { db } from "@/db";
 import { systemSettings } from "@/db/schema/settings";
+import { users } from "@/db/schema/users";
 import { eq } from "drizzle-orm";
 import { verifySession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
@@ -14,7 +15,7 @@ const emailConfigSchema = z.object({
 	smtpPort: z.coerce.number().optional(),
 	smtpUser: z.string().optional(),
 	smtpPassword: z.string().optional(),
-	smtpFrom: z.string().email("Email invalide"), // Always required as sender
+	smtpFrom: z.email("Email invalide"), // Always required as sender
     smtpSecure: z.boolean().optional(),
 	
 	// Resend fields
@@ -97,5 +98,64 @@ export async function updateEmailConfigAction(prevState: any, formData: FormData
     } catch (error) {
         console.error("Failed to update email config:", error);
         return { error: "Erreur lors de la sauvegarde" };
+    }
+}
+
+export async function testEmailConfigAction(prevState: any, formData: FormData) {
+    const session = await verifySession();
+    if (!session || !session.permissions.includes("ADMIN_ACCESS")) return { error: "Non autorisé" };
+
+    // Fetch user to get email
+    const user = await db.query.users.findFirst({
+        where: eq(users.id, session.userId),
+        columns: { email: true }
+    });
+
+    const formTestEmail = formData.get("testEmail") as string;
+    
+    // Use provided test email or fallback to current user's email
+    const testEmail = formTestEmail || user?.email || "test@gadzby.com";
+
+    if (formTestEmail && !z.email().safeParse(formTestEmail).success) {
+        return { error: "Adresse email de test invalide" };
+    }
+
+    const rawData = {
+        provider: formData.get("provider"),
+        smtpHost: formData.get("smtpHost") || undefined,
+        smtpPort: formData.get("smtpPort") || undefined,
+        smtpUser: formData.get("smtpUser") || undefined,
+        smtpPassword: formData.get("smtpPassword") || undefined,
+        smtpFrom: formData.get("smtpFrom") || undefined,
+        smtpSecure: formData.get("smtpSecure") === "on",
+        resendApiKey: formData.get("resendApiKey") || undefined,
+    };
+
+    const parsed = emailConfigSchema.safeParse(rawData);
+
+    if (!parsed.success) {
+        return { error: parsed.error.issues[0].message };
+    }
+
+    const { provider, resendApiKey, smtpHost, smtpPort, smtpUser, smtpPassword } = parsed.data;
+
+    // Custom Validation
+    if (provider === "resend" && !resendApiKey) {
+        return { error: "Clé API Resend requise" };
+    }
+    if (provider === "smtp" && (!smtpHost || !smtpPort || !smtpUser || !smtpPassword)) {
+        return { error: "Configuration SMTP incomplète" };
+    }
+
+    try {
+        // Dynamically import to avoid circular dependencies if any, though likely not needed here since lib/email is separate layer
+        const { sendTestEmail } = await import("@/lib/email");
+        
+        await sendTestEmail(parsed.data as any, testEmail);
+
+        return { success: `Email de test envoyé à ${testEmail}` };
+    } catch (error: any) {
+        console.error("Failed to send test email:", error);
+        return { error: `Erreur d'envoi : ${error.message || "Erreur inconnue"}` };
     }
 }

@@ -148,7 +148,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             min="0"
                             required
                             defaultValue={product ? (product.price / 100).toFixed(2) : ""}
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                     </div>
                     <div>
@@ -162,7 +162,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             step="0.01" // Allow decimals
                             required
                             defaultValue={product?.stock || 0}
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                     </div>
                     <div>
@@ -198,7 +198,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             step="0.01"
                             required
                             defaultValue={product?.fcv || 1.0}
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <p className="text-xs text-gray-500 mt-1">Multiplicateur de sortie stock (défaut: 1)</p>
                     </div>

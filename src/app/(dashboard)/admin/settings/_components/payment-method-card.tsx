@@ -116,9 +116,6 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 							<h3 className="text-lg font-bold tracking-tight text-white">
 								{method.name}
 							</h3>
-							<span className="text-xs text-dark-700 bg-dark-950 px-2 py-0.5 rounded font-mono border border-dark-800">
-								{method.slug}
-							</span>
 						</div>
 						{method.description && (
 							<p className="text-sm text-gray-400 mt-1 line-clamp-2">

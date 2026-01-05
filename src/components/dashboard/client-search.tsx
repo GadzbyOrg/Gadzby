@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { IconSearch, IconX } from "@tabler/icons-react";
 import { searchUsers } from "@/features/shops/actions";
+import { UserAvatar } from "@/components/user-avatar";
 
 export interface User {
 	id: string;
@@ -73,19 +74,15 @@ export function ClientSearch({
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
 						{/* Avatar replacement */}
-						<div className="h-12 w-12 rounded-full overflow-hidden border border-dark-600 bg-dark-700 flex items-center justify-center">
-							{selectedClient.image ? (
-								<img
-									src={selectedClient.image}
-									alt={selectedClient.username}
-									className="h-full w-full object-cover"
-								/>
-							) : (
-								<span className="text-sm font-bold text-gray-400">
-									{selectedClient.username.substring(0, 2).toUpperCase()}
-								</span>
-							)}
-						</div>
+						<UserAvatar
+							user={{
+								id: selectedClient.id,
+								name: selectedClient.username,
+								username: selectedClient.username,
+								image: selectedClient.image,
+							}}
+							className="h-12 w-12"
+						/>
 
 						<div>
 							<div className="flex items-center gap-2">
@@ -132,7 +129,7 @@ export function ClientSearch({
 					type="text"
 					value={query}
 					onChange={(e) => setQuery(e.target.value)}
-					placeholder="Rechercher un client (nom, bucque, username)..."
+					placeholder="Rechercher un client (nom, bucque, num'ss)..."
 					className="w-full rounded-lg bg-dark-800 border border-dark-700 py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
 				/>
 			</div>
@@ -153,19 +150,15 @@ export function ClientSearch({
 																}
                             `}
 						>
-							<div className="h-8 w-8 rounded-full overflow-hidden border border-dark-600 bg-dark-700 flex items-center justify-center shrink-0">
-								{user.image ? (
-									<img
-										src={user.image}
-										alt={user.username}
-										className="h-full w-full object-cover"
-									/>
-								) : (
-									<span className="text-xs font-bold text-gray-400">
-										{user.username.substring(0, 2).toUpperCase()}
-									</span>
-								)}
-							</div>
+							<UserAvatar
+								user={{
+									id: user.id,
+									name: user.username,
+									username: user.username,
+									image: user.image,
+								}}
+								className="h-8 w-8"
+							/>
 							<div>
 								<div className="font-medium text-white flex items-center gap-2">
 									{user.username}

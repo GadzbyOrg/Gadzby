@@ -26,6 +26,7 @@ async function main() {
 		passwordHash: hashedPassword,
 		roleId: adminRole?.id,
 		balance: 100000,
+		tabagnss: "ME"
 	});
 
 	console.log("✅ Admin créé ! Login: 4!Me223 / Password: " + password);

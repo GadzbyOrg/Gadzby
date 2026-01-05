@@ -65,7 +65,7 @@ export function TopUpUserForm() {
 								step="0.01"
 								min="0.01"
 								required
-								className="block w-full rounded-lg border-dark-700 bg-dark-950 pl-7 pr-12 text-white placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2.5"
+								className="block w-full rounded-lg border-dark-700 bg-dark-950 pl-7 pr-12 text-white placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 								placeholder="0.00"
 							/>
 						</div>

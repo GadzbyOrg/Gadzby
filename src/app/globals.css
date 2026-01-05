@@ -31,6 +31,10 @@
   /* Slate 700 for Body */
   --color-dark-700: #475569;
   /* Slate 600 */
+
+  /* --- PALETTE DESTRUCTIVE (Red) --- */
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
 }
 
 /* Application des couleurs de base via les directives CSS natives et les variables du thème */

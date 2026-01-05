@@ -45,7 +45,14 @@ export default async function ShopExpensesPage({
 		if (!description || !amountStr || !dateStr) return;
 
 		const amount = Math.round(parseFloat(amountStr) * 100); // Euros to cents
-		const date = new Date(dateStr);
+		
+		let date = new Date(dateStr);
+		const now = new Date();
+		// If the user selected "today", use the current timestamp
+		// We use UTC date comparison as dateStr is YYYY-MM-DD
+		if (dateStr === now.toISOString().split("T")[0]) {
+			date = now;
+		}
 
 		await createShopExpense(slug, { description, amount, date });
 	}

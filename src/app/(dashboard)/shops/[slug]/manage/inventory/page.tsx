@@ -40,7 +40,7 @@ export default async function ShopInventoryPage({
 						Inventaire
 					</h1>
 					<p className="text-gray-400">
-						Gérez les stocks et détectez les pertes/vols.
+						Gérez les stocks et détectez les pertes/biroüte.
 					</p>
 				</div>
 				<div>
@@ -49,7 +49,6 @@ export default async function ShopInventoryPage({
 			</header>
 
 			<div className="grid gap-6">
-				{/* Historique */}
 				{/* Historique */}
 				<div className="bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden">
 					<div className="px-6 py-4 border-b border-dark-800 flex items-center gap-3">
@@ -119,7 +118,9 @@ export default async function ShopInventoryPage({
 											<th className="px-6 py-3 font-medium">Date</th>
 											<th className="px-6 py-3 font-medium">Réalisé par</th>
 											<th className="px-6 py-3 font-medium">Statut</th>
-											<th className="px-6 py-3 font-medium text-right">Action</th>
+											<th className="px-6 py-3 font-medium text-right">
+												Action
+											</th>
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-dark-800">

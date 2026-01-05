@@ -9,7 +9,10 @@ import {
 	boolean,
 	timestamp,
 	uuid,
+	pgEnum
 } from "drizzle-orm/pg-core";
+
+export const tbk = pgEnum("tbk", ["ME", "CL", "CH", "KA", "PA", "BO", "LI", "AN"])
 
 export const users = pgTable("users", {
 	id: uuid("id").defaultRandom().primaryKey(),
@@ -31,7 +34,7 @@ export const users = pgTable("users", {
 	promss: text("promss").notNull(),
 	
 	// Campus / Tabagn'ss
-	tabagnss: text("tabagnss").default("Chalon'ss").notNull(),
+	tabagnss: tbk("tabagnss").default("ME").notNull(),
 
 	// Balance stockée en centimes d'euros
 	balance: integer("balance").default(0).notNull(),
@@ -42,7 +45,10 @@ export const users = pgTable("users", {
 
 	// Password Recovery
 	resetPasswordToken: text("reset_password_token"),
-	resetPasswordExpires: timestamp("reset_password_expires"),
+	resetPasswordExpires: timestamp("reset_password_expires", { withTimezone: true }),
+
+	// Preferences
+	preferredDashboardPath: text("preferred_dashboard_path"),
 
 	image: text("image"),
 });

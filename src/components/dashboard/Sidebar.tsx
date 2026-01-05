@@ -73,20 +73,21 @@ const getNavStructure = (): NavGroup[] => [
 			{ label: "Shops", url: "/admin/shops", permission: "MANAGE_SHOPS" },
 			{ label: "Fam'ss", url: "/admin/famss", permission: "MANAGE_FAMSS" },
 			{
-				label: "Moyens de paiement",
-				url: "/admin/payments",
-				permission: "MANAGE_PAYMENTS",
-			},
-			{
-				label: "Emails",
-				url: "/admin/settings/email",
-				permission: "ADMIN_ACCESS",
-			},
-            {
                 label: "Prélèvement de masse",
                 url: "/admin/mass-payment",
                 permission: "ADMIN_ACCESS",
             },
+            {
+                label: "Mandats",
+                url: "/admin/mandats",
+                permission: "ADMIN_ACCESS",
+            },
+			{
+				label: "Paramètres",
+				url: "/admin/settings",
+				permission: "MANAGE_PAYMENTS",
+			},
+
 		],
 	},
 ];
