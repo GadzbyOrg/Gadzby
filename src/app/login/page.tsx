@@ -120,7 +120,7 @@ export default function LoginPage() {
 							<InputLabel htmlFor="username">Identifiant</InputLabel>
 							<div className="relative mt-2">
 								<UserSearch
-									placeholder="112-95 ou Rechercher..."
+									placeholder="159-97 ou Rechercher..."
 									onSelect={() => {}} // No need to set external state since we use the input's name
                                     name="username"
                                     clearOnSelect={false}

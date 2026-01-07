@@ -20,7 +20,7 @@ export const shops = pgTable("shops", {
 	description: text("description"),
 	category: text("category"),
 
-	defaultMargin: integer("default_margin").default(0).notNull(),
+	defaultMargin: integer("default_margin").default(10).notNull(), // Default margin for shops is 10%
 
 	isSelfServiceEnabled: boolean("is_self_service_enabled").default(false),
 

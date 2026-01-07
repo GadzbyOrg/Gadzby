@@ -8,7 +8,7 @@ export function Footer() {
 			<div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 md:flex-row md:px-8">
 				<div className="flex flex-col items-center gap-1 md:items-start">
 					<p className="text-sm font-medium text-gray-400">
-						Usiné à Siber'ss par Modo 4!Me223
+						Usiné à Siber'ss par Modo 4! Me223
 					</p>
 					<p className="text-xs text-gray-500">Licence MIT</p>
 				</div>
