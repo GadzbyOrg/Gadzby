@@ -46,10 +46,7 @@ export async function createSession(
 		expires: expiresAt,
 		path: "/",
 	});
-	// If the user has a preferred path, redirect there, unless overridden by redirectTo (if distinct from "/")
-	// But actually, we probably want to prioritize the passed redirectTo if it's not default.
-	// However, usually redirectTo is just passed from login action.
-	// Let's rely on the caller to decide the redirect, but 'createSession' logic has 'redirectTo' arg.
+
 	const finalRedirect =
 		redirectTo === "/" && preferredDashboardPath
 			? preferredDashboardPath

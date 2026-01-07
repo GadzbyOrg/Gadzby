@@ -15,9 +15,6 @@ import {
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-// Helper for permissions (duplicated from management.ts) - REMOVED
-// Uses shared checkShopPermission from utils
-
 export const getAvailableProductsAction = authenticatedAction(
 	shopIdSchema,
 	async (data, { session }) => {

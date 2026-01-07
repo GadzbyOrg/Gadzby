@@ -419,10 +419,8 @@ export class TransactionService {
 				where: eq(users.id, targetUserId),
 			});
 			if (!targetUser) throw new Error("Utilisateur introuvable");
-			// Check isDeleted but allow isAsleep for debt collection if needed? 
-			// For now, let's block isAsleep for consistency or allow? 
-			// If it's a charge (debt), even aslept users might owe money. 
-			// Let's enforce standard checks:
+
+			// Check isDeleted but allow isAsleep for debt collection
 			if (targetUser.isDeleted) throw new Error("Utilisateur supprimé");
 
 			await tx
@@ -445,7 +443,7 @@ export class TransactionService {
 	}
 
 	/**
-	 * Cancel a group of transactions (e.g. Mass Operation).
+	 * Cancel a group of transactions (e.g. Mass Operation - Event Charge).
 	 */
 	static async cancelTransactionGroup(groupId: string, performedByUserId: string) {
 		return await db.transaction(async (tx) => {

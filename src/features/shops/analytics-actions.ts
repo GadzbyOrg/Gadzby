@@ -40,11 +40,6 @@ export const getMostActiveStaff = authenticatedAction(
 
 		if (!isAuthorized) throw new Error("Non autorisé");
 
-		// Transactions where the issuer is NOT the target (handled by someone else)
-        // OR self-service purchases where issuer == target but context implies staff monitoring?
-        // Usually "Most Active Staff" means people who are serving others.
-        // If issuerId == targetUserId, it's a self-purchase.
-        // We probably want to count transactions *issued* by the user.
 
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),

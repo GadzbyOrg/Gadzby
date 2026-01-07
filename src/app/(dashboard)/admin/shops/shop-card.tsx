@@ -21,10 +21,6 @@ export function ShopCard({ shop }: ShopCardProps) {
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
 
-	// Use optimistic UI or just local state that syncs with props?
-	// Since we revalidatePath, props will update. But for instant feedback, local state is good.
-	// However, the parent re-renders. Let's just use loading state.
-
 	async function handleToggleStatus() {
 		if (loading) return;
 		setLoading(true);
