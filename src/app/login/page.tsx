@@ -120,22 +120,13 @@ export default function LoginPage() {
 							<InputLabel htmlFor="username">Identifiant</InputLabel>
 							<div className="relative mt-2">
 								<UserSearch
-									placeholder="112-95 ou Rechercher..."
+									placeholder="159-97 ou Rechercher..."
 									onSelect={() => {}} // No need to set external state since we use the input's name
                                     name="username"
                                     clearOnSelect={false}
                                     className="max-w-none"
                                     inputClassName="bg-dark-950 border-0 ring-1 ring-inset ring-dark-700 focus:ring-2 focus:ring-inset focus:ring-primary-600 rounded-md py-2.5 pl-10 h-[46px]" // Styling to match original input
 								/>
-                                {/* UserSearch includes IconSearch, but we want IconUser or similar to match the design? 
-                                   UserSearch hardcodes IconSearch. We can accept it or modify UserSearch to allow custom icon.
-                                   The prompt asks to INTEGRATE logic. 
-                                   The UserSearch input has padding-left 9 (2.25rem). 
-                                   The original input had padding-left 10 (2.5rem).
-                                   UserSearch icon is at left-3.
-                                   Original icon was at left-0 + pl-3.
-                                   It should be visually close enough.
-                                */}
 							</div>
 						</div>
 
