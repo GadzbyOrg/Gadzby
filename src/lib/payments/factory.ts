@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { PaymentProvider } from "./types";
 import { LydiaAdapter } from "./adapters/lydia";
 import { SumUpAdapter } from "./adapters/sumup";
+import { HelloAssoAdapter } from "./adapters/helloasso";
 
 export async function getPaymentProvider(
 	slug: string
@@ -22,7 +23,6 @@ export async function getPaymentProvider(
 
 	switch (slug) {
 		case "lydia":
-			// Validates config presence if needed
 			return new LydiaAdapter(
 				{
 					vendorToken: config.vendorToken,
@@ -36,6 +36,17 @@ export async function getPaymentProvider(
 				{
 					sumup_api_key: config.sumup_api_key,
 					merchantCode: config.merchantCode,
+					appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+				},
+				fees
+			);
+		case "helloasso":
+			return new HelloAssoAdapter(
+				{
+					clientId: config.clientId,
+					clientSecret: config.clientSecret,
+					organizationSlug: config.organizationSlug,
+					baseUrl: process.env.NODE_ENV === "production" ? "https://api.helloasso.com/v5" : "https://api.helloasso-sandbox.com/v5",
 					appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
 				},
 				fees

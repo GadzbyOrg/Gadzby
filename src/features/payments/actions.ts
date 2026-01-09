@@ -10,7 +10,7 @@ import { InitiateTopUpSchema } from "./schema";
 export const initiateTopUp = authenticatedAction(
 	InitiateTopUpSchema,
 	async (data, { session }) => {
-		const { providerSlug, amountCents } = data;
+		const { providerSlug, amountCents, phoneNumber } = data;
 
 		console.log("Initiating top-up:", { providerSlug, amountCents });
 		const user = await db.query.users.findFirst({
@@ -19,6 +19,13 @@ export const initiateTopUp = authenticatedAction(
 
 		if (!user) {
 			throw new Error("User not found");
+		}
+
+		// Update phone number if provided and different
+		if (phoneNumber && ((!user.phone) || (user.phone !== phoneNumber))) {
+			await db.update(users).set({ phone: phoneNumber }).where(eq(users.id, user.id));
+			// Update local user object for current execution
+			user.phone = phoneNumber;
 		}
 
 		const provider = await getPaymentProvider(providerSlug);
@@ -46,6 +53,7 @@ export const initiateTopUp = authenticatedAction(
 		let paymentResult;
 		let providerOptions = {};
 		if (providerSlug === "lydia") {
+			// user.phone is now guaranteed to be the updated one if provided
 			providerOptions = { phone: user.phone || "" };
 		}
 		try {
@@ -71,6 +79,6 @@ export const initiateTopUp = authenticatedAction(
 			})
 			.where(eq(transactions.id, tx.id));
 
-		return paymentResult.redirectUrl;
+		return { url: paymentResult.redirectUrl };
 	}
 );

@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
 		}
 
+		console.log("Received webhook for provider:", request.body);
+
 		const verification = await provider.verifyWebhook(request);
 
 		if (!verification.isValid || !verification.transactionId) {

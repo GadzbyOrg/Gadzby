@@ -20,4 +20,5 @@ export const TogglePaymentMethodSchema = z.object({
 export const InitiateTopUpSchema = z.object({
 	providerSlug: z.string().min(1, "Fournisseur requis"),
 	amountCents: z.number().min(1, "Montant minimum de 1 centime"),
+	phoneNumber: z.string().optional(),
 });

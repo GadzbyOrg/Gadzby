@@ -14,11 +14,18 @@ type PaymentMethod = {
 
 const PRESET_AMOUNTS = [10, 20, 50, 100];
 
-export function TopUpForm({ methods }: { methods: PaymentMethod[] }) {
+export function TopUpForm({
+	methods,
+	userPhone,
+}: {
+	methods: PaymentMethod[];
+	userPhone: string | null;
+}) {
 	const [amount, setAmount] = useState<number>(20); // Euros
 	const [selectedMethod, setSelectedMethod] = useState<string>(
 		methods[0]?.slug || ""
 	);
+	const [phoneNumber, setPhoneNumber] = useState<string>("");
 	const [isLoading, setIsLoading] = useState(false);
 
 	const selectedMethodData = methods.find((m) => m.slug === selectedMethod);
@@ -40,14 +47,21 @@ export function TopUpForm({ methods }: { methods: PaymentMethod[] }) {
 	const total = calculateTotal(amount);
 	const fees = total - amount;
 
+	const showPhoneInput = selectedMethod === "lydia" && !userPhone;
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!selectedMethod || amount <= 0) return;
+		if (showPhoneInput && !phoneNumber) {
+			alert("Veuillez entrer votre numéro de téléphone pour Lydia.");
+			return;
+		}
 
 		setIsLoading(true);
 		const { url, error } = await initiateTopUp({
 			providerSlug: selectedMethod,
 			amountCents: amount * 100,
+			phoneNumber: showPhoneInput ? phoneNumber : undefined,
 		});
 
 		if (!url || error) {
@@ -155,6 +169,25 @@ export function TopUpForm({ methods }: { methods: PaymentMethod[] }) {
 						))}
 					</div>
 				</div>
+
+				{/* Phone Number Input (Only for Lydia if missing) */}
+				{showPhoneInput && (
+					<div className="space-y-4 animate-in fade-in slide-in-from-top-4">
+						<h2 className="text-lg font-semibold text-white">
+							3. Numéro de téléphone
+						</h2>
+						<p className="text-sm text-gray-400">
+							Requis pour le paiement Lydia. Sera sauvegardé pour la prochaine fois.
+						</p>
+						<input
+							type="tel"
+							value={phoneNumber}
+							onChange={(e) => setPhoneNumber(e.target.value)}
+							className="w-full rounded-xl border border-dark-800 bg-dark-950 px-4 py-3 text-lg text-white focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+							placeholder="06 12 34 56 78"
+						/>
+					</div>
+				)}
 			</div>
 
 			{/* RIGHT: Summary Card */}
@@ -191,7 +224,12 @@ export function TopUpForm({ methods }: { methods: PaymentMethod[] }) {
 
 					<button
 						onClick={handleSubmit}
-						disabled={isLoading || amount < 0.01 || !selectedMethod}
+						disabled={
+							isLoading ||
+							amount < 0.01 ||
+							!selectedMethod ||
+							(showPhoneInput && !phoneNumber)
+						}
 						className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 py-4 text-base font-bold text-white shadow-lg shadow-primary-900/40 transition-all hover:bg-primary-700 hover:shadow-primary-900/60 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{isLoading && <IconLoader2 className="animate-spin" />}

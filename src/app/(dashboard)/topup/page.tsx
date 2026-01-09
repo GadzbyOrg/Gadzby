@@ -1,9 +1,18 @@
 import { db } from "@/db";
 import { paymentMethods } from "@/db/schema/payment-methods";
+import { users } from "@/db/schema/users";
 import { eq } from "drizzle-orm";
 import { TopUpForm } from "./_components/topup-form";
+import { verifySession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 export default async function TopUpPage() {
+	const session = await verifySession();
+	if (!session) redirect("/login");
+	const user = await db.query.users.findFirst({
+		where: eq(users.id, session.userId),
+	});
+
 	const methods = await db.query.paymentMethods.findMany({
 		where: eq(paymentMethods.isEnabled, true),
 	});
@@ -22,7 +31,7 @@ export default async function TopUpPage() {
 				</p>
 			</div>
 
-			<TopUpForm methods={methods} />
+			<TopUpForm methods={methods} userPhone={user?.phone || null} />
 		</div>
 	);
 }

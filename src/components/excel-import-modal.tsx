@@ -140,10 +140,6 @@ export function ExcelImportModal({
 						balance: row["Balance"] || row["balance"] || 0,
 					}));
 
-					// Validate chunk locally first? Or just send raw? 
-					// The server validates, but local check is faster for schema issues.
-					// For now, let's trust the server schema validation for simplicity, 
-					// or minimal mapping as above.
 
 					const result = await batchAction({ rows: mappedChunk });
 					
@@ -160,10 +156,6 @@ export function ExcelImportModal({
 					setProgress(Math.round(((i + 1) / totalBatches) * 100));
 				}
 
-				// Refresh page manually since we bypassed the form action
-				// (The legacy action prop might handle revalidation, but here we are custom)
-				// We can just call the legacy action with empty form to trigger revalidate if needed?
-				// Or use a router.refresh() if import 'next/navigation'.
 				
 				let summary = `Import terminé: ${totalSuccess} importés`;
 				if (totalSkipped > 0) summary += `, ${totalSkipped} ignorés`;

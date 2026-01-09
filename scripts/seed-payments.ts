@@ -13,8 +13,8 @@ async function main() {
 				isEnabled: true,
 				fees: { fixed: 10, percentage: 1.5 },
 				config: {
-					vendorToken: "test_token",
-					apiUrl: "https://lydia-app.com",
+					vendorToken: "",
+					privateToken: "",
 				},
 			},
 			{
@@ -32,6 +32,17 @@ async function main() {
 				config: {
 					sumup_api_key: "",
 					merchantCode: "",
+				},
+			},
+			{
+				slug: "helloasso",
+				name: "HelloAsso",
+				isEnabled: false,
+				fees: { fixed: 0, percentage: 0 },
+				config: {
+					clientId: "",
+					clientSecret: "",
+					organizationSlug: "",
 				},
 			},
 		])

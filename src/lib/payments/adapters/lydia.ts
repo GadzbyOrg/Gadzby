@@ -64,7 +64,7 @@ export class LydiaAdapter implements PaymentProvider {
 
 		// 2. Build Callback URLs
 		const successUrl = `${this.config.baseUrl}/topup/success`;
-		const failUrl = `${this.config.baseUrl}/dashboard/topup/fail`;
+		const failUrl = `${this.config.baseUrl}/topup/fail`;
 		const confirmUrl = `${this.config.baseUrl}/api/webhooks/payment?provider=lydia&order_id=${internalTransactionId}`; // Webhook URL
 
 		// 3. Prepare Form Data (Lydia uses x-www-form-urlencoded, NOT JSON)
