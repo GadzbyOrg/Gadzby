@@ -28,7 +28,7 @@ export function Footer() {
 							<p className="text-sm font-medium text-gray-400 transition-colors group-hover:text-gray-300">
 								Logo par{" "}
 								<span className="text-gray-300 transition-colors group-hover:text-white">
-									Kefta 157-97 Me223
+									Kefta 159-97 Me223
 								</span>
 							</p>
 						</div>
