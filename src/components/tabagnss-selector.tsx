@@ -1,18 +1,9 @@
 "use client";
 
 import { IconSchool } from "@tabler/icons-react";
+import { TABAGNSS_OPTIONS } from "@/features/users/constants";
 
-export const TABAGNSS_VALUES = [
-    "Siber'ss",
-    "Chalon'ss",
-    "Birse",
-    "Boquette",
-    "KIN",
-    "Clun'ss",
-    "P3"
-] as const;
-
-export type TabagnssType = typeof TABAGNSS_VALUES[number];
+export { TABAGNSS_OPTIONS };
 
 interface TabagnssSelectorProps {
     value?: string;
@@ -48,9 +39,9 @@ export function TabagnssSelector({
                     className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all appearance-none"
                 >
                     <option value="" disabled>Sélectionner...</option>
-                    {TABAGNSS_VALUES.map((tb) => (
-                        <option key={tb} value={tb}>
-                            {tb}
+                    {TABAGNSS_OPTIONS.map((tb) => (
+                        <option key={tb.code} value={tb.code}>
+                            {tb.label}
                         </option>
                     ))}
                 </select>

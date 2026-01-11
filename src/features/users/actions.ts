@@ -23,6 +23,7 @@ import { transactions } from "@/db/schema";
 import { unlink } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
+import { getTabagnssCode } from "./constants";
 
 const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
 
@@ -176,65 +177,103 @@ export const adminUpdateUserAction = authenticatedAction(
 			balance,
 			isAsleep,
 			newPassword,
+			username,
 		} = data;
-		const newUsername = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
+		
+		const computedUsername = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
+		// Use provided username if it exists and is not empty, otherwise use computed
+		const finalUsername = (username && username.trim()) ? username.trim() : computedUsername;
 
-		await db.transaction(async (tx) => {
-			// 1. Get current balance
-			const currentUser = await tx.query.users.findFirst({
-				where: eq(users.id, userId),
-				columns: { balance: true, isDeleted: true },
-			});
-
-			if (!currentUser) throw new Error("Utilisateur non trouvé");
-			if (currentUser.isDeleted)
-				throw new Error("Impossible de modifier un utilisateur supprimé");
-			const diff = balance - currentUser.balance;
-
-			// 2. If balance changed, log transaction
-			if (diff !== 0) {
-				await tx.insert(transactions).values({
-					amount: diff,
-					type: "ADJUSTMENT",
-					walletSource: "PERSONAL",
-					issuerId: session.userId, // Admin
-					targetUserId: userId, // User impacted
-					description: "Mouvement exceptionnel",
+		try {
+			await db.transaction(async (tx) => {
+				// 1. Get current balance
+				const currentUser = await tx.query.users.findFirst({
+					where: eq(users.id, userId),
+					columns: { balance: true, isDeleted: true },
 				});
-			}
 
-			// 3. Update User
-			await tx
-				.update(users)
-				.set({
-					nom,
-					prenom,
-					email,
-					phone: phone || null,
-					bucque: bucque || null,
-					promss,
-					nums: nums || null,
-					tabagnss: tabagnss as any,
-					username: newUsername,
-					roleId,
-					balance,
-					isAsleep,
-				})
-				.where(eq(users.id, userId));
+				if (!currentUser) throw new Error("Utilisateur non trouvé");
+				if (currentUser.isDeleted)
+					throw new Error("Impossible de modifier un utilisateur supprimé");
+				const diff = balance - currentUser.balance;
 
-			// 4. Update Password if provided
-			if (newPassword && newPassword.trim() !== "") {
-				const salt = await bcrypt.genSalt(10);
-				const hash = await bcrypt.hash(newPassword, salt);
+				// 2. If balance changed, log transaction
+				if (diff !== 0) {
+					await tx.insert(transactions).values({
+						amount: diff,
+						type: "ADJUSTMENT",
+						walletSource: "PERSONAL",
+						issuerId: session.userId, // Admin
+						targetUserId: userId, // User impacted
+						description: "Mouvement exceptionnel",
+					});
+				}
+
+				// 3. Update User
 				await tx
 					.update(users)
-					.set({ passwordHash: hash })
+					.set({
+						nom,
+						prenom,
+						email,
+						phone: phone || null,
+						bucque: bucque || null,
+						promss,
+						nums: nums || null,
+						tabagnss: tabagnss as any,
+						username: finalUsername,
+						roleId,
+						balance,
+						isAsleep,
+					})
 					.where(eq(users.id, userId));
-			}
-		});
 
-		revalidatePath("/admin/users");
-		return { success: "Utilisateur mis à jour avec succès" };
+				// 4. Update Password if provided
+				if (newPassword && newPassword.trim() !== "") {
+					const salt = await bcrypt.genSalt(10);
+					const hash = await bcrypt.hash(newPassword, salt);
+					await tx
+						.update(users)
+						.set({ passwordHash: hash })
+						.where(eq(users.id, userId));
+				}
+			});
+
+			revalidatePath("/admin/users");
+			return { success: "Utilisateur mis à jour avec succès" };
+		} catch (error: any) {
+			console.error("Failed to update user:", error);
+			
+			// Helper to find the underlying Postgres error
+			const findPostgresError = (err: any): any => {
+				if (!err) return null;
+				if (err.code === '23505') return err;
+				if (err.cause) return findPostgresError(err.cause);
+				return null;
+			};
+
+			const pgError = findPostgresError(error);
+
+			if (pgError) {
+				if (pgError.detail?.includes('email') || pgError.message?.includes('email')) {
+					return { error: "Cet email est déjà associé à un autre utilisateur." };
+				}
+				if (pgError.detail?.includes('phone') || pgError.message?.includes('phone')) {
+					return { error: "Ce numéro de téléphone est déjà associé à un autre utilisateur." };
+				}
+				if (pgError.detail?.includes('username') || pgError.message?.includes('username')) {
+					return { error: "Ce nom d'utilisateur (généré via nums/promss) est déjà pris." };
+				}
+				return { error: "Une donnée unique existe déjà pour un autre utilisateur." };
+			}
+
+			// Fallback check on message string if code isn't present
+			if (error.message && (error.message.includes('unique constraint') || error.message.includes('duplicate key'))) {
+				return { error: "Une donnée unique existe déjà pour un autre utilisateur." };
+			}
+
+			return { error: error.message || "Erreur lors de la mise à jour" };
+		}
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
@@ -534,7 +573,7 @@ export const importUsersAction = authenticatedAction(
 
                             promss,
                             nums: nums || null,
-                            tabagnss: tabagnss as any,
+                            tabagnss: (getTabagnssCode(tabagnss) || "ME") as any,
                             username: item.username,
                             passwordHash: hash,
                             roleId: userRole?.id,
@@ -750,9 +789,12 @@ export const changeSelfPasswordAction = authenticatedAction(
 );
 
 export const importUsersBatchAction = authenticatedAction(
-	importUsersBatchSchema,
+	z.object({
+		rows: z.array(z.any()),
+	}),
 	async (data) => {
 		const { rows } = data;
+		console.log(`[ImportBatch] Starting batch with ${rows.length} raw rows`);
 
 		// Fetch default USER role (cached or quick fetch)
 		const userRole = await db.query.roles.findFirst({
@@ -762,6 +804,35 @@ export const importUsersBatchAction = authenticatedAction(
 		let successCount = 0;
 		let skippedCount = 0;
 		const skipped: string[] = [];
+		const errors: string[] = [];
+
+		// 1. Validate rows individually
+		const validRows: z.infer<typeof importUserRowSchema>[] = [];
+		
+		for (let i = 0; i < rows.length; i++) {
+			const row = rows[i];
+			const parsed = importUserRowSchema.safeParse(row);
+			if (parsed.success) {
+				validRows.push(parsed.data);
+			} else {
+				const errorMsg = parsed.error.issues.map(issue => issue.message).join(", ");
+				console.warn(`[ImportBatch] Row ${i} invalid:`, errorMsg, row);
+				errors.push(`Note: Ligne ${i+1} ignorée (format invalide): ${errorMsg}`);
+				skippedCount++;
+			}
+		}
+
+		console.log(`[ImportBatch] ${validRows.length} valid rows to process out of ${rows.length}`);
+
+		if (validRows.length === 0) {
+			return {
+				success: "Batch processed (no valid rows)",
+				importedCount: 0,
+				skippedCount,
+				skipped,
+				errors,
+			};
+		}
 
 		try {
 			// Extract identifiers for bulk check
@@ -769,7 +840,7 @@ export const importUsersBatchAction = authenticatedAction(
 			const emailsToCheck: string[] = [];
 			const phonesToCheck: string[] = [];
 
-			const chunkDataWithMeta = rows.map((item) => {
+			const chunkDataWithMeta = validRows.map((item) => {
 				const { promss, nums, email, phone, nom, prenom } = item;
 				let username = item.username;
 
@@ -782,7 +853,9 @@ export const importUsersBatchAction = authenticatedAction(
 				return { ...item, username };
 			});
 
-			// Verify duplicates within the chunk itself
+			console.log(`[ImportBatch] Processing ${chunkDataWithMeta.length} valid items.`);
+
+			// Verify duplicates within the chunk itself (using valid rows)
 			const seenUsernames = new Set();
 			const seenEmails = new Set();
 			const seenPhones = new Set();
@@ -795,8 +868,6 @@ export const importUsersBatchAction = authenticatedAction(
 					skipped.push(`Doublon dans le fichier (Username): ${item.username}`);
 					isDuplicate = true;
 				}
-
-
 
 				if (item.email && seenEmails.has(item.email)) {
 					skippedCount++;
@@ -818,10 +889,12 @@ export const importUsersBatchAction = authenticatedAction(
 			}
 
 			if (uniqueChunk.length === 0) {
+				console.log("[ImportBatch] All valid items were duplicates within the file");
 				return {
 					importedCount: 0,
 					skippedCount,
-					skipped
+					skipped,
+					errors
 				};
 			}
 
@@ -838,6 +911,8 @@ export const importUsersBatchAction = authenticatedAction(
 					phone: true
 				}
 			});
+
+			console.log(`[ImportBatch] Found ${existingUsers.length} conflicting users in DB`);
 
 			const existingUsernames = new Set(existingUsers.map(u => u.username));
 			const existingEmails = new Set(existingUsers.map(u => u.email));
@@ -870,6 +945,13 @@ export const importUsersBatchAction = authenticatedAction(
 				} else if (res.status === "resolved") {
 					const { hash, item } = res as any;
 					const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, balance } = item;
+					
+					// Log mapped tabagnss for verification
+					const tabagnssCode = getTabagnssCode(tabagnss) || "ME";
+					if (!getTabagnssCode(tabagnss)) {
+						console.warn(`[ImportBatch] Unknown tabagnss '${tabagnss}' for user ${item.username}, defaulting to ME`);
+					}
+
 					usersToInsert.push({
 						nom,
 						prenom,
@@ -878,7 +960,7 @@ export const importUsersBatchAction = authenticatedAction(
 						bucque: bucque || null,
 						promss,
 						nums: nums || null,
-						tabagnss,
+						tabagnss: tabagnssCode as any,
 						username: item.username,
 						passwordHash: hash,
 						roleId: userRole?.id,
@@ -887,19 +969,19 @@ export const importUsersBatchAction = authenticatedAction(
 				}
 			}
 
+			console.log(`[ImportBatch] Inserting ${usersToInsert.length} users`);
+
 			if (usersToInsert.length > 0) {
 				await db.insert(users).values(usersToInsert);
 				successCount += usersToInsert.length;
 			}
-
-			// We do NOT revalidate path here to keep it fast. 
-			// The client should trigger a full revalidate or refresh when done.
 			
 			return {
 				success: "Batch processed",
 				importedCount: successCount,
 				skippedCount,
 				skipped,
+				errors: errors.length > 0 ? errors : undefined,
 			};
 		} catch (error) {
 			console.error("Failed to import batch:", error);

@@ -25,6 +25,7 @@ export const adminUpdateUserSchema = updateUserSchema.extend({
 		.preprocess((v) => v === "on" || v === true, z.boolean())
 		.default(false),
 	newPassword: z.string().optional(),
+	username: z.string().optional(),
 });
 
 export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;
