@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { UserSearch } from "@/components/user-search";
 import { UserAvatar } from "@/components/user-avatar";
 import { PromssSelector } from "@/components/promss-selector";
-import { IconTrash, IconFileSpreadsheet, IconUserPlus, IconLoader2, IconAlertCircle } from "@tabler/icons-react";
+import { IconTrash, IconFileSpreadsheet, IconUserPlus, IconLoader2, IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import {
 	getPromssListAction,
 	getUsersByPromssAction,
 	resolveUsersFromExcelAction,
 	processMassChargeAction,
+    searchUsersForPaymentAction
 } from "@/features/transactions/mass-payment-actions";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
@@ -70,6 +71,10 @@ export function NewOperationView() {
         return { error: res?.error || "Erreur" };
     };
 
+    const handleResetSelection = () => {
+         setSelectedUsers(new Map());
+    };
+
     const handleSubmit = async () => {
         if (selectedUsers.size === 0) {
             toast({ variant: "destructive", title: "Erreur", description: "Aucun utilisateur sélectionné" });
@@ -113,13 +118,13 @@ export function NewOperationView() {
 	return (
 		<div className="space-y-6">
 			{/* Selection Toolbar */}
-			<div className="bg-dark-900 border border-dark-800 rounded-xl p-6">
+			<div className="bg-dark-900 border border-dark-800 rounded-xl p-4 sm:p-6">
 				<h2 className="text-lg font-bold text-white mb-4">
 					1. Sélectionner des utilisateurs
 				</h2>
-				<div className="flex flex-wrap gap-4 items-end">
+				<div className="flex flex-col lg:flex-row gap-6 lg:gap-4 lg:items-end">
                     {/* Promss Selector */}
-					<div className="flex flex-col gap-2 min-w-[200px]">
+					<div className="flex flex-col gap-2 w-full lg:w-auto lg:min-w-[200px]">
 						<label className="text-sm font-medium text-gray-400">
 							Ajouter une promotion
 						</label>
@@ -133,17 +138,17 @@ export function NewOperationView() {
 							<button
                                 onClick={handleAddPromss}
                                 disabled={!selectedPromss}
-                                className="px-3 py-2 bg-dark-800 hover:bg-dark-700 text-white rounded-lg transition-colors text-sm disabled:opacity-50"
+                                className="px-3 py-2 bg-dark-800 hover:bg-dark-700 text-white rounded-lg transition-colors text-sm disabled:opacity-50 shrink-0"
                             >
                                 <IconUserPlus size={18} />
                             </button>
 						</div>
 					</div>
 
-                    <div className="h-10 w-px bg-dark-800 mx-2"></div>
+                    <div className="hidden lg:block h-10 w-px bg-dark-800 mx-2"></div>
 
                     {/* Manual Search */}
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 w-full lg:w-auto">
                         <label className="text-sm font-medium text-gray-400">
 							Recherche individuelle
 						</label>
@@ -151,13 +156,15 @@ export function NewOperationView() {
                             onSelect={handleManualAdd} 
                             placeholder="Chercher un Gadz..." 
                             excludeIds={Array.from(selectedUsers.keys())}
+                            searchAction={async (q) => await searchUsersForPaymentAction({ query: q })}
+                            className="w-full lg:w-auto lg:min-w-[250px]"
                         />
                     </div>
 
-                     <div className="h-10 w-px bg-dark-800 mx-2"></div>
+                     <div className="hidden lg:block h-10 w-px bg-dark-800 mx-2"></div>
 
                     {/* Excel */}
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 w-full lg:w-auto">
                         <label className="text-sm font-medium text-gray-400">
 							Import Excel
 						</label>
@@ -180,13 +187,22 @@ export function NewOperationView() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* List Preview */}
-                <div className="lg:col-span-2 bg-dark-900 border border-dark-800 rounded-xl overflow-hidden flex flex-col max-h-[500px]">
-                    <div className="p-4 border-b border-dark-800 bg-dark-800/50">
-                         <h3 className="font-semibold text-white">Liste des bénéficiaires</h3>
+                <div className="lg:col-span-2 bg-dark-900 border border-dark-800 rounded-xl overflow-hidden flex flex-col h-[400px] sm:h-[500px]">
+                    <div className="p-4 border-b border-dark-800 bg-dark-800/50 flex justify-between items-center">
+                         <h3 className="font-semibold text-white">Liste des utilisateurs</h3>
+                         {selectedUsers.size > 0 && (
+                            <button 
+                                onClick={handleResetSelection}
+                                className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 hover:underlinetransition-colors"
+                            >
+                                <IconTrash size={14} />
+                                Tout supprimer
+                            </button>
+                         )}
                     </div>
                     <div className="overflow-y-auto flex-1 p-2">
                         {selectedUsers.size === 0 ? (
-                            <div className="h-32 flex items-center justify-center text-gray-500 text-sm italic">
+                            <div className="h-full flex items-center justify-center text-gray-500 text-sm italic">
                                 Aucun utilisateur sélectionné
                             </div>
                         ) : (
@@ -201,28 +217,36 @@ export function NewOperationView() {
                                                     username: user.username,
                                                     image: user.image,
                                                 }}
-                                                className="w-8 h-8 text-xs"
+                                                className="w-8 h-8 text-xs shrink-0"
                                             />
-                                            <div>
-                                                 <div className="text-sm font-medium text-gray-200">
+                                            <div className="min-w-0">
+                                                 <div className="text-sm font-medium text-gray-200 truncate max-w-[120px] sm:max-w-none">
                                                     {user.prenom} {user.nom}
                                                 </div>
-                                                <div className="text-xs text-gray-500">
+                                                <div className="text-xs text-gray-500 truncate max-w-[120px] sm:max-w-none">
                                                     {user.bucque ? `${user.bucque} ` : ''}
                                                     <span className="opacity-70">({user.username})</span>
                                                 </div>
                                             </div>
                                         </div>
                                          <div className="flex items-center gap-4">
-                                            <div className="text-right">
+                                    <div className="text-right shrink-0">
                                                 <div className="text-xs text-gray-500">Solde</div>
-                                                <div className={`text-sm font-mono ${(user.balance || 0) < 0 ? 'text-red-400': 'text-green-400'}`}>
-                                                    {((user.balance || 0)/100).toFixed(2)} €
+                                                <div className="flex flex-col items-end">
+                                                    <span className={`text-sm font-mono ${(user.balance || 0) < 0 ? 'text-red-400': 'text-green-400'}`}>
+                                                        {((user.balance || 0)/100).toFixed(2)} €
+                                                    </span>
+                                                    {amount && Number(amount) > 0 && (
+                                                        <span className={`text-xs font-mono flex items-center gap-1 ${((user.balance || 0) - Math.round(Number(amount)*100)) < 0 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                                                            <span>→</span>
+                                                            {(((user.balance || 0) - Math.round(Number(amount)*100))/100).toFixed(2)} €
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                             <button 
                                                 onClick={() => handleRemoveUser(user.id)}
-                                                className="text-gray-600 hover:text-red-400 p-1 opacity-0 group-hover:opacity-100 transition-all"
+                                                className="text-gray-600 hover:text-red-400 p-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all"
                                             >
                                                 <IconTrash size={16} />
                                             </button>
@@ -235,7 +259,7 @@ export function NewOperationView() {
                 </div>
 
                 {/* Validation Form */}
-                <div className="bg-dark-900 border border-dark-800 rounded-xl p-6 h-fit sticky top-6">
+                <div className="bg-dark-900 border border-dark-800 rounded-xl p-4 sm:p-6 h-fit sticky top-6">
                     <h2 className="text-lg font-bold text-white mb-4">
                         2. Valider le prélèvement
                     </h2>
@@ -281,6 +305,24 @@ export function NewOperationView() {
                                     {(selectedUsers.size * (Number(amount)||0)).toFixed(2)} €
                                 </span>
                             </div>
+
+                            {/* Negative Balance Warning */}
+                            {amount && Number(amount) > 0 && (
+                                (() => {
+                                    const negativeCount = Array.from(selectedUsers.values()).filter(u => (u.balance || 0) - Math.round(Number(amount) * 100) < 0).length;
+                                    if (negativeCount > 0) {
+                                        return (
+                                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400 flex gap-2 mb-4">
+                                                <IconAlertTriangle className="shrink-0 w-5 h-5" />
+                                                <p>
+                                                    <strong className="font-bold">{negativeCount}</strong> utilisateur(s) auront un solde négatif après cette opération.
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()
+                            )}
 
                             <button
                                 onClick={handleSubmit}

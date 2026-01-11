@@ -62,8 +62,9 @@ export function OperationsHistoryView() {
                 </button>
             </div>
 
-            <div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-sm text-gray-400">
+            {/* Desktop Table */}
+            <div className="hidden sm:block bg-dark-900 border border-dark-800 rounded-xl overflow-hidden overflow-x-auto">
+                <table className="w-full text-left text-sm text-gray-400 min-w-[800px]">
                     <thead className="bg-dark-800 text-xs uppercase text-gray-300">
                         <tr>
                             <th className="px-6 py-4">Date</th>
@@ -101,7 +102,7 @@ export function OperationsHistoryView() {
                                             {op.count}
                                         </td>
                                         <td className="px-6 py-4 text-right font-mono font-medium text-white">
-                                            {((op.totalAmount || 0)/100).toFixed(2)} €
+                                            {((Math.abs(op.totalAmount || 0)/100).toFixed(2))} €
                                         </td>
                                          <td className="px-6 py-4 text-center">
                                             {op.status === 'CANCELLED' ? (
@@ -132,6 +133,75 @@ export function OperationsHistoryView() {
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden space-y-4">
+                 {history.length === 0 ? (
+                    <div className="bg-dark-900 border border-dark-800 rounded-xl p-8 text-center text-gray-500 italic">
+                        Aucune opération trouvée
+                    </div>
+                ) : (
+                    history.map((op) => (
+                        <div key={op.groupId} className={`bg-dark-900 border border-dark-800 rounded-xl p-5 flex flex-col ${op.status === 'CANCELLED' ? 'opacity-50 grayscale' : ''}`}>
+                            <div className="flex justify-between items-center mb-3">
+                                <div className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                                     <span className="text-gray-400">
+                                        {new Intl.DateTimeFormat("fr-FR", {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                        }).format(new Date(op.date))}
+                                     </span>
+                                     <span className="w-1 h-1 rounded-full bg-dark-700"></span>
+                                     <span>
+                                        {new Intl.DateTimeFormat("fr-FR", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        }).format(new Date(op.date))}
+                                     </span>
+                                </div>
+                                <div>
+                                     {op.status === 'CANCELLED' ? (
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold border border-red-500/20 uppercase tracking-wider">
+                                            <IconBan size={10} stroke={2.5} /> Annulé
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold border border-green-500/20 uppercase tracking-wider">
+                                            <IconCheck size={10} stroke={2.5} /> Validé
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <h3 className="text-lg font-bold text-white mb-4 leading-snug">
+                                {op.description}
+                            </h3>
+
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div className="bg-dark-950/50 rounded-lg p-3 border border-dark-800/50">
+                                    <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Utilisateurs</div>
+                                    <div className="text-lg font-medium text-gray-300">{op.count}</div>
+                                </div>
+                                <div className="bg-dark-950/50 rounded-lg p-3 border border-dark-800/50">
+                                    <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Montant Total</div>
+                                    <div className="text-lg font-mono font-bold text-white tracking-tight">{((Math.abs(op.totalAmount || 0)/100).toFixed(2))} €</div>
+                                </div>
+                            </div>
+
+                             {op.status !== 'CANCELLED' && (
+                                <button 
+                                    onClick={() => handleCancel(op.groupId)}
+                                    disabled={!!processingId}
+                                    className="w-full py-3 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-500 hover:text-red-400 transition-all text-sm font-semibold flex items-center justify-center gap-2"
+                                >
+                                    {processingId === op.groupId ? <IconLoader2 className="animate-spin" size={16} /> : <IconAlertTriangle size={16} />}
+                                    Annuler l'opération
+                                </button>
+                            )}
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

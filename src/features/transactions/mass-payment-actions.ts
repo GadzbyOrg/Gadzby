@@ -38,11 +38,44 @@ export const getUsersByPromssAction = authenticatedAction(
 				prenom: true,
                 bucque: true,
                 image: true,
+                balance: true,
 			},
 		});
 		return { users: foundUsers };
 	},
 	{ permissions: ["ADMIN_ACCESS"] }
+);
+
+export const searchUsersForPaymentAction = authenticatedAction(
+    z.object({ query: z.string() }),
+    async ({ query }) => {
+        if (!query || query.length < 2) return { users: [] };
+        
+        const foundUsers = await db.query.users.findMany({
+            where: (users, { and, or, ilike, eq, ne }) => and(
+                eq(users.isDeleted, false),
+                or(
+                    ilike(users.username, `%${query}%`),
+                    ilike(users.nom, `%${query}%`),
+                    ilike(users.prenom, `%${query}%`),
+                    ilike(users.bucque, `%${query}%`)
+                )
+            ),
+            limit: 10,
+            columns: {
+                id: true,
+                username: true,
+                nom: true,
+                prenom: true,
+                bucque: true,
+                promss: true,
+                image: true,
+                balance: true,
+            },
+        });
+        return { users: foundUsers };
+    },
+    { permissions: ["ADMIN_ACCESS"] }
 );
 
 // 3. Resolve Users from Excel

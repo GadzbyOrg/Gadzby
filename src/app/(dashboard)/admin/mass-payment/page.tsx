@@ -10,9 +10,9 @@ export default function MassPaymentPage() {
 	const [activeTab, setActiveTab] = useState<"new" | "history">("new");
 
 	return (
-		<div className="container mx-auto px-4 py-8 max-w-7xl">
-			<div className="flex flex-col gap-2 mb-8">
-				<h1 className="text-3xl font-extrabold text-white tracking-tight">
+		<div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
+			<div className="flex flex-col gap-2 mb-6 sm:mb-8">
+				<h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
 					Prélèvements de Masse
 				</h1>
 				<p className="text-gray-400">
