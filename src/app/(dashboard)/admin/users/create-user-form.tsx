@@ -92,10 +92,9 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 
 				<div className="space-y-2">
 					<label htmlFor="phone" className="text-sm font-medium text-gray-300">
-						Numéro de téléphone
+						Numéro de téléphone <span className="text-gray-500 text-xs font-normal">(Optionnel)</span>
 					</label>
 					<input
-						required
 						type="tel"
 						name="phone"
 						id="phone"

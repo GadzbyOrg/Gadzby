@@ -19,7 +19,8 @@ interface UserEditFormProps {
 		nom: string;
 		prenom: string;
 		email: string;
-		phone: string;
+		phone: string | null;
+		username: string;
 		bucque: string;
 		nums: string;
 		promss: string;
@@ -98,6 +99,19 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 
 			{/* Main Fields */}
 			<div className="space-y-4">
+				<div className="space-y-2">
+					<label htmlFor="username" className="text-sm font-medium text-gray-300">
+						Nom d'utilisateur <span className="text-gray-500 text-xs font-normal">(Laisser vide pour auto-générer)</span>
+					</label>
+					<input
+						type="text"
+						name="username"
+						id="username"
+						defaultValue={user.username}
+						placeholder="Ex: 2Me215"
+						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+					/>
+				</div>
 				<div className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
 						<label
@@ -145,16 +159,15 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 				</div>
 				<div className="space-y-2">
 					<label htmlFor="phone" className="text-sm font-medium text-gray-300">
-						Téléphone
+						Téléphone <span className="text-gray-500 text-xs font-normal">(Optionnel)</span>
 					</label>
-					<input
-						required
-						type="tel"
-						name="phone"
-						id="phone"
-						defaultValue={user.phone}
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
-					/>
+						<input
+							type="tel"
+							name="phone"
+							id="phone"
+							defaultValue={user.phone || ""}
+							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+						/>
 				</div>
 
 				<div className="grid grid-cols-2 gap-4">
