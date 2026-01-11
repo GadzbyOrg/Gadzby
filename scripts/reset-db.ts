@@ -3,7 +3,31 @@ import { sql } from "drizzle-orm";
 import { execSync } from "child_process";
 
 async function main() {
-	console.log("🔥 Resetting database...");
+	console.log("Resetting database...");
+
+	// Ask for confirmation
+	const rl = await import("readline").then((m) =>
+		m.createInterface({
+			input: process.stdin,
+			output: process.stdout,
+		})
+	);
+
+	const answer = await new Promise<string>((resolve) => {
+		rl.question(
+			"⚠️  DANGER: This will delete ALL data in the database. Are you sure? (y/N) ",
+			(answer) => {
+				resolve(answer);
+			}
+		);
+	});
+
+	rl.close();
+
+	if (answer.toLowerCase() !== "y") {
+		console.log("❌ Aborted.");
+		process.exit(0);
+	}
 
 	// 1. Truncate all tables
 	// Using CASCADE to clean dependent tables automatically.
@@ -23,6 +47,8 @@ async function main() {
           "fams_members",
           "fams_requests",
           "famss",
+		  "mandat_shops",
+		  "mandats",
           "users",
           "roles",
           "shops",
@@ -47,6 +73,7 @@ async function main() {
 		"scripts/seed-products.ts", // Products (needs shops)
 		"scripts/seed-payments.ts", // Payments (independent)
 		"scripts/seed-events.ts", // Events (needs shops, users, products)
+		"scripts/seed-mandats.ts", // Mandats (needs shops)
 		"scripts/seed-transactions.ts", // Transactions (needs everything)
 	];
 
