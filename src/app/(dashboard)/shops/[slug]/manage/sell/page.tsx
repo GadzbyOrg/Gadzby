@@ -1,8 +1,10 @@
-import { checkTeamMemberAccess } from "@/features/shops/actions";
-import { getShopProducts, getShopCategories } from "@/features/shops/products";
-import { notFound, redirect } from "next/navigation";
-import { ShopManagerView } from "../../_components/shop-manager-view";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { checkTeamMemberAccess } from "@/features/shops/actions";
+import { getShopCategories,getShopProducts } from "@/features/shops/products";
+
+import { ShopManagerView } from "../../_components/shop-manager-view";
 
 export default async function ShopPosPage({
 	params,
@@ -43,7 +45,7 @@ export default async function ShopPosPage({
 					<span className="text-primary-500">VENTE </span>
 					{shop.name}
 				</h1>
-				<p className="text-gray-400">Interface de vente pour les boul'c.</p>
+				<p className="text-gray-400">Interface de vente pour les boul&apos;c.</p>
 			</header>
 
 			<ShopManagerView

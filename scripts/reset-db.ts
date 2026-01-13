@@ -1,6 +1,7 @@
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
 import { execSync } from "child_process";
+import { sql } from "drizzle-orm";
+
+import { db } from "@/db";
 
 async function main() {
 	console.log("Resetting database...");
@@ -84,7 +85,7 @@ async function main() {
 			// Inherit stdio to see logs from the scripts
 			execSync(`npx tsx ${script}`, { stdio: "inherit", env: process.env });
 		} catch (e) {
-			console.error(`❌ Failed to run ${script}`);
+			console.error(`❌ Failed to run ${script} : ${e}`);
 			process.exit(1);
 		}
 	}

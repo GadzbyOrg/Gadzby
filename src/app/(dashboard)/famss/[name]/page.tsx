@@ -1,9 +1,11 @@
+import { desc,eq } from "drizzle-orm";
+import { notFound,redirect } from "next/navigation";
+
 import { db } from "@/db";
 import { famss, transactions } from "@/db/schema";
 import { verifySession } from "@/lib/session";
-import { eq, desc } from "drizzle-orm";
-import { redirect, notFound } from "next/navigation";
-import { AddMemberForm, TransferForm, RemoveMemberButton, PromoteMemberButton, MembershipRequestsList } from "./details-components";
+
+import { AddMemberForm, MembershipRequestsList,PromoteMemberButton, RemoveMemberButton, TransferForm } from "./details-components";
 
 export default async function FamsDetailsPage({ params }: { params: Promise<{ name: string }> }) {
     // ... existing code ...
@@ -41,7 +43,7 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
         return (
             <div className="p-8 text-center bg-dark-900 border border-red-900/50 rounded-xl m-4 mx-auto max-w-2xl">
                 <h1 className="text-xl text-red-500 mb-2 font-bold">Accès Refusé</h1>
-                <p className="text-gray-400">Vous n'êtes pas membre de la Fam'ss "{famsName}".</p>
+                <p className="text-gray-400">Vous n&apos;êtes pas membre de la Fam&apos;ss &quot;{famsName}&quot;.</p>
                 <p className="text-sm text-gray-500 mt-2">Demandez à un administrateur de vous ajouter.</p>
             </div>
         );
@@ -78,7 +80,7 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
                     <div className="text-3xl font-mono font-bold text-white">
                         {(fams.balance / 100).toFixed(2)} €
                     </div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mt-1">Solde Fam'ss</div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mt-1">Solde Fam&apos;ss</div>
                 </div>
             </div>
 

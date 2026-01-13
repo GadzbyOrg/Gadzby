@@ -1,24 +1,25 @@
 import {
-	IconWallet,
-	IconShoppingBag,
-	IconTrendingUp,
-	IconTrendingDown,
 	IconBuildingStore,
+	IconShoppingBag,
+	IconTrendingDown,
+	IconTrendingUp,
+	IconWallet,
 } from "@tabler/icons-react";
-import {
-	getUserStats,
-	getUserRecentActivity,
-	getUserExpensesByShop,
-	getUserExpensesOverTime,
-} from "@/features/dashboard/actions";
-import { getShops } from "@/features/shops/actions";
+import Link from "next/link";
+
 import { ExpensesByShopChart } from "@/components/dashboard/ExpensesByShopChart";
 import { ExpensesOverTimeChart } from "@/components/dashboard/ExpensesOverTimeChart";
 import { RecentActivityList } from "@/components/dashboard/RecentActivityList";
-import Link from "next/link";
-import { getEnrolledEvents } from "@/features/events/actions";
-import { verifySession } from "@/lib/session";
 import { UserEventsList } from "@/components/dashboard/UserEventsList";
+import {
+	getUserExpensesByShop,
+	getUserExpensesOverTime,
+	getUserRecentActivity,
+	getUserStats,
+} from "@/features/dashboard/actions";
+import { getEnrolledEvents } from "@/features/events/actions";
+import { getShops } from "@/features/shops/actions";
+import { verifySession } from "@/lib/session";
 
 interface StatCardProps {
 	title: string;

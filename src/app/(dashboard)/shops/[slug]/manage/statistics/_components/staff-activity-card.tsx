@@ -1,7 +1,7 @@
-import { formatPrice } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
+import { formatPrice } from "@/lib/utils";
 
-interface StaffStats {
+export interface StaffStats {
 	userId: string;
 	count: number;
 	volume: number;
@@ -35,7 +35,7 @@ export function StaffActivityCard({ data, loading }: StaffActivityCardProps) {
 	return (
 		<div className="bg-dark-900 p-6 rounded-xl border border-dark-800 flex flex-col h-full">
 			<h3 className="text-lg font-medium text-white mb-4">
-				Boul'c le plus actif
+				Boul&apos;c le plus actif
 			</h3>
 			<div className="flex-1 overflow-auto space-y-4 pr-1">
 				{data.length === 0 ? (

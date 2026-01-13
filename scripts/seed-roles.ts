@@ -1,7 +1,8 @@
 
-import { db } from "@/db";
-import { roles, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+import { db } from "@/db";
+import { roles } from "@/db/schema";
 
 const DEFAULT_ROLES = [
 	{

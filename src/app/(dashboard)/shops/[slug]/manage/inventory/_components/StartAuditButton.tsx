@@ -1,10 +1,11 @@
 "use client";
 
-import { createInventoryAudit } from "@/features/shops/inventory";
+import { IconPlus } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { IconPlus } from "@tabler/icons-react";
+
 import { useToast } from "@/components/ui/use-toast";
+import { createInventoryAudit } from "@/features/shops/inventory";
 
 export default function StartAuditButton({ shopSlug }: { shopSlug: string }) {
     const router = useRouter();

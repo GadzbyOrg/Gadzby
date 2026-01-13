@@ -1,26 +1,27 @@
 "use server";
 
-import { db } from "@/db";
-import { transactions, famss, products, users } from "@/db/schema";
 import {
-	eq,
+	asc,
 	desc,
+	eq,
+	inArray,
 	or,
 	sql,
-	asc,
-	inArray,
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
-import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
+import { db } from "@/db";
+import { transactions } from "@/db/schema";
+import { authenticatedAction } from "@/lib/actions";
 import { TransactionService } from "@/services/transaction-service";
+
+import { getTransactionsQuery } from "./queries";
 import {
-	transferMoneySchema,
 	topUpUserSchema,
 	transactionQuerySchema,
+	transferMoneySchema,
 } from "./schemas";
-import { getTransactionsQuery } from "./queries";
-import { z } from "zod";
 
 export const getUserTransactionsAction = authenticatedAction(
 	z.object({
@@ -53,7 +54,7 @@ export const getUserTransactionsAction = authenticatedAction(
 
 export const getAllTransactionsAction = authenticatedAction(
 	transactionQuerySchema,
-	async (data, { session }) => {
+	async (data) => {
 		const { page, limit, search, type, sort, startDate, endDate } = data;
 		const offset = (page - 1) * limit;
 
@@ -113,7 +114,7 @@ export const getAllTransactionsAction = authenticatedAction(
         // STAGE 2: Fetch full details for these keys
         // If key is a groupId, we want all txs with that groupId.
         // If key is a txId, we want that tx (which has that id).
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		const allTransactions = await db.query.transactions.findMany({
             where: or(
                 inArray(transactions.groupId, keys),
@@ -137,7 +138,7 @@ export const getAllTransactionsAction = authenticatedAction(
 
 export const exportTransactionsAction = authenticatedAction(
 	transactionQuerySchema, // Reuse same schema
-	async (data, { session }) => {
+	async (data) => {
 		const { search, type, sort, startDate, endDate } = data;
         
         const start = startDate ? new Date(startDate) : undefined;

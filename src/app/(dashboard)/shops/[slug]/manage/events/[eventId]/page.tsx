@@ -1,5 +1,6 @@
 import { getEvent, getEventStats } from "@/features/events/actions";
 import { getShopBySlug } from "@/features/shops/actions";
+
 import { EventDetailsView } from "./event-details-view";
 
 export default async function EventDetailsPage({

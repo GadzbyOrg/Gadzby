@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { updateAuditItem, completeInventoryAudit } from "@/features/shops/inventory";
+import { IconAlertTriangle,IconCheck } from "@tabler/icons-react"; // Removed IconPackage
 import { useRouter } from "next/navigation";
-import { IconCheck, IconAlertTriangle } from "@tabler/icons-react"; // Removed IconPackage
+import { useState } from "react";
+
 import { useToast } from "@/components/ui/use-toast";
+import { completeInventoryAudit,updateAuditItem } from "@/features/shops/inventory";
 
 type AuditItem = {
     id: string;
@@ -55,8 +56,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
 
         try {
             await updateAuditItem(shopSlug, audit.id, itemId, val);
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast({
                 title: "Erreur de sauvegarde",
                 description: "Impossible de sauvegarder la valeur. Veuillez réessayer.",
@@ -92,7 +92,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                     variant: "destructive",
                 });
             }
-        } catch (error) {
+        } catch {
             toast({
                 title: "Erreur",
                 description: "Une erreur est survenue lors de la validation",

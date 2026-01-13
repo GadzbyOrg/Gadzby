@@ -1,20 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
-import { loginAction } from "@/features/auth/actions";
 import {
-	IconUser,
-	IconLock,
 	IconAlertTriangle,
-	IconLoader2,
 	IconEye,
 	IconEyeOff,
+	IconLoader2,
+	IconLock,
 } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useActionState } from "react";
+import { useState } from "react";
+import { useFormStatus } from "react-dom";
+
+import { Button } from "@/components/ui/button";
+import { loginAction } from "@/features/auth/actions";
+import { cn } from "@/lib/utils";
 
 function InputLabel({
 	htmlFor,
@@ -65,9 +65,9 @@ import { UserSearch } from "@/components/user-search";
 // ... existing imports
 
 export default function LoginPage() {
-	const [state, action] = useActionState(loginAction, { error: undefined });
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const [state, action] = useActionState(loginAction, null as any);
 	const [showPassword, setShowPassword] = useState(false);
-	const [username, setUsername] = useState("");
 
 	return (
 		<div className="flex min-h-screen flex-col justify-center bg-dark-950 px-6 py-12 lg:px-8">
@@ -95,7 +95,7 @@ export default function LoginPage() {
 				<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-8 shadow-2xl backdrop-blur-sm">
 					<form action={action} className="space-y-6">
 						{/* Affichage des Erreurs */}
-						{state.error && (
+						{state?.error && (
 							<div className="rounded-md bg-red-900/20 border border-red-900/50 p-4">
 								<div className="flex">
 									<div className="flex-shrink-0">
@@ -109,7 +109,7 @@ export default function LoginPage() {
 											Erreur de connexion
 										</h3>
 										<div className="mt-1 text-sm text-red-300/80">
-											{state.error}
+											{state?.error}
 										</div>
 									</div>
 								</div>
@@ -186,7 +186,7 @@ export default function LoginPage() {
 						href="#"
 						className="font-semibold leading-6 text-primary-400 hover:text-primary-300 transition-colors"
 					>
-						Contacte ton Zifoy'ss
+						Contacte ton Zifoy&apos;ss
 					</a>
 				</p>
 			</div>

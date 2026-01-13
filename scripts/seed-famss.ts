@@ -1,6 +1,7 @@
-import { db } from "@/db";
-import { famss, famsMembers } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+import { db } from "@/db";
+import { famsMembers,famss } from "@/db/schema";
 
 async function main() {
 	console.log("🌱 Seeding Fam'ss...");

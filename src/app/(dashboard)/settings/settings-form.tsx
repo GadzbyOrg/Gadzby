@@ -1,18 +1,19 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
-import { updateUserAction } from "@/features/users/actions";
 import {
-	IconUser,
+	IconId,
+	IconLoader2,
 	IconMail,
 	IconPhone,
-	IconId,
 	IconSchool,
-	IconLoader2,
+	IconUser,
 } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
 import { IconLayoutDashboard } from "@tabler/icons-react";
+import { useEffect,useState } from "react";
+import { useFormState, useFormStatus } from "react-dom";
+
+import { updateUserAction } from "@/features/users/actions";
+import { cn } from "@/lib/utils";
 
 function PreferredPathSelector({ defaultValue }: { defaultValue: string | null }) {
     const predefinedPaths = [
@@ -227,7 +228,7 @@ export function SettingsForm({ user }: { user: any }) {
 				</div>
 
 				<div>
-					<InputLabel htmlFor="promss">Prom'ss</InputLabel>
+					<InputLabel htmlFor="promss">Prom&apos;ss</InputLabel>
 					<div className="relative mt-2">
 						<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 							<IconSchool className="h-5 w-5 text-gray-500" />
@@ -243,7 +244,7 @@ export function SettingsForm({ user }: { user: any }) {
 				</div>
 
 				<div>
-					<InputLabel htmlFor="nums">Num'ss</InputLabel>
+					<InputLabel htmlFor="nums">Num&apos;ss</InputLabel>
 					<div className="relative mt-2">
 						<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 							<IconId className="h-5 w-5 text-gray-500" />

@@ -1,12 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+import { UserSearch } from "@/components/user-search";
 import {
 	addMemberAction,
 	transferToFamsAction,
 } from "@/features/famss/actions";
-import { useRouter } from "next/navigation";
-import { UserSearch } from "@/components/user-search";
 
 export function AddMemberForm({ famsName }: { famsName: string }) {
 	const [status, setStatus] = useState<{
@@ -16,6 +17,7 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async function handleSelect(user: any) {
 		setLoading(true);
 		setStatus(null);
@@ -100,7 +102,7 @@ export function TransferForm({ famsName }: { famsName: string }) {
 
 	return (
 		<div className="bg-dark-900 border border-dark-800 p-6 rounded-xl space-y-4">
-			<h3 className="text-lg font-bold text-white">Verser de l'argent</h3>
+			<h3 className="text-lg font-bold text-white">Verser de l&apos;argent</h3>
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<div className="space-y-2">
 					<label className="text-sm font-medium text-gray-400">
@@ -124,7 +126,7 @@ export function TransferForm({ famsName }: { famsName: string }) {
 					disabled={loading}
 					className="w-full bg-primary-600 text-white px-4 py-2 rounded font-medium hover:bg-primary-500 disabled:opacity-50 transition-colors cursor-pointer"
 				>
-					{loading ? "Transfert en cours..." : "Envoyer vers la Fam'ss"}
+					{loading ? "Transfert en cours..." : "Envoyer vers la Fam&apos;ss"}
 				</button>
 
 				{status && (
@@ -141,14 +143,15 @@ export function TransferForm({ famsName }: { famsName: string }) {
 	);
 }
 
-import { IconTrash, IconStar, IconCheck, IconX } from "@tabler/icons-react";
+import { IconCheck, IconStar, IconTrash, IconX } from "@tabler/icons-react";
+
 import {
-	removeMemberAction,
-	promoteMemberAction,
-	requestToJoinFamsAction,
-	cancelRequestAction,
 	acceptRequestAction,
+	cancelRequestAction,
+	promoteMemberAction,
 	rejectRequestAction,
+	removeMemberAction,
+	requestToJoinFamsAction,
 } from "@/features/famss/actions";
 
 export function RemoveMemberButton({
@@ -276,6 +279,7 @@ export function MembershipRequestsList({
 	requests,
 }: {
 	famsName: string;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	requests: any[];
 }) {
 	const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -304,7 +308,7 @@ export function MembershipRequestsList({
 		<div className="bg-dark-900 border border-dark-800 p-6 rounded-xl space-y-4 mb-6">
 			<div className="flex justify-between items-center mb-2">
 				<h3 className="text-lg font-bold text-white flex items-center gap-2">
-					Demandes d'adhésion
+					Demandes d&apos;adhésion
 					<span className="bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">
 						{requests.length}
 					</span>

@@ -1,16 +1,16 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
 import {
-	IconLoader2,
-	IconCheck,
 	IconAlertTriangle,
-	IconUpload,
-	IconFileSpreadsheet,
-	IconX,
+	IconCheck,
 	IconDownload,
+	IconFileSpreadsheet,
 	IconInfoCircle,
+	IconLoader2,
+	IconUpload,
+	IconX,
 } from "@tabler/icons-react";
+import { useState } from "react";
 import * as XLSX from "xlsx";
 
 interface ExcelImportModalProps {
@@ -364,7 +364,7 @@ export function ExcelImportModal({
 									<span>Import en cours...</span>
 								</>
 							) : (
-								<span>Lancer l'import</span>
+								<span>Lancer l&apos;import</span>
 							)}
 						</button>
 					</div>

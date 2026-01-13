@@ -1,13 +1,14 @@
-import {
-	pgTable,
-	text,
-	uuid,
-	primaryKey,
-	integer,
-	boolean,
-	timestamp,
-} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import {
+	boolean,
+	integer,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
+
 import { users } from "./users";
 
 export const famss = pgTable("famss", {

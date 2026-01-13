@@ -1,10 +1,12 @@
+import { IconSettings } from "@tabler/icons-react";
+import { redirect } from "next/navigation";
+
 import { db } from "@/db";
 import { paymentMethods } from "@/db/schema/payment-methods";
 import { verifySession } from "@/lib/session";
-import { redirect } from "next/navigation";
+
 import { EmailSettings } from "./_components/email-settings";
 import { PaymentsSettings } from "./_components/payments-settings";
-import { IconSettings } from "@tabler/icons-react";
 
 export default async function AdminSettingsPage() {
     const session = await verifySession();
@@ -29,7 +31,7 @@ export default async function AdminSettingsPage() {
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold text-white">Paramètres</h1>
-                    <p className="text-gray-400">Gérez la configuration globale de l'application.</p>
+                    <p className="text-gray-400">Gérez la configuration globale de l&apos;application.</p>
                 </div>
             </div>
 

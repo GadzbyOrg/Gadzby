@@ -1,18 +1,19 @@
 "use server";
 
+import { and, desc, eq, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
 import { db } from "@/db";
 import {
-	inventoryAudits,
 	inventoryAuditItems,
+	inventoryAudits,
+	productRestocks,
 	products,
 	shops,
 	shopUsers,
-	productRestocks,
-	transactions,
 } from "@/db/schema";
 import { verifySession } from "@/lib/session";
-import { eq, and, desc, gt, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+
 import { getUserShopPermissions } from "./utils";
 
 // Helper to check permissions (Duplicated from products.ts, ideally should be shared)

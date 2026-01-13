@@ -1,8 +1,10 @@
-import { getUsers, getPromssListAction } from "@/features/users/actions";
-import { getRolesAction } from "@/features/roles/actions";
-import { verifySession } from "@/lib/session";
-import { UsersTable } from "./users-table";
 import { redirect } from "next/navigation";
+
+import { getRolesAction } from "@/features/roles/actions";
+import { getPromssListAction,getUsers } from "@/features/users/actions";
+import { verifySession } from "@/lib/session";
+
+import { UsersTable } from "./users-table";
 
 export default async function AdminUsersPage({
     searchParams,
@@ -42,7 +44,7 @@ export default async function AdminUsersPage({
                         Gestion des Utilisateurs
                     </h1>
                     <p className="text-gray-400">
-                        Visualisez et modifiez tous les utilisateurs de l'application.
+                        Visualisez et modifiez tous les utilisateurs de l&apos;application.
                     </p>
                 </div>
             </header>

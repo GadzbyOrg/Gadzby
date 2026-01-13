@@ -1,6 +1,6 @@
-import React from "react";
-import { IconBrandGithub, IconMail, IconCode, IconPalette } from "@tabler/icons-react";
+import { IconBrandGithub, IconCode, IconMail, IconPalette } from "@tabler/icons-react";
 import Link from "next/link";
+import React from "react";
 
 export function Footer() {
 	return (
@@ -14,7 +14,7 @@ export function Footer() {
 								className="text-gray-600 transition-colors group-hover:text-primary-400"
 							/>
 							<p className="text-sm font-medium text-gray-400 transition-colors group-hover:text-gray-300">
-								Usiné à Siber'ss par{" "}
+								Usiné à Siber&apos;ss par{" "}
 								<span className="text-gray-300 transition-colors group-hover:text-white">
 									Modo 4! Me223
 								</span>

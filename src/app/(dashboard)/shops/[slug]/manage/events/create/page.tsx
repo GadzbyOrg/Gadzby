@@ -1,4 +1,5 @@
 import { getShopBySlug } from "@/features/shops/actions";
+
 import { EventForm } from "./event-form";
 
 export default async function CreateEventPage({

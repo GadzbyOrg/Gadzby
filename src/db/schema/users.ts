@@ -1,16 +1,16 @@
 import { relations } from "drizzle-orm";
-import { shopUsers } from "./shops";
-import { famsMembers } from "./famss";
-import { roles } from "./roles";
 import {
+	boolean,
+	integer,
+	pgEnum,
 	pgTable,
 	text,
-	integer,
-	boolean,
 	timestamp,
-	uuid,
-	pgEnum
-} from "drizzle-orm/pg-core";
+	uuid} from "drizzle-orm/pg-core";
+
+import { famsMembers } from "./famss";
+import { roles } from "./roles";
+import { shopUsers } from "./shops";
 
 export const tbk = pgEnum("tbk", ["ME", "CL", "CH", "KA", "PA", "BO", "LI", "AN"])
 

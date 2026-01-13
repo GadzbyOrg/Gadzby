@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { IconSearch, IconX } from "@tabler/icons-react";
+import { useEffect,useRef, useState } from "react";
+
 import { searchUsers } from "@/features/shops/actions";
 
 interface User {

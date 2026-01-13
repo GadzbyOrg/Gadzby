@@ -1,8 +1,9 @@
 // Run with: npx tsx scripts/seed-transactions.ts
 
-import { db } from "@/db";
-import { transactions, users, shops, products } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+import { db } from "@/db";
+import {shops, transactions } from "@/db/schema";
 
 async function main() {
 	console.log("🌱 Seeding transactions...");

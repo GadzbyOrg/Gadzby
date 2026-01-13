@@ -1,16 +1,17 @@
 "use client";
 
+import {
+	IconLoader2,
+	IconPlus,
+	IconSettings,
+	IconTrash,
+} from "@tabler/icons-react";
 import { useState } from "react";
+
 import {
 	togglePaymentMethod,
 	updatePaymentMethodConfig,
 } from "@/features/payments/admin";
-import {
-	IconLoader2,
-	IconSettings,
-	IconPlus,
-	IconTrash,
-} from "@tabler/icons-react";
 
 interface PaymentMethod {
 	id: string;
@@ -53,7 +54,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 				id: method.id,
 				isEnabled: !method.isEnabled,
 			});
-		} catch (e) {
+		} catch {
 			alert("Erreur lors de la mise à jour");
 		} finally {
 			setIsLoading(false);
@@ -78,7 +79,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 				config: newConfig,
 			});
 			setIsEditing(false);
-		} catch (e) {
+		} catch {
 			alert("Erreur lors de la sauvegarde");
 		} finally {
 			setIsLoading(false);

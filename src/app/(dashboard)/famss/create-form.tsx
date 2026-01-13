@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { createFamsAction } from "@/features/famss/actions";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { createFamsAction } from "@/features/famss/actions";
 
 export function CreateFamForm() {
 	const [name, setName] = useState("");
@@ -22,7 +23,7 @@ export function CreateFamForm() {
 			setError(res.error);
 		} else {
 			setName("");
-			setSuccess("Fam'ss créée !");
+			setSuccess("Fam&apos;ss créée !");
 			router.refresh();
 			// Clear success message after 3s
 			setTimeout(() => setSuccess(""), 3000);
@@ -37,11 +38,11 @@ export function CreateFamForm() {
 		>
 			<div className="flex flex-col gap-2 flex-1">
 				<label className="text-sm font-medium text-gray-400">
-					Créer une nouvelle Fam'ss
+					Créer une nouvelle Fam&apos;ss
 				</label>
 				<input
 					className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-primary-500 outline-none transition-colors w-full"
-					placeholder="Nom de la Fam'ss..."
+					placeholder="Nom de la Fam&apos;ss..."
 					value={name}
 					onChange={(e) => setName(e.target.value)}
 					required

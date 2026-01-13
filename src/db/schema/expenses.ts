@@ -1,8 +1,9 @@
-import { pgTable, text, uuid, integer, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { integer, pgTable, text, timestamp,uuid } from 'drizzle-orm/pg-core';
+
+import { events } from './events';
 import { shops } from './shops';
 import { users } from './users';
-import { events } from './events';
 
 export const shopExpenses = pgTable('shop_expenses', {
   id: uuid('id').defaultRandom().primaryKey(),

@@ -1,37 +1,64 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
-	IconPencil,
-	IconSearch,
-	IconX,
-	IconHistory,
-	IconPlus,
 	IconArrowsSort,
-	IconPower,
-	IconSortAscending,
-	IconSortDescending,
     IconChevronLeft,
     IconChevronRight,
-    IconMail,
-    IconPhone,
+	IconHistory,
     IconId,
-    IconCoin,
+    IconMail,
+	IconPencil,
+	IconPlus,
+	IconPower,
     IconSchool,
+	IconSearch,
+	IconSortAscending,
+	IconSortDescending,
+	IconX,
 } from "@tabler/icons-react";
-import { UserEditForm } from "./user-edit-form";
-import { CreateUserForm } from "./create-user-form";
-import { ExcelImportModal } from "@/components/excel-import-modal";
-import { importUsersAction, importUsersBatchAction } from "@/features/users/actions";
-import { TransactionHistoryModal } from "./transaction-history-modal";
-import { toggleUserStatusAction } from "@/features/users/actions";
+import { usePathname,useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useTransition } from "react";
+
+import { ExcelImportModal } from "@/components/excel-import-modal";
 import { PromssSelector } from "@/components/promss-selector";
+import { importUsersAction, importUsersBatchAction } from "@/features/users/actions";
+import { toggleUserStatusAction } from "@/features/users/actions";
+
+import { CreateUserForm } from "./create-user-form";
+import { TransactionHistoryModal } from "./transaction-history-modal";
+import { UserEditForm } from "./user-edit-form";
+
+// Define strict types for User and Role to avoid 'any'
+interface Role {
+    id: string;
+    name: string;
+}
+
+interface User {
+    id: string;
+    nom: string;
+    prenom: string;
+    email: string;
+    username: string;
+    bucque: string | null;
+    promss: string | null;
+    tabagnss: string | null;
+    phone: string | null;
+    nums: string | null;
+    roleId: string | null;
+    balance: number;
+    isAsleep: boolean | null;
+    isDeleted: boolean | null;
+    role: Role | null;
+    appRole?: string;
+    // Add other fields as necessary based on usage
+    [key: string]: unknown;
+}
 
 interface UsersTableProps {
-	users: any[];
-	roles: any[];
+	users: User[];
+	roles: Role[];
     totalPages?: number;
     currentPage?: number;
     promssList?: string[];
@@ -80,7 +107,7 @@ function UserMobileCard({
     onToggleStatus,
     isPending
 }: { 
-    user: any; 
+    user: User; 
     onEdit: () => void; 
     onHistory: () => void;
     onToggleStatus: () => void;
@@ -187,13 +214,25 @@ function UserMobileCard({
     );
 }
 
+function SortIcon({ column, currentSort, currentOrder }: { column: string, currentSort: string | null, currentOrder: string | null }) {
+    if (currentSort !== column)
+        return (
+            <IconArrowsSort className="w-3 h-3 opacity-30 group-hover:opacity-100" />
+        );
+    return currentOrder === "asc" ? (
+        <IconSortAscending className="w-3 h-3 text-primary-400" />
+    ) : (
+        <IconSortDescending className="w-3 h-3 text-primary-400" />
+    );
+}
+
 export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, promssList = [] }: UsersTableProps) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 
-	const [selectedUser, setSelectedUser] = useState<any>(null);
-	const [viewHistoryUser, setViewHistoryUser] = useState<any>(null);
+	const [selectedUser, setSelectedUser] = useState<User | null>(null);
+	const [viewHistoryUser, setViewHistoryUser] = useState<User | null>(null);
 	const [showCreateModal, setShowCreateModal] = useState(false);
 
 	const [isPending, startTransition] = useTransition();
@@ -273,18 +312,6 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 	const currentRole = searchParams.get("role") || "";
     const currentPromss = searchParams.get("promss") || "";
 
-	const SortIcon = ({ column }: { column: string }) => {
-		if (currentSort !== column)
-			return (
-				<IconArrowsSort className="w-3 h-3 opacity-30 group-hover:opacity-100" />
-			);
-		return currentOrder === "asc" ? (
-			<IconSortAscending className="w-3 h-3 text-primary-400" />
-		) : (
-			<IconSortDescending className="w-3 h-3 text-primary-400" />
-		);
-	};
-
 	return (
 		<div className="space-y-4">
 			{/* Toolbar */}
@@ -355,7 +382,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
                                 user={user}
                                 onEdit={() => setSelectedUser(user)}
                                 onHistory={() => setViewHistoryUser(user)}
-                                onToggleStatus={() => handleToggleStatus(user.id, user.isAsleep)}
+                                onToggleStatus={() => handleToggleStatus(user.id, user.isAsleep ?? false)}
                                 isPending={isPending}
                             />
                         ))
@@ -381,7 +408,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 									onClick={() => handleSort("nom")}
 								>
 									<div className="flex items-center gap-1">
-										Utilisateur <SortIcon column="nom" />
+										Utilisateur <SortIcon column="nom" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
 								<th
@@ -389,16 +416,16 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 									onClick={() => handleSort("bucque")}
 								>
 									<div className="flex items-center gap-1">
-										Bucque / Email <SortIcon column="bucque" />
+										Bucque / Email <SortIcon column="bucque" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
-                                <th className="py-3 px-6 font-medium">Tabagn'ss</th>
+                                <th className="py-3 px-6 font-medium">Tabagn&apos;ss</th>
                                 <th
 									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
 									onClick={() => handleSort("promss")}
 								>
 									<div className="flex items-center gap-1">
-										Promss <SortIcon column="promss" />
+										Promss <SortIcon column="promss" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
 								<th className="py-3 px-6 font-medium">Rôle</th>
@@ -407,7 +434,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 									onClick={() => handleSort("balance")}
 								>
 									<div className="flex items-center justify-end gap-1">
-										Solde <SortIcon column="balance" />
+										Solde <SortIcon column="balance" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
 								<th className="py-3 px-6 font-medium text-right">Actions</th>
@@ -497,7 +524,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 												</button>
 												<button
 													onClick={() =>
-														handleToggleStatus(user.id, user.isAsleep)
+														handleToggleStatus(user.id, user.isAsleep ?? false)
 													}
 													disabled={isPending}
 													className={`p-1 rounded-md transition-colors ${
@@ -532,7 +559,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 						<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800">
 							<div>
 								<h2 className="text-xl font-bold text-white">
-									Modifier l'utilisateur
+									Modifier l&apos;utilisateur
 								</h2>
 								<p className="text-sm text-gray-400">
 									@{selectedUser.username}
@@ -548,7 +575,8 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
 						<div className="p-6">
 							<UserEditForm
-								user={selectedUser}
+								// eslint-disable-next-line @typescript-eslint/no-explicit-any
+								user={selectedUser as any}
 								roles={roles}
 								onSuccess={() => setSelectedUser(null)}
 							/>
@@ -572,7 +600,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 						<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800">
 							<div>
 								<h2 className="text-xl font-bold text-white">
-									Nouveau Gadz'Arts
+									Nouveau Gadz&apos;Arts
 								</h2>
 								<p className="text-sm text-gray-400">
 									Ajouter manuellement un utilisateur.

@@ -1,32 +1,32 @@
 "use client";
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { usePathname,useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import {
+	Area,
+	AreaChart,
+	CartesianGrid,
+	Legend,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis,
+} from "recharts";
+
+import { getShopEvents } from "@/features/events/actions";
 import { getShopStats } from "@/features/shops/actions";
 import {
-	getMostActiveStaff,
 	getBestCustomers,
+	getMostActiveStaff,
 	getProductSalesStats,
 	getStockProjections,
 } from "@/features/shops/analytics-actions";
-import { getShopEvents } from "@/features/events/actions";
-import {
-	AreaChart,
-	Area,
-	XAxis,
-	YAxis,
-	CartesianGrid,
-	Tooltip,
-	ResponsiveContainer,
-	BarChart,
-	Bar,
-	Legend,
-} from "recharts";
 import { formatPrice } from "@/lib/utils";
-import { StaffActivityCard } from "./staff-activity-card";
-import { TopCustomersCard } from "./top-customers-card";
-import { ProductPerformanceCard } from "./product-performance-card";
-import { StockProjectionsCard } from "./stock-projection-card";
+
+import { ProductPerformanceCard,ProductStats } from "./product-performance-card";
+import { StaffActivityCard, StaffStats } from "./staff-activity-card";
+import { StockProjection,StockProjectionsCard } from "./stock-projection-card";
+import { CustomerStats,TopCustomersCard } from "./top-customers-card";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";
 
@@ -60,11 +60,11 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 	} | null>(null);
 
 	// New Data
-	const [staffStats, setStaffStats] = useState<any[]>([]);
-	const [customerStats, setCustomerStats] = useState<any[]>([]);
-	const [topProducts, setTopProducts] = useState<any[]>([]);
-	const [flopProducts, setFlopProducts] = useState<any[]>([]);
-	const [projections, setProjections] = useState<any[]>([]);
+	const [staffStats, setStaffStats] = useState<StaffStats[]>([]);
+	const [customerStats, setCustomerStats] = useState<CustomerStats[]>([]);
+	const [topProducts, setTopProducts] = useState<ProductStats[]>([]);
+	const [flopProducts, setFlopProducts] = useState<ProductStats[]>([]);
+	const [projections, setProjections] = useState<StockProjection[]>([]);
 
 	const updateParams = (newParams: Record<string, string | null>) => {
 		const params = new URLSearchParams(searchParams);
@@ -158,15 +158,33 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 				else setData(statsResult);
 
 				if ("error" in staffResult) console.error(staffResult.error);
-				else setStaffStats(staffResult.stats);
+				else {
+					setStaffStats(
+						staffResult.stats.map((s: any) => ({
+							...s,
+							volume: Number(s.volume || 0),
+						}))
+					);
+				}
 
 				if ("error" in customerResult) console.error(customerResult.error);
-				else setCustomerStats(customerResult.stats);
+				else {
+					setCustomerStats(
+						customerResult.stats.map((c: any) => ({
+							...c,
+							volume: Number(c.volume || 0),
+						}))
+					);
+				}
 
 				if ("error" in productsResult) console.error(productsResult.error);
 				else {
 					// Sort locally for safety and splitting
-					const sorted = [...productsResult.stats].sort(
+					const validStats = productsResult.stats.filter(
+						(p: any) => p.productId && p.product
+					) as ProductStats[];
+					
+					const sorted = [...validStats].sort(
 						(a, b) => b.totalQuantity - a.totalQuantity
 					);
 					setTopProducts(sorted.slice(0, 5));
@@ -271,7 +289,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div className="bg-dark-900 p-6 rounded-xl border border-dark-800">
 							<p className="text-sm text-gray-400 font-medium">
-								Chiffre d'affaires
+								Chiffre d&apos;affaires
 							</p>
 							<p className="text-2xl font-bold text-green-400 mt-2">
 								{formatPrice(data.summary.totalRevenue)}

@@ -1,5 +1,6 @@
-import { getShops } from "@/features/shops/actions";
 import Link from "next/link";
+
+import { getShops } from "@/features/shops/actions";
 
 export default async function ShopsPage() {
 	const { shops, error } = await getShops();
@@ -74,7 +75,7 @@ export default async function ShopsPage() {
 						Aucune boquette disponible
 					</h3>
 					<p className="mt-1 text-sm text-gray-400">
-						Il n'y a pas encore de boquettes ouvertes pour le moment.
+						Il n&apos;y a pas encore de boquettes ouvertes pour le moment.
 					</p>
 				</div>
 			)}

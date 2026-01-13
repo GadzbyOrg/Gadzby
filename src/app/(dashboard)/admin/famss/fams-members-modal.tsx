@@ -1,53 +1,64 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
-	IconX,
-	IconTrash,
-	IconUserPlus,
 	IconShield,
 	IconShieldOff,
+	IconTrash,
+	IconUserPlus,
+	IconX,
 } from "@tabler/icons-react";
+import { useCallback,useEffect,useState } from "react";
+
+import { UserAvatar } from "@/components/user-avatar";
 import {
-	getFamsMembersAction,
 	addMemberAction,
+	getFamsMembersAction,
 	removeMemberAction,
 	updateMemberRoleAction,
 } from "@/features/famss/admin-actions";
-import { UserAvatar } from "@/components/user-avatar";
+
+interface FamsMember {
+    id: string;
+    username: string;
+    nom: string;
+    prenom: string;
+    image: string | null;
+    isAdmin: boolean;
+}
 
 interface FamsMembersModalProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 	fams: any;
 	onClose: () => void;
 }
 
 export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
-	const [members, setMembers] = useState<any[]>([]);
+	const [members, setMembers] = useState<FamsMember[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [newMemberUsername, setNewMemberUsername] = useState("");
 	const [error, setError] = useState<string | null>(null);
 
-	async function loadMembers() {
-		setLoading(true);
+	const loadMembers = useCallback(async () => {
+		// setLoading(true); // Avoid sync setState
 		const res = await getFamsMembersAction({ famsId: fams.id });
-		if (res.members) {
-			setMembers(res.members);
+		if (res.error !== undefined) {
+			setError(res.error);
 		} else {
-			setError(res.error || "Erreur de chargement");
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			setMembers(res.members as any);
 		}
 		setLoading(false);
-	}
+	}, [fams.id]);
 
 	// Fetch members on mount
 	useEffect(() => {
-		const fetchMembers = async () => {
-			await loadMembers();
-		};
-		fetchMembers();
-	}, [fams.id]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		loadMembers();
+	}, [loadMembers]);
 
 	async function handleAdd(e: React.FormEvent) {
 		e.preventDefault();
+		setLoading(true);
 		setError(null);
 		if (!newMemberUsername.trim()) return;
 
@@ -74,9 +85,10 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 		}
 	}
 
-	async function toggleAdmin(member: any) {
+	async function toggleAdmin(member: FamsMember) {
 		// Optimistic update could be safer but simple fetch refresh is fine here
 		const newStatus = !member.isAdmin;
+        setLoading(true);
 		const res = await updateMemberRoleAction({
 			famsId: fams.id,
 			userId: member.id,

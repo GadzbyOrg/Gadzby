@@ -1,10 +1,12 @@
 "use server";
 
+import { eq } from "drizzle-orm";
+
 import { db } from "@/db";
 import { transactions, users } from "@/db/schema";
-import { getPaymentProvider } from "@/lib/payments/factory";
-import { eq } from "drizzle-orm";
 import { authenticatedAction } from "@/lib/actions";
+import { getPaymentProvider } from "@/lib/payments/factory";
+
 import { InitiateTopUpSchema } from "./schema";
 
 export const initiateTopUp = authenticatedAction(

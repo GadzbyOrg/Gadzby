@@ -1,7 +1,8 @@
-"use client";
+ "use client";
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
+
 import {
 	createFamsAction,
 	updateFamsAction,
@@ -20,12 +21,14 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
 				? "Chargement..."
 				: isEdit
 				? "Enregistrer les modifications"
-				: "Créer la Fam'ss"}
+				: "Créer la Fam&apos;ss"}
 		</button>
 	);
 }
 
+
 interface FamsFormProps {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	fams?: any;
 	onSuccess: () => void;
 }
@@ -77,7 +80,7 @@ export function FamsForm({ fams, onSuccess }: FamsFormProps) {
 						htmlFor="name"
 						className="block text-sm font-medium text-gray-400 mb-2"
 					>
-						Nom de la Fam'ss
+						Nom de la Fam&apos;ss
 					</label>
 					<input
 						type="text"

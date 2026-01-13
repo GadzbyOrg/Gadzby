@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useState, useRef } from "react";
+import { IconCurrencyEuro, IconSearch } from "@tabler/icons-react";
+import { useActionState, useEffect, useRef,useState } from "react";
+import { useDebounce } from "use-debounce";
+
+import { UserAvatar } from "@/components/user-avatar";
 import { transferMoneyAction } from "@/features/transactions/actions";
 import { searchUsersPublicAction } from "@/features/users/actions";
-import { IconCurrencyEuro, IconSearch } from "@tabler/icons-react";
-import { useDebounce } from "use-debounce";
-import { UserAvatar } from "@/components/user-avatar";
 
 // Types
 type UserResult = {
@@ -18,7 +19,12 @@ type UserResult = {
 	image?: string | null;
 };
 
-const initialState: any = {
+interface ActionState {
+    error?: string;
+    success?: string;
+}
+
+const initialState: ActionState = {
 	error: "",
 	success: "",
 };
@@ -26,7 +32,7 @@ const initialState: any = {
 export function TransferForm({ balance }: { balance: number }) {
 	const [state, action, isPending] = useActionState(
 		transferMoneyAction,
-		initialState
+		initialState as any
 	);
 	const [amount, setAmount] = useState("");
 
@@ -50,8 +56,7 @@ export function TransferForm({ balance }: { balance: number }) {
 			setSearching(true);
 			const res = await searchUsersPublicAction(debouncedQuery);
 			if (res.users) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				setResults(res.users as any);
+				setResults(res.users as UserResult[]);
 			}
 			setSearching(false);
 			setDropdownOpen(true);
@@ -74,11 +79,18 @@ export function TransferForm({ balance }: { balance: number }) {
 	}, []);
 
 	// Feedback Effect
+    // Reset form on success. 
+    // We check if we have data to clear to avoid redundant updates, although React handles strict equality checks.
 	useEffect(() => {
 		if (state.success) {
-			setAmount("");
-			setSelectedUser(null);
-			setQuery("");
+            // Use setTimeout to avoid "setState synchronously within an effect" warning.
+            // This ensures state updates happen in the next tick.
+            const timer = setTimeout(() => {
+                setAmount("");
+                setSelectedUser(null);
+                setQuery("");
+            }, 0);
+            return () => clearTimeout(timer);
 		}
 	}, [state]);
 

@@ -1,15 +1,24 @@
 "use client";
 
+import { IconHistory,IconPencil, IconPlus, IconSearch, IconTrash, IconUsersGroup, IconX } from "@tabler/icons-react";
+import { usePathname,useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { IconPencil, IconSearch, IconX, IconTrash, IconPlus, IconUsersGroup, IconHistory } from "@tabler/icons-react";
+
+import { deleteFamsAction } from "@/features/famss/admin-actions";
+
 import { FamsForm } from "./fams-form";
 import { FamsMembersModal } from "./fams-members-modal";
 import { FamsTransactionsModal } from "./fams-transactions-modal";
-import { deleteFamsAction } from "@/features/famss/admin-actions";
+
+interface Fams {
+    id: string;
+    name: string;
+    balance: number;
+    memberCount: number;
+}
 
 interface FamssTableProps {
-    famss: any[];
+    famss: Fams[];
 }
 
 function FamsMobileCard({ 
@@ -19,7 +28,7 @@ function FamsMobileCard({
     onTransactions,
     onDelete
 }: { 
-    fams: any; 
+    fams: Fams; 
     onEdit: () => void; 
     onMembers: () => void;
     onTransactions: () => void;
@@ -95,7 +104,7 @@ export function FamssTable({ famss }: FamssTableProps) {
     const [membersModalOpen, setMembersModalOpen] = useState(false);
     const [transactionsModalOpen, setTransactionsModalOpen] = useState(false);
     
-    const [selectedFams, setSelectedFams] = useState<any>(null); 
+    const [selectedFams, setSelectedFams] = useState<Fams | null>(null); 
     const [isEditMode, setIsEditMode] = useState(false);
 
     // Search Handler
@@ -115,18 +124,18 @@ export function FamssTable({ famss }: FamssTableProps) {
         setModalOpen(true);
     };
 
-    const handleEdit = (fams: any) => {
+    const handleEdit = (fams: Fams) => {
         setSelectedFams(fams);
         setIsEditMode(true);
         setModalOpen(true);
     };
 
-    const handleMembers = (fams: any) => {
+    const handleMembers = (fams: Fams) => {
         setSelectedFams(fams);
         setMembersModalOpen(true);
     };
 
-    const handleTransactions = (fams: any) => {
+    const handleTransactions = (fams: Fams) => {
         setSelectedFams(fams);
         setTransactionsModalOpen(true);
     };
@@ -153,7 +162,7 @@ export function FamssTable({ famss }: FamssTableProps) {
                     <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                     <input
                         type="search"
-                        placeholder="Rechercher une Fam'ss..."
+                        placeholder="Rechercher une Fam&apos;ss..."
                         className="w-full bg-dark-950 border border-dark-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
                         defaultValue={searchParams.get("search")?.toString()}
                         onChange={(e) => handleSearch(e.target.value)}
@@ -165,7 +174,7 @@ export function FamssTable({ famss }: FamssTableProps) {
                     className="w-full md:w-auto flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                     <IconPlus size={16} />
-                    Nouvelle Fam'ss
+                    Nouvelle Fam&apos;ss
                 </button>
             </div>
 
@@ -173,7 +182,7 @@ export function FamssTable({ famss }: FamssTableProps) {
             <div className="md:hidden space-y-4">
                 {famss.length === 0 ? (
                     <div className="text-center py-8 text-gray-500 bg-dark-900 rounded-xl border border-dark-800">
-                        Aucune Fam'ss trouvée
+                        Aucune Fam&apos;ss trouvée
                     </div>
                 ) : (
                     famss.map((fams) => (
@@ -205,7 +214,7 @@ export function FamssTable({ famss }: FamssTableProps) {
                             {famss.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="py-8 text-center text-gray-500">
-                                        Aucune Fam'ss trouvée
+                                        Aucune Fam&apos;ss trouvée
                                     </td>
                                 </tr>
                             ) : (
@@ -267,7 +276,7 @@ export function FamssTable({ famss }: FamssTableProps) {
                         <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800">
                             <div>
                                 <h2 className="text-xl font-bold text-white">
-                                    {isEditMode ? "Modifier la Fam'ss" : "Créer une Fam'ss"}
+                                    {isEditMode ? "Modifier la Fam&apos;ss" : "Créer une Fam&apos;ss"}
                                 </h2>
                                 {isEditMode && <p className="text-sm text-gray-400">{selectedFams?.name}</p>}
                             </div>

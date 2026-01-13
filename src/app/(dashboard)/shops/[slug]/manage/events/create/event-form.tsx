@@ -1,12 +1,13 @@
 "use client";
 
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { createEvent, updateEvent } from "@/features/events/actions";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { useToast } from "@/components/ui/use-toast";
+import { createEvent, updateEvent } from "@/features/events/actions";
 
 const eventSchema = z.object({
 	name: z.string().min(1, "Le nom est requis"),

@@ -1,10 +1,11 @@
 "use client";
 
+import { IconCamera, IconLoader2, IconX } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { useRef, useState, useTransition } from "react";
+
 import { UserAvatar } from "@/components/user-avatar";
 import { uploadAvatarAction } from "@/features/users/avatar-actions";
-import { IconCamera, IconLoader2, IconX } from "@tabler/icons-react";
-import { useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 
 interface AvatarUploadProps {
 	user: {

@@ -1,9 +1,10 @@
 'use client';
 
+import { IconLink, IconLoader2,IconUnlink } from '@tabler/icons-react';
 import { useState, useTransition } from 'react';
-import { IconLink, IconUnlink, IconLoader2, IconSlice } from '@tabler/icons-react';
-import { linkExpenseToEvent, unlinkExpenseFromEvent, getAvailableExpensesAction, splitExpense, deleteExpenseSplit } from '@/features/events/actions';
+
 import { useToast } from "@/components/ui/use-toast";
+import { deleteExpenseSplit,getAvailableExpensesAction, linkExpenseToEvent, splitExpense, unlinkExpenseFromEvent } from '@/features/events/actions';
 
 interface Props {
     event: any;

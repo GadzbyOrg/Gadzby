@@ -1,10 +1,12 @@
 "use server";
 
-import { db } from "@/db";
-import { paymentMethods } from "@/db/schema/payment-methods";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+import { db } from "@/db";
+import { paymentMethods } from "@/db/schema/payment-methods";
 import { authenticatedAction } from "@/lib/actions";
+
 import { paymentMethodConfigSchema, TogglePaymentMethodSchema } from "./schema";
 
 export const togglePaymentMethod = authenticatedAction(

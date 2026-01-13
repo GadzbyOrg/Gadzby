@@ -1,13 +1,15 @@
 "use server";
 
 // ... imports
-import { db } from "@/db";
-import { products, productCategories, shops, shopUsers, productRestocks } from "@/db/schema";
-import { verifySession } from "@/lib/session";
-import { eq, and, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import * as XLSX from "xlsx";
-import { hasShopPermission, getUserShopPermissions } from "./utils";
+
+import { db } from "@/db";
+import { productCategories, productRestocks,products, shops } from "@/db/schema";
+import { verifySession } from "@/lib/session";
+
+import { getUserShopPermissions,hasShopPermission } from "./utils";
 
 // Helper to sanitize keys
 function sanitizeKey(key: string) {

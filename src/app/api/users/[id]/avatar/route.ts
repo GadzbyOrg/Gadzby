@@ -1,11 +1,12 @@
-import { verifySession } from "@/lib/session";
+import { eq } from "drizzle-orm";
+import { existsSync } from "fs";
+import { readFile } from "fs/promises";
+import { NextRequest, NextResponse } from "next/server";
+import { join } from "path";
+
 import { db } from "@/db";
 import { users } from "@/db/schema/users";
-import { eq } from "drizzle-orm";
-import { readFile } from "fs/promises";
-import { join } from "path";
-import { NextRequest, NextResponse } from "next/server";
-import { existsSync } from "fs";
+import { verifySession } from "@/lib/session";
 
 export async function GET(
 	request: NextRequest,

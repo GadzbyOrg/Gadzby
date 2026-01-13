@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { IconChevronDown, IconHome,IconLogout, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
-import { IconLogout, IconChevronDown, IconUser, IconHome } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
-import { logoutAction } from "@/features/auth/actions";
-import { useToast } from "@/components/ui/use-toast";
-import { updateUserPreferencesAction } from "@/features/users/actions";
+import { useEffect,useRef, useState } from "react";
 
+import { useToast } from "@/components/ui/use-toast";
 import { UserAvatar } from "@/components/user-avatar";
+import { logoutAction } from "@/features/auth/actions";
+import { updateUserPreferencesAction } from "@/features/users/actions";
+import { cn } from "@/lib/utils";
 
 type UserProp = {
 	id: string;
@@ -86,20 +86,20 @@ export function UserDropdown({ user }: { user: UserProp }) {
 								const path = window.location.pathname;
                                 try {
                                     const res = await updateUserPreferencesAction({ preferredDashboardPath: path });
-                                    if (res?.success) {
+                                    if (res.error) {
+                                         console.error("Update failed:", res);
+                                         toast({
+                                            title: "Erreur",
+                                            description: res.error,
+                                            variant: "destructive",
+                                        });
+                                    } else {
                                         toast({
                                             title: "Succès",
                                             description: "Page de démarrage mise à jour",
                                             variant: "default",
                                         });
                                         setIsOpen(false);
-                                    } else {
-                                         console.error("Update failed:", res);
-                                         toast({
-                                            title: "Erreur",
-                                            description: res?.error || "Erreur lors de la mise à jour",
-                                            variant: "destructive",
-                                        });
                                     }
                                 } catch (e) {
                                      console.error("Unexpected error:", e);
@@ -118,7 +118,7 @@ export function UserDropdown({ user }: { user: UserProp }) {
                     </div>
                     
 					<div className="p-2">
-						<form action={logoutAction}>
+						<form action={async () => { await logoutAction(); }}>
 							<button
 								type="submit"
 								className="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-950/30 hover:text-red-300 transition-colors"

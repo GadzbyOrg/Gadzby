@@ -1,10 +1,11 @@
 "use client";
 
+import { IconDownload, IconLoader2 } from "@tabler/icons-react";
 import { useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import * as XLSX from "xlsx";
+
 import { exportShopTransactionsAction } from "@/features/shops/actions";
-import { IconDownload, IconLoader2 } from "@tabler/icons-react";
 
 export function ShopExportButton({ slug }: { slug: string }) {
 	const searchParams = useSearchParams();

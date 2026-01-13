@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { TransactionTable } from "@/components/transactions/transaction-table";
 import { useCallback } from "react";
+
+import { TransactionTable } from "@/components/transactions/transaction-table";
 
 interface TransactionsTableWrapperProps {
     transactions: any[];

@@ -1,8 +1,9 @@
-import { pgTable, uuid, timestamp, doublePrecision, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { doublePrecision, pgEnum,pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
+
+import { products } from "./products";
 import { shops } from "./shops";
 import { users } from "./users";
-import { products } from "./products";
 
 export const inventoryAuditStatusEnum = pgEnum('inventory_audit_status', ['OPEN', 'COMPLETED']);
 

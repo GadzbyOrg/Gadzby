@@ -1,13 +1,13 @@
 "use client";
 
 import {
-	BarChart,
 	Bar,
+	BarChart,
+	CartesianGrid,
+	ResponsiveContainer,
+	Tooltip,
 	XAxis,
 	YAxis,
-	CartesianGrid,
-	Tooltip,
-	ResponsiveContainer,
 } from "recharts";
 
 interface ExpensesOverTimeChartProps {
@@ -58,7 +58,7 @@ export function ExpensesOverTimeChart({ data }: ExpensesOverTimeChartProps) {
 				/>
 				<Tooltip
 					cursor={{ fill: "#374151", opacity: 0.4 }}
-					formatter={(value: any) => [`${Number(value).toFixed(2)} €`, "Dépenses"]}
+					formatter={(value: number | undefined) => [`${Number(value || 0).toFixed(2)} €`, "Dépenses"]}
 					contentStyle={{
 						backgroundColor: "#1f2937",
 						borderColor: "#374151",

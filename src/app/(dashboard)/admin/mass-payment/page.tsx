@@ -1,10 +1,12 @@
 "use client";
 
+import { IconCreditCardPay,IconHistory } from "@tabler/icons-react";
 import { useState } from "react";
+
+import { cn } from "@/lib/utils";
+
 import { NewOperationView } from "./_components/new-operation-view";
 import { OperationsHistoryView } from "./_components/operations-history";
-import { IconHistory, IconCreditCardPay } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
 
 export default function MassPaymentPage() {
 	const [activeTab, setActiveTab] = useState<"new" | "history">("new");
@@ -16,7 +18,7 @@ export default function MassPaymentPage() {
 					Prélèvements de Masse
 				</h1>
 				<p className="text-gray-400">
-					Débite un montant à une liste d'utilisateurs (Cotisations,
+					Débite un montant à une liste d&apos;utilisateurs (Cotisations,
 					Événements...)
 				</p>
 			</div>

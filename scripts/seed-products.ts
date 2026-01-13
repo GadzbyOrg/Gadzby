@@ -1,12 +1,22 @@
 // Run with: npx tsx scripts/seed-products.ts
 
-import { db } from "@/db";
-import { shops, productCategories, products } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+import { db } from "@/db";
+import { productCategories, products,shops } from "@/db/schema";
+
+type ProductSeedData = {
+  name: string;
+  price: number;
+  stock: number;
+  allowSelfService?: boolean;
+  description?: string;
+  unit?: string;
+};
 
 async function seedShopProducts(
   shopSlug: string,
-  categoriesData: { name: string; products: any[] }[]
+  categoriesData: { name: string; products: ProductSeedData[] }[]
 ) {
   const shop = await db.query.shops.findFirst({
     where: eq(shops.slug, shopSlug),

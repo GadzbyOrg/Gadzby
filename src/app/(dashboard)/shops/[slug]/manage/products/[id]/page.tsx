@@ -1,7 +1,9 @@
-import { getShopCategories, getProduct } from "@/features/shops/products";
-import { getShopBySlug, checkTeamMemberAccess } from "@/features/shops/actions";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+
+import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
+import { getProduct,getShopCategories } from "@/features/shops/products";
+
 import ProductForm from "../_components/ProductForm";
 
 export default async function EditProductPage({

@@ -1,12 +1,14 @@
-import { db } from "@/db";
-import { users, famss, famsMembers, famsRequests } from "@/db/schema";
-import { verifySession } from "@/lib/session";
 import { eq, ilike } from "drizzle-orm";
-import { CreateFamForm } from "./create-form";
-import { JoinFamsButton, CancelRequestButton } from "./[name]/details-components";
-import { SearchInput } from "./search-input";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
+import { db } from "@/db";
+import { famsMembers, famsRequests,famss } from "@/db/schema";
+import { verifySession } from "@/lib/session";
+
+import { CancelRequestButton,JoinFamsButton } from "./[name]/details-components";
+import { CreateFamForm } from "./create-form";
+import { SearchInput } from "./search-input";
 
 export default async function FamssPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
 	const session = await verifySession();
@@ -31,7 +33,7 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 	return (
 		<div className="p-6 space-y-8 max-w-7xl mx-auto">
 			<div className="flex justify-between items-center">
-				<h1 className="text-3xl font-bold text-white">Fam'ss</h1>
+				<h1 className="text-3xl font-bold text-white">Fam&apos;ss</h1>
 			</div>
 
 			<SearchInput />
@@ -43,7 +45,7 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{allFamss.length === 0 ? (
 					<div className="col-span-full text-center py-12 text-gray-500 bg-dark-900 rounded-lg border border-dashed border-dark-700">
-						Aucune Fam'ss existante.
+						Aucune Fam&apos;ss existante.
 					</div>
 				) : (
 					allFamss.map((fams) => {

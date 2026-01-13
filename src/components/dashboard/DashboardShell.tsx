@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { IconMenu2 } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
+import { useEffect,useState } from "react";
+
+import { cn } from "@/lib/utils";
+
+import { Footer } from "./Footer";
 import { Sidebar } from "./Sidebar";
 import { UserDropdown } from "./UserDropdown";
-import { Footer } from "./Footer";
-import { IconMenu2 } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
 
 type UserProp = {
     id: string;
@@ -47,9 +49,12 @@ export function DashboardShell({
 	const pathname = usePathname();
 
 	// Fermer le menu mobile lors de la navigation
-	useEffect(() => {
+	// Fermer le menu mobile lors de la navigation
+	const [prevPath, setPrevPath] = useState(pathname);
+	if (pathname !== prevPath) {
+		setPrevPath(pathname);
 		setMobileMenuOpen(false);
-	}, [pathname]);
+	}
 
 	const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " €";
 

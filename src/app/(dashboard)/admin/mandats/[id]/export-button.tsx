@@ -1,10 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { IconDownload } from "@tabler/icons-react";
-import * as XLSX from 'xlsx';
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import * as XLSX from 'xlsx';
+
+import { Button } from "@/components/ui/button";
 
 interface ExportButtonProps {
     mandat: {

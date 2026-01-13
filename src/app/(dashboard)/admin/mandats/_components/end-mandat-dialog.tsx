@@ -1,6 +1,10 @@
 "use client";
 
+import { IconLoader2 } from "@tabler/icons-react";
+import Link from "next/link";
 import { useState, useTransition } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -10,7 +14,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
 	Table,
 	TableBody,
@@ -19,16 +22,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { IconPlayerStop, IconLoader2 } from "@tabler/icons-react";
-import {
-	getPreEndMandatDetailsAction,
-	confirmEndGlobalMandatAction,
-} from "@/features/admin/actions/mandats";
 import { useToast } from "@/components/ui/use-toast";
+import {
+	confirmEndGlobalMandatAction,
+	getPreEndMandatDetailsAction,
+} from "@/features/admin/actions/mandats";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-
-import Link from "next/link";
 
 export function EndMandatDialog() {
 	const [open, setOpen] = useState(false);

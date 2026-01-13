@@ -1,17 +1,18 @@
+import { relations } from "drizzle-orm";
 import {
-	pgTable,
-	text,
-	uuid,
-	primaryKey,
 	boolean,
-	timestamp,
 	integer,
 	jsonb,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uuid,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { users } from "./users";
+
 import { shopExpenses } from "./expenses";
 import { productCategories, products } from "./products";
+import { users } from "./users";
 
 export const shops = pgTable("shops", {
 	id: uuid("id").defaultRandom().primaryKey(),

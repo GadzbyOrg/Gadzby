@@ -1,21 +1,22 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
-import { useFormStatus } from "react-dom";
 import {
-	getEmailConfigAction,
-	updateEmailConfigAction,
-	testEmailConfigAction,
-} from "@/features/settings/actions";
-import {
-	IconMail,
-	IconCheck,
 	IconAlertTriangle,
+	IconCheck,
 	IconLoader2,
+	IconMail,
 	IconSend,
 } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
+import { useActionState, useEffect, useState } from "react";
 import { useRef } from "react";
+import { useFormStatus } from "react-dom";
+
+import {
+	getEmailConfigAction,
+	testEmailConfigAction,
+	updateEmailConfigAction,
+} from "@/features/settings/actions";
+import { cn } from "@/lib/utils";
 
 function SubmitButton() {
 	const { pending } = useFormStatus();
@@ -101,7 +102,7 @@ export function EmailSettings() {
 					Configuration Email
 				</h2>
 				<p className="text-gray-400 text-sm">
-					Gérez le fournisseur d'email pour la gestion des mots de passes
+					Gérez le fournisseur d&apos;email pour la gestion des mots de passes
 					oubliés.
 				</p>
 			</div>

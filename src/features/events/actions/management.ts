@@ -1,20 +1,22 @@
 "use server";
 
-import { db } from "@/db";
-import { events } from "@/db/schema/events";
-import { users } from "@/db/schema/users";
-import { products } from "@/db/schema/products";
-import { transactions } from "@/db/schema/transactions";
-import { authenticatedAction } from "@/lib/actions";
-import {
-	createEventSchema,
-	updateEventSchema,
-	eventActionSchema,
-	eventIdSchema,
-} from "../schemas";
-import { checkShopPermission } from "@/features/shops/utils";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+import { db } from "@/db";
+import { events } from "@/db/schema/events";
+import { products } from "@/db/schema/products";
+import { transactions } from "@/db/schema/transactions";
+import { users } from "@/db/schema/users";
+import { checkShopPermission } from "@/features/shops/utils";
+import { authenticatedAction } from "@/lib/actions";
+
+import {
+	createEventSchema,
+	eventActionSchema,
+	eventIdSchema,
+	updateEventSchema,
+} from "../schemas";
 
 export const createEvent = authenticatedAction(
 	createEventSchema,

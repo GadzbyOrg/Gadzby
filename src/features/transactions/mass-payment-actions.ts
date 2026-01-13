@@ -1,15 +1,17 @@
 "use server";
 
+import { desc,sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { v4 as uuidv4 } from "uuid";
+import * as XLSX from "xlsx";
+import { z } from "zod";
+
 import { db } from "@/db";
-import { users, transactions } from "@/db/schema";
+import {users } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
 import { TransactionService } from "@/services/transaction-service";
-import { eq, desc, sql, inArray } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import * as XLSX from "xlsx";
-import { massChargeSchema, cancelMassOperationSchema } from "./schemas";
-import { v4 as uuidv4 } from "uuid";
+
+import { cancelMassOperationSchema,massChargeSchema } from "./schemas";
 
 // 1. Get Promss List
 export const getPromssListAction = authenticatedAction(
@@ -30,7 +32,7 @@ export const getUsersByPromssAction = authenticatedAction(
 	z.object({ promss: z.string() }),
 	async ({ promss }) => {
 		const foundUsers = await db.query.users.findMany({
-			where: (users, { eq, and, ne }) => and(eq(users.promss, promss), eq(users.isDeleted, false)),
+			where: (users, { eq, and }) => and(eq(users.promss, promss), eq(users.isDeleted, false)),
 			columns: {
 				id: true,
 				username: true,
@@ -52,7 +54,7 @@ export const searchUsersForPaymentAction = authenticatedAction(
         if (!query || query.length < 2) return { users: [] };
         
         const foundUsers = await db.query.users.findMany({
-            where: (users, { and, or, ilike, eq, ne }) => and(
+            where: (users, { and, or, ilike, eq }) => and(
                 eq(users.isDeleted, false),
                 or(
                     ilike(users.username, `%${query}%`),
@@ -97,7 +99,7 @@ export const resolveUsersFromExcelAction = authenticatedAction(
 			const matchedUsers = [];
 			const notFound = [];
 
-			for (const row of rows as any[]) {
+			for (const row of rows as Record<string, unknown>[]) {
 				// Try to find identifier
 				// Columns: Username (Num'ssProm'ss) OR Email
 				const username = row["Username"] || row["username"];
@@ -194,7 +196,7 @@ export const getMassOperationsHistoryAction = authenticatedAction(
             LIMIT 50
         `);
 
-        return { history: history as any[] };
+        return { history: (history as unknown) as { groupId: string; date: string; description: string; count: number; totalAmount: number; status: string }[] };
     },
     { permissions: ["ADMIN_ACCESS"] }
 );
@@ -207,8 +209,9 @@ export const cancelMassOperationAction = authenticatedAction(
              const result = await TransactionService.cancelTransactionGroup(groupId, session.userId);
              revalidatePath("/admin/mass-payment");
              return { success: `${result.count} transactions annulées` };
-        } catch (e: any) {
-            return { error: e.message || "Erreur lors de l'annulation" };
+        } catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : "Erreur lors de l'annulation";
+			return { error: errorMessage };
         }
     },
     { permissions: ["ADMIN_ACCESS"] }

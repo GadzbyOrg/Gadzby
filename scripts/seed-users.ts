@@ -1,9 +1,10 @@
 // Exécuter avec : npx tsx scripts/seed-users.ts
 
+import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
+
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import bcrypt from "bcryptjs";
 
 async function main() {
 	console.log("🌱 Création des utilisateurs de test...");
@@ -168,6 +169,7 @@ async function main() {
 		if ((user.roles as readonly string[]).includes("ADMIN")) roleId = adminRole.id;
 		else if ((user.roles as readonly string[]).includes("ZiFoy'ss")) roleId = zifoyRole.id;
 
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { roles: _roles, ...userData } = user;
 
 		if (existingUser) {

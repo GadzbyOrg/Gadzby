@@ -1,17 +1,18 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
-import { forgotPasswordAction } from "@/features/auth/actions";
 import {
-	IconReceipt2,
-	IconMail,
 	IconAlertTriangle,
 	IconCheck,
 	IconLoader2,
+	IconMail,
+	IconReceipt2,
 } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
+
+import { forgotPasswordAction } from "@/features/auth/actions";
+import { cn } from "@/lib/utils";
 
 function InputLabel({
 	htmlFor,
@@ -56,7 +57,8 @@ function SubmitButton() {
 }
 
 export default function ForgotPasswordPage() {
-	const [state, action] = useActionState(forgotPasswordAction, { error: undefined, success: undefined });
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const [state, action] = useActionState(forgotPasswordAction, null as any);
 
 	return (
 		<div className="flex min-h-screen flex-col justify-center bg-dark-950 px-6 py-12 lg:px-8">
@@ -76,7 +78,7 @@ export default function ForgotPasswordPage() {
 			<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
 				{/* Carte */}
 				<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-8 shadow-2xl backdrop-blur-sm">
-                    {state.success ? (
+                    {state?.success ? (
                         <div className="rounded-md bg-green-900/20 border border-green-900/50 p-4">
                             <div className="flex">
                                 <div className="flex-shrink-0">
@@ -90,7 +92,7 @@ export default function ForgotPasswordPage() {
                                         Email envoyé
                                     </h3>
                                     <div className="mt-1 text-sm text-green-300/80">
-                                        {state.success}
+                                        {state?.success}
                                     </div>
                                     <div className="mt-4">
                                         <Link href="/login" className="text-sm font-medium text-green-400 hover:text-green-300 underline">
@@ -103,7 +105,7 @@ export default function ForgotPasswordPage() {
                     ) : (
                         <form action={action} className="space-y-6">
                             {/* Affichage des Erreurs */}
-                            {state.error && (
+                            {state?.error && (
                                 <div className="rounded-md bg-red-900/20 border border-red-900/50 p-4">
                                     <div className="flex">
                                         <div className="flex-shrink-0">
@@ -117,7 +119,7 @@ export default function ForgotPasswordPage() {
                                                 Erreur
                                             </h3>
                                             <div className="mt-1 text-sm text-red-300/80">
-                                                {state.error}
+                                                {state?.error}
                                             </div>
                                         </div>
                                     </div>

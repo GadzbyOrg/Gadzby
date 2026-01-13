@@ -1,36 +1,37 @@
 "use server";
 
-import { db } from "@/db";
-import { users, roles, shopUsers, famsMembers } from "@/db/schema";
-import { verifySession } from "@/lib/session";
-import { eq, desc, count, and, or, ilike, sql, inArray } from "drizzle-orm";
+import bcrypt from "bcryptjs";
+import { and, count, desc, eq, ilike, inArray,or, sql } from "drizzle-orm";
+import { existsSync } from "fs";
+import { unlink } from "fs/promises";
 import { revalidatePath } from "next/cache";
+import { join } from "path";
+import * as XLSX from "xlsx";
+import { z } from "zod";
+
+import { db } from "@/db";
+import { famsMembers,roles, shopUsers, users } from "@/db/schema";
+import { transactions } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
+import { verifySession } from "@/lib/session";
+
+import { getTabagnssCode } from "./constants";
 import {
-	updateUserSchema,
+	adminDeleteUserSchema,
+	adminUpdateUserSchema,
 	createUserSchema,
 	importUserRowSchema,
-	adminUpdateUserSchema,
-	toggleUserStatusSchema,
 	importUsersSchema,
-	adminDeleteUserSchema,
-	importUsersBatchSchema,
+	toggleUserStatusSchema,
+	updateUserSchema,
 } from "./schemas";
-import * as XLSX from "xlsx";
-import bcrypt from "bcryptjs";
-import { z } from "zod";
-import { transactions } from "@/db/schema";
-import { unlink } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
-import { getTabagnssCode } from "./constants";
 
 const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
 
 export const updateUserAction = authenticatedAction(
 	updateUserSchema,
 	async (data, { session }) => {
-		const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, preferredDashboardPath } = data;
+		const { nom, prenom, email, phone, bucque, promss, nums } = data;
 		const newUsername = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
 
 		try {
@@ -113,7 +114,8 @@ export async function getUsers(
 
         const whereCondition = and(...conditions);
 
-		const orderByClause = (users: any, { asc, desc }: any) => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const orderByClause = (users: any, { asc, desc }: { asc: (col: any) => any; desc: (col: any) => any }) => {
 			if (sort && order) {
 				const column = users[sort];
 				if (column) {
@@ -125,7 +127,9 @@ export async function getUsers(
 
 		const [allUsers, countResult] = await Promise.all([
             db.query.users.findMany({
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 where: whereCondition as any,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 orderBy: orderByClause as any,
                 limit: limit,
                 offset: offset,
@@ -220,6 +224,7 @@ export const adminUpdateUserAction = authenticatedAction(
 						bucque: bucque || null,
 						promss,
 						nums: nums || null,
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						tabagnss: tabagnss as any,
 						username: finalUsername,
 						roleId,
@@ -241,14 +246,16 @@ export const adminUpdateUserAction = authenticatedAction(
 
 			revalidatePath("/admin/users");
 			return { success: "Utilisateur mis à jour avec succès" };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to update user:", error);
 			
 			// Helper to find the underlying Postgres error
-			const findPostgresError = (err: any): any => {
-				if (!err) return null;
-				if (err.code === '23505') return err;
-				if (err.cause) return findPostgresError(err.cause);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const findPostgresError = (err: unknown): any => {
+				if (!err || typeof err !== "object") return null;
+				const errorObj = err as any;
+				if (errorObj.code === '23505') return errorObj;
+				if (errorObj.cause) return findPostgresError(errorObj.cause);
 				return null;
 			};
 
@@ -268,11 +275,12 @@ export const adminUpdateUserAction = authenticatedAction(
 			}
 
 			// Fallback check on message string if code isn't present
-			if (error.message && (error.message.includes('unique constraint') || error.message.includes('duplicate key'))) {
+			const errorMessage = (error instanceof Error) ? error.message : "Erreur inconnue";
+			if (errorMessage && (errorMessage.includes('unique constraint') || errorMessage.includes('duplicate key'))) {
 				return { error: "Une donnée unique existe déjà pour un autre utilisateur." };
 			}
 
-			return { error: error.message || "Erreur lors de la mise à jour" };
+			return { error: errorMessage || "Erreur lors de la mise à jour" };
 		}
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
@@ -378,7 +386,8 @@ export const createUserAction = authenticatedAction(
 				promss,
 
 				nums: nums || null,
-				tabagnss: tabagnss as any,
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				tabagnss: tabagnss as any, // Schema validation ensures this is correct enum/string
 				username,
 				passwordHash,
 				roleId,
@@ -423,10 +432,11 @@ export const importUsersAction = authenticatedAction(
 			const parsedRows: {
 				rowIdx: number;
 				data: z.infer<typeof importUserRowSchema>;
-				original: any;
+				original: Record<string, unknown>;
 			}[] = [];
 
 			for (let i = 0; i < rows.length; i++) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				const row = rows[i] as any;
 				// Map common excel headers to schema keys
 				const mappedRow = {
@@ -562,7 +572,7 @@ export const importUsersAction = authenticatedAction(
                         skippedCount++;
                         skipped.push(res.reason as string);
                     } else if (res.status === "resolved") {
-                        const { hash, item } = res as any;
+                        const { hash, item } = res as { status: "resolved"; hash: string; item: any };
                         const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, balance } = item.data;
                         usersToInsert.push({
                             nom,
@@ -573,6 +583,7 @@ export const importUsersAction = authenticatedAction(
 
                             promss,
                             nums: nums || null,
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             tabagnss: (getTabagnssCode(tabagnss) || "ME") as any,
                             username: item.username,
                             passwordHash: hash,
@@ -943,6 +954,7 @@ export const importUsersBatchAction = authenticatedAction(
 					skippedCount++;
 					skipped.push(res.reason as string);
 				} else if (res.status === "resolved") {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const { hash, item } = res as any;
 					const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, balance } = item;
 					
@@ -960,6 +972,7 @@ export const importUsersBatchAction = authenticatedAction(
 						bucque: bucque || null,
 						promss,
 						nums: nums || null,
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						tabagnss: tabagnssCode as any,
 						username: item.username,
 						passwordHash: hash,

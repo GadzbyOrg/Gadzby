@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { cn } from "@/lib/utils";
 import { IconSearch } from "@tabler/icons-react";
+import { useMemo,useState } from "react";
+
+import { cn } from "@/lib/utils";
 
 interface Product {
     id: string;

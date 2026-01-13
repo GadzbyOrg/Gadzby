@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 interface UserAvatarProps {
@@ -30,10 +32,12 @@ export function UserAvatar({ user, className }: UserAvatarProps) {
 			)}
 		>
 			{imageUrl ? (
-				<img
+				<Image
 					src={imageUrl}
 					alt={displayName}
-					className="aspect-square h-full w-full object-cover"
+					fill
+					unoptimized
+					className="object-cover"
 				/>
 			) : (
 				<span className="font-semibold text-gray-400 text-xs">

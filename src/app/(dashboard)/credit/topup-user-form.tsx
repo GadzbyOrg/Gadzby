@@ -1,9 +1,10 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
 import { useState } from "react";
-import { topUpUserAction } from "@/features/transactions/actions";
+import { useFormStatus } from "react-dom";
+
 import { ClientSearch } from "@/components/dashboard/client-search";
+import { topUpUserAction } from "@/features/transactions/actions";
 
 function SubmitButton() {
 	const { pending } = useFormStatus();

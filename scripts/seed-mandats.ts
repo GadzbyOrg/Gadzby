@@ -1,8 +1,8 @@
 // Run with: npx tsx scripts/seed-mandats.ts
 
+
 import { db } from "@/db";
 import { mandats, mandatShops, shops } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 async function main() {
 	console.log("🌱 Seeding Mandats...");

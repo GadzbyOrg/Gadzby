@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+
 import { updateShop } from "@/features/shops/actions";
-import { IconCheck, IconX, IconLoader2 } from "@tabler/icons-react";
 
 type Permissions = {
 	vp: {

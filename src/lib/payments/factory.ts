@@ -1,10 +1,12 @@
+import { eq } from "drizzle-orm";
+
 import { db } from "@/db";
 import { paymentMethods } from "@/db/schema/payment-methods";
-import { eq } from "drizzle-orm";
-import { PaymentProvider } from "./types";
+
+import { HelloAssoAdapter } from "./adapters/helloasso";
 import { LydiaAdapter } from "./adapters/lydia";
 import { SumUpAdapter } from "./adapters/sumup";
-import { HelloAssoAdapter } from "./adapters/helloasso";
+import { PaymentProvider } from "./types";
 
 export async function getPaymentProvider(
 	slug: string

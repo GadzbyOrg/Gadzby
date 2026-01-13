@@ -1,14 +1,15 @@
 "use client";
 
-import { useTransition } from "react";
 import {
 	IconCalendarPlus,
 	IconCheck,
 	IconLoader2,
 	IconLogout,
 } from "@tabler/icons-react";
-import { joinEvent, leaveEvent } from "@/features/events/actions";
+import { useTransition } from "react";
+
 import { useToast } from "@/components/ui/use-toast";
+import { joinEvent, leaveEvent } from "@/features/events/actions";
 
 interface PublicEvent {
 	id: string;

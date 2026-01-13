@@ -1,4 +1,4 @@
-interface Projection {
+export interface StockProjection {
 	productId: string;
 	name: string;
 	currentStock: number;
@@ -7,7 +7,7 @@ interface Projection {
 }
 
 interface StockProjectionsCardProps {
-	data: Projection[];
+	data: StockProjection[];
 	loading: boolean;
 }
 

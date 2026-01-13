@@ -1,12 +1,14 @@
-import { getShopProducts, getShopCategories } from "@/features/shops/products";
-import { getShopBySlug, checkTeamMemberAccess } from "@/features/shops/actions";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import ProductToolbar from "./_components/ProductToolbar";
-import DeleteProductButton from "./_components/DeleteProductButton";
-import RestockButton from "./_components/RestockButton";
+
 import { ExcelImportModal } from "@/components/excel-import-modal";
+import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
 import { importProducts } from "@/features/shops/import";
+import { getShopCategories,getShopProducts } from "@/features/shops/products";
+
+import DeleteProductButton from "./_components/DeleteProductButton";
+import ProductToolbar from "./_components/ProductToolbar";
+import RestockButton from "./_components/RestockButton";
 
 export default async function ShopProductsPage({
 	params,
@@ -81,7 +83,7 @@ export default async function ShopProductsPage({
 						Produits du Shop
 					</h1>
 					<p className="text-gray-400">
-						Gérez l'inventaire de {shop.name} ({products.length} produits)
+						Gérez l&apos;inventaire de {shop.name} ({products.length} produits)
 					</p>
 				</div>
 				<div className="flex gap-4 items-center">

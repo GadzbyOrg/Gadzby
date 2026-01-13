@@ -1,25 +1,51 @@
 "use client";
 
 import {
+	IconAlertTriangle,
 	IconArrowDownLeft,
 	IconArrowUpRight,
-	IconShoppingBag,
-	IconWallet,
-	IconRefresh,
-	IconAlertTriangle,
-	IconCoins,
-	IconUser,
-	IconClock,
-	IconStack,
-	IconChevronRight,
     IconChevronDown,
+	IconChevronRight,
+	IconClock,
+	IconCoins,
+	IconRefresh,
+	IconShoppingBag,
+	IconStack,
+	IconUser,
+	IconWallet,
 } from "@tabler/icons-react";
-import { CancelButton, CancelGroupButton } from "@/app/(dashboard)/admin/transaction-components";
-import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 
+import { CancelButton, CancelGroupButton } from "@/app/(dashboard)/admin/transaction-components";
+import { cn } from "@/lib/utils";
+
+// Define types locally for now, could be moved to shared types
+export interface TransactionWithRelations {
+    id: string;
+    amount: number;
+    type: "PURCHASE" | "TOPUP" | "TRANSFER" | "REFUND" | "DEPOSIT" | "ADJUSTMENT";
+    status: "COMPLETED" | "CANCELLED" | "PENDING" | "FAILED";
+    createdAt: Date | string;
+    description?: string | null;
+    groupId?: string | null;
+    group_id?: string | null;
+    walletSource: "PERSONAL" | "FAMILY";
+    
+    // Relations
+    shop?: { name: string } | null;
+    product?: { name: string } | null;
+    issuer?: { prenom: string; nom: string; username?: string } | null;
+    receiverUser?: { prenom: string; nom: string; username?: string } | null;
+    targetUser?: { prenom: string; nom: string; username?: string } | null;
+    fams?: { name: string } | null;
+}
+
+type GroupedTransactionItem = 
+    | { type: "SINGLE"; data: TransactionWithRelations }
+    | { type: "GROUP"; groupId: string; data: TransactionWithRelations; items: TransactionWithRelations[] };
+
 interface TransactionTableProps {
-	transactions: any[];
+	transactions: TransactionWithRelations[];
 	loading?: boolean;
 	isAdmin?: boolean;
 	pagination?: {
@@ -40,8 +66,8 @@ export function TransactionTable({
 	const groupedTransactions = useMemo(() => {
 		if (!transactions) return [];
 
-		const groups: { [key: string]: any[] } = {};
-		const result: any[] = [];
+		const groups: { [key: string]: TransactionWithRelations[] } = {};
+		const result: GroupedTransactionItem[] = [];
 
 		transactions.forEach((t) => {
             const gid = t.groupId || t.group_id;
@@ -115,7 +141,7 @@ export function TransactionTable({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-dark-800">
-                            {groupedTransactions.map((item: any) => {
+                            {groupedTransactions.map((item) => {
                                 if (item.type === "GROUP") {
                                     return (
                                         <TransactionGroupRow
@@ -141,7 +167,7 @@ export function TransactionTable({
 
             {/* Mobile List View */}
             <div className="md:hidden flex flex-col gap-3">
-                {groupedTransactions.map((item: any) => {
+                {groupedTransactions.map((item) => {
                     if (item.type === "GROUP") {
                         return (
                             <TransactionGroupMobileCard
@@ -188,7 +214,7 @@ export function TransactionTable({
 }
 
 // Helper to extract display data
-function getTransactionDisplayData(t: any, isAdmin: boolean) {
+function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean) {
     const isPositive = t.amount > 0;
     const amountFormatted = (Math.abs(t.amount) / 100).toFixed(2);
     
@@ -291,28 +317,28 @@ function getTransactionDisplayData(t: any, isAdmin: boolean) {
 }
 
 
-function TransactionGroupRow({ group, isAdmin }: { group: any; isAdmin: boolean }) {
+function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem & { type: "GROUP" }; isAdmin: boolean }) {
 	const [expanded, setExpanded] = useState(false);
 	const { items } = group;
 
 	// Summarize group
-	const totalAmount = items.reduce((acc: number, t: any) => {
+	const totalAmount = items.reduce((acc: number, t: TransactionWithRelations) => {
 		return acc + t.amount;
 	}, 0);
 
 	// Check if all cancelled
 	const allCancelled = items.every(
-		(t: any) =>
+		(t: TransactionWithRelations) =>
 			t.status === "CANCELLED" || t.description?.includes("[CANCELLED]")
 	);
 	
 	// Effective amount (non-cancelled)
 	const effectiveAmount = items
 		.filter(
-			(t: any) =>
+			(t: TransactionWithRelations) =>
 				!(t.status === "CANCELLED" || t.description?.includes("[CANCELLED]"))
 		)
-		.reduce((acc: number, t: any) => acc + t.amount, 0);
+		.reduce((acc: number, t: TransactionWithRelations) => acc + t.amount, 0);
 
 
 	const isPositive = totalAmount > 0;
@@ -331,7 +357,7 @@ function TransactionGroupRow({ group, isAdmin }: { group: any; isAdmin: boolean 
 
 	// Determine common type or mixed
 	const firstType = items[0].type;
-	const isUniformType = items.every((t: any) => t.type === firstType);
+	const isUniformType = items.every((t: TransactionWithRelations) => t.type === firstType);
 	
 	let Icon = IconStack; // Default for group
 	let typeLabel = "Groupe";
@@ -412,7 +438,7 @@ function TransactionGroupRow({ group, isAdmin }: { group: any; isAdmin: boolean 
 				)}
 			</tr>
 			{expanded &&
-				items.map((t: any) => (
+				items.map((t: TransactionWithRelations) => (
 					<TransactionRow
 						key={t.id}
 						t={t}
@@ -429,7 +455,7 @@ function TransactionRow({
 	isAdmin,
 	isChild = false,
 }: {
-	t: any;
+	t: TransactionWithRelations;
 	isAdmin: boolean;
 	isChild?: boolean;
 }) {
@@ -543,7 +569,7 @@ function TransactionMobileCard({
     isAdmin,
     isChild = false,
 }: {
-    t: any;
+    t: TransactionWithRelations;
     isAdmin: boolean;
     isChild?: boolean;
 }) {
@@ -635,16 +661,16 @@ function TransactionMobileCard({
     );
 }
 
-function TransactionGroupMobileCard({ group, isAdmin }: { group: any; isAdmin: boolean }) {
+function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransactionItem & { type: "GROUP" }; isAdmin: boolean }) {
     const [expanded, setExpanded] = useState(false);
     const { items } = group;
 
 	// Same group logic
-	const totalAmount = items.reduce((acc: number, t: any) => acc + t.amount, 0);
-	const allCancelled = items.every((t: any) => t.status === "CANCELLED" || t.description?.includes("[CANCELLED]"));
+	const totalAmount = items.reduce((acc: number, t: TransactionWithRelations) => acc + t.amount, 0);
+	const allCancelled = items.every((t: TransactionWithRelations) => t.status === "CANCELLED" || t.description?.includes("[CANCELLED]"));
 	const effectiveAmount = items
-		.filter((t: any) => !(t.status === "CANCELLED" || t.description?.includes("[CANCELLED]")))
-		.reduce((acc: number, t: any) => acc + t.amount, 0);
+		.filter((t: TransactionWithRelations) => !(t.status === "CANCELLED" || t.description?.includes("[CANCELLED]")))
+		.reduce((acc: number, t: TransactionWithRelations) => acc + t.amount, 0);
 
 	const isPositive = totalAmount > 0;
 	const displayAmount = allCancelled ? totalAmount : effectiveAmount;
@@ -657,7 +683,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: any; isAdmin: b
 	}).format(date); // Shorter date for mobile group header
 
     const firstType = items[0].type;
-	const isUniformType = items.every((t: any) => t.type === firstType);
+	const isUniformType = items.every((t: TransactionWithRelations) => t.type === firstType);
 	
 	let Icon = IconStack; 
 	// let typeLabel = "Groupe"; // Unused
@@ -714,7 +740,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: any; isAdmin: b
 
             {expanded && (
                 <div className="border-t border-dark-800 flex flex-col gap-2 p-2 bg-black/20 pl-4">
-                    {items.map((t: any) => (
+                    {items.map((t: TransactionWithRelations) => (
                         <TransactionMobileCard
                             key={t.id}
                             t={t}

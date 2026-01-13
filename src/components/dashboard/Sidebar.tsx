@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
 import {
-	IconHome2,
 	IconBuildingStore,
-	IconSettings,
 	IconChevronRight,
+	IconHome2,
+	IconSettings,
 } from "@tabler/icons-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo,useState } from "react";
+
 import { cn } from "@/lib/utils";
 
 // --- Types ---
@@ -219,7 +220,11 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 	}, [userRole, permissions, shops]);
 
 	// Sync state avec URL
-	useEffect(() => {
+	// Sync state avec URL
+	const [prevPath, setPrevPath] = useState(pathname);
+	if (pathname !== prevPath) {
+		setPrevPath(pathname);
+		
 		const group = availableGroups.find((g) =>
 			g.links.some((l) => {
 				if ("type" in l && l.type === "dropdown") {
@@ -244,7 +249,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 				}
 			});
 		});
-	}, [pathname, availableGroups]);
+	}
 
 	const activeGroup =
 		availableGroups.find((g) => g.main === activeMain) || availableGroups[0];

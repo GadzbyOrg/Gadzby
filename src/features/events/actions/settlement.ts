@@ -1,19 +1,20 @@
 "use server";
 
+import { eq, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
 import { db } from "@/db";
 import { events } from "@/db/schema/events";
-import { users } from "@/db/schema/users";
-import { shopUsers } from "@/db/schema/shops";
-import { shopExpenses, eventExpenseSplits } from "@/db/schema/expenses";
+import { eventExpenseSplits,shopExpenses } from "@/db/schema/expenses";
 import { transactions } from "@/db/schema/transactions";
-import { authenticatedAction } from "@/lib/actions";
-import { settlementSchema } from "../schemas";
+import { users } from "@/db/schema/users";
 import {
-	hasShopPermission,
 	getUserShopPermissions,
+	hasShopPermission,
 } from "@/features/shops/utils";
-import { and, eq, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { authenticatedAction } from "@/lib/actions";
+
+import { settlementSchema } from "../schemas";
 
 // Helper for permissions
 async function checkShopPermission(

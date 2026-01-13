@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2, IconWallet, IconUsers, IconTrash } from "@tabler/icons-react";
+import { IconLoader2, IconTrash,IconUsers, IconWallet } from "@tabler/icons-react";
 
 interface Product {
     id: string;

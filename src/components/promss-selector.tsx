@@ -1,6 +1,5 @@
 "use client";
 
-import { IconUserPlus } from "@tabler/icons-react";
 
 interface PromssSelectorProps {
     promssList: string[];

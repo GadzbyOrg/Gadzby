@@ -1,7 +1,7 @@
-import { formatPrice } from "@/lib/utils";
 import { UserAvatar } from "@/components/user-avatar";
+import { formatPrice } from "@/lib/utils";
 
-interface CustomerStats {
+export interface CustomerStats {
 	userId: string;
 	count: number;
 	volume: number;

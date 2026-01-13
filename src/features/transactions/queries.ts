@@ -1,6 +1,6 @@
-import { db } from "@/db";
+import { and, asc, desc, eq, gte, ilike, lte,or, sql } from "drizzle-orm";
+
 import { transactions } from "@/db/schema";
-import { eq, desc, and, or, ilike, sql, asc, gte, lte } from "drizzle-orm";
 
 export async function getTransactionsQuery(
     search = "", 
@@ -28,7 +28,7 @@ export async function getTransactionsQuery(
 
     // Filter by Type
     if (type !== "ALL") {
-        whereConditions.push(eq(transactions.type, type as any));
+        whereConditions.push(eq(transactions.type, type as "PURCHASE" | "TRANSFER" | "TOPUP" | "ADJUSTMENT" | "REFUND"));
     }
 
     // Filter by Date

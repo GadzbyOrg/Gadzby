@@ -1,7 +1,7 @@
 "use client";
 
-import { StartMandatDialog } from "./start-mandat-dialog";
 import { EndMandatDialog } from "./end-mandat-dialog";
+import { StartMandatDialog } from "./start-mandat-dialog";
 
 interface MandatActionsProps {
     hasActiveMandat: boolean;

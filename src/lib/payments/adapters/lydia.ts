@@ -1,5 +1,6 @@
-import { PaymentProvider, PaymentResult, WebhookResult } from "../types";
 import * as crypto from "crypto";
+
+import { PaymentProvider, PaymentResult, WebhookResult } from "../types";
 
 interface LydiaConfig {
 	vendorToken: string;

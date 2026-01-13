@@ -1,10 +1,11 @@
 "use client";
 
-import { AVAILABLE_PERMISSIONS } from "@/features/roles/schemas";
-import { updateRoleAction, createRoleAction, deleteRoleAction } from "@/features/roles/actions";
+import { IconCheck, IconChevronDown, IconChevronUp,IconDeviceFloppy, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
-import { IconCheck, IconTrash, IconPlus, IconDeviceFloppy, IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { useFormStatus } from "react-dom";
+
+import { createRoleAction, deleteRoleAction,updateRoleAction } from "@/features/roles/actions";
+import { AVAILABLE_PERMISSIONS } from "@/features/roles/schemas";
 
 export function RolesMatrix({ roles }: { roles: any[] }) {
     return (

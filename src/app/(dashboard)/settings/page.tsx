@@ -1,12 +1,13 @@
-import { verifySession } from "@/lib/session";
-import { db } from "@/db";
-import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { IconUser, IconMail, IconId, IconSchool } from "@tabler/icons-react";
-import { SettingsForm } from "./settings-form";
+
 import { AvatarUpload } from "@/components/avatar-upload";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { verifySession } from "@/lib/session";
+
 import { ChangePasswordForm } from "./change-password-form";
+import { SettingsForm } from "./settings-form";
 
 export default async function SettingsPage() {
 	const session = await verifySession();

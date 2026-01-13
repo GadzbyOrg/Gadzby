@@ -1,7 +1,9 @@
-import { getAdminFamssAction } from "@/features/famss/admin-actions";
-import { FamssTable } from "./famss-table";
-import { verifySession } from "@/lib/session";
 import { redirect } from "next/navigation";
+
+import { getAdminFamssAction } from "@/features/famss/admin-actions";
+import { verifySession } from "@/lib/session";
+
+import { FamssTable } from "./famss-table";
 
 export default async function AdminFamssPage({
 	searchParams,
@@ -39,7 +41,7 @@ export default async function AdminFamssPage({
 			<header className="flex items-center justify-between border-b border-dark-800 pb-6">
 				<div>
 					<h1 className="text-3xl font-bold text-white tracking-tight mb-2">
-						Gestion des Fam'ss
+						Gestion des Fam&apos;ss
 					</h1>
 					<p className="text-gray-400">
 						Gérez les comptes partagées : création, modification et

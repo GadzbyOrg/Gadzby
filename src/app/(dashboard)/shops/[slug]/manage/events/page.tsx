@@ -1,7 +1,8 @@
+import { IconCalendar,IconPlus } from "@tabler/icons-react";
+import Link from "next/link";
+
 import { getShopEvents } from "@/features/events/actions";
 import { getShopBySlug } from "@/features/shops/actions";
-import Link from "next/link";
-import { IconPlus, IconCalendar } from "@tabler/icons-react";
 
 export default async function ShopEventsPage({
 	params,
@@ -39,7 +40,7 @@ export default async function ShopEventsPage({
 				<div>
 					<h3 className="text-lg font-medium text-gray-300 mb-4 flex items-center gap-2">
 						<span className="w-2 h-2 rounded-full bg-green-500"></span>
-						En cours & À venir
+						En cours &amp; À venir
 					</h3>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 						{activeEvents.map((event) => (

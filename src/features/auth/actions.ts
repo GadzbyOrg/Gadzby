@@ -1,13 +1,14 @@
 "use server";
 
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { createSession, deleteSession } from "@/lib/session";
+import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+
+import { db } from "@/db";
+import { users } from "@/db/schema";
 import { publicAction, publicActionNoInput } from "@/lib/actions";
+import { createSession, deleteSession } from "@/lib/session";
 
 const loginSchema = z.object({
 	username: z.string().min(1, "Identifiant requis"),

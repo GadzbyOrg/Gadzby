@@ -1,7 +1,8 @@
-import { pgTable, text, uuid, integer, boolean, pgEnum, timestamp, doublePrecision } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { shops } from './shops';
+import { boolean, doublePrecision,integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+
 import { events } from './events';
+import { shops } from './shops';
 
 export const productCategories = pgTable('product_categories', {
   id: uuid('id').defaultRandom().primaryKey(),

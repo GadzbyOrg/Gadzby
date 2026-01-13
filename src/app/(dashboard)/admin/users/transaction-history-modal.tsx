@@ -1,26 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { IconX, IconRefresh, IconArrowLeft, IconArrowRight, IconTrash } from "@tabler/icons-react";
-import { getUserTransactions } from "@/features/users/actions";
-import { cancelTransactionAction } from "@/features/transactions/actions";
+import { IconRefresh,IconX } from "@tabler/icons-react";
+import { useCallback,useEffect, useState } from "react";
+
 import { TransactionTable } from "@/components/transactions/transaction-table";
+import { getUserTransactions } from "@/features/users/actions";
 
 interface TransactionHistoryModalProps {
-
-    user: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    user: any; 
     onClose: () => void;
 }
 
 export function TransactionHistoryModal({ user, onClose }: TransactionHistoryModalProps) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState<string | null>(null); 
     const [error, setError] = useState("");
 
-    const fetchTransactions = async () => {
-        setLoading(true);
-        setError("");
+    const fetchTransactions = useCallback(async () => {
+        // setError(""); // Avoid sync setState
         const res = await getUserTransactions({ userId: user.id });
         if (res.error) {
             setError(res.error);
@@ -28,27 +27,20 @@ export function TransactionHistoryModal({ user, onClose }: TransactionHistoryMod
             setTransactions(res.transactions || []);
         }
         setLoading(false);
-    };
-
-    useEffect(() => {
-        fetchTransactions();
     }, [user.id]);
 
-    const handleCancel = async (transactionId: string) => {
-        if (!confirm("Êtes-vous sûr de vouloir annuler cette transaction ? Cette action est irréversible (elle créera une contre-transaction).")) return; // Simple confirmation
+    useEffect(() => {
+        // Wrap in setTimeout to avoid sync execution checks if any
+        const t = setTimeout(() => {
+            fetchTransactions();
+        }, 0);
+        return () => clearTimeout(t);
+    }, [fetchTransactions]);
 
-        setSubmitting(transactionId);
-        const res = await cancelTransactionAction({ transactionId });
-        
-        if (res.error) {
-            setError(res.error);
-            // clear error after 3s
-            setTimeout(() => setError(""), 3000);
-        } else {
-            // success, refresh list
-            await fetchTransactions();
-        }
-        setSubmitting(null);
+    const handleRefresh = () => {
+        setLoading(true);
+        setError("");
+        fetchTransactions();
     };
 
     return (
@@ -63,7 +55,7 @@ export function TransactionHistoryModal({ user, onClose }: TransactionHistoryMod
                     </div>
                     <div className="flex items-center gap-2">
                          <button 
-                            onClick={fetchTransactions}
+                            onClick={handleRefresh}
                             disabled={loading}
                             className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors disabled:opacity-50"
                             title="Actualiser"

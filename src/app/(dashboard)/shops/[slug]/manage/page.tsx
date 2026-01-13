@@ -1,5 +1,6 @@
-import { checkTeamMemberAccess } from "@/features/shops/actions";
 import { redirect } from "next/navigation";
+
+import { checkTeamMemberAccess } from "@/features/shops/actions";
 
 export default async function ShopManageIndexPage({
 	params,

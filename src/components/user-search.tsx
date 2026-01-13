@@ -1,9 +1,9 @@
 
-import { useState, useEffect, useRef } from 'react';
-import { IconSearch, IconUser, IconLoader2 } from '@tabler/icons-react';
-import { searchUsersPublicAction } from '@/features/users/actions';
-import { UserAvatar } from "@/components/user-avatar";
+import { IconLoader2,IconSearch } from '@tabler/icons-react';
+import { useEffect, useRef,useState } from 'react';
 
+import { UserAvatar } from "@/components/user-avatar";
+import { searchUsersPublicAction } from '@/features/users/actions';
 import { cn } from "@/lib/utils";
 
 export interface UserSearchProps {

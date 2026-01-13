@@ -1,10 +1,12 @@
 "use server";
 
-import { db } from "@/db";
-import { products, productCategories, shops, shopUsers, productRestocks } from "@/db/schema";
-import { verifySession } from "@/lib/session";
-import { eq, and, desc } from "drizzle-orm";
+import { and, AnyColumn,desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+import { db } from "@/db";
+import { productCategories, productRestocks,products, shops, shopUsers } from "@/db/schema";
+import { verifySession } from "@/lib/session";
+
 import { hasShopPermission } from "./utils";
 
 // Type definitions for inputs
@@ -75,7 +77,7 @@ export async function getShopProducts(shopSlug: string, options: ProductOptions 
         
         let orderBy;
         if (options.sortBy) {
-            const sortDir = options.sortOrder === 'desc' ? desc : (c: any) => c;
+            const sortDir = options.sortOrder === 'desc' ? desc : (c: AnyColumn) => c;
             
             switch (options.sortBy) {
                 case 'price': orderBy = sortDir(products.price); break;

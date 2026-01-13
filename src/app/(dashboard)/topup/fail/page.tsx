@@ -1,5 +1,5 @@
+import { IconArrowLeft, IconRefresh,IconX } from "@tabler/icons-react";
 import Link from "next/link";
-import { IconX, IconArrowLeft, IconRefresh } from "@tabler/icons-react";
 
 export default function TopupFailPage() {
 	return (
@@ -13,7 +13,7 @@ export default function TopupFailPage() {
 
 				<p className="mb-8 text-gray-400">
 					Une erreur est survenue lors du traitement de votre paiement. Votre
-					compte n'a pas été débité.
+					compte n&apos;a pas été débité.
 				</p>
 
 				<div className="space-y-3">

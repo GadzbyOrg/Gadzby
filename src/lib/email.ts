@@ -1,8 +1,9 @@
+import { eq } from "drizzle-orm";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
+
 import { db } from "@/db";
 import { systemSettings } from "@/db/schema/settings";
-import { eq } from "drizzle-orm";
 
 export type EmailConfig = {
     provider: "smtp" | "resend";
@@ -21,7 +22,7 @@ export async function getEmailConfig(): Promise<EmailConfig> {
         const setting = await db.query.systemSettings.findFirst({
             where: eq(systemSettings.key, "email_config"),
         });
-        if (setting?.value) return setting.value as any;
+        if (setting?.value) return setting.value as unknown as EmailConfig;
     } catch (e) {
         console.warn("Could not fetch email config from DB, falling back to env:", e);
     }

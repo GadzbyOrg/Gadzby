@@ -1,6 +1,7 @@
 "use client";
 
 import { IconSchool } from "@tabler/icons-react";
+
 import { TABAGNSS_OPTIONS } from "@/features/users/constants";
 
 export { TABAGNSS_OPTIONS };
@@ -26,7 +27,7 @@ export function TabagnssSelector({
         <div className={`space-y-2 ${className}`}>
             <label htmlFor={name} className="text-sm font-medium text-gray-300 flex items-center gap-2">
                 <IconSchool className="w-4 h-4 text-primary-400" />
-                Tabagn'ss
+                Tabagn&apos;ss
             </label>
             <div className="relative">
                 <select

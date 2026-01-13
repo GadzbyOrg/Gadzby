@@ -23,11 +23,11 @@ export function SearchInput() {
     return (
         <div className="relative mb-6">
             <label htmlFor="search" className="sr-only">
-                Rechercher une Fam'ss
+                Rechercher une Fam&apos;ss
             </label>
             <input
                 className="peer block w-full rounded-md border border-dark-700 bg-dark-900 py-[9px] pl-10 text-sm placeholder:text-gray-500 text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none"
-                placeholder="Rechercher une Fam'ss..."
+                placeholder="Rechercher une Fam&apos;ss..."
                 onChange={(e) => {
                     handleSearch(e.target.value);
                 }}

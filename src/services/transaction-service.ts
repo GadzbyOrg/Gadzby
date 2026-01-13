@@ -1,13 +1,17 @@
+import { and, eq, sql } from "drizzle-orm";
+
 import { db } from "@/db";
 import {
-	users,
-	transactions,
-	products,
-	famss,
 	events,
 	famsMembers,
+	famss,
+	products,
+	transactions,
+	users,
 } from "@/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+
+// Infer the transaction type from the db instance
+type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
  * Service to handle all money-related operations.
@@ -156,7 +160,7 @@ export class TransactionService {
 				// Try to find counterpart based on heuristic (same issuer, different target, same amount abs value)
 				// This is a "best effort" link since we don't have a transactionGroupId
 				const counterpart = await tx.query.transactions.findFirst({
-					where: (t, { and, eq, ne, gt, lt }) =>
+					where: (t, { and, eq, ne }) =>
 						and(
 							eq(t.issuerId, originalTx.issuerId),
 							// Leg 1: Issuer=A, Target=A, Receiver=B, Amount=-100
@@ -198,7 +202,7 @@ export class TransactionService {
 	}
 
 	private static async reverseSingleTransaction(
-		tx: any,
+		tx: DbTransaction,
 		originalTx: typeof transactions.$inferSelect,
 		performedByUserId: string,
 		isLinked: boolean

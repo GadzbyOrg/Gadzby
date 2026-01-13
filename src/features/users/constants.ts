@@ -19,7 +19,7 @@ export const getTabagnssCode = (value: string): string | null => {
 	if (value in TABAGNSS_MAP) return value;
 	
 	// Reverse match (label)
-	const entry = Object.entries(TABAGNSS_MAP).find(([code, label]) => 
+	const entry = Object.entries(TABAGNSS_MAP).find(([, label]) => 
 		label.toLowerCase() === value.toLowerCase()
 	);
 	if (entry) return entry[0];

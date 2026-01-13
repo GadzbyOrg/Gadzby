@@ -1,11 +1,12 @@
 'use server';
 
-import { db } from "@/db";
-import { mandats, products, transactions, shopExpenses, mandatShops, shops } from "@/db/schema";
-import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
-import { eq, sql, and, gte, lte, desc, inArray } from "drizzle-orm";
+import { and, desc, eq, gte, inArray,lte, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+
+import { db } from "@/db";
+import { mandats, mandatShops, products, shopExpenses, shops,transactions } from "@/db/schema";
+import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
 
 /**
  * Calculates total stock value per shop for ALL active shops.

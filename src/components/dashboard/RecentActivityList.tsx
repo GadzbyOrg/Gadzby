@@ -1,9 +1,11 @@
 "use client";
 
-import { IconShoppingBag, IconCash, IconArrowsExchange, IconArrowUpRight, IconBuildingStore } from "@tabler/icons-react";
+import { IconArrowsExchange, IconArrowUpRight,IconCash, IconShoppingBag } from "@tabler/icons-react";
+
+import { TransactionWithRelations } from "@/components/transactions/transaction-table";
 
 interface RecentActivityListProps {
-	activities: any[];
+	activities: TransactionWithRelations[];
 }
 
 export function RecentActivityList({ activities }: RecentActivityListProps) {

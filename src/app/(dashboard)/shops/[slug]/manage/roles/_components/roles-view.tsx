@@ -1,24 +1,24 @@
 "use client";
 
+import { IconPencil, IconPlus,IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
-import {
-	createShopRole,
-	updateShopRole,
-	deleteShopRole,
-} from "@/features/shops/actions";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Dialog,
 	DialogContent,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
-	DialogFooter,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	createShopRole,
+	deleteShopRole,
+	updateShopRole,
+} from "@/features/shops/actions";
 import { SHOP_PERMISSIONS } from "@/features/shops/schemas";
-import { IconTrash, IconPencil, IconPlus } from "@tabler/icons-react";
 
 const PERMISSION_LABELS: Record<string, string> = {
 	SELL: "Vendre",

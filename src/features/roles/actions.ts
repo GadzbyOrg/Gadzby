@@ -1,11 +1,13 @@
 "use server";
 
-import { db } from "@/db";
-import { roles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { roleSchema, updateRoleSchema, deleteRoleSchema } from "./schemas";
+
+import { db } from "@/db";
+import { roles } from "@/db/schema";
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
+
+import { deleteRoleSchema,roleSchema, updateRoleSchema } from "./schemas";
 
 export const getRolesAction = authenticatedActionNoInput(
 	async () => {

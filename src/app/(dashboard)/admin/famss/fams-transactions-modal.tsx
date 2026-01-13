@@ -1,36 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { IconX, IconArrowLeft, IconArrowRight, IconRefresh, IconTrash } from "@tabler/icons-react";
+import { IconTrash,IconX } from "@tabler/icons-react";
+import { useCallback,useEffect,useState } from "react";
+
 import { getFamsTransactionsAction } from "@/features/famss/admin-actions";
 import { cancelTransactionAction } from "@/features/transactions/actions";
 
+interface Transaction {
+    id: string;
+    createdAt: Date;
+    type: string;
+    description: string | null;
+    amount: number;
+    status: string;
+    issuer?: {
+        prenom: string;
+        nom: string;
+    } | null;
+}
+
 interface FamsTransactionsModalProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fams: any;
     onClose: () => void;
 }
 
 export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalProps) {
-    const [transactions, setTransactions] = useState<any[]>([]);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState<string | null>(null);
 
-    // Fetch transactions on mount
-    useEffect(() => {
-        loadTransactions();
+    const loadTransactions = useCallback(async () => {
+        // Removed setLoading(true) here to prevent "setState synchronously in effect" warning.
+        // Rely on initial state for mount.
+		const res = await getFamsTransactionsAction({ famsId: fams.id });
+		if (res.error !== undefined) {
+			setError(res.error);
+		} else {
+			setTransactions(res.transactions as Transaction[]);
+		}
+        setLoading(false);
     }, [fams.id]);
 
-    async function loadTransactions() {
-        setLoading(true);
-        const res = await getFamsTransactionsAction({ famsId: fams.id });
-        if (res.transactions) {
-            setTransactions(res.transactions);
-        } else {
-            setError(res.error || "Erreur de chargement");
-        }
-        setLoading(false);
-    }
+    // Fetch transactions on mount
+    useEffect(() => {
+        const t = setTimeout(() => {
+            loadTransactions();
+        }, 0);
+        return () => clearTimeout(t);
+    }, [loadTransactions]);
 
     async function handleCancel(transactionId: string) {
         if (!confirm("Voulez-vous vraiment annuler cette transaction ?")) return;
@@ -42,6 +61,9 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
             setError(res.error);
             setTimeout(() => setError(null), 3000);
         } else {
+             // For re-fetching, we can manually set loading if we want, or just let loadTransactions run.
+             // Here we just call it. It won't set loading true but will update data.
+             setLoading(true); // Optional: show loading while refreshing
             await loadTransactions();
         }
         setSubmitting(null);

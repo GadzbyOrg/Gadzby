@@ -1,6 +1,6 @@
 import { formatPrice } from "@/lib/utils";
 
-interface ProductStats {
+export interface ProductStats {
 	productId: string;
 	totalQuantity: number;
 	totalRevenue: number;

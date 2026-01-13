@@ -1,8 +1,9 @@
 "use client";
 
-import { deleteProduct } from "@/features/shops/actions";
-import { useState, useTransition } from "react";
 import { IconTrash } from "@tabler/icons-react";
+import { useState, useTransition } from "react";
+
+import { deleteProduct } from "@/features/shops/actions";
 
 interface DeleteProductButtonProps {
 	shopSlug: string;

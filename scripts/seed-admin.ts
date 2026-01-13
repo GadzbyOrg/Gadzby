@@ -1,8 +1,9 @@
 // Exécuter avec : npx tsx scripts/seed-admin.ts
 
+import bcrypt from "bcryptjs";
+
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import bcrypt from "bcryptjs";
 
 async function main() {
 	console.log("🌱 Création du Super Admin...");

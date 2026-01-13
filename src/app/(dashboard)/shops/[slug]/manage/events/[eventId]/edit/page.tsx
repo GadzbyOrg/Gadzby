@@ -1,5 +1,6 @@
 import { getEvent } from "@/features/events/actions";
 import { getShopBySlug } from "@/features/shops/actions";
+
 import { EventForm } from "../../create/event-form";
 
 export default async function EditEventPage({

@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { UserSearch } from "@/components/user-search";
-import { UserAvatar } from "@/components/user-avatar";
-import { PromssSelector } from "@/components/promss-selector";
-import { IconTrash, IconFileSpreadsheet, IconUserPlus, IconLoader2, IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
+import { IconAlertCircle, IconAlertTriangle, IconLoader2, IconTrash, IconUserPlus } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { useEffect,useState } from "react";
+
 import { ExcelImportModal } from "@/components/excel-import-modal";
+import { PromssSelector } from "@/components/promss-selector";
+import { useToast } from "@/components/ui/use-toast";
+import { UserAvatar } from "@/components/user-avatar";
+import { UserSearch } from "@/components/user-search";
 import {
 	getPromssListAction,
 	getUsersByPromssAction,
-	resolveUsersFromExcelAction,
 	processMassChargeAction,
+	resolveUsersFromExcelAction,
     searchUsersForPaymentAction
 } from "@/features/transactions/mass-payment-actions";
-import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from "next/navigation";
 
 export function NewOperationView() {
 	const { toast } = useToast();
@@ -330,7 +331,7 @@ export function NewOperationView() {
                                 className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
                             >
                                 {isSubmitting && <IconLoader2 className="animate-spin" size={20} />}
-                                Confirmer l'opération
+                                Confirmer l&apos;opération
                             </button>
                         </div>
                     </div>

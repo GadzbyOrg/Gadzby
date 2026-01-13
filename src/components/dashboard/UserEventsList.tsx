@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import {
 	IconCalendarEvent,
 	IconChevronDown,
 	IconChevronUp,
 } from "@tabler/icons-react";
+import { useState } from "react";
 
 interface Event {
 	id: string;

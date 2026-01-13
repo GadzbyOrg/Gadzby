@@ -1,5 +1,6 @@
-import { pgTable, text, uuid, integer, timestamp, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { integer, pgEnum,pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
+
 import { mandatShops } from './mandat-shops';
 
 export const mandatStatusEnum = pgEnum('mandat_status', ['PENDING', 'ACTIVE', 'COMPLETED']);

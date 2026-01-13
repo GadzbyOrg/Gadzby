@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { restockProduct } from "@/features/shops/inventory";
 import { IconCirclePlus } from "@tabler/icons-react";
+import { useState } from "react";
+
+import { restockProduct } from "@/features/shops/inventory";
 
 type RestockButtonProps = {
     shopSlug: string;

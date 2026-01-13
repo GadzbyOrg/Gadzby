@@ -1,5 +1,6 @@
-import { pgTable, uuid, integer, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { integer, pgTable,uuid } from 'drizzle-orm/pg-core';
+
 import { mandats } from './mandats';
 import { shops } from './shops';
 

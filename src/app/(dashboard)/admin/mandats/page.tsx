@@ -1,14 +1,26 @@
-import { getActiveMandatAction, getMandatsAction } from "@/features/admin/actions/mandats";
-import { MandatActions } from "./_components/mandat-actions";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { verifySession } from "@/lib/session";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getActiveMandatAction, getMandatsAction } from "@/features/admin/actions/mandats";
+import { verifySession } from "@/lib/session";
+import { cn } from "@/lib/utils";
+
+import { MandatActions } from "./_components/mandat-actions";
+
+interface Mandat {
+    id: string;
+    startTime: Date | null;
+    endTime: Date | null;
+    initialStockValue: number | null;
+    finalStockValue: number | null;
+    finalBenefice: number | null;
+    status: string;
+}
 
 export default async function MandatsPage() {
 
@@ -91,7 +103,7 @@ export default async function MandatsPage() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                mandats.map((mandat: any) => (
+                                mandats.map((mandat: Mandat) => (
                                     <TableRow key={mandat.id} className="border-dark-800 hover:bg-dark-800/50 group">
                                         <TableCell className="font-medium text-gray-300">
                                             <Link href={`/admin/mandats/${mandat.id}`} className="hover:text-primary-400 hover:underline">

@@ -1,12 +1,13 @@
-import {
-	pgTable,
-	uuid,
-	timestamp,
-	pgEnum,
-	integer,
-	primaryKey,
-} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import {
+	integer,
+	pgEnum,
+	pgTable,
+	primaryKey,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
+
 import { events } from "./events";
 import { users } from "./users";
 

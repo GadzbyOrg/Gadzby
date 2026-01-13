@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { IconSearch, IconUser, IconLoader2 } from '@tabler/icons-react';
-import { searchUsersPublicAction } from '@/features/users/actions';
+import { IconLoader2,IconSearch, IconUser } from '@tabler/icons-react';
+import { useEffect, useRef,useState } from 'react';
 
-import { cn } from '@/lib/utils';
+import { searchUsersPublicAction } from '@/features/users/actions';
 
 export interface UserSearchProps {
     onSelect: (user: any) => void;

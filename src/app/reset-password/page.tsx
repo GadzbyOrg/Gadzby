@@ -1,20 +1,21 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
-import { useFormStatus } from "react-dom";
-import { resetPasswordAction } from "@/features/auth/actions";
 import {
-	IconReceipt2,
-	IconLock,
 	IconAlertTriangle,
 	IconCheck,
-	IconLoader2,
     IconEye,
     IconEyeOff,
+	IconLoader2,
+	IconLock,
+	IconReceipt2,
 } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useActionState,useState } from "react";
+import { useFormStatus } from "react-dom";
+
+import { resetPasswordAction } from "@/features/auth/actions";
+import { cn } from "@/lib/utils";
 
 function InputLabel({
 	htmlFor,
@@ -64,7 +65,8 @@ function ResetPasswordContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
 
-	const [state, action] = useActionState(resetPasswordAction, { error: undefined, success: undefined });
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const [state, action] = useActionState(resetPasswordAction, null as any);
     const [showPassword, setShowPassword] = useState(false);
     
     if (!token) {
@@ -99,7 +101,7 @@ function ResetPasswordContent() {
 			<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
 				{/* Carte */}
 				<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-8 shadow-2xl backdrop-blur-sm">
-                     {state.success ? (
+                     {state?.success ? (
                         <div className="rounded-md bg-green-900/20 border border-green-900/50 p-4">
                             <div className="flex">
                                 <div className="flex-shrink-0">
@@ -113,7 +115,7 @@ function ResetPasswordContent() {
                                         Succès
                                     </h3>
                                     <div className="mt-1 text-sm text-green-300/80">
-                                        {state.success}
+                                        {state?.success}
                                     </div>
                                      <div className="mt-4">
                                         <Link href="/login" className="text-sm font-medium text-green-400 hover:text-green-300 underline">
@@ -127,7 +129,7 @@ function ResetPasswordContent() {
 					<form action={action} className="space-y-6">
                         <input type="hidden" name="token" value={token} />
 						{/* Affichage des Erreurs */}
-						{state.error && (
+						{state?.error && (
 							<div className="rounded-md bg-red-900/20 border border-red-900/50 p-4">
 								<div className="flex">
 									<div className="flex-shrink-0">
@@ -141,7 +143,7 @@ function ResetPasswordContent() {
 											Erreur
 										</h3>
 										<div className="mt-1 text-sm text-red-300/80">
-											{state.error}
+											{state?.error}
 										</div>
 									</div>
 								</div>

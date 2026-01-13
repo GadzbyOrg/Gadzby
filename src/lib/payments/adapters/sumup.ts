@@ -95,7 +95,7 @@ export class SumUpAdapter implements PaymentProvider {
 			console.log("[SumUp] API Response:", JSON.stringify(data));
 			if (!response.ok) {
 				console.error("[SumUp] API Error:", data);
-				const errorData = data as any;
+				const errorData = data as unknown as { message?: string; error_message?: string };
 				throw new Error(
 					`SumUp Error: ${
 						errorData.message || errorData.error_message || "Unknown"

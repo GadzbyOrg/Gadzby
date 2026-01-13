@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { updateShop } from "@/features/shops/actions";
 
 interface ShopSettingsFormProps {
@@ -77,7 +78,7 @@ export function ShopSettingsForm({
 					</div>
 				</div>
 				<p className="text-xs text-gray-500">
-					Cette marge sera appliquée automatiquement lors de l'import de
+					Cette marge sera appliquée automatiquement lors de l&apos;import de
 					produits via Excel.
 				</p>
 			</div>

@@ -1,8 +1,9 @@
 // Run with: npx tsx scripts/seed-events.ts
 
+import { eq } from "drizzle-orm";
+
 import { db } from "@/db";
 import { events, shops } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 async function main() {
 	console.log("🌱 Seeding events...");

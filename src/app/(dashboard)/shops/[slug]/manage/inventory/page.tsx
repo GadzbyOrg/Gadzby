@@ -1,9 +1,11 @@
+import {IconHistory } from "@tabler/icons-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import { checkTeamMemberAccess } from "@/features/shops/actions";
 import { getShopAudits } from "@/features/shops/inventory";
-import { redirect } from "next/navigation";
-import Link from "next/link";
+
 import StartAuditButton from "./_components/StartAuditButton";
-import { IconHistory, IconAlertTriangle } from "@tabler/icons-react";
 
 export default async function ShopInventoryPage({
 	params,

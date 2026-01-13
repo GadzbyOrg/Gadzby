@@ -1,12 +1,12 @@
 "use client";
 
 import {
-	PieChart,
-	Pie,
 	Cell,
+	Legend,
+	Pie,
+	PieChart,
 	ResponsiveContainer,
 	Tooltip,
-	Legend,
 } from "recharts";
 
 interface ExpensesByShopChartProps {

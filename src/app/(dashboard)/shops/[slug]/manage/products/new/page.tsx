@@ -1,7 +1,9 @@
-import { getShopCategories } from "@/features/shops/products";
-import { getShopBySlug, checkTeamMemberAccess } from "@/features/shops/actions";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+
+import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
+import { getShopCategories } from "@/features/shops/products";
+
 import ProductForm from "../_components/ProductForm";
 
 export default async function NewProductPage({
@@ -47,7 +49,7 @@ export default async function NewProductPage({
 					Ajouter un produit
 				</h1>
 				<p className="text-gray-400">
-					Ajoutez un nouveau produit à l'inventaire de {shop.name}.
+					Ajoutez un nouveau produit à l&apos;inventaire de {shop.name}.
 				</p>
 			</header>
 

@@ -1,8 +1,9 @@
 // Run with: npx tsx scripts/seed-shops.ts
 
-import { db } from "@/db";
-import { shops, shopUsers, users, shopRoles } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+import { db } from "@/db";
+import { shopRoles,shops, shopUsers, users } from "@/db/schema";
 import { SHOP_PERMISSIONS } from "@/features/shops/schemas";
 
 async function main() {

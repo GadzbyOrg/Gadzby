@@ -1,5 +1,5 @@
+import { IconArrowLeft,IconCheck } from "@tabler/icons-react";
 import Link from "next/link";
-import { IconCheck, IconArrowLeft } from "@tabler/icons-react";
 
 export default function TopupSuccessPage() {
 	return (

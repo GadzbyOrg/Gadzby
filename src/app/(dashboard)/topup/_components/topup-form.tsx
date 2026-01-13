@@ -1,8 +1,9 @@
 "use client";
 
+import { IconCheck, IconCreditCard,IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
+
 import { initiateTopUp } from "@/features/payments/actions";
-import { IconLoader2, IconCheck, IconCreditCard } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
 type PaymentMethod = {
@@ -58,17 +59,19 @@ export function TopUpForm({
 		}
 
 		setIsLoading(true);
-		const { url, error } = await initiateTopUp({
+		const res = await initiateTopUp({
 			providerSlug: selectedMethod,
 			amountCents: amount * 100,
 			phoneNumber: showPhoneInput ? phoneNumber : undefined,
 		});
 
-		if (!url || error) {
-			alert("Une erreur est survenue lors de l'initialisation du paiement.");
+		if (res.error !== undefined) {
+			alert(res.error || "Une erreur est survenue lors de l'initialisation du paiement.");
 			setIsLoading(false);
 			return;
 		}
+
+		const { url } = res;
 		window.location.href = url; // Redirect to provider
 	};
 

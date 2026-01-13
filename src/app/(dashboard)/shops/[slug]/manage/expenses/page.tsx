@@ -1,11 +1,12 @@
-import {
-	getShopExpenses,
-	createShopExpense,
-	deleteShopExpense,
-} from "@/features/shops/expenses";
-import { getShopBySlug, checkTeamMemberAccess } from "@/features/shops/actions";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+
+import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
+import {
+	createShopExpense,
+	deleteShopExpense,
+	getShopExpenses,
+} from "@/features/shops/expenses";
 
 export default async function ShopExpensesPage({
 	params,

@@ -1,11 +1,13 @@
 "use server";
 
-import { db } from "@/db";
-import { shopExpenses, shops, shopUsers } from "@/db/schema";
-import { verifySession } from "@/lib/session";
-import { eq, and, desc } from "drizzle-orm";
+import { and, desc,eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { hasShopPermission, getUserShopPermissions } from "./utils"; // Updated import
+
+import { db } from "@/db";
+import { shopExpenses, shops } from "@/db/schema";
+import { verifySession } from "@/lib/session";
+
+import { getUserShopPermissions,hasShopPermission } from "./utils"; // Updated import
 
 export async function createShopExpense(
 	slug: string,

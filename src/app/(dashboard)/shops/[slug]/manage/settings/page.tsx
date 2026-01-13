@@ -1,9 +1,11 @@
-import { checkTeamMemberAccess, getShopBySlug, getShopRoles } from "@/features/shops/actions";
-import { redirect } from "next/navigation";
+import { IconSettings } from "@tabler/icons-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { checkTeamMemberAccess, getShopBySlug, getShopRoles } from "@/features/shops/actions";
+
 import { ShopSettingsForm } from "./shop-settings-form";
 import { ShopTeamManager } from "./shop-team-manager";
-import { IconSettings } from "@tabler/icons-react";
 
 export default async function ShopSettingsPage({
 	params,

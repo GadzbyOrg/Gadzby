@@ -1,6 +1,8 @@
-import { getShopBySlug, getShopRoles, checkTeamMemberAccess } from "@/features/shops/actions";
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { checkTeamMemberAccess,getShopBySlug, getShopRoles } from "@/features/shops/actions";
+
 import { RolesView } from "./_components/roles-view";
 
 export default async function ShopRolesPage({
@@ -44,7 +46,7 @@ export default async function ShopRolesPage({
 					Gestion des Rôles
 				</h1>
 				<p className="text-gray-400">
-					Créez et gérez les rôles personnalisés pour l'équipe de {shop.name}.
+					Créez et gérez les rôles personnalisés pour l&apos;équipe de {shop.name}.
 				</p>
 			</header>
 

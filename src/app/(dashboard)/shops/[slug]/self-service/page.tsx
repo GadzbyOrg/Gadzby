@@ -1,14 +1,16 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { getShopPublicEvents } from "@/features/events/queries";
 import {
 	getShopBySlug,
 	getShopDetailsForMember,
 } from "@/features/shops/actions";
-import { getShopProducts, getShopCategories } from "@/features/shops/products";
-import { getShopPublicEvents } from "@/features/events/queries";
-import { notFound } from "next/navigation";
+import { getShopCategories,getShopProducts } from "@/features/shops/products";
+import { verifySession } from "@/lib/session";
+
 import { SelfServiceView } from "../_components/self-service-view";
 import { ShopPublicEvents } from "../_components/shop-public-events";
-import Link from "next/link";
-import { verifySession } from "@/lib/session";
 
 export default async function ShopSelfServicePage({
 	params,

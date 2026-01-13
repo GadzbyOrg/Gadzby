@@ -1,17 +1,18 @@
 "use client";
 
+import {
+	IconCoins,
+	IconLoader2,
+	IconPlus,
+	IconTrash,
+} from "@tabler/icons-react";
 import { useState, useTransition } from "react";
+
+import { useToast } from "@/components/ui/use-toast";
 import {
 	createEventRevenue,
 	deleteEventRevenue,
 } from "@/features/events/actions";
-import { useToast } from "@/components/ui/use-toast";
-import {
-	IconTrash,
-	IconPlus,
-	IconLoader2,
-	IconCoins,
-} from "@tabler/icons-react";
 
 interface Props {
 	event: any;

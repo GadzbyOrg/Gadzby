@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { IconLink, IconUnlink } from '@tabler/icons-react';
-import { linkProductsToEvent, unlinkProductFromEvent, getAvailableProductsAction } from '@/features/events/actions';
+import { useState } from 'react';
+
 import { useToast } from "@/components/ui/use-toast";
+import { getAvailableProductsAction,linkProductsToEvent, unlinkProductFromEvent } from '@/features/events/actions';
 
 interface Props {
     event: any;

@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
 import { IconX } from "@tabler/icons-react";
+import * as React from "react";
+
+import { cn } from "@/lib/utils";
 
 // Simplified Modal Context
 interface ModalContextType {

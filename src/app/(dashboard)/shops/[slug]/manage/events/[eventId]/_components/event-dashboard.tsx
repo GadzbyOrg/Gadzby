@@ -4,6 +4,7 @@ import {
 	IconUsers,
 	IconWallet,
 } from "@tabler/icons-react";
+
 import { EventTransactionsTable } from "./event-transactions-table";
 
 interface Props {

@@ -1,17 +1,18 @@
 "use client";
 
+import {
+	IconAlertTriangle,
+	IconCheck,
+	IconLoader2,
+	IconTrash,
+} from "@tabler/icons-react";
 import { useActionState, useEffect, useState, useTransition } from "react";
+
+import { TabagnssSelector } from "@/components/tabagnss-selector";
 import {
 	adminUpdateUserAction,
 	hardDeleteUserAction,
 } from "@/features/users/actions";
-import {
-	IconLoader2,
-	IconCheck,
-	IconAlertTriangle,
-	IconTrash,
-} from "@tabler/icons-react";
-import { TabagnssSelector } from "@/components/tabagnss-selector";
 
 interface UserEditFormProps {
 	user: {
@@ -30,6 +31,7 @@ interface UserEditFormProps {
 		balance: number;
 		isAsleep: boolean;
 	};
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	roles: any[];
 	onSuccess: () => void;
 }
@@ -101,7 +103,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 			<div className="space-y-4">
 				<div className="space-y-2">
 					<label htmlFor="username" className="text-sm font-medium text-gray-300">
-						Nom d'utilisateur <span className="text-gray-500 text-xs font-normal">(Laisser vide pour auto-générer)</span>
+						Nom d&apos;utilisateur <span className="text-gray-500 text-xs font-normal">(Laisser vide pour auto-générer)</span>
 					</label>
 					<input
 						type="text"
@@ -192,7 +194,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							htmlFor="promss"
 							className="text-sm font-medium text-gray-300"
 						>
-							Prom'ss
+							Prom&apos;ss
 						</label>
 						<input
 							required

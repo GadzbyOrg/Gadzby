@@ -1,9 +1,11 @@
 
-import { verifySession } from "@/lib/session";
+import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { verifySession } from "@/lib/session";
+
 import { TransferForm } from "./_components/transfer-form";
 
 export const metadata = {
@@ -28,7 +30,7 @@ export default async function TransferPage() {
             <header>
                 <h1 className="text-3xl font-bold tracking-tight text-white">Virement</h1>
                 <p className="text-gray-400 mt-2">
-                    Envoyez de l'argent à un autre utilisateur instantanément.
+                    Envoyez de l&apos;argent à un autre utilisateur instantanément.
                 </p>
             </header>
 

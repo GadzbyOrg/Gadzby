@@ -1,6 +1,7 @@
+import { and,eq } from "drizzle-orm";
+
 import { db } from "@/db";
 import { shopUsers } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
 
 export function hasShopPermission(
 	userPermissions: string[] | undefined | null,

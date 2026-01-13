@@ -1,4 +1,8 @@
-import { getMandatDetailsAction } from "@/features/admin/actions/mandats";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Table,
@@ -8,14 +12,21 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { formatPrice } from "@/lib/utils";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { ExportButton } from "./export-button";
-import { notFound } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { getMandatDetailsAction } from "@/features/admin/actions/mandats";
 import { verifySession } from "@/lib/session";
-import { redirect } from "next/navigation";
+import { formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+
+import { ExportButton } from "./export-button";
+
+interface MandatShopData {
+    shopName: string;
+    initialStockValue: number;
+    finalStockValue: number | null;
+    sales: number | null;
+    expenses: number | null;
+    benefice: number | null;
+}
 
 export default async function MandatDetailsPage({
 	params,
@@ -44,7 +55,8 @@ export default async function MandatDetailsPage({
 	};
 
 	// Sort shops by name
-	const shopsData = mandat.mandatShops
+	const shopsData: MandatShopData[] = mandat.mandatShops
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		.map((ms: any) => ({
 			shopName: ms.shop.name,
 			initialStockValue: ms.initialStockValue,
@@ -53,7 +65,7 @@ export default async function MandatDetailsPage({
 			expenses: ms.expenses,
 			benefice: ms.benefice,
 		}))
-		.sort((a: any, b: any) => a.shopName.localeCompare(b.shopName));
+		.sort((a: MandatShopData, b: MandatShopData) => a.shopName.localeCompare(b.shopName));
 
 	return (
 		<div className="space-y-8 p-8">
@@ -154,7 +166,7 @@ export default async function MandatDetailsPage({
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{shopsData.map((shop: any, i: number) => (
+							{shopsData.map((shop: MandatShopData, i: number) => (
 								<TableRow
 									key={i}
 									className="border-dark-800 hover:bg-dark-800/50"

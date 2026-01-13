@@ -1,7 +1,9 @@
 
-import { verifySession } from "@/lib/session";
-import { TopUpUserForm } from "./topup-user-form";
 import { redirect } from "next/navigation";
+
+import { verifySession } from "@/lib/session";
+
+import { TopUpUserForm } from "./topup-user-form";
 
 export default async function CreditUserPage() {
     const session = await verifySession();

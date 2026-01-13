@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { getShopTransactions } from "@/features/shops/actions";
-import { formatPrice } from "@/lib/utils";
-import { IconLoader2, IconRefresh } from "@tabler/icons-react";
+import { IconRefresh } from "@tabler/icons-react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 
 import { TransactionTable } from "@/components/transactions/transaction-table";
+import { getShopTransactions } from "@/features/shops/actions";
 
 interface EventTransactionsTableProps {
 	slug: string;
@@ -19,9 +18,9 @@ export function EventTransactionsTable({
 	const [transactions, setTransactions] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [page, setPage] = useState(1);
-	const [isPending, startTransition] = useTransition();
+	const [, startTransition] = useTransition();
 
-	const fetchTransactions = () => {
+	const fetchTransactions = useCallback(() => {
 		setLoading(true);
 		startTransition(async () => {
 			const res = await getShopTransactions({
@@ -36,15 +35,16 @@ export function EventTransactionsTable({
 				eventId,
 			});
 			if (res.transactions) {
-				setTransactions(res.transactions);
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				setTransactions(res.transactions as any[]);
 			}
 			setLoading(false);
 		});
-	};
+	}, [slug, eventId, page]);
 
 	useEffect(() => {
 		fetchTransactions();
-	}, [slug, eventId, page]);
+	}, [fetchTransactions]);
 
 	return (
 		<div className="space-y-4">

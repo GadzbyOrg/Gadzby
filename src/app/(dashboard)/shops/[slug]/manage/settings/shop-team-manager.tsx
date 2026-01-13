@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+
 import {
 	addShopMember,
 	removeShopMember,
 	updateShopMemberRole,
 } from "@/features/shops/actions";
+
 import { UserSearch } from "../events/[eventId]/_components/user-search";
 
 interface ShopMember {

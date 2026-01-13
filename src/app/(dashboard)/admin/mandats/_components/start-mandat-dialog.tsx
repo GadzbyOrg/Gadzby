@@ -1,16 +1,22 @@
 "use client";
 
+import { IconLoader2,IconPlayerPlay } from "@tabler/icons-react";
+import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { IconPlayerPlay, IconLoader2 } from "@tabler/icons-react";
-import { getPreStartMandatDetailsAction, confirmStartGlobalMandatAction } from "@/features/admin/actions/mandats";
 import { useToast } from "@/components/ui/use-toast";
+import { confirmStartGlobalMandatAction,getPreStartMandatDetailsAction } from "@/features/admin/actions/mandats";
 import { formatPrice } from "@/lib/utils";
 
-import Link from "next/link";
+interface PreStartShop {
+    shopId: string;
+    shopName: string;
+    shopSlug: string;
+    totalValue: number;
+}
 
 export function StartMandatDialog() {
     const [open, setOpen] = useState(false);
@@ -26,7 +32,7 @@ export function StartMandatDialog() {
         setOpen(true);
         try {
             const data = await getPreStartMandatDetailsAction();
-            setShopsData(data.shops.map((s: any) => ({
+            setShopsData(data.shops.map((s: PreStartShop) => ({
                 shopId: s.shopId,
                 shopName: s.shopName,
                 shopSlug: s.shopSlug,

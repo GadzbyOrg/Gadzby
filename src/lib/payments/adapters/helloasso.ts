@@ -71,7 +71,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 		amountCents: number,
 		description: string,
 		internalTransactionId: string,
-		providerOptions?: Record<string, string>
+		_providerOptions?: Record<string, string> // eslint-disable-line @typescript-eslint/no-unused-vars
 	): Promise<PaymentResult> {
 		try {
 			const token = await this.getAccessToken();
@@ -88,10 +88,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 				return url.toString();
 			};
 
-			const callbackParams = {
-				id: internalTransactionId,
-				provider: "helloasso",
-			};
+
 
 			// Note: HelloAsso expects amounts in CENTS.
 			const body = {
@@ -136,9 +133,10 @@ export class HelloAssoAdapter implements PaymentProvider {
 				redirectUrl: data.redirectUrl,
 				totalAmountCents: totalAmountCents,
 			};
-		} catch (e: any) {
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : "Unknown error";
 			console.error("[HelloAsso] Create Payment Failed:", e);
-			throw new Error(`HelloAsso Payment Failed: ${e.message}`);
+			throw new Error(`HelloAsso Payment Failed: ${errorMessage}`);
 		}
 	}
 

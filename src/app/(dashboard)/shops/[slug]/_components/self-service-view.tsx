@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-	processSelfServicePurchase,
-	getUserFamss,
-} from "@/features/shops/actions";
-import { useRouter } from "next/navigation";
-import { ProductGrid } from "./product-grid";
-import { CartSummary } from "./cart-summary";
 import { IconShoppingCart } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { useEffect,useState } from "react";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+	getUserFamss,
+	processSelfServicePurchase,
+} from "@/features/shops/actions";
+
+import { CartSummary } from "./cart-summary";
+import { ProductGrid } from "./product-grid";
 
 type Product = {
 	id: string;
@@ -73,7 +75,7 @@ export function SelfServiceView({
             // But we can enforce min 0
 			const next = Math.max(0, current + delta);
 			if (next === 0) {
-				const { [product.id]: _, ...rest } = prev;
+				const { [product.id]: _dismiss, ...rest } = prev;
 				return rest;
 			}
 			return { ...prev, [product.id]: next };
@@ -129,7 +131,7 @@ export function SelfServiceView({
 
 				setTimeout(() => setSuccess(null), 3000);
 			}
-		} catch (e) {
+		} catch {
 			setError("Une erreur inattendue est survenue");
 		} finally {
 			setIsCheckingOut(false);

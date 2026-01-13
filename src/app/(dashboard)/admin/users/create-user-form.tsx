@@ -1,11 +1,13 @@
 "use client";
 
+import { IconAlertTriangle,IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useActionState, useEffect } from "react";
-import { createUserAction } from "@/features/users/actions";
-import { IconLoader2, IconCheck, IconAlertTriangle } from "@tabler/icons-react";
+
 import { TabagnssSelector } from "@/components/tabagnss-selector";
+import { createUserAction } from "@/features/users/actions";
 
 interface CreateUserFormProps {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	roles: any[];
 	onSuccess: () => void;
 }
@@ -18,7 +20,7 @@ const initialState = {
 export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 	const [state, formAction, isPending] = useActionState(
 		createUserAction,
-		initialState
+		initialState as any
 	);
 
 	useEffect(() => {
@@ -125,7 +127,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							htmlFor="promss"
 							className="text-sm font-medium text-gray-300"
 						>
-							Prom'ss
+							Prom&apos;ss
 						</label>
 						<input
 							required
@@ -231,7 +233,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							<span>Création...</span>
 						</>
 					) : (
-						<span>Créer l'utilisateur</span>
+						<span>Créer l&apos;utilisateur</span>
 					)}
 				</button>
 			</div>

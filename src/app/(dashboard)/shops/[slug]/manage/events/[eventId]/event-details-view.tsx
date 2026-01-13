@@ -1,37 +1,37 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import {
-	IconChartBar,
-	IconUsers,
+	IconAlertTriangle,
 	IconBasket,
-	IconReceipt,
-	IconSettings,
+	IconChartBar,
 	IconCheck,
 	IconLoader2,
-	IconAlertTriangle,
-	IconTrash,
-
 	IconLock,
+	IconReceipt,
+	IconSettings,
+	IconTrash,
+	IconUsers,
 	IconX,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
-import { EventDashboard } from "./_components/event-dashboard";
-import { EventParticipants } from "./_components/event-participants";
-import { EventProducts } from "./_components/event-products";
-import { EventExpenses } from "./_components/event-expenses";
-import { EventRevenues } from "./_components/event-revenues";
-import { EventTransactionsTable } from "./_components/event-transactions-table";
-import { EventForm } from "../create/event-form";
+import { useState, useTransition } from "react";
+
+import { useToast } from "@/components/ui/use-toast";
 import {
-	closeEvent,
 	activateEvent,
+	closeEvent,
 	deleteEvent,
-	previewSettlement,
 	executeSettlement,
 	leaveEvent,
+	previewSettlement,
 } from "@/features/events/actions";
-import { useToast } from "@/components/ui/use-toast";
+
+import { EventForm } from "../create/event-form";
+import { EventDashboard } from "./_components/event-dashboard";
+import { EventExpenses } from "./_components/event-expenses";
+import { EventParticipants } from "./_components/event-participants";
+import { EventProducts } from "./_components/event-products";
+import { EventRevenues } from "./_components/event-revenues";
 
 interface Props {
 	event: any;
@@ -305,7 +305,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 							) : (
 								<IconCheck size={16} />
 							)}
-							Activer l'événement
+							Activer l&apos;événement
 						</button>
 					)}
 
@@ -320,7 +320,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 							) : (
 								<IconLock size={16} />
 							)}
-							{isPayUpfront ? "Solder l'événement" : "Clôturer l'événement"}
+							{isPayUpfront ? "Solder l'événement" : "Clôturer l&apos;événement"}
 						</button>
 					)}
 				</div>
@@ -426,7 +426,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 						{/* Edit Form */}
 						<div>
 							<h3 className="text-lg font-medium text-white mb-4">
-								Modifier l'événement
+								Modifier l&apos;événement
 							</h3>
 							<EventForm
 								shopId={event.shopId}
@@ -453,7 +453,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 										) : (
 											<IconCheck size={16} />
 										)}
-										Activer l'événement
+										Activer l&apos;événement
 									</button>
 								)}
 
@@ -468,7 +468,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 										) : (
 											<IconCheck size={16} />
 										)}
-										Clôturer l'événement
+										Clôturer l&apos;événement
 									</button>
 								)}
 
@@ -482,7 +482,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 									) : (
 										<IconTrash size={16} />
 									)}
-									Supprimer l'événement
+									Supprimer l&apos;événement
 								</button>
 							</div>
 						</div>

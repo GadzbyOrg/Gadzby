@@ -1,10 +1,12 @@
+import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
+
 import { db } from "@/db";
 import { paymentMethods } from "@/db/schema/payment-methods";
 import { users } from "@/db/schema/users";
-import { eq } from "drizzle-orm";
-import { TopUpForm } from "./_components/topup-form";
 import { verifySession } from "@/lib/session";
-import { redirect } from "next/navigation";
+
+import { TopUpForm } from "./_components/topup-form";
 
 export default async function TopUpPage() {
 	const session = await verifySession();
@@ -27,7 +29,7 @@ export default async function TopUpPage() {
 					Ajoutez des crédits à votre solde.
 					<br />
 					Les frais de transaction sont à votre charge pour garantir que
-					l'association reçoive le montant exact.
+					l&apos;association reçoive le montant exact.
 				</p>
 			</div>
 

@@ -7,7 +7,8 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "db:reset": "npx tsx scripts/reset-db.ts"
+    "db:reset": "npx tsx scripts/reset-db.ts",
+    "test": "vitest"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
@@ -46,16 +47,23 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.2",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9",
     "eslint-config-next": "16.1.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "jsdom": "^27.4.0",
     "pg": "^8.16.3",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.17"
   }
 }

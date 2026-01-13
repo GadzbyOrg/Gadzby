@@ -1,10 +1,10 @@
 "use client";
 
+import { IconLoader2, IconLock } from "@tabler/icons-react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+
 import { changeSelfPasswordAction } from "@/features/users/actions";
-import { IconLoader2, IconLock } from "@tabler/icons-react";
-import { ActionResult } from "@/lib/actions";
 import { cn } from "@/lib/utils";
 
 function SubmitButton() {

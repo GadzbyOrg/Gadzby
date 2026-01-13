@@ -1,9 +1,10 @@
-import { pgTable, text, uuid, timestamp, boolean, pgEnum, integer } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { shops } from './shops';
-import { products } from './products';
-import { shopExpenses, eventExpenseSplits } from './expenses';
+import { boolean, integer,pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+
 import { eventParticipants } from './event-participants';
+import { eventExpenseSplits,shopExpenses } from './expenses';
+import { products } from './products';
+import { shops } from './shops';
 import { users } from './users';
 
 export const eventTypeEnum = pgEnum('event_type', ['SHARED_COST', 'COMMERCIAL']);

@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
-import { useState } from "react";
 import { useRouter } from "next/navigation"; // Correct import for App Router
-import { createProduct, updateProduct, createCategory } from "@/features/shops/products";
+import { useState } from "react";
+
+import { createCategory,createProduct, updateProduct } from "@/features/shops/products";
 
 type Category = {
     id: string;

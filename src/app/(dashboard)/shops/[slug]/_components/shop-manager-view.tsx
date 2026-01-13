@@ -1,18 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ClientSearch } from "@/components/dashboard/client-search";
-import { ProductGrid } from "./product-grid";
-import { processSale, getUserFamss } from "@/features/shops/actions";
 import { IconShoppingCart } from "@tabler/icons-react";
-import { CartSummary } from "./cart-summary";
+import { useRouter } from "next/navigation";
+import { useEffect,useState } from "react";
+
+import { ClientSearch } from "@/components/dashboard/client-search";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { getUserFamss,processSale } from "@/features/shops/actions";
+
+import { CartSummary } from "./cart-summary";
+import { ProductGrid } from "./product-grid";
 
 interface ShopManagerViewProps {
 	shopSlug: string;
@@ -60,7 +62,7 @@ export function ShopManagerView({
 			const current = prev[product.id] || 0;
 			const next = Math.max(0, current + delta);
 			if (next === 0) {
-				const { [product.id]: _, ...rest } = prev;
+				const { [product.id]: _dismiss, ...rest } = prev;
 				return rest;
 			}
 			return { ...prev, [product.id]: next };

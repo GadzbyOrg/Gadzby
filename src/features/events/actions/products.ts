@@ -1,19 +1,20 @@
 "use server";
 
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
 import { db } from "@/db";
 import { products } from "@/db/schema/products";
-import { shopUsers } from "@/db/schema/shops";
-import { authenticatedAction } from "@/lib/actions";
-import {
-	linkProductsSchema,
-	unlinkProductSchema,
-	shopIdSchema,
-} from "../schemas";
 import {
 	checkShopPermission,
 } from "@/features/shops/utils";
-import { and, eq, inArray, isNull } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { authenticatedAction } from "@/lib/actions";
+
+import {
+	linkProductsSchema,
+	shopIdSchema,
+	unlinkProductSchema,
+} from "../schemas";
 
 export const getAvailableProductsAction = authenticatedAction(
 	shopIdSchema,

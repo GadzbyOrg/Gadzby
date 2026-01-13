@@ -1,12 +1,13 @@
 "use server";
 
+import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
 import { db } from "@/db";
 import { systemSettings } from "@/db/schema/settings";
 import { users } from "@/db/schema/users";
-import { eq } from "drizzle-orm";
 import { verifySession } from "@/lib/session";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 
 const emailConfigSchema = z.object({
 	provider: z.enum(["smtp", "resend"]),
@@ -38,7 +39,7 @@ export async function getEmailConfigAction() {
     }
 }
 
-export async function updateEmailConfigAction(prevState: any, formData: FormData) {
+export async function updateEmailConfigAction(prevState: unknown, formData: FormData) {
     const session = await verifySession();
     if (!session || !session.permissions.includes("ADMIN_ACCESS")) return { error: "Non autorisé" };
 
@@ -101,7 +102,7 @@ export async function updateEmailConfigAction(prevState: any, formData: FormData
     }
 }
 
-export async function testEmailConfigAction(prevState: any, formData: FormData) {
+export async function testEmailConfigAction(prevState: unknown, formData: FormData) {
     const session = await verifySession();
     if (!session || !session.permissions.includes("ADMIN_ACCESS")) return { error: "Non autorisé" };
 
@@ -151,11 +152,12 @@ export async function testEmailConfigAction(prevState: any, formData: FormData) 
         // Dynamically import to avoid circular dependencies if any, though likely not needed here since lib/email is separate layer
         const { sendTestEmail } = await import("@/lib/email");
         
-        await sendTestEmail(parsed.data as any, testEmail);
+        await sendTestEmail(parsed.data, testEmail);
 
         return { success: `Email de test envoyé à ${testEmail}` };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Failed to send test email:", error);
-        return { error: `Erreur d'envoi : ${error.message || "Erreur inconnue"}` };
+		const e = error as Error;
+        return { error: `Erreur d'envoi : ${e.message || "Erreur inconnue"}` };
     }
 }

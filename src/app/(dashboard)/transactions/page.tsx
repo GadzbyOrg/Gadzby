@@ -1,4 +1,5 @@
 import { getUserTransactionsAction } from "@/features/transactions/actions";
+
 import { TransactionsTableWrapper } from "./_components/transactions-table-wrapper";
 
 export default async function TransactionsPage({
@@ -11,7 +12,8 @@ export default async function TransactionsPage({
     const limit = 50;
 
 	const result = await getUserTransactionsAction({ page, limit });
-	const transactions = result.success ? result.data : [];
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const transactions = (result as any).error === undefined ? (result as any).transactions || (result as any).data : [];
 
 	return (
 		<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

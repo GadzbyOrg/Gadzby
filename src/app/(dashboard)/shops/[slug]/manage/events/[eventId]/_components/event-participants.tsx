@@ -1,24 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
-	IconUserPlus,
-	IconTrash,
-	IconX,
 	IconAlertTriangle,
+	IconTrash,
+	IconUserPlus,
+	IconX,
 } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { useEffect,useState } from "react";
+import * as XLSX from "xlsx";
+
+import { PromssSelector } from "@/components/promss-selector";
+import { useToast } from "@/components/ui/use-toast";
 import {
 	importParticipants,
 	importParticipantsFromList,
-	updateParticipant,
-	leaveEvent,
 	joinEvent,
+	leaveEvent,
+	updateParticipant,
 } from "@/features/events/actions";
 import { getPromssListAction } from "@/features/transactions/mass-payment-actions";
-import { PromssSelector } from "@/components/promss-selector";
-import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from "next/navigation";
-import * as XLSX from "xlsx";
+
 import { UserSearch } from "./user-search";
 
 interface Props {
@@ -26,7 +28,7 @@ interface Props {
 	slug: string;
 }
 
-export function EventParticipants({ event, slug }: Props) {
+export function EventParticipants({ event, slug: _slug }: Props) {
 	const router = useRouter();
 	const { toast } = useToast();
 
@@ -118,7 +120,7 @@ export function EventParticipants({ event, slug }: Props) {
 
 			toast({
 				title: "Succès",
-				description: `${result?.data?.count || 0} participants importés`,
+				description: `${result?.count || 0} participants importés`,
 				variant: "default",
 			});
 			setImportOpen(false);

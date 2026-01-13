@@ -1,9 +1,11 @@
+import { IconBuildingStore } from "@tabler/icons-react";
+import { redirect } from "next/navigation";
+
 import { getAdminShops } from "@/features/shops/actions";
-import { IconBuildingStore, IconUsers } from "@tabler/icons-react";
+import { verifySession } from "@/lib/session";
+
 import { CreateShopModal } from "./create-shop-modal";
 import { ShopCard } from "./shop-card";
-import { verifySession } from "@/lib/session";
-import { redirect } from "next/navigation";
 
 export default async function AdminShopsPage() {
 	const session = await verifySession();

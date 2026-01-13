@@ -1,9 +1,10 @@
 "use client";
 
+import { IconAlertTriangle, IconBan, IconCheck, IconLoader2, IconRefresh } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { getMassOperationsHistoryAction, cancelMassOperationAction } from "@/features/transactions/mass-payment-actions";
-import { IconLoader2, IconBan, IconCheck, IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
+
 import { useToast } from "@/components/ui/use-toast";
+import { cancelMassOperationAction,getMassOperationsHistoryAction } from "@/features/transactions/mass-payment-actions";
 
 export function OperationsHistoryView() {
     const { toast } = useToast();
@@ -196,7 +197,7 @@ export function OperationsHistoryView() {
                                     className="w-full py-3 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-500 hover:text-red-400 transition-all text-sm font-semibold flex items-center justify-center gap-2"
                                 >
                                     {processingId === op.groupId ? <IconLoader2 className="animate-spin" size={16} /> : <IconAlertTriangle size={16} />}
-                                    Annuler l'opération
+                                    Annuler l&apos;opération
                                 </button>
                             )}
                         </div>

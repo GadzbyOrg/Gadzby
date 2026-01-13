@@ -1,11 +1,12 @@
-import { verifySession } from "@/lib/session";
+import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { ToastProvider } from "@/components/ui/use-toast";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { getShops } from "@/features/shops/actions";
-import { ToastProvider } from "@/components/ui/use-toast";
+import { verifySession } from "@/lib/session";
 
 export default async function Layout({
 	children,

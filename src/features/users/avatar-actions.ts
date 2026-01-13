@@ -1,13 +1,14 @@
 "use server";
 
-import { verifySession } from "@/lib/session";
-import { db } from "@/db";
-import { users } from "@/db/schema/users";
 import { eq } from "drizzle-orm";
+import { existsSync } from "fs";
+import { mkdir, unlink,writeFile } from "fs/promises";
 import { revalidatePath } from "next/cache";
 import { join } from "path";
-import { writeFile, mkdir, unlink } from "fs/promises";
-import { existsSync } from "fs";
+
+import { db } from "@/db";
+import { users } from "@/db/schema/users";
+import { verifySession } from "@/lib/session";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];

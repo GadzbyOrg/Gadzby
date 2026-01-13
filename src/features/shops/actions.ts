@@ -1,28 +1,29 @@
 "use server";
 
+import { and, count,eq, gte, lte } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
 import { db } from "@/db";
 import {
-	shops,
-	shopUsers,
-	transactions,
 	products,
 	shopExpenses,
 	shopRoles,
+	shops,
+	shopUsers,
+	transactions,
 } from "@/db/schema";
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
 import { verifySession } from "@/lib/session";
-import { eq, and, sql, gte, lte, count } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-
-import {
-	getUserShopPermissions,
-	hasShopPermission,
-	checkShopPermission,
-} from "./utils";
-import { getTransactionsQuery } from "../transactions/queries";
 import { TransactionService } from "@/services/transaction-service";
+
+import { getTransactionsQuery } from "../transactions/queries";
 import * as schemas from "./schemas";
 import { SHOP_PERMISSIONS } from "./schemas";
+import {
+	checkShopPermission,
+	getUserShopPermissions,
+	hasShopPermission,
+} from "./utils";
 
 // --- Queries / Getters ---
 
@@ -88,7 +89,7 @@ export const getShops = authenticatedActionNoInput(async ({ session }) => {
 
 		if (isVisible) {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { products, ...shopData } = shop;
+			const { products: _products, ...shopData } = shop;
 			result.push({
 				...shopData,
 				canManage,
@@ -420,6 +421,7 @@ export const getShopTransactions = authenticatedAction(
 		const history = await db.query.transactions.findMany({
 			...baseQuery,
 			where: whereClause,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} as any);
 
 		const totalCountResult = await db
@@ -472,6 +474,7 @@ export const exportShopTransactionsAction = authenticatedAction(
 			where: whereClause,
 			limit: undefined,
 			offset: undefined,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} as any);
 
 		const formattedData = data.map((t: any) => ({
@@ -641,14 +644,11 @@ export async function addShopMember(
 		if (existingMember)
 			return { error: "Cet utilisateur est déjà dans l'équipe" };
 
-		let newRole = "MEMBRE" as "MEMBRE" | "VP" | "GRIPSS";
-		let newRoleId: string | null = null;
 
-		if (["VP", "MEMBRE", "GRIPSS"].includes(roleOrRoleId)) {
-			newRole = roleOrRoleId as any;
-		} else {
+
+		let newRoleId: string | null = null;
+		if (!["VP", "MEMBRE", "GRIPSS"].includes(roleOrRoleId)) {
 			newRoleId = roleOrRoleId;
-			newRole = "MEMBRE";
 		}
 
 		await db.insert(shopUsers).values({
@@ -721,14 +721,9 @@ export async function updateShopMemberRole(
 
 		if (!isAuthorized) return { error: "Non autorisé" };
 
-		let newRole = "MEMBRE" as "MEMBRE" | "VP" | "GRIPSS";
 		let newRoleId: string | null = null;
-
-		if (["VP", "MEMBRE", "GRIPSS"].includes(roleOrRoleId)) {
-			newRole = roleOrRoleId as any;
-		} else {
+		if (!["VP", "MEMBRE", "GRIPSS"].includes(roleOrRoleId)) {
 			newRoleId = roleOrRoleId;
-			newRole = "MEMBRE";
 		}
 
 		await db
