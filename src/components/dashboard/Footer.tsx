@@ -38,7 +38,7 @@ export function Footer() {
 
 				<div className="flex items-center gap-4">
 					<Link
-						href="https://github.com/LouisChabanon/Gadzby"
+						href="https://github.com/GadzbyOrg/Gadzby"
 						target="_blank"
 						rel="noopener noreferrer"
 						className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
