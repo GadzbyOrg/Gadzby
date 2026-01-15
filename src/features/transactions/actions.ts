@@ -232,3 +232,22 @@ export const cancelTransactionGroupAction = authenticatedAction(
 	},
 	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
 );
+
+export const updateTransactionQuantityAction = authenticatedAction(
+	z.object({
+		transactionId: z.string(),
+		newQuantity: z.number().min(0),
+	}),
+	async ({ transactionId, newQuantity }, { session }) => {
+		const result = await TransactionService.updateTransactionQuantity(
+			transactionId,
+			newQuantity,
+			session.userId
+		);
+		revalidatePath("/admin");
+		revalidatePath("/admin/transactions");
+		revalidatePath("/");
+		return { success: result.message || "Quantité mise à jour avec succès" };
+	},
+	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
+);

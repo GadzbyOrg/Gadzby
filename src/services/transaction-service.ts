@@ -475,4 +475,131 @@ export class TransactionService {
 			return { success: true, count: groupTxs.length };
 		});
 	}
+
+	/**
+	 * Update transaction quantity (Partial Cancellation).
+	 * Uses "Cancel & Replace" pattern.
+	 */
+	static async updateTransactionQuantity(
+		transactionId: string,
+		newQuantity: number,
+		performedByUserId: string
+	) {
+		if (newQuantity < 0) throw new Error("Quantité invalide");
+
+		return await db.transaction(async (tx) => {
+			const originalTx = await tx.query.transactions.findFirst({
+				where: eq(transactions.id, transactionId),
+				with: {
+					product: true,
+				},
+			});
+
+			if (!originalTx) throw new Error("Transaction introuvable");
+			if (originalTx.type !== "PURCHASE")
+				throw new Error("Seuls les achats peuvent être modifiés");
+			if (originalTx.quantity === null)
+				throw new Error("Quantité non spécifiée sur la transaction");
+			if (
+				originalTx.status === "CANCELLED" ||
+				originalTx.status === "FAILED" ||
+				originalTx.status === "PENDING"
+			)
+				throw new Error("Transaction non modifiable (déjà annulée ou échouée)");
+
+			if (newQuantity === 0) {
+				// Full cancellation
+				await TransactionService.reverseSingleTransaction(
+					tx,
+					originalTx,
+					performedByUserId,
+					false
+				);
+				return { success: true, message: "Transaction annulée" };
+			}
+
+			if (newQuantity >= originalTx.quantity) {
+				throw new Error(
+					"La nouvelle quantité doit être inférieure à l'actuelle pour une annulation partielle"
+				);
+			}
+
+			// 1. Cancel Original (Refunds balance + Restocks product)
+			await TransactionService.reverseSingleTransaction(
+				tx,
+				originalTx,
+				performedByUserId,
+				false
+			);
+
+			// 2. Create Replacement Transaction
+			// Recalculate amount
+			// originalTx.amount is negative (e.g. -500). quantity is 5. unit = -100.
+			const unitAmount = originalTx.amount / originalTx.quantity;
+			const newAmount = Math.round(unitAmount * newQuantity);
+
+			// Update Balance (Consume again)
+			if (originalTx.walletSource === "FAMILY" && originalTx.famsId) {
+				const fam = await tx.query.famss.findFirst({
+					where: eq(famss.id, originalTx.famsId),
+					columns: { balance: true },
+				});
+				await tx
+					.update(famss)
+					.set({ balance: sql`${famss.balance} + ${newAmount}` }) // newAmount is negative
+					.where(eq(famss.id, originalTx.famsId));
+			} else {
+				await tx
+					.update(users)
+					.set({ balance: sql`${users.balance} + ${newAmount}` }) // newAmount is negative
+					.where(eq(users.id, originalTx.targetUserId));
+			}
+
+			// Update Stock (Consume again)
+			if (originalTx.productId) {
+				const product = originalTx.product;
+				const fcv = product?.fcv || 1.0;
+
+				await tx
+					.update(products)
+					.set({
+						stock: sql`${products.stock} - (${newQuantity}::integer * ${fcv}::double precision)`,
+					})
+					.where(eq(products.id, originalTx.productId));
+			}
+
+			// Generate new description
+			let newDescription = originalTx.description;
+			// Try to handle standard format "Achat [Product] x[Qty]"
+			if (originalTx.product && originalTx.description?.includes(originalTx.product.name)) {
+				// Naive replace
+				if (originalTx.description.includes(`x${originalTx.quantity}`)) {
+					 newDescription = originalTx.description.replace(`x${originalTx.quantity}`, `x${newQuantity}`);
+				} else {
+					// Append correction
+					newDescription = `${originalTx.product.name} x${newQuantity} (Correction)`;
+				}
+			} else {
+				newDescription = `${originalTx.description} (Correction qté ${originalTx.quantity} -> ${newQuantity})`;
+			}
+
+			// Insert New Transaction
+			await tx.insert(transactions).values({
+				amount: newAmount,
+				type: "PURCHASE",
+				walletSource: originalTx.walletSource,
+				status: "COMPLETED",
+				issuerId: performedByUserId, // Admin who performed correction
+				targetUserId: originalTx.targetUserId,
+				shopId: originalTx.shopId,
+				productId: originalTx.productId,
+				eventId: originalTx.eventId,
+				quantity: newQuantity,
+				famsId: originalTx.famsId,
+				description: newDescription,
+			});
+
+			return { success: true, message: "Quantité mise à jour" };
+		});
+	}
 }

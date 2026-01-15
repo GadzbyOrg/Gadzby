@@ -16,13 +16,14 @@ import {
 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 
-import { CancelButton, CancelGroupButton } from "@/app/(dashboard)/admin/transaction-components";
+import { CancelGroupButton, TransactionActions } from "@/app/(dashboard)/admin/transaction-components";
 import { cn } from "@/lib/utils";
 
 // Define types locally for now, could be moved to shared types
 export interface TransactionWithRelations {
     id: string;
     amount: number;
+    quantity?: number | null;
     type: "PURCHASE" | "TOPUP" | "TRANSFER" | "REFUND" | "DEPOSIT" | "ADJUSTMENT";
     status: "COMPLETED" | "CANCELLED" | "PENDING" | "FAILED";
     createdAt: Date | string;
@@ -548,14 +549,14 @@ function TransactionRow({
 
 			{isAdmin && (
 				<td className="px-6 py-4 text-right">
-					{canCancel && (
-                        <CancelButton
-                            transactionId={t.id}
-                            isCancelled={isCancelled || false}
-                            isFailed={isFailed}
-                            isPending={isPending}
-                        />
-                    )}
+					<TransactionActions
+                        transactionId={t.id}
+                        quantity={t.quantity}
+                        type={t.type}
+                        isCancelled={isCancelled || false}
+                        isFailed={isFailed}
+                        isPending={isPending}
+                    />
 				</td>
 			)}
 		</tr>
@@ -627,14 +628,15 @@ function TransactionMobileCard({
                     {isFailed && <span className="text-[10px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">Échoué</span>}
                     
                      {/* Action Button Integrated */}
-                    {isAdmin && canCancel && (
-                        <div className="mt-1">
-                             <CancelButton
+                    {isAdmin && (
+                        <div className="mt-1 flex gap-2 justify-end z-20 relative">
+                             <TransactionActions
                                 transactionId={t.id}
+                                quantity={t.quantity}
+                                type={t.type}
                                 isCancelled={isCancelled || false}
                                 isFailed={isFailed}
                                 isPending={isPending}
-                                size="sm" // Assuming CancelButton might accept a size, if not it will ignore
                             />
                         </div>
                     )}

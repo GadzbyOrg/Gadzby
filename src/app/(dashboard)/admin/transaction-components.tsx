@@ -2,7 +2,9 @@
 
 import {
 	IconFilter,
+	IconDots,
 	IconLoader2,
+	IconPencil,
 	IconSearch,
 	IconSortAscending,
 	IconSortDescending,
@@ -11,8 +13,21 @@ import {
 // ... existing imports
 import { IconCalendar } from "@tabler/icons-react";
 import { usePathname,useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
+
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 function DateRangeFilter() {
     const searchParams = useSearchParams();
@@ -203,50 +218,189 @@ export function ExportButton() {
 	);
 }
 
-export function CancelButton({
+
+
+export function TransactionActions({
 	transactionId,
+	quantity,
+	type,
 	isCancelled,
-    size = "md",
+	isFailed,
+	isPending,
 }: {
 	transactionId: string;
+	quantity?: number | null;
+	type: string;
 	isCancelled: boolean;
 	isFailed?: boolean;
 	isPending?: boolean;
-    size?: "sm" | "md";
 }) {
-	const [isCancelling, startTransition] = useTransition();
+	const [menuOpen, setMenuOpen] = useState(false);
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
+	const [editQuantity, setEditQuantity] = useState(quantity || 0);
 
-	// Redondant with action but more client checks never hurt
-	if (isCancelled)
-		return <span className="text-xs text-gray-500 italic">Annulé</span>;
+	const [isCancelling, startCancel] = useTransition();
+	const [isUpdating, startUpdate] = useTransition();
 
-	const onCancel = () => {
-		if (!confirm("Êtes-vous sûr de vouloir annuler cette transaction ?"))
-			return;
+	if (isCancelled) return null;
 
-		startTransition(async () => {
+	const canEdit = type === "PURCHASE" && (quantity || 0) > 1 && !isFailed && !isPending;
+	const canCancel = !isFailed && !isPending;
+
+	if (!canCancel && !canEdit) return null;
+
+	const handleCancel = () => {
+		if (!confirm("Êtes-vous sûr de vouloir annuler cette transaction ?")) return;
+
+		setMenuOpen(false);
+		startCancel(async () => {
+			const { cancelTransactionAction } = await import(
+				"@/features/transactions/actions"
+			);
 			const res = await cancelTransactionAction({ transactionId });
+			if (res.error) alert(res.error);
+		});
+	};
+
+	const handleUpdate = () => {
+		if (editQuantity < 0) return alert("La quantité ne peut pas être négative");
+		if (quantity && editQuantity >= quantity)
+			return alert("La nouvelle quantité doit être inférieure à la quantité actuelle");
+
+		startUpdate(async () => {
+			const { updateTransactionQuantityAction } = await import(
+				"@/features/transactions/actions"
+			);
+			const res = await updateTransactionQuantityAction({
+				transactionId,
+				newQuantity: editQuantity,
+			});
+
 			if (res.error) {
 				alert(res.error);
+			} else {
+				setEditDialogOpen(false);
 			}
 		});
 	};
 
-    const isSmall = size === "sm";
-
 	return (
-		<button
-			onClick={onCancel}
-			disabled={isCancelling}
-			className={`text-red-400 hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50 ${isSmall ? "p-1" : "p-2"}`}
-			title="Annuler"
-		>
-			{isCancelling ? (
-				<IconLoader2 className={`${isSmall ? "w-3 h-3" : "w-4 h-4"} animate-spin`} />
-			) : (
-				<IconTrash className={isSmall ? "w-3 h-3" : "w-4 h-4"} />
-			)}
-		</button>
+		<>
+			<div className="relative inline-block text-left">
+				<button
+					onClick={(e) => {
+						e.stopPropagation();
+						setMenuOpen(!menuOpen);
+					}}
+					disabled={isCancelling || isUpdating}
+					className="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-dark-800 rounded-md transition-colors"
+				>
+					{isCancelling || isUpdating ? (
+						<IconLoader2 className="w-4 h-4 animate-spin" />
+					) : (
+						<IconDots className="w-4 h-4" />
+					)}
+				</button>
+
+				{menuOpen && (
+					<>
+						<div
+							className="fixed inset-0 z-10"
+							onClick={(e) => {
+								e.stopPropagation();
+								setMenuOpen(false);
+							}}
+						/>
+						<div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-dark-900 border border-dark-700 shadow-xl z-20 overflow-hidden ring-1 ring-black ring-opacity-5 focus:outline-none">
+							<div className="py-1">
+								{canEdit && (
+									<button
+										onClick={(e) => {
+											e.stopPropagation();
+											setMenuOpen(false);
+											setEditQuantity(quantity || 0);
+											setEditDialogOpen(true);
+										}}
+										className="flex w-full items-center px-4 py-2 text-sm text-gray-300 hover:bg-dark-800 hover:text-white"
+									>
+										<IconPencil className="mr-3 h-4 w-4 text-gray-500" />
+										Modifier quantité
+									</button>
+								)}
+								{canCancel && (
+									<button
+										onClick={(e) => {
+											e.stopPropagation();
+											handleCancel();
+										}}
+										className="flex w-full items-center px-4 py-2 text-sm text-red-400 hover:bg-red-900/10 hover:text-red-300"
+									>
+										<IconTrash className="mr-3 h-4 w-4 text-red-500" />
+										Annuler transaction
+									</button>
+								)}
+							</div>
+						</div>
+					</>
+				)}
+			</div>
+
+			<Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+				<DialogContent className="bg-dark-900 border-dark-800 text-gray-200">
+					<DialogHeader>
+						<DialogTitle>Modifier la quantité</DialogTitle>
+						<DialogDescription>
+							Réduire la quantité d&apos;articles pour cet achat. Cela annulera
+							partiellement la transaction.
+							<br />
+							<span className="text-yellow-500 text-sm mt-2 block">
+								Attention : Mettre à 0 annulera totalement la transaction.
+							</span>
+						</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-4 py-4">
+						<div className="grid grid-cols-4 items-center gap-4">
+							<Label htmlFor="quantity" className="text-right">
+								Quantité
+							</Label>
+							<Input
+								id="quantity"
+								type="number"
+								value={editQuantity}
+								onChange={(e) => setEditQuantity(parseInt(e.target.value) || 0)}
+								className="col-span-3 bg-dark-800 border-dark-700 text-gray-200"
+								min={0}
+								max={(quantity || 1) - 1}
+							/>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="ghost"
+							onClick={() => setEditDialogOpen(false)}
+							disabled={isUpdating}
+							className="hover:bg-dark-800 text-gray-400 hover:text-gray-200"
+						>
+							Annuler
+						</Button>
+						<Button
+							onClick={handleUpdate}
+							disabled={isUpdating}
+							className="bg-primary-600 hover:bg-primary-500 text-white"
+						>
+							{isUpdating ? (
+								<>
+									<IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+									Traitement...
+								</>
+							) : (
+								"Valider"
+							)}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }
 
@@ -305,6 +459,8 @@ export function CancelGroupButton({
 		</button>
 	);
 }
+
+
 
 import { TransactionTable } from "@/components/transactions/transaction-table";
 

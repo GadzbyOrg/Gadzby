@@ -18,6 +18,13 @@ describe('TransactionService', () => {
       users: {
         findFirst: vi.fn(),
       },
+      famss: {
+        findFirst: vi.fn(),
+      },
+      products: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+      },
       transactions: {
         findFirst: vi.fn(),
         findMany: vi.fn(),
@@ -203,5 +210,117 @@ describe('TransactionService', () => {
         // Should perform reversal for BOTH (2 updates * 2 + 2 inserts + 2 status updates)
         // We just verify it completed successfully without error
     })
-  })
+  	})
+
+	describe("updateTransactionQuantity", () => {
+		const txId = "tx-123";
+		const adminId = "admin-1";
+
+		it("should successfully reduce quantity (Partial Cancel)", async () => {
+			const mockOriginalTx = {
+				id: txId,
+				amount: -500, // 5 items * 1.00 EUR
+				status: "COMPLETED",
+				type: "PURCHASE",
+				quantity: 5,
+				targetUserId: "user-1",
+				walletSource: "PERSONAL",
+				createdAt: new Date(),
+				product: {
+					id: "prod-1",
+					name: "Soda",
+					fcv: 1.0,
+					stock: 10,
+				},
+                productId: "prod-1", // Needed for logic checks
+			};
+
+			mockTx.query.transactions.findFirst.mockResolvedValue(mockOriginalTx);
+            // Mock finding user/fams balance/stock for updates
+            mockTx.query.famss.findFirst.mockResolvedValue({ balance: 1000 });
+            mockTx.query.users.findFirst.mockResolvedValue({ balance: 1000 });
+
+
+			await TransactionService.updateTransactionQuantity(txId, 3, adminId);
+
+			// Check finding original
+			expect(mockTx.query.transactions.findFirst).toHaveBeenCalled();
+
+			// Logic verification:
+            // 5 Updates:
+            // 1. Reversal Balance
+            // 2. Reversal Stock
+            // 3. Status Update (Cancelled)
+            // 4. New Balance
+            // 5. New Stock
+			expect(mockTx.update).toHaveBeenCalledTimes(5);
+             // Actually:
+             // Reversal:
+             // 1. Update Balance (User)
+             // 2. Update Stock
+             // 3. Update Status (Tx)
+             // New:
+             // 4. Update Balance (User)
+             // 5. Update Stock
+             // Total 5 updates.
+             
+             // Inserts:
+             // 1. Reversal Tx
+             // 2. New Tx
+             expect(mockTx.insert).toHaveBeenCalledTimes(2);
+
+		});
+
+		it("should fully cancel if quantity is 0", async () => {
+			const mockOriginalTx = {
+				id: txId,
+				amount: -500,
+				status: "COMPLETED",
+				type: "PURCHASE",
+				quantity: 5,
+				targetUserId: "user-1",
+				walletSource: "PERSONAL",
+                product: { id: "p1", stock: 10 },
+			};
+			mockTx.query.transactions.findFirst.mockResolvedValue(mockOriginalTx);
+
+			await TransactionService.updateTransactionQuantity(txId, 0, adminId);
+
+			// Should only do reversal
+            // Reversal inserts 1 tx (refund)
+			expect(mockTx.insert).toHaveBeenCalledTimes(1);
+		});
+
+		it("should throw if new quantity >= old quantity", async () => {
+			const mockOriginalTx = {
+				id: txId,
+				amount: -500,
+				status: "COMPLETED",
+				type: "PURCHASE",
+				quantity: 5,
+				product: {},
+			};
+			mockTx.query.transactions.findFirst.mockResolvedValue(mockOriginalTx);
+
+			await expect(
+				TransactionService.updateTransactionQuantity(txId, 6, adminId)
+			).rejects.toThrow("La nouvelle quantité doit être inférieure");
+		});
+
+        it("should throw if not PURCHASE", async () => {
+			const mockOriginalTx = {
+				id: txId,
+				amount: -500,
+				status: "COMPLETED",
+				type: "TRANSFER", // Not Purchase
+				quantity: null,
+                product: null,
+			};
+			mockTx.query.transactions.findFirst.mockResolvedValue(mockOriginalTx);
+
+			await expect(
+				TransactionService.updateTransactionQuantity(txId, 3, adminId)
+			).rejects.toThrow("Seuls les achats peuvent être modifiés");
+		});
+	});
 })
