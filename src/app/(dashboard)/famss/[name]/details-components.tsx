@@ -102,7 +102,7 @@ export function TransferForm({ famsName }: { famsName: string }) {
 
 	return (
 		<div className="bg-dark-900 border border-dark-800 p-6 rounded-xl space-y-4">
-			<h3 className="text-lg font-bold text-white">Verser de l&apos;argent</h3>
+			<h3 className="text-lg font-bold text-white">Verser de l'argent</h3>
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<div className="space-y-2">
 					<label className="text-sm font-medium text-gray-400">
@@ -126,7 +126,7 @@ export function TransferForm({ famsName }: { famsName: string }) {
 					disabled={loading}
 					className="w-full bg-primary-600 text-white px-4 py-2 rounded font-medium hover:bg-primary-500 disabled:opacity-50 transition-colors cursor-pointer"
 				>
-					{loading ? "Transfert en cours..." : "Envoyer vers la Fam&apos;ss"}
+					{loading ? "Transfert en cours..." : "Envoyer vers la Fam'ss"}
 				</button>
 
 				{status && (
@@ -308,7 +308,7 @@ export function MembershipRequestsList({
 		<div className="bg-dark-900 border border-dark-800 p-6 rounded-xl space-y-4 mb-6">
 			<div className="flex justify-between items-center mb-2">
 				<h3 className="text-lg font-bold text-white flex items-center gap-2">
-					Demandes d&apos;adhésion
+					Demandes d'adhésion
 					<span className="bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">
 						{requests.length}
 					</span>

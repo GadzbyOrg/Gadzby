@@ -43,7 +43,7 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
         return (
             <div className="p-8 text-center bg-dark-900 border border-red-900/50 rounded-xl m-4 mx-auto max-w-2xl">
                 <h1 className="text-xl text-red-500 mb-2 font-bold">Accès Refusé</h1>
-                <p className="text-gray-400">Vous n&apos;êtes pas membre de la Fam&apos;ss &quot;{famsName}&quot;.</p>
+                <p className="text-gray-400">Vous n'êtes pas membre de la Fam'ss '{famsName}'.</p>
                 <p className="text-sm text-gray-500 mt-2">Demandez à un administrateur de vous ajouter.</p>
             </div>
         );
