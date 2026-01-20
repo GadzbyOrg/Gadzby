@@ -14,6 +14,7 @@ import {
 	getUsersByPromssAction,
 	processMassChargeAction,
 	resolveUsersFromExcelAction,
+    resolveUsersFromRowsAction,
     searchUsersForPaymentAction
 } from "@/features/transactions/mass-payment-actions";
 
@@ -61,13 +62,25 @@ export function NewOperationView() {
         setSelectedUsers(newMap);
     };
 
-    const handleExcelImport = async (_: any, formData: FormData) => {
-        const res = await resolveUsersFromExcelAction(formData);
+    const handleExcelImport = async (_: any, data: FormData | { rows: any[] }) => {
+        let res;
+        if ("rows" in data) {
+            res = await resolveUsersFromRowsAction(data);
+        } else {
+            res = await resolveUsersFromExcelAction(data);
+        }
+
         if (res?.users) {
              const newMap = new Map(selectedUsers);
              res.users.forEach((u: any) => newMap.set(u.id, u));
              setSelectedUsers(newMap);
-             return { success: `${res.users.length} trouvés, ${res.notFound?.length} ignorés` };
+             
+             return { 
+                 success: `${res.users.length} trouvés`,
+                 importedCount: res.users.length,
+                 skippedCount: res.notFound?.length,
+                 skipped: res.notFound?.map((n: any) => `Non trouvé: ${n}`)
+             };
         }
         return { error: res?.error || "Erreur" };
     };

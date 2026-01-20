@@ -27,7 +27,7 @@ export function ShopCard({ shop }: ShopCardProps) {
 		setLoading(true);
 
 		const newStatus = !shop.isActive;
-		const res = await toggleShopStatusAction(shop.id, newStatus);
+		const res = await toggleShopStatusAction({ shopId: shop.id, isActive: newStatus });
 
 		setLoading(false);
 

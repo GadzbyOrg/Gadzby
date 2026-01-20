@@ -22,7 +22,7 @@ import { useTransition } from "react";
 
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { PromssSelector } from "@/components/promss-selector";
-import { importUsersAction, importUsersBatchAction } from "@/features/users/actions";
+import { importUsersBatchAction } from "@/features/users/actions";
 import { toggleUserStatusAction } from "@/features/users/actions";
 
 import { CreateUserForm } from "./create-user-form";
@@ -350,8 +350,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
 				<div className="w-full md:w-auto flex gap-2 md:ml-auto">
 					<ExcelImportModal
-						action={importUsersAction}
-						batchAction={importUsersBatchAction}
+						action={importUsersBatchAction}
 						triggerLabel="Importer"
 						modalTitle="Importer des utilisateurs"
 						expectedFormat="Nom, Prenom, Email, Phone, Bucque, Promss, Nums, Tabagn'ss, Balance"

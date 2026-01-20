@@ -9,86 +9,27 @@ import {
 	inventoryAudits,
 	productRestocks,
 	products,
-	shops,
-	shopUsers,
 } from "@/db/schema";
 import { verifySession } from "@/lib/session";
+import { ShopService } from "@/services/shop-service";
 
-import { getUserShopPermissions } from "./utils";
-
-// Helper to check permissions (Duplicated from products.ts, ideally should be shared)
-async function checkShopPermission(shopSlug: string) {
-	const session = await verifySession();
-	if (!session) return null;
-
-	// Fetch shop with permissions and user membership
-	const shop = await db.query.shops.findFirst({
-		where: eq(shops.slug, shopSlug),
-		with: {
-			members: {
-				where: eq(shopUsers.userId, session.userId),
-				with: { shopRole: true },
-			},
-		},
-	});
-
-	if (!shop) return null;
-
-	if (
-		session.permissions.includes("ADMIN_ACCESS") ||
-		session.permissions.includes("MANAGE_SHOPS")
-	)
-		return { session, isAuthorized: true, shop, permissions: [] as string[] };
-	// Check membership
-	const membership = shop.members[0];
-	if (!membership) return null;
-
-	const permissions = membership.shopRole
-		? membership.shopRole.permissions
-		: [];
-
-	return { session, isAuthorized: true, shop, membership, permissions };
-}
+import { getShopOrThrow } from "./utils";
+import { SHOP_PERM } from "./permissions";
 
 export async function restockProduct(
 	shopSlug: string,
 	productId: string,
 	quantity: number
 ) {
-	const perm = await checkShopPermission(shopSlug);
-	if (!perm) return { error: "Non autorisé" };
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
 
-	// Permission check
-	if (
-		!perm.session.permissions.includes("ADMIN_ACCESS") &&
-		!perm.session.permissions.includes("MANAGE_SHOPS")
-	) {
-		const userPerms = await getUserShopPermissions(
-			perm.session.userId,
-			perm.shop.id
-		);
-		const canManage = userPerms.includes("MANAGE_PRODUCTS");
-		if (!canManage) return { error: "Non autorisé à gérer les stocks" };
-	}
+	const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
 
 	if (quantity <= 0) return { error: "Quantité invalide" };
 
 	try {
-		await db.transaction(async (tx) => {
-			// 1. Log Restock
-			await tx.insert(productRestocks).values({
-				productId: productId,
-				shopId: perm.shop.id,
-				quantity: quantity,
-				createdBy: perm.session.userId,
-			});
-
-			// 2. Update Stock
-			await tx
-				.update(products)
-				.set({ stock: sql`${products.stock} + ${quantity}` })
-				.where(eq(products.id, productId));
-		});
+        await ShopService.restockProduct(shop.id, productId, quantity, session.userId);
 
 		revalidatePath(`/shops/${shopSlug}/manage/products`);
 		return { success: true };
@@ -99,12 +40,14 @@ export async function restockProduct(
 }
 
 export async function getShopAudits(shopSlug: string) {
-	const perm = await checkShopPermission(shopSlug);
-	if (!perm) return { error: "Non autorisé" };
-
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+    
+	const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_INVENTORY);
+    
 	try {
 		const audits = await db.query.inventoryAudits.findMany({
-			where: eq(inventoryAudits.shopId, perm.shop.id),
+			where: eq(inventoryAudits.shopId, shop.id),
 			with: {
 				creator: true,
 			},
@@ -118,21 +61,23 @@ export async function getShopAudits(shopSlug: string) {
 }
 
 export async function getAudit(shopSlug: string, auditId: string) {
-	const perm = await checkShopPermission(shopSlug);
-	if (!perm) return { error: "Non autorisé" };
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_INVENTORY);
 
 	try {
 		const audit = await db.query.inventoryAudits.findFirst({
 			where: and(
 				eq(inventoryAudits.id, auditId),
-				eq(inventoryAudits.shopId, perm.shop.id)
+				eq(inventoryAudits.shopId, shop.id)
 			),
 			with: {
 				items: {
 					with: {
 						product: true,
 					},
-					orderBy: (items, { asc }) => [asc(items.productId)], // Order could be by product name if we joined differently, but ID is stable
+					orderBy: (items, { asc }) => [asc(items.productId)], 
 				},
 				creator: true,
 			},
@@ -140,7 +85,7 @@ export async function getAudit(shopSlug: string, auditId: string) {
 
 		if (!audit) return { error: "Inventaire non trouvé" };
 
-		// Sort items by product name manually since we can't easily sort by relation field in deep query
+		// Sort items by product name manually 
 		audit.items.sort((a, b) => a.product.name.localeCompare(b.product.name));
 
 		return { audit };
@@ -151,16 +96,18 @@ export async function getAudit(shopSlug: string, auditId: string) {
 }
 
 export async function createInventoryAudit(shopSlug: string) {
-	const perm = await checkShopPermission(shopSlug);
-	if (!perm) return { error: "Non autorisé" };
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_INVENTORY);
 
 	try {
 		// 1. Create the Audit
 		const [audit] = await db
 			.insert(inventoryAudits)
 			.values({
-				shopId: perm.shop.id,
-				createdBy: perm.session.userId,
+				shopId: shop.id,
+				createdBy: session.userId,
 				status: "OPEN",
 			})
 			.returning();
@@ -168,7 +115,7 @@ export async function createInventoryAudit(shopSlug: string) {
 		// 2. Fetch all products to create snapshot
 		const shopProducts = await db.query.products.findMany({
 			where: and(
-				eq(products.shopId, perm.shop.id),
+				eq(products.shopId, shop.id),
 				eq(products.isArchived, false)
 			),
 		});
@@ -180,8 +127,8 @@ export async function createInventoryAudit(shopSlug: string) {
 					auditId: audit.id,
 					productId: p.id,
 					systemStock: p.stock,
-					actualStock: 0, // Default to 0? Or default to systemStock? 0 forces them to count.
-					difference: -p.stock, // 0 - stock
+					actualStock: 0, 
+					difference: -p.stock, 
 				}))
 			);
 		}
@@ -200,10 +147,13 @@ export async function updateAuditItem(
 	itemId: string,
 	actualStock: number
 ) {
-	const perm = await checkShopPermission(shopSlug);
-	if (!perm) return { error: "Non autorisé" };
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_INVENTORY);
 
 	try {
+        
 		// Get the item to calculate diff
 		const currentItem = await db.query.inventoryAuditItems.findFirst({
 			where: eq(inventoryAuditItems.id, itemId),
@@ -230,15 +180,17 @@ export async function completeInventoryAudit(
 	shopSlug: string,
 	auditId: string
 ) {
-	const perm = await checkShopPermission(shopSlug);
-	if (!perm) return { error: "Non autorisé" };
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_INVENTORY);
 
 	try {
 		// 1. Get Audit and Items
 		const audit = await db.query.inventoryAudits.findFirst({
 			where: and(
 				eq(inventoryAudits.id, auditId),
-				eq(inventoryAudits.shopId, perm.shop.id)
+				eq(inventoryAudits.shopId, shop.id)
 			),
 			with: {
 				items: true,

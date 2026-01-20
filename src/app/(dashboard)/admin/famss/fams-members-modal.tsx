@@ -52,7 +52,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 
 	// Fetch members on mount
 	useEffect(() => {
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		 
 		loadMembers();
 	}, [loadMembers]);
 

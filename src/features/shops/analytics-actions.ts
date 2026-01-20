@@ -252,3 +252,112 @@ export const getStockProjections = authenticatedAction(
 		return { projections: riskList };
 	}
 );
+
+export const getShopStats = authenticatedAction(
+	analyticsParamsSchema,
+	async ({ shopSlug, startDate, endDate }, { session }) => {
+		const shop = await db.query.shops.findFirst({
+			where: eq(shops.slug, shopSlug),
+            with: {
+                members: true
+            }
+		});
+
+		if (!shop) throw new Error("Shop introuvable");
+
+		const isAuthorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"VIEW_STATS"
+		);
+
+		if (!isAuthorized) throw new Error("Non autorisé");
+
+		const whereClause = and(
+			eq(transactions.shopId, shop.id),
+			eq(transactions.type, "PURCHASE"),
+			startDate ? gte(transactions.createdAt, startDate) : undefined,
+			endDate ? lte(transactions.createdAt, endDate) : undefined
+		);
+        
+        // Fetch all relevant transactions for the chart
+        const txs = await db
+            .select({
+                createdAt: transactions.createdAt,
+                amount: transactions.amount,
+                type: transactions.type,
+            })
+            .from(transactions)
+            .where(whereClause)
+            .orderBy(transactions.createdAt);
+
+        // Process data for charts
+        const dailyStats = new Map<string, { revenue: number, expenses: number, profit: number }>();
+        let totalRevenue = 0;
+        let totalExpenses = 0; // Assuming 0 for now as we don't strictly track COGS yet
+        let totalOrders = 0;
+
+        txs.forEach(tx => {
+            const dateKey = tx.createdAt.toISOString().split('T')[0];
+            const amount = Math.abs(tx.amount);
+            
+            if (!dailyStats.has(dateKey)) {
+                dailyStats.set(dateKey, { revenue: 0, expenses: 0, profit: 0 });
+            }
+            
+            const day = dailyStats.get(dateKey)!;
+            
+            // Assuming PURCHASE is revenue
+            day.revenue += amount;
+            day.profit += amount; // expenses are 0
+            
+            totalRevenue += amount;
+            totalOrders++;
+        });
+
+        // Fill in missing dates if range is defined
+        const chartData = [];
+        if (startDate && endDate) {
+            let currentDate = new Date(startDate);
+            // End date is usually included, ensure we cover it logic
+             while (currentDate <= endDate) {
+                const dateKey = currentDate.toISOString().split('T')[0];
+                const stats = dailyStats.get(dateKey) || { revenue: 0, expenses: 0, profit: 0 };
+                chartData.push({
+                    date: dateKey,
+                    ...stats
+                });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        } else {
+             // If no range, just return keys sorted
+             const sortedKeys = Array.from(dailyStats.keys()).sort();
+             sortedKeys.forEach(key => {
+                  chartData.push({
+                      date: key,
+                      ...dailyStats.get(key)!
+                  });
+             });
+        }
+        
+        // Calculate average basket
+        const averageBasket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+        const profit = totalRevenue - totalExpenses;
+
+		return { 
+            stats: {
+                totalRevenue,
+                totalOrders,
+                averageBasket,
+                memberCount: shop.members.length
+            },
+            summary: {
+                totalRevenue,
+                totalExpenses,
+                profit
+            },
+            chartData
+        };
+	}
+);

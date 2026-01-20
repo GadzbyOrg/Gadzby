@@ -47,7 +47,7 @@ export default async function ShopProductsPage({
 	// Fetch filters, shop and products in parallel
 	const [shopResult, productsResult, categoriesResult] = await Promise.all([
 		getShopBySlug({ slug }),
-		getShopProducts(slug, { search, categoryId, sortBy, sortOrder }),
+		getShopProducts(slug),
 		getShopCategories(slug),
 	]);
 

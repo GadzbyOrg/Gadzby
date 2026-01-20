@@ -1,7 +1,8 @@
-import { and,eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { shopUsers } from "@/db/schema";
+import { shops, shopUsers } from "@/db/schema";
+
 
 export function hasShopPermission(
 	userPermissions: string[] | undefined | null,
@@ -48,4 +49,29 @@ export async function checkShopPermission(
 	// 2. Shop Specific Permission
 	const shopPermissions = await getUserShopPermissions(userId, shopId);
 	return hasShopPermission(shopPermissions, requiredPermission);
+}
+
+export async function getShopOrThrow(
+    slug: string,
+    userId: string,
+    userGlobalPermissions: string[] = [],
+    requiredPermission?: string
+) {
+    const shop = await db.query.shops.findFirst({
+        where: eq(shops.slug, slug),
+    });
+
+    if (!shop) throw new Error("Shop introuvable");
+
+    if (requiredPermission) {
+        const authorized = await checkShopPermission(
+            userId,
+            userGlobalPermissions,
+            shop.id,
+            requiredPermission
+        );
+        if (!authorized) throw new Error("Non autorisé");
+    }
+
+    return shop;
 }

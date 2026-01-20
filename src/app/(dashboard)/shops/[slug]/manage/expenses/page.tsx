@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
+import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
 import {
 	createShopExpense,
 	deleteShopExpense,
@@ -21,10 +22,13 @@ export default async function ShopExpensesPage({
 		redirect(`/shops/${slug}`);
 	}
 
-	const [shopResult, expensesResult] = await Promise.all([
+	const [shopResult, expensesResult, pennylaneConfig] = await Promise.all([
 		getShopBySlug({ slug }),
 		getShopExpenses(slug),
+		getPennylaneConfig(),
 	]);
+
+	const pennylaneEnabled = !!pennylaneConfig;
 
 	if ("error" in shopResult || !shopResult.shop) {
 		return notFound();
@@ -93,60 +97,70 @@ export default async function ShopExpensesPage({
 			</header>
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-				{/* Formulaire d'ajout */}
+				{/* Formulaire d'ajout / Lien Pennylane */}
 				<div className="lg:col-span-1">
 					<div className="rounded-2xl bg-dark-900 border border-dark-800 p-6 sticky top-6">
 						<h2 className="text-xl font-semibold text-white mb-4">
 							Nouvelle Dépense
 						</h2>
-						<form action={addExpense} className="space-y-4">
-							<div className="space-y-2">
-								<label className="text-sm font-medium text-gray-300">
-									Description
-								</label>
-								<input
-									name="description"
-									required
-									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-									placeholder="Ex: Facture Métro"
-								/>
-							</div>
 
-							<div className="space-y-2">
-								<label className="text-sm font-medium text-gray-300">
-									Montant (€)
-								</label>
-								<input
-									name="amount"
-									type="number"
-									step="0.01"
-									min="0"
-									required
-									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 no-spinner"
-									placeholder="0.00"
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<label className="text-sm font-medium text-gray-300">
-									Date
-								</label>
-								<input
-									name="date"
-									type="date"
-									required
-									defaultValue={new Date().toISOString().split("T")[0]}
-									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-								/>
-							</div>
-
-							<button
-								type="submit"
-								className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors"
+						{pennylaneEnabled ? (
+							<Link
+								href={`/shops/${slug}/manage/expenses/new`}
+								className="block w-full text-center py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors"
 							>
-								Ajouter
-							</button>
-						</form>
+								Scanner une facture (PennyLane)
+							</Link>
+						) : (
+							<form action={addExpense} className="space-y-4">
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-gray-300">
+										Description
+									</label>
+									<input
+										name="description"
+										required
+										className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+										placeholder="Ex: Facture Métro"
+									/>
+								</div>
+
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-gray-300">
+										Montant (€)
+									</label>
+									<input
+										name="amount"
+										type="number"
+										step="0.01"
+										min="0"
+										required
+										className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 no-spinner"
+										placeholder="0.00"
+									/>
+								</div>
+
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-gray-300">
+										Date
+									</label>
+									<input
+										name="date"
+										type="date"
+										required
+										defaultValue={new Date().toISOString().split("T")[0]}
+										className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+									/>
+								</div>
+
+								<button
+									type="submit"
+									className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors"
+								>
+									Ajouter
+								</button>
+							</form>
+						)}
 					</div>
 				</div>
 

@@ -136,6 +136,65 @@ export const resolveUsersFromExcelAction = authenticatedAction(
 	{ permissions: ["ADMIN_ACCESS"] }
 );
 
+export const resolveUsersFromRowsAction = authenticatedAction(
+	z.object({
+	rows: z.array(z.record(z.string(), z.any())),
+	}),
+	async ({ rows }) => {
+		const matchedUsers = [];
+		const notFound = [];
+
+		for (const row of rows) {
+			// Try to find identifier
+			// Columns: Username (Num'ssProm'ss) OR Email
+			const username = row["Username"] || row["username"];
+			const email = row["Email"] || row["email"];
+
+			if (!username && !email) continue;
+
+			let user = null;
+			if (username) {
+				user = await db.query.users.findFirst({
+					where: (u, { eq, and }) =>
+						and(eq(u.username, String(username)), eq(u.isDeleted, false)),
+					columns: {
+						id: true,
+						username: true,
+						nom: true,
+						prenom: true,
+						balance: true,
+						bucque: true,
+						image: true,
+					},
+				});
+			} else if (email) {
+				user = await db.query.users.findFirst({
+					where: (u, { eq, and }) =>
+						and(eq(u.email, String(email)), eq(u.isDeleted, false)),
+					columns: {
+						id: true,
+						username: true,
+						nom: true,
+						prenom: true,
+						balance: true,
+						bucque: true,
+						image: true,
+					},
+				});
+			}
+
+			if (user) {
+				matchedUsers.push(user);
+			} else {
+				notFound.push(username || email);
+			}
+		}
+
+		return { users: matchedUsers, notFound };
+	},
+	{ permissions: ["ADMIN_ACCESS"] }
+);
+
 // 4. Process Mass Charge
 export const processMassChargeAction = authenticatedAction(
 	massChargeSchema,

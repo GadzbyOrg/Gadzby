@@ -1,229 +1,50 @@
 "use server";
 
-import { and, AnyColumn,desc, eq } from "drizzle-orm";
+import { and, AnyColumn, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { productCategories, productRestocks,products, shops, shopUsers } from "@/db/schema";
+import { productCategories, products, shops } from "@/db/schema"; // productRestocks removed
+import { authenticatedAction } from "@/lib/actions";
 import { verifySession } from "@/lib/session";
+import { ShopService } from "@/services/shop-service";
+import { getShopOrThrow, getUserShopPermissions } from "./utils";
+import { SHOP_PERM } from "./permissions";
+import { CreateProductInput, UpdateProductInput } from "./schemas";
 
-import { hasShopPermission } from "./utils";
-
-// Type definitions for inputs
-export type CreateProductInput = {
-    name: string;
-    description?: string;
-    price: number; // in cents
-    stock: number;
-    categoryId: string;
-    // 'unit' | 'liter' | 'kg'
-    unit?: string; 
-    allowSelfService?: boolean;
-    fcv?: number;
-};
-
-export type UpdateProductInput = Partial<CreateProductInput>;
-
-
-// Helper to check permissions
-async function checkShopPermission(shopSlug: string) {
-    const session = await verifySession();
-    if (!session) return null;
-
-    // Fetch shop with permissions and user membership
-    const shop = await db.query.shops.findFirst({
-        where: eq(shops.slug, shopSlug),
-        with: {
-            members: {
-                where: eq(shopUsers.userId, session.userId),
-                with: { shopRole: true }
-            }
-        }
-    });
-    
-    if (!shop) return null;
-
-    if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) return { session, isAuthorized: true, shop, permissions: [] as string[] };
-    // Check membership
-    const membership = shop.members[0];
-    if (!membership) return null;
-
-    const permissions = membership.shopRole ? membership.shopRole.permissions : [];
-
-    return { session, isAuthorized: true, shop, membership, permissions };
-}
-
-export type ProductOptions = {
-    search?: string;
-    categoryId?: string;
-    sortBy?: 'name' | 'price' | 'stock';
-    sortOrder?: 'asc' | 'desc';
-};
-
-export async function getShopProducts(shopSlug: string, options: ProductOptions = {}) {
-    const perm = await checkShopPermission(shopSlug);
-
-    if (!perm) return { error: "Non autorisé" };
-
-    try {
-        const filters = [
-            eq(products.shopId, perm.shop.id),
-            eq(products.isArchived, false)
-        ];
-
-        if (options.categoryId && options.categoryId !== "all") {
-            filters.push(eq(products.categoryId, options.categoryId));
-        }
+export const deleteProduct = authenticatedAction(
+	{ parse: (data: any) => data } as any, // Placeholder schema
+	async ({ shopSlug, productId }, { session }) => {
+		const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
         
-        let orderBy;
-        if (options.sortBy) {
-            const sortDir = options.sortOrder === 'desc' ? desc : (c: AnyColumn) => c;
-            
-            switch (options.sortBy) {
-                case 'price': orderBy = sortDir(products.price); break;
-                case 'stock': orderBy = sortDir(products.stock); break;
-                case 'name': default: orderBy = sortDir(products.name); break;
-            }
-        } else {
-             orderBy = desc(products.name);
-        }
+		await ShopService.deleteProduct(shop.id, productId);
 
-        const allProducts = await db.query.products.findMany({
-            where: and(...filters),
-            with: {
-                category: true,
-            },
-            orderBy: [orderBy],
-        });
-        
-        let result = allProducts;
-        if (options.search) {
-             const searchLower = options.search.toLowerCase();
-             result = result.filter(p => p.name.toLowerCase().includes(searchLower));
-        }
-
-        return { products: result };
-    } catch (error) {
-        console.error("Failed to fetch products:", error);
-        return { error: "Erreur lors de la récupération des produits" };
-    }
-}
-
-export async function getShopCategories(shopSlug: string) {
-     const perm = await checkShopPermission(shopSlug);
-    if (!perm) return { error: "Non autorisé" };
-
-    try {
-        const categories = await db.query.productCategories.findMany({
-            where: eq(productCategories.shopId, perm.shop.id),
-        });
-        return { categories };
-    } catch (error) {
-        console.error("Failed to fetch categories:", error);
-        return { error: "Erreur lors de la récupération des catégories" };
-    }
-}
-
-
-
-export async function createProduct(shopSlug: string, data: CreateProductInput) {
-    const perm = await checkShopPermission(shopSlug);
-    if (!perm) return { error: "Non autorisé" };
-
-    if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
-        if (!hasShopPermission(perm.permissions, "MANAGE_PRODUCTS")) {
-            return { error: "Permissions insuffisantes (Gestion Produits)" };
-        }
-    }
-
-    try {
-        await db.transaction(async (tx) => {
-            const [newProduct] = await tx.insert(products).values({
-                shopId: perm.shop.id,
-                ...data,
-            }).returning();
-
-            if (data.stock > 0) {
-                 await tx.insert(productRestocks).values({
-                    productId: newProduct.id,
-                    shopId: perm.shop.id,
-                    quantity: data.stock,
-                    createdBy: perm.session.userId
-                 });
-            }
-        });
-
-        revalidatePath(`/shops/${shopSlug}/manage/products`);
-        return { success: true };
-    } catch (error) {
-        console.error("Failed to create product:", error);
-        return { error: "Erreur lors de la création du produit" };
-    }
-}
-
-export async function updateProduct(shopSlug: string, productId: string, data: UpdateProductInput) {
-    const perm = await checkShopPermission(shopSlug);
-    if (!perm) return { error: "Non autorisé" };
-
-    if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
-        if (!hasShopPermission(perm.permissions, "MANAGE_PRODUCTS")) {
-            return { error: "Permissions insuffisantes (Gestion Produits)" };
-        }
-    }
-
-    try {
-        await db.update(products)
-            .set(data)
-            .where(and(
-                eq(products.id, productId),
-                eq(products.shopId, perm.shop.id)
-            ));
-
-        revalidatePath(`/shops/${shopSlug}/manage/products`);
-        return { success: true };
-    } catch (error) {
-        console.error("Failed to update product:", error);
-        return { error: "Erreur lors de la mise à jour du produit" };
-    }
-}
-
-export async function deleteProduct(shopSlug: string, productId: string) {
-    const perm = await checkShopPermission(shopSlug);
-    if (!perm) return { error: "Non autorisé" };
-
-    if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
-        if (!hasShopPermission(perm.permissions, "MANAGE_PRODUCTS")) {
-            return { error: "Permissions insuffisantes (Gestion Produits)" };
-        }
-    }
-
-    try {
-        // Soft delete
-        await db.update(products)
-            .set({ isArchived: true })
-            .where(and(
-                eq(products.id, productId),
-                eq(products.shopId, perm.shop.id)
-            ));
-
-        revalidatePath(`/shops/${shopSlug}/manage/products`);
-        return { success: true };
-    } catch (error) {
-        console.error("Failed to delete product:", error);
-        return { error: "Erreur lors de la suppression du produit" };
-    }
-}
+		revalidatePath(`/shops/${shopSlug}/manage/products`);
+		return { success: true };
+	}
+);
 
 
 export async function getProduct(shopSlug: string, productId: string) {
-    const perm = await checkShopPermission(shopSlug);
-    if (!perm) return { error: "Non autorisé" };
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
 
     try {
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions);
+        
+        let isAuthorized = false;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) {
+            isAuthorized = true;
+        } else {
+            const perms = await getUserShopPermissions(session.userId, shop.id);
+            if (perms.length > 0) isAuthorized = true;
+        }
+        if (!isAuthorized) return { error: "Non autorisé" };
+
         const product = await db.query.products.findFirst({
             where: and(
                 eq(products.id, productId),
-                eq(products.shopId, perm.shop.id)
+                eq(products.shopId, shop.id)
             ),
             with: {
                 category: true
@@ -240,42 +61,81 @@ export async function getProduct(shopSlug: string, productId: string) {
 }
 
 export async function createCategory(shopSlug: string, name: string) {
-    const perm = await checkShopPermission(shopSlug);
-    if (!perm) return { error: "Non autorisé" };
-
-    if (!perm.session.permissions.includes("ADMIN_ACCESS") && !perm.session.permissions.includes("MANAGE_SHOPS")) {
-        if (!hasShopPermission(perm.permissions, "MANAGE_PRODUCTS")) {
-            return { error: "Permissions insuffisantes" };
-        }
-    }
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
     
     try {
-        const [newCat] = await db.insert(productCategories).values({
-            shopId: perm.shop.id,
-            name
-        }).returning();
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
         
-        return { category: newCat };
+        const category = await ShopService.createCategory(shop.id, name);
+        
+        return { category };
     } catch (error) {
          console.error("Failed to create category:", error);
         return { error: "Erreur de création catégorie" };
     }
 }
 
-export async function getSelfServiceProducts(shopSlug: string) {
-    const shop = await db.query.shops.findFirst({
-        where: eq(shops.slug, shopSlug),
-        columns: { id: true, isSelfServiceEnabled: true }
-    });
 
-    if (!shop || !shop.isSelfServiceEnabled) return { error: "Self-service non disponible" };
+
+// Restoring original function signature for createProduct
+export async function createProduct(shopSlug: string, data: CreateProductInput) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
 
     try {
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
+
+        await ShopService.createProduct(shop.id, data, session.userId);
+
+        revalidatePath(`/shops/${shopSlug}/manage/products`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to create product:", error);
+        return { error: "Erreur lors de la création du produit" };
+    }
+}
+
+export async function updateProduct(shopSlug: string, productId: string, data: UpdateProductInput) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    try {
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
+
+        await ShopService.updateProduct(shop.id, productId, data);
+
+        revalidatePath(`/shops/${shopSlug}/manage/products`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update product:", error);
+        return { error: "Erreur lors de la mise à jour du produit" };
+    }
+}
+
+
+
+export async function getShopProducts(shopSlug: string) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    try {
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions);
+        
+        let isAuthorized = false;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) {
+            isAuthorized = true;
+        } else {
+            const perms = await getUserShopPermissions(session.userId, shop.id);
+            if (perms.length > 0) isAuthorized = true;
+        }
+        
+        if (!isAuthorized) return { error: "Non autorisé" };
+
         const productsList = await db.query.products.findMany({
             where: and(
                 eq(products.shopId, shop.id),
-                eq(products.isArchived, false),
-                eq(products.allowSelfService, true)
+                eq(products.isArchived, false)
             ),
             with: {
                 category: true
@@ -283,15 +143,38 @@ export async function getSelfServiceProducts(shopSlug: string) {
             orderBy: [desc(products.name)]
         });
 
+        return { products: productsList };
+    } catch (error) {
+        console.error("Failed to fetch shop products:", error);
+        return { error: "Erreur de chargement" };
+    }
+}
+
+export async function getShopCategories(shopSlug: string) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    try {
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions);
+
+        let isAuthorized = false;
+        if (session.permissions.includes("ADMIN_ACCESS") || session.permissions.includes("MANAGE_SHOPS")) {
+            isAuthorized = true;
+        } else {
+            const perms = await getUserShopPermissions(session.userId, shop.id);
+            if (perms.length > 0) isAuthorized = true;
+        }
+        
+        if (!isAuthorized) return { error: "Non autorisé" };
+
         const categoriesList = await db.query.productCategories.findMany({
             where: eq(productCategories.shopId, shop.id),
             orderBy: (categories, { asc }) => [asc(categories.name)]
         });
 
-        return { products: productsList, categories: categoriesList };
+        return { categories: categoriesList };
     } catch (error) {
-        console.error("Failed to fetch self service products:", error);
+        console.error("Failed to fetch shop categories:", error);
         return { error: "Erreur de chargement" };
     }
 }
-

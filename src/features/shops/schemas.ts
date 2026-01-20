@@ -63,15 +63,7 @@ export const updateShopSchema = z.object({
 	}),
 });
 
-export const SHOP_PERMISSIONS = [
-	"SELL",
-	"MANAGE_PRODUCTS",
-	"MANAGE_INVENTORY",
-	"VIEW_STATS",
-	"MANAGE_SETTINGS",
-	"MANAGE_EVENTS",
-	"MANAGE_EXPENSES",
-] as const;
+import { SHOP_PERMISSIONS } from "./permissions";
 
 export const createShopRoleSchema = z.object({
 	shopSlug: z.string(),
@@ -96,3 +88,38 @@ export const restockProductSchema = z.object({
 	productId: z.string(),
 	quantity: z.number().min(1, "La quantité doit être au moins de 1"),
 });
+
+export const createProductSchema = z.object({
+	name: z.string().min(1),
+	description: z.string().optional(),
+	price: z.number().int(), // in cents
+	stock: z.number().int(),
+	categoryId: z.string(),
+	unit: z.enum(["unit", "liter", "kg"]).optional(),
+	allowSelfService: z.boolean().optional(),
+	fcv: z.number().optional(),
+});
+
+export const createShopSchema = z.object({
+	name: z.string().min(1),
+	description: z.string().optional(),
+	category: z.string().optional(),
+	slug: z.string().optional(),
+});
+
+export const toggleShopStatusSchema = z.object({
+	shopId: z.string(),
+	isActive: z.boolean(),
+});
+
+export type CreateProductInput = z.infer<typeof createProductSchema>;
+
+export const updateProductSchema = createProductSchema.partial();
+
+export type UpdateProductInput = z.infer<typeof updateProductSchema>;
+
+export const importProductsBatchSchema = z.object({
+	slug: z.string(),
+	rows: z.array(z.record(z.string(), z.unknown())),
+});
+

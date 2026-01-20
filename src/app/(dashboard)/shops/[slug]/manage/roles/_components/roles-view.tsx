@@ -1,6 +1,6 @@
 "use client";
 
-import { IconPencil, IconPlus,IconTrash } from "@tabler/icons-react";
+import { IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import {
 	deleteShopRole,
 	updateShopRole,
 } from "@/features/shops/actions";
-import { SHOP_PERMISSIONS } from "@/features/shops/schemas";
+import { SHOP_PERMISSIONS } from "@/features/shops/permissions";
 
 const PERMISSION_LABELS: Record<string, string> = {
 	SELL: "Vendre",
@@ -167,15 +167,9 @@ function RoleModal({
 }) {
 	const [name, setName] = useState(role?.name || "");
 	const [permissions, setPermissions] = useState<string[]>(
-		role?.permissions || []
+		role?.permissions || [],
 	);
 	const [isLoading, setIsLoading] = useState(false);
-
-	// Reset form when opening
-	if (isOpen && role && role.name !== name && name === "") {
-		// This is tricky with hooks if props change.
-		// Better to use useEffect or key
-	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

@@ -7,6 +7,7 @@ import { verifySession } from "@/lib/session";
 
 import { EmailSettings } from "./_components/email-settings";
 import { PaymentsSettings } from "./_components/payments-settings";
+import { PennylaneSettings } from "./_components/pennylane-settings";
 
 export default async function AdminSettingsPage() {
     const session = await verifySession();
@@ -44,6 +45,12 @@ export default async function AdminSettingsPage() {
 
                 <section>
                     <PaymentsSettings methods={secureMethods} />
+                </section>
+
+                <div className="h-px bg-dark-800" />
+
+                <section>
+                    <PennylaneSettings />
                 </section>
             </div>
         </div>

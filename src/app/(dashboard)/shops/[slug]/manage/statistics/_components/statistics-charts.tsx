@@ -136,13 +136,12 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					productsResult,
 					projectionsResult,
 				] = await Promise.all([
-					getShopStats(
-						slug,
-						timeframe,
+					getShopStats({
+						shopSlug: slug,
 						startDate,
 						endDate,
-						eventIdParam === "all" ? undefined : eventIdParam
-					),
+						eventId: eventIdParam === "all" ? undefined : eventIdParam
+					}),
 					getMostActiveStaff({ shopSlug: slug, startDate, endDate }),
 					getBestCustomers({ shopSlug: slug, startDate, endDate }),
 					getProductSalesStats({

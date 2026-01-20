@@ -56,7 +56,7 @@ export default async function ShopSelfServicePage({
 		// Public/Self-Service Mode
 		// We use getSelfServiceProducts which handles the specific filtering
 		const { getSelfServiceProducts } = await import(
-			"@/features/shops/products"
+			"@/features/shops/queries"
 		);
 		const res = await getSelfServiceProducts(slug);
 
@@ -64,7 +64,7 @@ export default async function ShopSelfServicePage({
 			// Should not happen if enabled, but handle gracefully
 			isClosedForUser = true;
 		} else {
-			products = res.products.map((p) => ({
+			products = res.products.map((p: any) => ({
 				...p,
 				image: null,
 				allowSelfService: true, // Already filtered but required by type

@@ -14,7 +14,8 @@ export default async function ShopManageIndexPage({
 		redirect(`/shops/${slug}`);
 	}
 
-	const { shop, permissions } = access;
+	const { shop } = access;
+	const permissions = access.permissions as string[];
 
 	// Redirect to first available
 	if (permissions?.includes("SELL")) redirect(`/shops/${slug}/manage/sell`);

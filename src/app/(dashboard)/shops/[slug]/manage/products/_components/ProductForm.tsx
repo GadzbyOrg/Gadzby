@@ -52,7 +52,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
             description: formData.get("description") as string,
             price: Math.round(parseFloat(formData.get("price") as string) * 100), // Convert to cents
             stock: parseFloat(formData.get("stock") as string),
-            unit: formData.get("unit") as string,
+            unit: formData.get("unit") as "unit" | "liter" | "kg",
             fcv: parseFloat(formData.get("fcv") as string),
             categoryId: formData.get("categoryId") as string,
             allowSelfService: formData.get("allowSelfService") === "on",

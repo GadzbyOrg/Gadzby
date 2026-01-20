@@ -49,7 +49,7 @@ export default async function AdminShopsPage() {
 						</p>
 					</div>
 				) : (
-					shops.map((shop) => <ShopCard key={shop.id} shop={shop} />)
+					shops.map((shop: any) => <ShopCard key={shop.id} shop={shop} />)
 				)}
 			</div>
 		</div>
