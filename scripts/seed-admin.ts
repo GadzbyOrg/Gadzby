@@ -16,21 +16,28 @@ async function main() {
 		where: (roles, { eq }) => eq(roles.name, "ADMIN")
 	});
 
-	await db.insert(users).values({
-		nom: "Super",
-		prenom: "Admin",
-		email: "admin@gadz.org",
-		bucque: "Modo",
-		nums: "4!",
-		username: "4!Me223",
-		promss: "Me223",
-		passwordHash: hashedPassword,
-		roleId: adminRole?.id,
-		balance: 100000,
-		tabagnss: "ME"
+	const existingAdmin = await db.query.users.findFirst({
+		where: (users, { eq }) => eq(users.email, "admin@gadz.org")
 	});
 
-	console.log("✅ Admin créé ! Login: 4!Me223 / Password: " + password);
+	if (!existingAdmin) {
+		await db.insert(users).values({
+			nom: "Super",
+			prenom: "Admin",
+			email: "admin@gadz.org",
+			bucque: "Modo",
+			nums: "admin",
+			username: "admin",
+			promss: "ME223",
+			passwordHash: hashedPassword,
+			roleId: adminRole?.id,
+			balance: 100000,
+			tabagnss: "ME"
+		});
+		console.log("✅ Admin créé ! Login: Admin / Password: " + password);
+	} else {
+		console.log("⚠️  Admin user already exists. Skipping creation.");
+	}
 	process.exit(0);
 }
 
