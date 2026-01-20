@@ -37,6 +37,7 @@ Une supervision globale pour garantir la pérennité de l'AE.
 - **Opérations de Masse** : Débucquage groupé (import Excel) pour gérer les événements majeurs rapidement.
 - **Gestion des Fam'ss** : Supervision des comptes communs et des membres associés.
 - **Sécurité et Maintenance** : Logs d'activité, annulation de transactions,gestion des mandats et outils de suppression, désactivation d'utilisateurs.
+- **Intégration Pennylane** : Envoi automatique des factures fournisseurs sur Pennylane.
 
 ## Stack Technique
 
@@ -79,12 +80,14 @@ npm install
 
 Créez votre fichier de configuration secret :
 
-1. Copiez le fichier d'exemple :
-   ```bash
-   cp .env.example .env.local
-   # Sur Windows (PowerShell) : copy .env.example .env.local
+1. Copier ce fichier d'exemple dans un ficher `.env.local`:
    ```
-2. Ouvrez `.env.local` et vérifiez que `DATABASE_URL` pointe bien vers votre base de données locale.
+   DATABASE_URL="postgres://postgres:password@localhost:5432/gadzby"
+   JWT_SECRET="a-string-secret-at-least-256-bits-long"
+   NEXT_PUBLIC_APP_URL="https://domaine-de-votre-app.exemple"
+   ```
+
+2. Editez les variables et vérifiez que `DATABASE_URL` pointe bien vers votre base de données.
 
 ### 5. Préparer la Base de Données
 
@@ -105,3 +108,61 @@ npm run dev
 
 Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 Connectez-vous avec un des comptes de test (ex: Admin généré par le script).
+
+## 🚀 Déploiement
+
+> [Coolify](https://coolify.io/) est un outil qui permet de déployer des applications web facilement.
+
+### 1. Migration depuis Borgia
+
+*note: la migration depuis Borgia est encore en cours de développement*
+
+Pour migrer les utilisateurs de Borgia vers Gadzby, il faut suivre la procédure suivante :
+
+1. Créer la base de donnée Gadzby.
+2. Executer les commandes `npx drizzle-kit generate` et `npx drizzle-kit push` pour créer les tables.
+3. Cloner le repo [BtoG](https://github.com/GadzbyOrg/BtoG.git), suivez les instructions du README.md pour dumper la base de donnée Borgia et transferer les données vers Gadzby.
+4. Executer le script `npx tsx scripts/setup-prod.ts` pour configurer les rôles, les paiements et l'utilisateur admin.
+
+### 2. Déploiement en production
+
+Utiliser [Coolify](https://coolify.io/) ou [Vercel](https://vercel.com/) pour déployer l'application est fortement recommandé. Cela permet de maintenir l'application à jour automatiquement.
+
+
+## Guide de configuration
+
+Ce guide vous permet de configurer les différents services connectés à Gadzby et nécessaire pour son fonctionnement.
+
+### 1. Email
+L'envoi d'email est utilisé pour la récupération de mot de passe.
+
+Il existe deux options :
+- Utiliser un serveur SMTP custom ( Gratuit mais difficile à configurer)
+- Utiliser Resend (Gratuit au debut mais peux devenir payant)
+
+
+### 2. Paiements
+
+Gadzby est compatible avec Lydia, SumUp et HelloAsso.
+
+#### Lydia
+
+pour configurer Lydia, vous avez besoin de :
+- VendorToken : Clé Vendeur Publique 
+- privateToken : Clé API privée
+
+
+#### SumUp
+
+Pour configurer SumUp, vous avez besoin de :
+- sumup_api_key : Clé API SumUp à générer dans les paramètres développeurs de l'interface SumUp 
+- merchantCode : L'identifiant unique de marchant de votre compte SumUp (s'affiche sous le nom de l'asso dans le coin en haut à droite de l'interface SumUp)
+
+
+### 3. Pennylane
+
+L'intégration Pennylane permet aux boul'c d'envoyer les factures fournisseurs directement sur Pennylane. Pour configurer Pennylane, vous avez besoin de :
+- Clé API Pennylane : Pour créer une clé API, vous devez vous rendre sur la page "Connectivité" du dashboard Pennylane, puis dans l'onglet Développeurs cliquez sur "Générer un Token API". Vous devez donner les droits en lecture et écriture sur :
+    * Factures Fournisseurs
+    * Fichiers
+    * Catégories (Pas encore strictement besoin mais en cours de développement)
