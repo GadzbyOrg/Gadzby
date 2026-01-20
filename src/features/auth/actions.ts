@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { publicAction, publicActionNoInput } from "@/lib/actions";
 import { createSession, deleteSession } from "@/lib/session";
+import { logger, setUser } from "@sentry/nextjs";
 
 const loginSchema = z.object({
 	username: z.string().min(1, "Identifiant requis"),
@@ -78,6 +79,19 @@ export const loginAction = publicAction(
 		const roleName = user.role?.name || "USER";
 		const permissions = user.role?.permissions || [];
 
+		setUser({
+			id: user.id,
+			username: user.username,
+			role: roleName,
+			permissions,
+		})
+
+		logger.info("User logged in", {
+			id: user.id,
+			username: user.username,
+			role: roleName,
+		})
+
 		await createSession(user.id, roleName, permissions, user.preferredDashboardPath);
 
 		console.log("Login successful:", username);
@@ -123,8 +137,17 @@ export const forgotPasswordAction = publicAction(
 		try {
 			const { sendPasswordResetEmail } = await import("@/lib/email");
 			await sendPasswordResetEmail(email, token);
+
+			logger.info("Password reset email sent", {
+				email,
+				token,
+			})
 		} catch (e) {
 			console.error(e);
+			logger.error("Error sending password reset email", {
+				email,
+				error: e,
+			})
 			return { error: "Erreur lors de l'envoi de l'email" };
 		}
 
@@ -144,7 +167,6 @@ export const resetPasswordAction = publicAction(
 			where: eq(users.resetPasswordToken, token),
 		});
 
-		console.log(token)
 
 		if (!user) {
 			return { error: "Token invalide ou expiré" };
@@ -165,6 +187,11 @@ export const resetPasswordAction = publicAction(
 				resetPasswordExpires: null,
 			})
 			.where(eq(users.id, user.id));
+
+		logger.info("Password reset successfully", {
+			user: user.id,
+			token,
+		})
 
 		return {
 			success:
