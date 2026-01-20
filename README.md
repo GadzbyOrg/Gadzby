@@ -137,8 +137,8 @@ Ce guide vous permet de configurer les différents services connectés à Gadzby
 L'envoi d'email est utilisé pour la récupération de mot de passe.
 
 Il existe deux options :
-- Utiliser un serveur SMTP custom ( Gratuit mais difficile à configurer)
-- Utiliser Resend (Gratuit au debut mais peux devenir payant)
+- Utiliser un serveur SMTP custom (gratuit mais difficile à configurer)
+- Utiliser Resend (gratuit au debut mais peut devenir payant)
 
 
 ### 2. Paiements
