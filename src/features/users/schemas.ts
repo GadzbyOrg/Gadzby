@@ -48,6 +48,21 @@ export const createUserSchema = z.object({
 		.default(0),
 });
 
+export const changeSelfPasswordSchema = z
+	.object({
+		currentPassword: z.string().min(1, "Mot de passe actuel requis"),
+		newPassword: z
+			.string()
+			.min(6, "Le nouveau mot de passe doit faire au moins 6 caractères"),
+		confirmNewPassword: z
+			.string()
+			.min(6, "Le nouveau mot de passe doit faire au moins 6 caractères"),
+	})
+	.refine((data) => data.newPassword === data.confirmNewPassword, {
+		message: "Les nouveaux mots de passe ne correspondent pas",
+		path: ["confirmNewPassword"],
+	});
+
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 
 export const importUserRowSchema = z.object({

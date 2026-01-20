@@ -1,6 +1,6 @@
-import { verifySession } from "@/lib/session";
-import { redirect } from "next/navigation";
 import { z } from "zod";
+
+import { verifySession } from "@/lib/session";
 
 export type ActionError = {
 	error: string;

@@ -1,61 +1,37 @@
 "use server";
 
-import bcrypt from "bcryptjs";
-import { and, count, desc, eq, ilike, inArray,or, sql } from "drizzle-orm";
-import { existsSync } from "fs";
-import { unlink } from "fs/promises";
+import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { join } from "path";
-import * as XLSX from "xlsx";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { famsMembers,roles, shopUsers, users } from "@/db/schema";
+import { users } from "@/db/schema";
 import { transactions } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
+import { handleDbError } from "@/lib/db-errors";
 import { verifySession } from "@/lib/session";
+import { UserService } from "@/services/user-service";
 
-import { getTabagnssCode } from "./constants";
 import {
 	adminDeleteUserSchema,
 	adminUpdateUserSchema,
+	changeSelfPasswordSchema,
 	createUserSchema,
-	importUserRowSchema,
-	importUsersSchema,
+	importUsersBatchSchema,
 	toggleUserStatusSchema,
 	updateUserSchema,
 } from "./schemas";
 
-const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
-
 export const updateUserAction = authenticatedAction(
 	updateUserSchema,
 	async (data, { session }) => {
-		const { nom, prenom, email, phone, bucque, promss, nums } = data;
-		const newUsername = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
-
 		try {
-			await db
-				.update(users)
-				.set({
-					nom,
-					prenom,
-					email,
-					phone: phone || null,
-					bucque: bucque || null,
-					promss,
-					nums: nums || null,
-					preferredDashboardPath: data.preferredDashboardPath || null,
-
-					username: newUsername,
-				})
-				.where(eq(users.id, session.userId));
+			await UserService.update(session.userId, data);
 
 			revalidatePath("/settings");
 			return { success: "Profil mis à jour avec succès" };
 		} catch (error) {
-			console.error("Failed to update user:", error);
-			return { error: "Erreur lors de la mise à jour" };
+			return { error: handleDbError(error) };
 		}
 	}
 );
@@ -98,7 +74,6 @@ export async function getUsers(
         }
 
         if (role) {
-            // If it looks like a UUID, filter by roleId
             const isUuid =
                 /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
                     role
@@ -166,121 +141,13 @@ export const getPromssListAction = authenticatedAction(
 export const adminUpdateUserAction = authenticatedAction(
 	adminUpdateUserSchema,
 	async (data, { session }) => {
-		const {
-			userId,
-			nom,
-			prenom,
-			email,
-			phone,
-			bucque,
-			promss,
-			nums,
-
-			tabagnss,
-			roleId,
-			balance,
-			isAsleep,
-			newPassword,
-			username,
-		} = data;
-		
-		const computedUsername = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
-		// Use provided username if it exists and is not empty, otherwise use computed
-		const finalUsername = (username && username.trim()) ? username.trim() : computedUsername;
-
 		try {
-			await db.transaction(async (tx) => {
-				// 1. Get current balance
-				const currentUser = await tx.query.users.findFirst({
-					where: eq(users.id, userId),
-					columns: { balance: true, isDeleted: true },
-				});
-
-				if (!currentUser) throw new Error("Utilisateur non trouvé");
-				if (currentUser.isDeleted)
-					throw new Error("Impossible de modifier un utilisateur supprimé");
-				const diff = balance - currentUser.balance;
-
-				// 2. If balance changed, log transaction
-				if (diff !== 0) {
-					await tx.insert(transactions).values({
-						amount: diff,
-						type: "ADJUSTMENT",
-						walletSource: "PERSONAL",
-						issuerId: session.userId, // Admin
-						targetUserId: userId, // User impacted
-						description: "Mouvement exceptionnel",
-					});
-				}
-
-				// 3. Update User
-				await tx
-					.update(users)
-					.set({
-						nom,
-						prenom,
-						email,
-						phone: phone || null,
-						bucque: bucque || null,
-						promss,
-						nums: nums || null,
-						// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						tabagnss: tabagnss as any,
-						username: finalUsername,
-						roleId,
-						balance,
-						isAsleep,
-					})
-					.where(eq(users.id, userId));
-
-				// 4. Update Password if provided
-				if (newPassword && newPassword.trim() !== "") {
-					const salt = await bcrypt.genSalt(10);
-					const hash = await bcrypt.hash(newPassword, salt);
-					await tx
-						.update(users)
-						.set({ passwordHash: hash })
-						.where(eq(users.id, userId));
-				}
-			});
+            await UserService.adminUpdate(data.userId, session.userId, data);
 
 			revalidatePath("/admin/users");
 			return { success: "Utilisateur mis à jour avec succès" };
 		} catch (error: unknown) {
-			console.error("Failed to update user:", error);
-			
-			// Helper to find the underlying Postgres error
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const findPostgresError = (err: unknown): any => {
-				if (!err || typeof err !== "object") return null;
-				const errorObj = err as any;
-				if (errorObj.code === '23505') return errorObj;
-				if (errorObj.cause) return findPostgresError(errorObj.cause);
-				return null;
-			};
-
-			const pgError = findPostgresError(error);
-
-			if (pgError) {
-				if (pgError.detail?.includes('email') || pgError.message?.includes('email')) {
-					return { error: "Cet email est déjà associé à un autre utilisateur." };
-				}
-				if (pgError.detail?.includes('phone') || pgError.message?.includes('phone')) {
-					return { error: "Ce numéro de téléphone est déjà associé à un autre utilisateur." };
-				}
-				if (pgError.detail?.includes('username') || pgError.message?.includes('username')) {
-					return { error: "Ce nom d'utilisateur (généré via nums/promss) est déjà pris." };
-				}
-				return { error: "Une donnée unique existe déjà pour un autre utilisateur." };
-			}
-
-			// Fallback check on message string if code isn't present
-			const errorMessage = (error instanceof Error) ? error.message : "Erreur inconnue";
-			if (errorMessage && (errorMessage.includes('unique constraint') || errorMessage.includes('duplicate key'))) {
-				return { error: "Une donnée unique existe déjà pour un autre utilisateur." };
-			}
-
-			return { error: errorMessage || "Erreur lors de la mise à jour" };
+			return { error: handleDbError(error) };
 		}
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
@@ -338,266 +205,27 @@ export const getUserTransactions = authenticatedAction(
 export const createUserAction = authenticatedAction(
 	createUserSchema,
 	async (data) => {
-		const {
-			nom,
-			prenom,
-			email,
-			phone,
-			bucque,
-
-			promss,
-			nums,
-			tabagnss,
-			password,
-			roleId,
-			balance,
-		} = data;
-		const username = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
-
 		try {
-			const existingUser = await db.query.users.findFirst({
-				where: (users, { eq, or }) => {
-                    const conditions = [
-                        eq(users.username, username),
-                        eq(users.email, email),
-                    ];
-                    if (phone) {
-                        conditions.push(eq(users.phone, phone));
-                    }
-					return or(...conditions);
-                },
-			});
-
-			if (existingUser) {
-				return {
-					error:
-						"Un utilisateur avec ce username, email ou téléphone existe déjà",
-				};
-			}
-
-			const passwordHash = await bcrypt.hash(password, 10);
-
-			await db.insert(users).values({
-				nom,
-				prenom,
-				email,
-				phone: phone || null,
-				bucque: bucque || null,
-				promss,
-
-				nums: nums || null,
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				tabagnss: tabagnss as any, // Schema validation ensures this is correct enum/string
-				username,
-				passwordHash,
-				roleId,
-				balance, // Stored in cents
-			});
+            await UserService.create(data);
 
 			revalidatePath("/admin/users");
 			return { success: "Utilisateur créé avec succès" };
 		} catch (error) {
-			console.error("Failed to create user:", error);
-			return { error: "Erreur lors de la création de l'utilisateur" };
+			return { error: handleDbError(error) };
 		}
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
-export const importUsersAction = authenticatedAction(
-	importUsersSchema,
-	async (data) => {
-		const { file } = data;
 
-		// Fetch default USER role
-		const userRole = await db.query.roles.findFirst({
-			where: eq(roles.name, "USER"),
-		});
+export const importUsersBatchAction = authenticatedAction(
+	importUsersBatchSchema,
+	async (data) => {
+		const { rows } = data;
 
 		try {
-			const arrayBuffer = await file.arrayBuffer();
-			const buffer = Buffer.from(arrayBuffer);
-			const workbook = XLSX.read(buffer, { type: "buffer" });
-			const sheetName = workbook.SheetNames[0];
-			const sheet = workbook.Sheets[sheetName];
-			const rows = XLSX.utils.sheet_to_json(sheet);
-
-			let successCount = 0;
-			let failCount = 0;
-			let skippedCount = 0;
-			const errors: string[] = [];
-			const skipped: string[] = [];
-
-			// 1. Initial Parsing & Structure Validation
-			const parsedRows: {
-				rowIdx: number;
-				data: z.infer<typeof importUserRowSchema>;
-				original: Record<string, unknown>;
-			}[] = [];
-
-			for (let i = 0; i < rows.length; i++) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const row = rows[i] as any;
-				// Map common excel headers to schema keys
-				const mappedRow = {
-					nom: row["Nom"] || row["nom"],
-					prenom: row["Prenom"] || row["Prénom"] || row["prenom"],
-					email: row["Email"] || row["email"],
-					phone:
-						row["Phone"] ||
-						row["phone"] ||
-						row["téléphone"],
-					bucque: row["Bucque"] || row["bucque"] || "",
-
-					promss: String(row["Promss"] || row["promss"] || ""),
-					nums: String(row["Nums"] || row["nums"] || ""),
-					tabagnss: row["Tabagn'ss"] || row["Tabagnss"] || row["tabagnss"] || "Chalon'ss", // Default if missing, but schema requires min(1)
-					username: row["Username"] || row["username"] || "",
-					balance: row["Balance"] || row["balance"] || 0,
-				};
-
-				const parsed = importUserRowSchema.safeParse(mappedRow);
-				if (!parsed.success) {
-					failCount++;
-					// Gracefully handle incomplete lines by logging error and skipping
-					errors.push(
-						`Ligne ${i + 2} invalide (${mappedRow.nom || "Inconnu"}): ${
-							parsed.error.issues[0].message
-						}`
-					);
-					continue;
-				}
-				parsedRows.push({ rowIdx: i + 2, data: parsed.data, original: row });
-			}
-
-			// 2. Process in Chunks
-			const BATCH_SIZE = 500;
-			for (let i = 0; i < parsedRows.length; i += BATCH_SIZE) {
-				const chunk = parsedRows.slice(i, i + BATCH_SIZE);
-				
-				// Extract identifiers for bulk check
-				const usernamesToCheck: string[] = [];
-				const emailsToCheck: string[] = [];
-				const phonesToCheck: string[] = [];
-
-				const chunkDataWithMeta = chunk.map((item) => {
-					const { promss, nums, email, phone, nom, prenom } = item.data;
-					let username = item.data.username;
-
-					if (!username || username.trim() === "") {
-						username = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
-					}
-					usernamesToCheck.push(username);
-					if (email) emailsToCheck.push(email);
-					if (phone) phonesToCheck.push(phone);
-					return { ...item, username };
-				});
-
-				// Verify duplicates within the chunk itself
-				const seenUsernames = new Set();
-				const seenEmails = new Set();
-				const seenPhones = new Set();
-				const uniqueChunk: typeof chunkDataWithMeta = [];
-
-				for (const item of chunkDataWithMeta) {
-					let isDuplicate = false;
-					if (seenUsernames.has(item.username)) {
-						skippedCount++;
-						skipped.push(`Doublon dans le fichier (Username): ${item.username}`);
-						isDuplicate = true;
-					}
-					if (seenEmails.has(item.data.email)) {
-						skippedCount++;
-						skipped.push(`Doublon dans le fichier (Email): ${item.data.email}`);
-						isDuplicate = true;
-					}
-					if (item.data.phone && seenPhones.has(item.data.phone)) {
-						skippedCount++;
-						skipped.push(`Doublon dans le fichier (Téléphone): ${item.data.phone}`);
-						isDuplicate = true;
-					}
-
-					if (!isDuplicate) {
-						seenUsernames.add(item.username);
-						seenEmails.add(item.data.email);
-						if (item.data.phone) seenPhones.add(item.data.phone);
-						uniqueChunk.push(item);
-					}
-				}
-
-				if (uniqueChunk.length === 0) continue;
-
-				// Bulk DB Check
-				const existingUsers = await db.query.users.findMany({
-					where: or(
-                        usernamesToCheck.length > 0 ? inArray(users.username, usernamesToCheck) : undefined,
-                        emailsToCheck.length > 0 ? inArray(users.email, emailsToCheck) : undefined,
-                        phonesToCheck.length > 0 ? inArray(users.phone, phonesToCheck) : undefined
-                    ),
-                    columns: {
-                        username: true,
-                        email: true,
-                        phone: true
-                    }
-				});
-
-				const existingUsernames = new Set(existingUsers.map(u => u.username));
-				const existingEmails = new Set(existingUsers.map(u => u.email));
-				const existingPhones = new Set(existingUsers.map(u => u.phone).filter(Boolean));
-
-				// Filter out existing users
-				const usersToInsert = [];
-				// Prepare passwords in parallel to save time
-                const passwordPromises = uniqueChunk.map(async (item) => {
-					// Check against DB results
-					if (existingUsernames.has(item.username)) {
-						return { status: "skipped", reason: `Utilisateur déjà existant: ${item.username}` };
-					}
-					if (item.data.email && existingEmails.has(item.data.email)) {
-						return { status: "skipped", reason: `Email déjà utilisé: ${item.data.email}` };
-					}
-					if (item.data.phone && existingPhones.has(item.data.phone)) {
-						return { status: "skipped", reason: `Téléphone déjà utilisé: ${item.data.phone}` };
-					}
-
-                    const password = Math.random().toString(36).slice(-10);
-                    const hash = await bcrypt.hash(password, 10);
-                    return { status: "resolved", hash, item };
-                });
-
-                const results = await Promise.all(passwordPromises);
-
-                for (const res of results) {
-                    if (res.status === "skipped") {
-                        skippedCount++;
-                        skipped.push(res.reason as string);
-                    } else if (res.status === "resolved") {
-                        const { hash, item } = res as { status: "resolved"; hash: string; item: any };
-                        const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, balance } = item.data;
-                        usersToInsert.push({
-                            nom,
-                            prenom,
-                            email,
-                            phone: phone || null,
-                            bucque: bucque || null,
-
-                            promss,
-                            nums: nums || null,
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            tabagnss: (getTabagnssCode(tabagnss) || "ME") as any,
-                            username: item.username,
-                            passwordHash: hash,
-                            roleId: userRole?.id,
-                            balance: Math.round((Number(balance) || 0) * 100),
-                        });
-                    }
-                }
-
-				if (usersToInsert.length > 0) {
-					await db.insert(users).values(usersToInsert);
-					successCount += usersToInsert.length;
-				}
-			}
+            const result = await UserService.importBatch(rows);
+            const { successCount, skippedCount, failCount, skipped, errors } = result;
 
 			revalidatePath("/admin/users");
 
@@ -614,8 +242,8 @@ export const importUsersAction = authenticatedAction(
 				errors: failCount > 0 ? errors : undefined
 			};
 		} catch (error) {
-			console.error("Failed to import users:", error);
-			return { error: "Erreur lors de l'import" };
+			console.error("Failed to import users batch:", error);
+			return { error: "Erreur lors de l'import du lot" };
 		}
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
@@ -625,71 +253,13 @@ export const hardDeleteUserAction = authenticatedAction(
 	adminDeleteUserSchema,
 	async (data) => {
 		const { userId } = data;
-		console.log("Deleting user:", userId);
-		await db.transaction(async (tx) => {
-			const user = await tx.query.users.findFirst({
-				where: eq(users.id, userId),
-				columns: { balance: true, roleId: true, image: true },
-			});
-
-			if (!user) throw new Error("Utilisateur non trouvé");
-
-			if (user.balance != 0) {
-				throw new Error(
-					"Impossible de supprimer un utilisateur avec un solde positif."
-				);
-			}
-			// Prevent deleting ADMIN users
-			const role = await tx.query.roles.findFirst({
-				where: eq(roles.id, user.roleId as string),
-				columns: { name: true },
-			});
-			console.log("User role:", role?.name);
-			if (role?.name === "ADMIN") {
-				throw new Error(
-					"Impossible de supprimer un utilisateur avec le rôle ADMIN."
-				);
-			}
-
-			await tx.delete(shopUsers).where(eq(shopUsers.userId, userId));
-			await tx.delete(famsMembers).where(eq(famsMembers.userId, userId));
-			
-			// Delete avatar file if exists
-			if (user.image) {
-				const filePath = join(UPLOAD_DIR, user.image);
-				if (existsSync(filePath)) {
-					try {
-						await unlink(filePath);
-					} catch (e) {
-						console.error("Failed to delete avatar file:", e);
-					}
-				}
-			}
-
-			const timestamp = Date.now();
-
-			await tx
-				.update(users)
-				.set({
-					nom: "Utilisateur Supprimé",
-					prenom: ``,
-					username: `deleted_user_${timestamp}`,
-					passwordHash: "DELETED_USER_NO_ACCESS",
-					bucque: "",
-					promss: "",
-					nums: "",
-					roleId: null,
-					isAsleep: true,
-					emailVerified: null,
-					email: `deleted_${timestamp}@gadzby.local`,
-					phone: null,
-					image: null,
-					isDeleted: true,
-				})
-				.where(eq(users.id, userId));
-		});
-		revalidatePath("/admin/users");
-		return { success: "Utilisateur supprimé avec succès" };
+        try {
+            await UserService.delete(userId);
+            revalidatePath("/admin/users");
+		    return { success: "Utilisateur supprimé avec succès" };
+        } catch(error) {
+            return { error: error instanceof Error ? error.message : "Erreur lors de la suppression" };
+        }
 	}
 );
 
@@ -698,7 +268,7 @@ export const toggleUserStatusAction = authenticatedAction(
 	async (data) => {
 		const { userId, isAsleep } = data;
 		try {
-			await db.update(users).set({ isAsleep }).where(eq(users.id, userId));
+            await UserService.toggleStatus(userId, isAsleep);
 
 			revalidatePath("/admin/users");
 			return {
@@ -714,313 +284,42 @@ export const toggleUserStatusAction = authenticatedAction(
 
 export async function searchUsersPublicAction(query: string) {
 	const session = await verifySession();
-	
-	if (!query || query.length < 2) return { users: [] };
-
 	try {
-		const foundUsers = await db.query.users.findMany({
-			where: (users, { and, or, ilike, ne, eq }) => {
-				const conditions = [
-					eq(users.isAsleep, false), // Only active users
-					or(
-						ilike(users.username, `%${query}%`),
-						ilike(users.nom, `%${query}%`),
-						ilike(users.prenom, `%${query}%`),
-						ilike(users.bucque, `%${query}%`)
-					)
-				];
-				
-				if (session?.userId) {
-					conditions.push(ne(users.id, session.userId));
-				}
-				
-				return and(...conditions);
-			},
-			limit: 10,
-			columns: {
-				id: true,
-				username: true,
-				nom: true,
-				prenom: true,
-				bucque: true,
-				promss: true,
-				image: true,
-			},
-		});
-
-
-		return { users: foundUsers };
+        const users = await UserService.searchPublic(query, session?.userId);
+		return { users };
 	} catch (error) {
 		console.error("Failed to search users:", error);
 		return { error: "Erreur lors de la recherche" };
 	}
 }
 
-const changeSelfPasswordSchema = z
-	.object({
-		currentPassword: z.string().min(1, "Mot de passe actuel requis"),
-		newPassword: z
-			.string()
-			.min(6, "Le nouveau mot de passe doit faire au moins 6 caractères"),
-		confirmNewPassword: z
-			.string()
-			.min(6, "Le nouveau mot de passe doit faire au moins 6 caractères"),
-	})
-	.refine((data) => data.newPassword === data.confirmNewPassword, {
-		message: "Les nouveaux mots de passe ne correspondent pas",
-		path: ["confirmNewPassword"],
-	});
-
 export const changeSelfPasswordAction = authenticatedAction(
 	changeSelfPasswordSchema,
 	async (data, { session }) => {
 		const { currentPassword, newPassword } = data;
 
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, session.userId),
-		});
+        try {
+            await UserService.changePassword(session.userId, currentPassword, newPassword);
+		    return { success: "Mot de passe modifié avec succès" };
 
-		if (!user) return { error: "Utilisateur introuvable" };
-
-		const match = await bcrypt.compare(currentPassword, user.passwordHash);
-		if (!match) {
-			return { error: "Mot de passe actuel incorrect" };
-		}
-
-		const salt = await bcrypt.genSalt(10);
-		const hash = await bcrypt.hash(newPassword, salt);
-
-		await db
-			.update(users)
-			.set({ passwordHash: hash })
-			.where(eq(users.id, session.userId));
-
-		return { success: "Mot de passe modifié avec succès" };
+        } catch (error) {
+            return { error: error instanceof Error ? error.message : "Erreur lors du changement de mot de passe" };
+        }
 	}
 );
 
-export const importUsersBatchAction = authenticatedAction(
-	z.object({
-		rows: z.array(z.any()),
-	}),
-	async (data) => {
-		const { rows } = data;
-		console.log(`[ImportBatch] Starting batch with ${rows.length} raw rows`);
-
-		// Fetch default USER role (cached or quick fetch)
-		const userRole = await db.query.roles.findFirst({
-			where: eq(roles.name, "USER"),
-		});
-
-		let successCount = 0;
-		let skippedCount = 0;
-		const skipped: string[] = [];
-		const errors: string[] = [];
-
-		// 1. Validate rows individually
-		const validRows: z.infer<typeof importUserRowSchema>[] = [];
-		
-		for (let i = 0; i < rows.length; i++) {
-			const row = rows[i];
-			const parsed = importUserRowSchema.safeParse(row);
-			if (parsed.success) {
-				validRows.push(parsed.data);
-			} else {
-				const errorMsg = parsed.error.issues.map(issue => issue.message).join(", ");
-				console.warn(`[ImportBatch] Row ${i} invalid:`, errorMsg, row);
-				errors.push(`Note: Ligne ${i+1} ignorée (format invalide): ${errorMsg}`);
-				skippedCount++;
-			}
-		}
-
-		console.log(`[ImportBatch] ${validRows.length} valid rows to process out of ${rows.length}`);
-
-		if (validRows.length === 0) {
-			return {
-				success: "Batch processed (no valid rows)",
-				importedCount: 0,
-				skippedCount,
-				skipped,
-				errors,
-			};
-		}
-
-		try {
-			// Extract identifiers for bulk check
-			const usernamesToCheck: string[] = [];
-			const emailsToCheck: string[] = [];
-			const phonesToCheck: string[] = [];
-
-			const chunkDataWithMeta = validRows.map((item) => {
-				const { promss, nums, email, phone, nom, prenom } = item;
-				let username = item.username;
-
-				if (!username || username.trim() === "") {
-					username = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
-				}
-				usernamesToCheck.push(username);
-				if (email) emailsToCheck.push(email);
-				if (phone) phonesToCheck.push(phone);
-				return { ...item, username };
-			});
-
-			console.log(`[ImportBatch] Processing ${chunkDataWithMeta.length} valid items.`);
-
-			// Verify duplicates within the chunk itself (using valid rows)
-			const seenUsernames = new Set();
-			const seenEmails = new Set();
-			const seenPhones = new Set();
-			const uniqueChunk: typeof chunkDataWithMeta = [];
-
-			for (const item of chunkDataWithMeta) {
-				let isDuplicate = false;
-				if (seenUsernames.has(item.username)) {
-					skippedCount++;
-					skipped.push(`Doublon dans le fichier (Username): ${item.username}`);
-					isDuplicate = true;
-				}
-
-				if (item.email && seenEmails.has(item.email)) {
-					skippedCount++;
-					skipped.push(`Doublon dans le fichier (Email): ${item.email}`);
-					isDuplicate = true;
-				}
-				if (item.phone && seenPhones.has(item.phone)) {
-					skippedCount++;
-					skipped.push(`Doublon dans le fichier (Téléphone): ${item.phone}`);
-					isDuplicate = true;
-				}
-
-				if (!isDuplicate) {
-					seenUsernames.add(item.username);
-					if (item.email) seenEmails.add(item.email);
-					if (item.phone) seenPhones.add(item.phone);
-					uniqueChunk.push(item);
-				}
-			}
-
-			if (uniqueChunk.length === 0) {
-				console.log("[ImportBatch] All valid items were duplicates within the file");
-				return {
-					importedCount: 0,
-					skippedCount,
-					skipped,
-					errors
-				};
-			}
-
-			// Bulk DB Check
-			const existingUsers = await db.query.users.findMany({
-				where: or(
-					usernamesToCheck.length > 0 ? inArray(users.username, usernamesToCheck) : undefined,
-					emailsToCheck.length > 0 ? inArray(users.email, emailsToCheck) : undefined,
-					phonesToCheck.length > 0 ? inArray(users.phone, phonesToCheck) : undefined
-				),
-				columns: {
-					username: true,
-					email: true,
-					phone: true
-				}
-			});
-
-			console.log(`[ImportBatch] Found ${existingUsers.length} conflicting users in DB`);
-
-			const existingUsernames = new Set(existingUsers.map(u => u.username));
-			const existingEmails = new Set(existingUsers.map(u => u.email));
-			const existingPhones = new Set(existingUsers.map(u => u.phone).filter(Boolean));
-
-			// Filter out existing users
-			const usersToInsert = [];
-			const passwordPromises = uniqueChunk.map(async (item) => {
-				if (existingUsernames.has(item.username)) {
-					return { status: "skipped", reason: `Utilisateur déjà existant: ${item.username}` };
-				}
-				if (item.email && existingEmails.has(item.email)) {
-					return { status: "skipped", reason: `Email déjà utilisé: ${item.email}` };
-				}
-				if (item.phone && existingPhones.has(item.phone)) {
-					return { status: "skipped", reason: `Téléphone déjà utilisé: ${item.phone}` };
-				}
-
-				const password = Math.random().toString(36).slice(-10);
-				const hash = await bcrypt.hash(password, 10);
-				return { status: "resolved", hash, item };
-			});
-
-			const results = await Promise.all(passwordPromises);
-
-			for (const res of results) {
-				if (res.status === "skipped") {
-					skippedCount++;
-					skipped.push(res.reason as string);
-				} else if (res.status === "resolved") {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					const { hash, item } = res as any;
-					const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, balance } = item;
-					
-					// Log mapped tabagnss for verification
-					const tabagnssCode = getTabagnssCode(tabagnss) || "ME";
-					if (!getTabagnssCode(tabagnss)) {
-						console.warn(`[ImportBatch] Unknown tabagnss '${tabagnss}' for user ${item.username}, defaulting to ME`);
-					}
-
-					usersToInsert.push({
-						nom,
-						prenom,
-						email,
-						phone: phone || null,
-						bucque: bucque || null,
-						promss,
-						nums: nums || null,
-						// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						tabagnss: tabagnssCode as any,
-						username: item.username,
-						passwordHash: hash,
-						roleId: userRole?.id,
-						balance: Math.round((Number(balance) || 0) * 100),
-					});
-				}
-			}
-
-			console.log(`[ImportBatch] Inserting ${usersToInsert.length} users`);
-
-			if (usersToInsert.length > 0) {
-				await db.insert(users).values(usersToInsert);
-				successCount += usersToInsert.length;
-			}
-			
-			return {
-				success: "Batch processed",
-				importedCount: successCount,
-				skippedCount,
-				skipped,
-				errors: errors.length > 0 ? errors : undefined,
-			};
-		} catch (error) {
-			console.error("Failed to import batch:", error);
-			return { error: "Erreur lors de l'import du batch" };
-		}
-	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
-);
-
 export const updateUserPreferencesAction = authenticatedAction(
-	z.object({
-		preferredDashboardPath: z.string().nullable(),
-	}),
-	async (data, { session }) => {
-		const { preferredDashboardPath } = data;
+	z.object({ preferredDashboardPath: z.string() }),
+	async ({ preferredDashboardPath }, { session }) => {
 		try {
-			await db
-				.update(users)
-				.set({ preferredDashboardPath })
-				.where(eq(users.id, session.userId));
-			
+            await db.update(users)
+                .set({ preferredDashboardPath })
+                .where(eq(users.id, session.userId));
+
 			revalidatePath("/settings");
-			return { success: "Préférence enregistrée" };
+			return { success: "Préférences mises à jour" };
 		} catch (error) {
-			console.error("Failed to update preferences:", error);
-			return { error: "Erreur lors de la sauvegarde" };
+			return { error: handleDbError(error) };
 		}
 	}
 );
