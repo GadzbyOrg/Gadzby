@@ -52,7 +52,7 @@ export const DialogContent = ({ children, className }: { children: React.ReactNo
 
     return (
         <div className={cn(
-            "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg",
+            "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-dark-800 bg-dark-900 p-6 shadow-lg duration-200 sm:rounded-xl text-white",
             className
         )} onClick={(e) => e.stopPropagation()}>
             {children}
