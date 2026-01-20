@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Footer } from "./Footer";
 import { Sidebar } from "./Sidebar";
 import { UserDropdown } from "./UserDropdown";
+import Link from "next/link";
 
 type UserProp = {
     id: string;
@@ -48,7 +49,6 @@ export function DashboardShell({
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const pathname = usePathname();
 
-	// Fermer le menu mobile lors de la navigation
 	// Fermer le menu mobile lors de la navigation
 	const [prevPath, setPrevPath] = useState(pathname);
 	if (pathname !== prevPath) {
@@ -102,8 +102,9 @@ export function DashboardShell({
 						<IconMenu2 size={24} />
 					</button>
 
-					{/* Titre ou Fil d'ariane */}
-					<div className="hidden md:block">
+					{/* Titre */}
+					<div className="hidden md:flex items-center gap-1">
+						<Link className="text-lg font-bold text-primary-500 hover:underline" href="https://forms.gle/ngwX9tdf2aaa2quw5" target="_blank">[BETA]</Link>
 						<h1 className="text-lg font-semibold text-gray-200">Gadzby</h1>
 					</div>
 

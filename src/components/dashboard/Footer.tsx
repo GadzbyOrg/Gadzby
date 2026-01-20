@@ -1,4 +1,4 @@
-import { IconBrandGithub, IconCode, IconMail, IconPalette } from "@tabler/icons-react";
+import { IconBrandGithub, IconBug, IconCode, IconMail, IconPalette } from "@tabler/icons-react";
 import Link from "next/link";
 import React from "react";
 
@@ -52,6 +52,15 @@ export function Footer() {
 					>
 						<IconMail size={16} />
 						<span>Contact</span>
+					</Link>
+					<Link
+						href="https://forms.gle/ngwX9tdf2aaa2quw5"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
+					>
+						<IconBug size={16} />
+						<span>Signaler un bug</span>
 					</Link>
 				</div>
 			</div>
