@@ -18,6 +18,7 @@ export const createShopAction = authenticatedAction(
 
         try {
             const newShop = await ShopService.create(data);
+            revalidatePath("/admin/shops");
             return { success: true, shop: newShop };
         } catch (error) {
              return { error: error instanceof Error ? error.message : "Erreur création shop" };
