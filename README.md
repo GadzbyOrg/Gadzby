@@ -159,6 +159,15 @@ Pour configurer SumUp, vous avez besoin de :
 - merchantCode : L'identifiant unique de marchant de votre compte SumUp (s'affiche sous le nom de l'asso dans le coin en haut à droite de l'interface SumUp)
 
 
+#### HelloAsso
+
+Pour configurer HelloAsso, vous avez besoin de :
+- clientId : Rendez-vous sur l'interface de gestion d'association puis dans Mon compte > Intégrations et API
+- clientSecret : Idem
+- organizationSlug : trouvable dans l'url de l'interface de gestion : https://admin.helloasso.com/{organisationSlug}/accueil
+
+**IMPORTANT** : Vous devez renseigner un url dans le champs "Mon URL de callback" avec : *https://url_de_votre_app/api/webhooks/payment?provider=helloasso*.
+
 ### 3. Pennylane
 
 L'intégration Pennylane permet aux boul'c d'envoyer les factures fournisseurs directement sur Pennylane. Pour configurer Pennylane, vous avez besoin de :
