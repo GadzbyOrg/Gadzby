@@ -9,7 +9,9 @@ Sentry.init({
 
   // Add optional integrations for additional features
   integrations: [Sentry.replayIntegration({
-    mask: [".mask-me"]
+    mask: [".mask-me"],
+    maskAllText: false,
+    blockAllMedia: false,
   }), Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] })],
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
