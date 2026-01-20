@@ -3,10 +3,10 @@ import { z } from "zod";
 export const updateUserSchema = z.object({
 	nom: z.string().min(1, "Le nom est requis"),
 	prenom: z.string().min(1, "Le prénom est requis"),
-	email: z.email("Email invalide"),
+	email: z.email("Email invalide").toLowerCase(),
 	phone: z.string().optional().or(z.literal("")),
 	bucque: z.string().optional().or(z.literal("")),
-	promss: z.string().min(1, "La prom'ss est requise"),
+	promss: z.string().min(1, "La prom'ss est requise").toUpperCase(),
 	nums: z.string().optional().or(z.literal("")),
 	tabagnss: z.string().optional().or(z.literal("")),
 	preferredDashboardPath: z.string().optional().or(z.literal("")),
@@ -33,10 +33,10 @@ export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;
 export const createUserSchema = z.object({
 	nom: z.string().min(1, "Le nom est requis"),
 	prenom: z.string().min(1, "Le prénom est requis"),
-	email: z.email("Email invalide"),
+	email: z.email("Email invalide").toLowerCase(),
 	phone: z.string().optional().or(z.literal("")),
 	bucque: z.string().optional().or(z.literal("")),
-	promss: z.string().min(1, "La prom'ss est requise"),
+	promss: z.string().min(1, "La prom'ss est requise").toUpperCase(),
 	nums: z.string().optional().or(z.literal("")),
 	tabagnss: z.string().min(1, "Le tabagn'ss est requis"),
 	password: z
@@ -68,10 +68,10 @@ export type CreateUserInput = z.infer<typeof createUserSchema>;
 export const importUserRowSchema = z.object({
 	nom: z.string().min(1),
 	prenom: z.string().min(1),
-	email: z.email().optional().or(z.literal("")),
+	email: z.email().toLowerCase().optional().or(z.literal("")),
 	phone: z.string().optional().or(z.literal("")),
 	bucque: z.string().optional().or(z.literal("")),
-	promss: z.string().min(1), // Can be number in excel, will handle conv
+	promss: z.string().min(1).toUpperCase(), // Can be number in excel, will handle conv
 	nums: z.string().optional().or(z.literal("")), // Can be number
 	tabagnss: z.string().min(1),
 	username: z.string().optional().or(z.literal("")),

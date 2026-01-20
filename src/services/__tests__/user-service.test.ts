@@ -152,6 +152,44 @@ describe("UserService", () => {
 				})
 			);
 		});
+
+        test("should ensure username is lowercase", async () => {
+			const mockUpdate = mockDbChain();
+			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
+
+			await UserService.update("user-123", {
+				nom: "Doe",
+				prenom: "John",
+				email: "john@example.com",
+				promss: "215",
+                nums: "115"
+			});
+
+			expect(mockUpdate.set).toHaveBeenCalledWith(
+				expect.objectContaining({
+					username: "115215",
+				})
+			);
+		});
+
+        test("should normalize promss and email on update", async () => {
+			const mockUpdate = mockDbChain();
+			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
+
+			await UserService.update("user-123", {
+				nom: "Doe",
+				prenom: "John",
+				email: "JOHN@EXAMPLE.COM",
+				promss: "me215",
+			});
+
+			expect(mockUpdate.set).toHaveBeenCalledWith(
+				expect.objectContaining({
+					email: "john@example.com",
+					promss: "ME215",
+				})
+			);
+		});
 	});
 
     describe("adminUpdate", () => {
@@ -229,6 +267,75 @@ describe("UserService", () => {
                  expect.objectContaining({
                      username: "usertest", // computed
                      email: "test@example.com"
+                 })
+             );
+        });
+
+        test("should ensure username is lowercase on create", async () => {
+             vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined); // No existing user
+             
+             const mockInsert = mockDbChain();
+             vi.mocked(db.insert).mockReturnValue(mockInsert as any);
+
+             // Case 1: Standard firstname/lastname
+             await UserService.create({
+                 nom: "Doe",
+                 prenom: "John",
+                 email: "john@example.com",
+                 promss: "223",
+                 tabagnss: "Siber'ss",
+                 password: "password123",
+                 roleId: "role-1",
+                 balance: 0
+             });
+
+             expect(mockInsert.values).toHaveBeenCalledWith(
+                 expect.objectContaining({
+                     username: "johndoe"
+                 })
+             );
+
+             // Case 2: Nums/Promss
+             await UserService.create({
+                 nom: "Doe",
+                 prenom: "John",
+                 email: "john2@example.com",
+                 promss: "223",
+                 nums: "ABC", // Should be lowercased
+                 tabagnss: "Siber'ss",
+                 password: "password123",
+                 roleId: "role-1",
+                 balance: 0
+             });
+
+             expect(mockInsert.values).toHaveBeenCalledWith(
+                 expect.objectContaining({
+                     username: "abc223"
+                 })
+             );
+        });
+
+        test("should normalize promss and email on create", async () => {
+             vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined); // No existing user
+             
+             const mockInsert = mockDbChain();
+             vi.mocked(db.insert).mockReturnValue(mockInsert as any);
+
+             await UserService.create({
+                 nom: "Test",
+                 prenom: "User",
+                 email: "TEST@EXAMPLE.COM",
+                 promss: "me223",
+                 tabagnss: "Siber'ss",
+                 password: "password123",
+                 roleId: "role-1",
+                 balance: 0
+             });
+
+             expect(mockInsert.values).toHaveBeenCalledWith(
+                 expect.objectContaining({
+                     email: "test@example.com",
+                     promss: "ME223"
                  })
              );
         });

@@ -37,7 +37,8 @@ const resetPasswordSchema = z
 export const loginAction = publicAction(
 	loginSchema,
 	async (data) => {
-		const { username, password } = data;
+		const { username: rawUsername, password } = data;
+		const username = rawUsername.toLowerCase();
 		console.log("Login attempt for:", username);
 
 		const user = await db.query.users.findFirst({

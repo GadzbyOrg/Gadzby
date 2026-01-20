@@ -30,13 +30,15 @@ export class UserService {
 		const { nom, prenom, nums, promss } = data;
 		const newUsername =
 			nums && nums.trim()
-				? `${nums}${promss}`
+				? `${nums}${promss}`.toLowerCase()
 				: `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
 
 		await db
 			.update(users)
 			.set({
 				...data,
+				email: data.email.toLowerCase(),
+				promss: data.promss.toUpperCase(),
 				username: newUsername,
 			})
 			.where(eq(users.id, userId));
@@ -69,16 +71,17 @@ export class UserService {
             username,
             balance,
             newPassword,
+            email,
             ...rest
         } = data;
 
 		const computedUsername =
 			nums && nums.trim()
-				? `${nums}${promss}`
+				? `${nums}${promss}`.toLowerCase()
 				: `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
         
 		const finalUsername =
-			username && username.trim() ? username.trim() : computedUsername;
+			username && username.trim() ? username.trim().toLowerCase() : computedUsername;
 
 		await db.transaction(async (tx) => {
 			// 1. Get current balance
@@ -111,8 +114,9 @@ export class UserService {
 				.set({
                     nom,
                     prenom,
+                    email: email.toLowerCase(),
                     nums: nums || null,
-                    promss,
+                    promss: promss.toUpperCase(),
                     username: finalUsername,
                     balance,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -162,7 +166,7 @@ export class UserService {
 
         const username =
             nums && nums.trim()
-                ? `${nums}${promss}`
+                ? `${nums}${promss}`.toLowerCase()
                 : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
 
         const existingUser = await db.query.users.findFirst({
@@ -187,10 +191,10 @@ export class UserService {
         await db.insert(users).values({
             nom,
             prenom,
-            email,
+            email: email.toLowerCase(),
             phone: phone || null,
             bucque: bucque || null,
-            promss,
+            promss: promss.toUpperCase(),
             nums: nums || null,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             tabagnss: tabagnss as any,
@@ -290,9 +294,9 @@ export class UserService {
              let username = explicitUsername;
 
              if (!username || username.trim() === "") {
-                 username = (nums && nums.trim()) ? `${nums}${promss}` : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
+                 username = (nums && nums.trim()) ? `${nums}${promss}`.toLowerCase() : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
              }
-             return { data: item, username: username! };
+             return { data: item, username: username!.toLowerCase() };
          });
 
         // Verify duplicates within the chunk itself
@@ -386,10 +390,10 @@ export class UserService {
                 usersToInsert.push({
                     nom,
                     prenom,
-                    email,
+                    email: email ? email.toLowerCase() : email,
                     phone: phone || null,
                     bucque: bucque || null,
-                    promss,
+                    promss: promss.toUpperCase(),
                     nums: nums || null,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     tabagnss: (getTabagnssCode(tabagnss) || "ME") as any,
@@ -441,6 +445,7 @@ export class UserService {
             where: (users, { or, and, ilike, ne, eq }) => {
                 const conditions = [
                     eq(users.isDeleted, false),
+                    eq(users.isAsleep, false),
                     or(
                         ilike(users.username, searchPattern),
                         ilike(users.nom, searchPattern),
