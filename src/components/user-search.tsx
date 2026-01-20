@@ -49,26 +49,8 @@ export function UserSearch({
             
             setIsLoading(true);
             try {
-                // If the action expects an object (like authenticatedAction wrappers usually do if they have input), handle it.
-                // searchUsersPublicAction takes a string `query`.
-                // Our new action takes { query: string }.
-                // We need to normalize or expect the caller to wrap it if needed.
-                // However, `searchUsersPublicAction` is a direct function taking string.
-                // `searchUsersForPaymentAction` is an `authenticatedAction` which implicitly takes the first argument as data.
-                // authenticatedAction(schema, handler) returns a function that takes (data).
-                
-                // Let's assume searchAction signature matches the one we want to use.
-                // But wait, `searchUsersPublicAction` is `(query: string) => Promise`.
-                // `authenticatedAction` z.object({ query: z.string() }) returns `(data: { query: string }) => Promise`.
-                // They have different signatures.
-                
-                // I should standardize valid usage.
-                
                 let res;
-                 // Hacky check or just try/catch?
-                 // Best is to assume the passed searchAction adapts to the signature needed or we adapt here.
-                 // But better: let's make the prop expects `(query: string) => ...`
-                 
+
                  res = await searchAction(query);
                  
                 if (res?.users) {

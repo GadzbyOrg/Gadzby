@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { shopRoles,shops, shopUsers, users } from "@/db/schema";
-import { SHOP_PERMISSIONS } from "@/features/shops/schemas";
+import { SHOP_PERMISSIONS } from "@/features/shops/permissions";
 
 async function main() {
 	console.log("🌱 Creating shops...");

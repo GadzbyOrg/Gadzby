@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { IconSearch, IconX } from "@tabler/icons-react";
-import { searchUsers } from "@/features/shops/actions";
+import { useEffect,useRef, useState } from "react";
+
 import { UserAvatar } from "@/components/user-avatar";
+import { searchUsers } from "@/features/shops/actions";
 
 export interface User {
 	id: string;

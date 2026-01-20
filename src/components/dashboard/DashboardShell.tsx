@@ -2,7 +2,7 @@
 
 import { IconMenu2 } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
-import { useEffect,useState } from "react";
+import {useState } from "react";
 
 import { cn } from "@/lib/utils";
 

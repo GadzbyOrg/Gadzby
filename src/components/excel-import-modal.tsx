@@ -16,7 +16,7 @@ import * as XLSX from "xlsx";
 interface ExcelImportModalProps {
 	action: (
 		prevState: any,
-		formData: FormData
+		formData: any
 	) => Promise<{
 		success?: string;
 		error?: string;
@@ -61,8 +61,8 @@ export function ExcelImportModal({
 	expectedFormat,
 	fileName,
 	triggerIcon,
-	batchAction
-}: ExcelImportModalProps & { batchAction?: (data: { rows: any[] }) => Promise<any> }) {
+	additionalData
+}: ExcelImportModalProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isPending, setIsPending] = useState(false);
 	const [progress, setProgress] = useState(0);
@@ -109,28 +109,25 @@ export function ExcelImportModal({
 				return;
 			}
 
-			// 2. Identify Batch Mode compatibility
-			// If batchAction is provided, we use the new batch flow.
-			if (batchAction) {
-				const BATCH_SIZE = 200;
-				const totalBatches = Math.ceil(rows.length / BATCH_SIZE);
-				
-				let totalSuccess = 0;
-				let totalSkipped = 0;
-				let totalErrors = 0;
-				const allSkipped: string[] = [];
-				const allErrors: string[] = [];
+			const BATCH_SIZE = 200;
+			const totalBatches = Math.ceil(rows.length / BATCH_SIZE);
+			
+			let totalSuccess = 0;
+			let totalSkipped = 0;
+			let totalErrors = 0;
+			const allSkipped: string[] = [];
+			const allErrors: string[] = [];
 
-				for (let i = 0; i < totalBatches; i++) {
-					const start = i * BATCH_SIZE;
-					const end = Math.min(start + BATCH_SIZE, rows.length);
-					const chunk = rows.slice(start, end);
-					
-					setStatusMessage(`Traitement du lot ${i + 1}/${totalBatches}...`);
-					const mappedChunk = chunk.map((row: any) => ({
-						nom: row["Nom"] || row["nom"],
-						prenom: row["Prenom"] || row["Prénom"] || row["prenom"],
-						email: row["Email"] || row["email"],
+			for (let i = 0; i < totalBatches; i++) {
+				const start = i * BATCH_SIZE;
+				const end = Math.min(start + BATCH_SIZE, rows.length);
+				const chunk = rows.slice(start, end);
+				
+				setStatusMessage(`Traitement du lot ${i + 1}/${totalBatches}...`);
+				const mappedChunk = chunk.map((row: any) => ({
+					nom: row["Nom"] || row["nom"],
+					prenom: row["Prenom"] || row["Prénom"] || row["prenom"],
+					email: row["Email"] || row["email"],
 						phone: row["Phone"] || row["phone"] || row["téléphone"],
 						bucque: row["Bucque"] || row["bucque"] || "",
 						promss: String(row["Promss"] || row["promss"] || ""),
@@ -141,7 +138,7 @@ export function ExcelImportModal({
 					}));
 
 
-					const result = await batchAction({ rows: mappedChunk });
+					const result = await action(initialState, { rows: mappedChunk, ...additionalData });
 					
 					if (result.error) {
 						totalErrors += chunk.length;
@@ -169,14 +166,6 @@ export function ExcelImportModal({
 					skipped: allSkipped,
 					errors: allErrors,
 				});
-
-			} else {
-				// Fallback to legacy single-request action
-				const formData = new FormData();
-				formData.append("file", file);
-				const res = await action(initialState, formData);
-				setState(res);
-			}
 
 		} catch (e: any) {
 			setState({ ...initialState, error: e.message || "Erreur inconnue" });

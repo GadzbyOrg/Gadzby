@@ -18,13 +18,6 @@ async function main() {
 				},
 			},
 			{
-				slug: "viva",
-				name: "Viva Wallet",
-				isEnabled: false,
-				fees: { fixed: 35, percentage: 1.4 },
-				config: {},
-			},
-			{
 				slug: "sumup",
 				name: "SumUp",
 				isEnabled: false,
