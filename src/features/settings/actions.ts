@@ -161,3 +161,70 @@ export async function testEmailConfigAction(prevState: unknown, formData: FormDa
         return { error: `Erreur d'envoi : ${e.message || "Erreur inconnue"}` };
     }
 }
+
+const pennylaneConfigSchema = z.object({
+    enabled: z.boolean(),
+    apiKey: z.string().optional(),
+});
+
+export async function getPennylaneConfigAction() {
+    const session = await verifySession();
+    if (!session || !session.permissions.includes("ADMIN_ACCESS")) return { error: "Non autorisé" };
+
+    try {
+        const setting = await db.query.systemSettings.findFirst({
+            where: eq(systemSettings.key, "pennylane_config"),
+        });
+        
+        return { config: setting?.value || { enabled: false, apiKey: "" } };
+    } catch (error) {
+        console.error("Failed to fetch pennylane config:", error);
+        return { error: "Erreur lors de la récupération de la configuration" };
+    }
+}
+
+export async function updatePennylaneConfigAction(prevState: unknown, formData: FormData) {
+    const session = await verifySession();
+    if (!session || !session.permissions.includes("ADMIN_ACCESS")) return { error: "Non autorisé" };
+
+    const rawData = {
+        enabled: formData.get("enabled") === "on",
+        apiKey: formData.get("apiKey") || undefined,
+    };
+    
+    const parsed = pennylaneConfigSchema.safeParse(rawData);
+
+    if (!parsed.success) {
+        return { error: parsed.error.issues[0].message };
+    }
+
+    if (parsed.data.enabled && !parsed.data.apiKey) {
+        return { error: "Clé API requise pour activer l'intégration" };
+    }
+
+    //TODO: check if API key is valid
+
+    try {
+        await db.insert(systemSettings)
+            .values({
+                key: "pennylane_config",
+                value: parsed.data,
+                description: "Configuration Pennylane",
+                updatedAt: new Date(),
+            })
+            .onConflictDoUpdate({
+                target: systemSettings.key,
+                set: {
+                    value: parsed.data,
+                    updatedAt: new Date(),
+                }
+            });
+
+        revalidatePath("/admin/settings");
+        return { success: "Configuration sauvegardée avec succès" };
+
+    } catch (error) {
+        console.error("Failed to update pennylane config:", error);
+        return { error: "Erreur lors de la sauvegarde" };
+    }
+}
