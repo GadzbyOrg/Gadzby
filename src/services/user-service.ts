@@ -37,6 +37,9 @@ export class UserService {
 			.update(users)
 			.set({
 				...data,
+				phone: data.phone || null,
+				bucque: data.bucque || null,
+				nums: data.nums || null,
 				email: data.email.toLowerCase(),
 				promss: data.promss.toUpperCase(),
 				username: newUsername,
@@ -72,6 +75,8 @@ export class UserService {
             balance,
             newPassword,
             email,
+            phone,
+            bucque,
             ...rest
         } = data;
 
@@ -119,6 +124,8 @@ export class UserService {
                     promss: promss.toUpperCase(),
                     username: finalUsername,
                     balance,
+                    phone: phone || null,
+                    bucque: bucque || null,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     tabagnss: rest.tabagnss as any,
                     ...rest
