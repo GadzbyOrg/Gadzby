@@ -44,7 +44,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 		params.append("client_id", this.config.clientId);
 		params.append("client_secret", this.config.clientSecret);
 
-        const authURL = "https://api.helloasso-sandbox.com/oauth2/token"; // process.env.NODE_ENV === "production" ? "https://api.helloasso.com/v5" : 
+        const authURL = process.env.NODE_ENV === "production" ? "https://api.helloasso.com/oauth2/token" : "https://api.helloasso-sandbox.com/oauth2/token";
 
 		const response = await fetch(authURL, {
 			method: "POST",
@@ -148,7 +148,6 @@ export class HelloAssoAdapter implements PaymentProvider {
 			const internalId = body.metadata.internalTransactionId;
 
 			console.log("[HelloAsso] Received webhook for order:", internalId);
-			console.log("[HelloAsso] Webhook body:", body);
 			
 
 			if (!internalId) {
@@ -158,6 +157,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 
 			const originIp = process.env.NODE_ENV === "production" ? "51.138.206.200" : "4.233.135.234"
 
+			// TODO: Implement proper verification to prevent spoofing
 			// Skip IP check for now
 			// if (request.headers.get("x-forwarded-for") !== originIp) {
 			// 	console.log("[HelloAsso] Invalid IP");
@@ -166,6 +166,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 
 			// Handle Payment events
 			if (body.eventType === "Payment") {
+				console.log("[HelloAsso] Payment event received");
 				const paymentData = body.data;
 				
 				// Check if payment is authorized
