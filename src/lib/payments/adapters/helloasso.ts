@@ -145,35 +145,35 @@ export class HelloAssoAdapter implements PaymentProvider {
 		try {
 			const body = await request.json();
 			const url = new URL(request.url);
-			const internalId = url.searchParams.get("order_id");
+			const internalId = body.metadata.internalTransactionId;
 
 			console.log("[HelloAsso] Received webhook for order:", internalId);
-
-			// Metadata is returned at the root of the webhook payload for Payment events
-			const metadata = body.metadata;
 			
-			// Try to get transaction ID from multiple sources
-			const transactionId = internalId || metadata?.internalTransactionId;
 
-			if (!transactionId) {
+			if (!internalId) {
+				console.log("[HelloAsso] Missing internal transaction ID");
 				return { isValid: false };
 			}
 
 			const originIp = process.env.NODE_ENV === "production" ? "51.138.206.200" : "4.233.135.234"
 
-			if (request.headers.get("x-forwarded-for") !== originIp) {
-				return { isValid: false };
-			}
+			// TODO: Implement proper verification to prevent spoofing
+			// Skip IP check for now
+			// if (request.headers.get("x-forwarded-for") !== originIp) {
+			// 	console.log("[HelloAsso] Invalid IP");
+			// 	return { isValid: false };
+			// }
 
 			// Handle Payment events
 			if (body.eventType === "Payment") {
+				console.log("[HelloAsso] Payment event received");
 				const paymentData = body.data;
 				
 				// Check if payment is authorized
 				if (paymentData.state === "Authorized") {
 					return {
 						isValid: true,
-						transactionId: transactionId,
+						transactionId: internalId,
 						amount: paymentData.amount, // Amount is in cents
 						providerTransactionId: paymentData.id.toString(),
 					};

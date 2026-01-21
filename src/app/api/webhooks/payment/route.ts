@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
 		const providerSlug = searchParams.get("provider");
 
 		if (!providerSlug) {
+			console.log("Missing provider param");
 			return NextResponse.json(
 				{ error: "Missing provider param" },
 				{ status: 400 }
@@ -19,14 +20,15 @@ export async function POST(request: NextRequest) {
 
 		const provider = await getPaymentProvider(providerSlug);
 		if (!provider) {
+			console.log("Invalid provider");
 			return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
 		}
 
-		console.log("Received webhook for provider:", request.body);
-
+		console.log("Received webhook for provider:", providerSlug);
 		const verification = await provider.verifyWebhook(request);
 
 		if (!verification.isValid || !verification.transactionId) {
+			console.log("Invalid webhook verification");
 			return NextResponse.json(
 				{ error: "Invalid signature or missing tx ID" },
 				{ status: 400 }
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest) {
 
 		const txId = verification.transactionId;
 
-		// Process transaction securely
+		// TODO: Refactor to use transactions service
 		await db.transaction(async (tx) => {
 			// 1. Get current transaction status
 			const [currentTx] = await tx
