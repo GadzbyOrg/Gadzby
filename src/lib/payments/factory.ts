@@ -48,7 +48,7 @@ export async function getPaymentProvider(
 					clientId: config.clientId,
 					clientSecret: config.clientSecret,
 					organizationSlug: config.organizationSlug,
-					baseUrl: process.env.NODE_ENV === "production" ? "https://api.helloasso.com/v5" : "https://api.helloasso-sandbox.com/v5",
+					baseUrl: "https://api.helloasso-sandbox.com/v5", // process.env.NODE_ENV === "production" ? "https://api.helloasso.com/v5" : 
 					appUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
 				},
 				fees

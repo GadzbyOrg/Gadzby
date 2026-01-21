@@ -44,7 +44,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 		params.append("client_id", this.config.clientId);
 		params.append("client_secret", this.config.clientSecret);
 
-        const authURL = "https://api.helloasso-sandbox.com/oauth2/token";
+        const authURL = "https://api.helloasso-sandbox.com/oauth2/token"; // process.env.NODE_ENV === "production" ? "https://api.helloasso.com/v5" : 
 
 		const response = await fetch(authURL, {
 			method: "POST",
