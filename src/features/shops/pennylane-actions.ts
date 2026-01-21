@@ -100,6 +100,40 @@ export const getPennyLaneSuppliers = authenticatedActionNoInput(async () => {
 	}
 });
 
+export const getPennyLaneCategories = authenticatedActionNoInput(async () => {
+	const config = await getPennylaneConfig();
+	if (!config) {
+		return { categories: [] };
+	}
+
+	try {
+		const response = await fetch(`${PENNYLANE_API_URL}/categories`, {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${config.apiKey}`,
+				"Content-Type": "application/json",
+			},
+		});
+
+		if (!response.ok) {
+			console.error("Failed to fetch categories", await response.text());
+			return { categories: [] };
+		}
+
+		const data = await response.json();
+		const categoriesList = data.items.map(
+			(item: { id: string; label: string; }) => ({
+				id: item.id,
+				label: item.label,
+			})
+		);
+		return { categories: categoriesList };
+	} catch (e) {
+		console.error("Error fetching categories:", e);
+		return { categories: [] };
+	}
+});
+
 const uploadInvoiceSchema = z.object({
 	file: z.instanceof(File, { message: "Le fichier est requis" }),
 	date: z.string().min(1, "La date est requise"),
@@ -176,6 +210,56 @@ export const uploadInvoiceToPennyLane = authenticatedAction(
 				const err = await response.json();
 				console.error("PennyLane Import Error:", err);
 				return { error: "Failed to create invoice in PennyLane" };
+			}
+
+			const invoiceData = await response.json();
+			const invoiceId = invoiceData.id;
+
+			// 3.5. Apply Category if configured
+			const categoryMappingSetting = await db.query.systemSettings.findFirst({
+				where: eq(systemSettings.key, "pennylane_shop_categories"),
+			});
+			const rawMapping = (categoryMappingSetting?.value as Record<string, string[]>) || {};
+			let specificCategories: string[] = [];
+			
+			const shopVal = rawMapping[shop.id];
+			if (Array.isArray(shopVal)) {
+				specificCategories = shopVal;
+			}
+
+			if (specificCategories.length > 0 && invoiceId) {
+				try {
+					const weight = 1.0 / specificCategories.length;
+					const categoriesPayload = specificCategories.map(catId => ({
+						id: catId,
+						weight: weight.toFixed(4) 
+					}));
+
+					console.log(categoriesPayload);
+					const catResponse = await fetch(
+						`${PENNYLANE_API_URL}/supplier_invoices/${invoiceId}/categories`,
+						{
+							method: "PUT",
+							headers: {
+								"Content-Type": "application/json",
+								Authorization: `Bearer ${config.apiKey}`,
+							},
+							body: JSON.stringify(categoriesPayload),
+						}
+					);
+
+                    if (!catResponse.ok) {
+                        const errorText = await catResponse.text();
+						console.error(
+							`Failed to categorize invoice ${invoiceId} in Pennylane (Status: ${catResponse.status})`,
+							errorText
+						);
+					} else {
+                        console.log(`Successfully assigned ${specificCategories.length} categories to invoice ${invoiceId}`);
+                    }
+				} catch (catErr) {
+					console.error("Error categorizing invoice during fetch:", catErr);
+				}
 			}
 
 			// 4. Create Local Expense
