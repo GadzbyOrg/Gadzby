@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
 		}
 
 		console.log("Received webhook for provider:", providerSlug);
-		console.log(request.json());
 		const verification = await provider.verifyWebhook(request);
 
 		if (!verification.isValid || !verification.transactionId) {
