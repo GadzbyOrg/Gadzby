@@ -10,10 +10,10 @@ import { verifySession } from "@/lib/session";
 import { ShopService } from "@/services/shop-service";
 import { getShopOrThrow, getUserShopPermissions } from "./utils";
 import { SHOP_PERM } from "./permissions";
-import { CreateProductInput, UpdateProductInput } from "./schemas";
+import { CreateProductInput, UpdateProductInput, deleteProductSchema } from "./schemas";
 
 export const deleteProduct = authenticatedAction(
-	{ parse: (data: any) => data } as any, // Placeholder schema
+	deleteProductSchema,
 	async ({ shopSlug, productId }, { session }) => {
 		const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
         
