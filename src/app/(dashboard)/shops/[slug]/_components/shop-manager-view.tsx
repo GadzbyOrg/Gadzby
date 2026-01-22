@@ -57,15 +57,16 @@ export function ShopManagerView({
 		}
 	}, [selectedClient]);
 
-	const handleAddToCart = (product: any, delta: number) => {
+	const handleAddToCart = (product: any, delta: number, variantId?: string) => {
+        const key = variantId ? `${product.id}:${variantId}` : product.id;
 		setCart((prev) => {
-			const current = prev[product.id] || 0;
+			const current = prev[key] || 0;
 			const next = Math.max(0, current + delta);
 			if (next === 0) {
-				const { [product.id]: _dismiss, ...rest } = prev;
+				const { [key]: _dismiss, ...rest } = prev;
 				return rest;
 			}
-			return { ...prev, [product.id]: next };
+			return { ...prev, [key]: next };
 		});
 	};
 
@@ -75,8 +76,15 @@ export function ShopManagerView({
 		}
 	};
 
-	const cartTotal = Object.entries(cart).reduce((total, [productId, qty]) => {
-		const product = products.find((p) => p.id === productId);
+	const cartTotal = Object.entries(cart).reduce((total, [key, qty]) => {
+        if (key.includes(':')) {
+            const [productId, variantId] = key.split(':');
+            const product = products.find(p => p.id === productId);
+            const variant = product?.variants?.find((v: any) => v.id === variantId);
+            const price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
+            return total + (price * qty);
+        }
+		const product = products.find((p) => p.id === key);
 		return total + (product ? product.price * qty : 0);
 	}, 0);
 
@@ -104,10 +112,16 @@ export function ShopManagerView({
 
 		setIsSubmitting(true);
 
-		const items = Object.entries(cart).map(([productId, quantity]) => ({
-			productId,
-			quantity,
-		}));
+		const items = Object.entries(cart).map(([key, quantity]) => {
+            if (key.includes(':')) {
+                const [productId, variantId] = key.split(':');
+                return { productId, quantity, variantId };
+            }
+            return {
+			    productId: key,
+			    quantity,
+            };
+		});
 
 		const result = await processSale({
 			shopSlug,

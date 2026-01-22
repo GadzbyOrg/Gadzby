@@ -3,7 +3,7 @@ import { doublePrecision,integer, pgEnum, pgTable, text, timestamp, uuid } from 
 
 import { events } from "./events";
 import { famss } from "./famss";
-import { products } from "./products";
+import { products, productVariants } from "./products";
 import { shops } from "./shops";
 import { users } from "./users";
 
@@ -53,6 +53,7 @@ export const transactions = pgTable('transactions', {
   
   // CONTEXTE PRODUIT (Pour le stock)
   productId: uuid('product_id').references(() => products.id),
+  productVariantId: uuid('product_variant_id').references(() => productVariants.id),
   quantity: doublePrecision('quantity').default(1), // Combien d'items ?
 
   // MÉTHADONNÉES
@@ -68,6 +69,7 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 	fams: one(famss, { fields: [transactions.famsId], references: [famss.id] }),
 	shop: one(shops, { fields: [transactions.shopId], references: [shops.id] }),
     product: one(products, { fields: [transactions.productId], references: [products.id] }),
+    productVariant: one(productVariants, { fields: [transactions.productVariantId], references: [productVariants.id] }),
     event: one(events, { fields: [transactions.eventId], references: [events.id] }),
 }));
 

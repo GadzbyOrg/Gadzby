@@ -18,7 +18,8 @@ export const processSaleSchema = z.object({
 	items: z.array(
 		z.object({
 			productId: z.string(),
-			quantity: z.number().min(1),
+			quantity: z.number().min(0.01),
+            variantId: z.string().optional(),
 		})
 	),
 	paymentSource: z.enum(["PERSONAL", "FAMILY"]).default("PERSONAL"),
@@ -42,7 +43,8 @@ export const processSelfServicePurchaseSchema = z.object({
 	items: z.array(
 		z.object({
 			productId: z.string(),
-			quantity: z.number().min(1),
+			quantity: z.number().min(0.01),
+            variantId: z.string().optional(),
 		})
 	),
 	paymentSource: z.enum(["PERSONAL", "FAMILY"]).default("PERSONAL"),
@@ -98,6 +100,11 @@ export const createProductSchema = z.object({
 	unit: z.enum(["unit", "liter", "kg"]).optional(),
 	allowSelfService: z.boolean().optional(),
 	fcv: z.number().optional(),
+	variants: z.array(z.object({
+		name: z.string().min(1),
+		quantity: z.number(),
+		price: z.number().optional(),
+	})).optional(),
 });
 
 export const createShopSchema = z.object({
@@ -114,7 +121,14 @@ export const toggleShopStatusSchema = z.object({
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 
-export const updateProductSchema = createProductSchema.partial();
+export const updateProductSchema = createProductSchema.omit({ variants: true }).partial().extend({
+	variants: z.array(z.object({
+		id: z.string().optional(),
+		name: z.string().min(1),
+		quantity: z.number(),
+		price: z.number().optional(),
+	})).optional(),
+});
 
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 

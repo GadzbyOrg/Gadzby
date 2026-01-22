@@ -158,7 +158,7 @@ export const processSelfServicePurchase = authenticatedAction(
 				),
 		});
 
-		if (dbProducts.length !== items.length) {
+		if (dbProducts.length !== new Set(productIds).size) {
 			throw new Error(
 				"Certains produits ne sont pas disponibles en self-service"
 			);
