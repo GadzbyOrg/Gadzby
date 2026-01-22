@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"; // Correct import for App Router
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 
 import { createCategory,createProduct, updateProduct } from "@/features/shops/products";
 
@@ -21,6 +22,12 @@ type Product = {
     allowSelfService: boolean | null;
     unit: string;
     fcv: number;
+    variants?: {
+        id: string;
+        name: string;
+        quantity: number;
+        price: number | null;
+    }[];
 };
 
 type ProductFormProps = {
@@ -38,14 +45,52 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [unit, setUnit] = useState(product?.unit || "unit");
     
-    // Local state for optimistic updates or controlled inputs if needed
-    // For now using uncontrolled inputs with defaultValues for simplicity where possible,
-    // but React 19 / Next 15 patterns encourage actions.
+    // Variants state
+    type VariantState = {
+        id?: string;
+        name: string;
+        quantity: number | string;
+        price: number | string; // in Euros
+    };
+    
+    const [variants, setVariants] = useState<VariantState[]>(
+        product?.variants?.map(v => ({
+            id: v.id,
+            name: v.name,
+            quantity: v.quantity,
+            price: v.price ? (v.price / 100).toFixed(2) : ""
+        })) || []
+    );
+
+    const addVariant = () => {
+        setVariants([...variants, { name: "", quantity: "", price: "" }]);
+    };
+
+    const removeVariant = (index: number) => {
+        setVariants(variants.filter((_, i) => i !== index));
+    };
+
+    const updateVariant = (index: number, field: keyof VariantState, value: string | number) => {
+        const newVariants = [...variants];
+        newVariants[index] = { ...newVariants[index], [field]: value };
+        setVariants(newVariants);
+    };
 
     async function handleSubmit(formData: FormData) {
         setIsPending(true);
         setError(null);
+
+        // Process variants
+        const validVariants = variants
+            .filter(v => v.name && v.quantity) // Basic validation
+            .map(v => ({
+                id: v.id,
+                name: v.name,
+                quantity: Number(v.quantity),
+                price: v.price ? Math.round(parseFloat(v.price.toString()) * 100) : undefined
+            }));
 
         const data = {
             name: formData.get("name") as string,
@@ -56,6 +101,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
             fcv: parseFloat(formData.get("fcv") as string),
             categoryId: formData.get("categoryId") as string,
             allowSelfService: formData.get("allowSelfService") === "on",
+            variants: unit !== "unit" ? validVariants : undefined,
         };
 
         try {
@@ -138,7 +184,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                 <div className="grid grid-cols-3 gap-4">
                     <div>
                         <label htmlFor="price" className="block text-sm font-medium text-gray-300 mb-1">
-                            Prix (€)
+                            Prix {unit === "unit" ? "(€ / Unité)" : unit === "liter" ? "(€ / Litre)" : "(€ / Kg)"}
                         </label>
                         <input
                             type="number"
@@ -173,7 +219,8 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             name="unit"
                             id="unit"
                             required
-                            defaultValue={product?.unit || "unit"}
+                            value={unit}
+                            onChange={(e) => setUnit(e.target.value)}
                             className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
                         >
                             <option value="unit">Unités</option>
@@ -266,6 +313,76 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                     </label>
                 </div>
 
+                {/* Variants Section */}
+                {unit !== 'unit' && (
+                    <div className="space-y-4 pt-6 border-t border-dark-800">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h3 className="text-lg font-medium text-white">Variantes / Portions</h3>
+                                <p className="text-sm text-gray-400">Ajoutez des formats de vente (ex: Pinte 0.5L)</p>
+                            </div>
+                            <button 
+                                type="button"
+                                onClick={addVariant}
+                                className="px-3 py-2 bg-primary-600/10 hover:bg-primary-600/20 text-primary-400 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                + Ajouter
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            {variants.map((variant, index) => (
+                                <div key={index} className="flex gap-3 items-start bg-dark-800/50 p-3 rounded-xl border border-dark-800">
+                                    <div className="flex-1 space-y-1">
+                                        <label className="text-xs text-gray-500">Nom</label>
+                                        <input
+                                            type="text"
+                                            value={variant.name}
+                                            onChange={(e) => updateVariant(index, "name", e.target.value)}
+                                            placeholder="Ex: Pinte"
+                                            className="w-full bg-dark-950 border border-dark-800 rounded-lg px-3 py-1.5 text-white text-sm"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="w-24 space-y-1">
+                                        <label className="text-xs text-gray-500">Qté ({unit === "liter" ? "L" : "Kg"})</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={variant.quantity}
+                                            onChange={(e) => updateVariant(index, "quantity", e.target.value)}
+                                            placeholder="0.5"
+                                            className="w-full bg-dark-950 border border-dark-800 rounded-lg px-3 py-1.5 text-white text-sm"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="w-28 space-y-1">
+                                        <label className="text-xs text-gray-500">Prix €</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={variant.price}
+                                            onChange={(e) => updateVariant(index, "price", e.target.value)}
+                                            placeholder="Auto"
+                                            className="w-full bg-dark-950 border border-dark-800 rounded-lg px-3 py-1.5 text-white text-sm"
+                                        />
+                                    </div>
+                                    <button 
+                                        type="button"
+                                        onClick={() => removeVariant(index)}
+                                        className="mt-6 p-2 text-red-400 hover:text-red-300 transition-colors"
+                                        title="Supprimer"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                            {variants.length === 0 && (
+                                <p className="text-sm text-gray-500 italic">Aucune variante définie. Le prix sera calculé au prorata si utilisé tel quel.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="pt-4 flex gap-4">

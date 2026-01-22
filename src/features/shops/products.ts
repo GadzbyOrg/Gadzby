@@ -4,7 +4,7 @@ import { and, AnyColumn, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { productCategories, products, shops } from "@/db/schema"; // productRestocks removed
+import { productCategories, products, productVariants, shops } from "@/db/schema"; // productRestocks removed
 import { authenticatedAction } from "@/lib/actions";
 import { verifySession } from "@/lib/session";
 import { ShopService } from "@/services/shop-service";
@@ -47,7 +47,10 @@ export async function getProduct(shopSlug: string, productId: string) {
                 eq(products.shopId, shop.id)
             ),
             with: {
-                category: true
+                category: true,
+                variants: {
+                    where: eq(productVariants.isArchived, false)
+                }
             }
         });
         
@@ -138,7 +141,11 @@ export async function getShopProducts(shopSlug: string) {
                 eq(products.isArchived, false)
             ),
             with: {
-                category: true
+                category: true,
+                variants: {
+                    where: eq(productVariants.isArchived, false),
+                    orderBy: (variants, { asc }) => [asc(variants.quantity)]
+                }
             },
             orderBy: [desc(products.name)]
         });

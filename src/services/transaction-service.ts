@@ -5,6 +5,7 @@ import {
 	events,
 	famsMembers,
 	famss,
+	productVariants,
 	products,
 	transactions,
 	users,
@@ -273,15 +274,16 @@ export class TransactionService {
 		shopId: string,
 		issuerId: string,
 		targetUserId: string,
-		items: { productId: string; quantity: number }[],
+		items: { productId: string; quantity: number; variantId?: string }[],
 		paymentSource: "PERSONAL" | "FAMILY",
 		famsId?: string,
 		descriptionPrefix: string = "Achat"
 	) {
 		if (!items.length) throw new Error("Panier vide");
 
-		// 1. Fetch products to verify validity and prices
+		// 1. Fetch products & variants
 		const productIds = items.map((i) => i.productId);
+		const variantIds = items.filter(i => i.variantId).map(i => i.variantId) as string[];
 
 		return await db.transaction(async (tx) => {
 			const dbProducts = await tx.query.products.findMany({
@@ -289,20 +291,52 @@ export class TransactionService {
 					and(inArray(products.id, productIds), eq(products.shopId, shopId)),
 			});
 
-			if (dbProducts.length !== items.length) {
-				throw new Error("Certains produits sont invalides");
+			if (dbProducts.length !== new Set(productIds).size) {
+				throw new Error("Certains produits sont invalides ou introuvables");
 			}
+
+            const dbVariants = variantIds.length > 0 ? await tx.query.productVariants.findMany({
+                where: (variants, { inArray }) => inArray(variants.id, variantIds)
+            }) : [];
 
 			let totalAmount = 0;
 			const transactionRecords: (typeof transactions.$inferInsert)[] = [];
-			const productsToUpdate: { id: string; qty: number; fcv: number }[] = [];
+			const productsToUpdate: { id: string; stockDeduction: number; fcv: number }[] = [];
 
 			// 2. Prepare data
 			for (const item of items) {
 				const product = dbProducts.find((p) => p.id === item.productId);
-				if (!product) continue;
+				if (!product) continue; // Should be caught above
 
-				const lineAmount = product.price * item.quantity;
+                let unitPrice = product.price;
+                let stockDeduction = item.quantity;
+                let description = `${descriptionPrefix} ${product.name} x${item.quantity}`;
+				let txQuantity = item.quantity;
+
+                if (item.variantId) {
+                    const variant = dbVariants.find(v => v.id === item.variantId);
+                    if (!variant || variant.productId !== product.id) {
+                        throw new Error(`Variante invalide pour ${product.name}`);
+                    }
+
+                    // Price
+                    if (variant.price !== null) {
+                        unitPrice = variant.price;
+                    } else {
+                        // Pro-rata based on base price (cents)
+                        // product.price is per 1.0 unit. variant.quantity is e.g. 0.5.
+                        unitPrice = Math.round(product.price * variant.quantity);
+                    }
+
+                    // Stock Deduction
+                    // item.quantity (e.g. 2 Pintes) * variant.quantity (0.5L) = 1.0L
+                    stockDeduction = item.quantity * variant.quantity;
+					txQuantity = stockDeduction; // Store basic unit quantity in transaction
+
+                    description = `${descriptionPrefix} ${product.name} (${variant.name}) x${item.quantity}`;
+                }
+
+				const lineAmount = unitPrice * item.quantity;
 				totalAmount += lineAmount;
 
 				let eventIdToLink = null;
@@ -325,15 +359,16 @@ export class TransactionService {
 					targetUserId: targetUserId,
 					shopId: shopId,
 					productId: product.id,
+                    productVariantId: item.variantId || null,
 					eventId: eventIdToLink,
-					quantity: item.quantity,
+					quantity: txQuantity,
 					famsId: paymentSource === "FAMILY" ? famsId : null,
-					description: `${descriptionPrefix} ${product.name} x${item.quantity}`,
+					description: description,
 				});
 
 				productsToUpdate.push({
 					id: product.id,
-					qty: item.quantity,
+					stockDeduction: stockDeduction,
 					fcv: product.fcv || 1.0,
 				});
 			}
@@ -392,7 +427,7 @@ export class TransactionService {
 				await tx
 					.update(products)
 					.set({
-						stock: sql`${products.stock} - (${p.qty}::integer * ${p.fcv}::double precision)`,
+						stock: sql`${products.stock} - (${p.stockDeduction}::double precision * ${p.fcv}::double precision)`,
 					})
 					.where(eq(products.id, p.id));
 			}

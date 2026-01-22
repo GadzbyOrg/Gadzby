@@ -58,7 +58,6 @@ export default function RestockButton({ shopSlug, productId, productName, curren
                             <h3 className="text-xl font-bold text-white">Réapprovisionner</h3>
                             <p className="text-gray-400 text-sm">
                                 Ajouter du stock pour <span className="text-white font-medium">{productName}</span>.
-                                Cela sera comptabilisé comme une Entrée pour le calcul du FCV.
                             </p>
                         </div>
 

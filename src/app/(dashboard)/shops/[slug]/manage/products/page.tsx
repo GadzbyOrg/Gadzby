@@ -137,7 +137,7 @@ export default async function ShopProductsPage({
 											</span>
 										</td>
 										<td className="px-6 py-4 text-white">
-											{(product.price / 100).toFixed(2)} €
+											{(product.price / 100).toFixed(2)} € { product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : "" }
 										</td>
 										<td className="px-6 py-4">
 											<span
@@ -150,7 +150,7 @@ export default async function ShopProductsPage({
 														product.stock <= 5 ? "bg-red-400" : "bg-green-400"
 													}`}
 												></span>
-												{product.stock}
+												{product.stock} { product.unit === "liter" ? "L" : product.unit === "kg" ? "Kg" : "" }
 											</span>
 										</td>
 										<td className="px-6 py-4 text-right">
@@ -210,7 +210,7 @@ export default async function ShopProductsPage({
 								</div>
 								<div className="text-right">
 									<div className="text-xl font-bold text-white mb-0.5">
-										{(product.price / 100).toFixed(2)} €
+										{(product.price / 100).toFixed(2)} € { product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ Kg" : "" }
 									</div>
 								</div>
 							</div>
@@ -234,7 +234,7 @@ export default async function ShopProductsPage({
 											<span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
 										</span>
 									)}
-									{product.stock}
+									{product.stock} { product.unit === "liter" ? "L" : product.unit === "kg" ? "Kg" : "" }
 								</span>
 							</div>
 

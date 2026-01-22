@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { productCategories, productRestocks, products, shopRoles, shops, shopUsers } from "@/db/schema";
+import { productCategories, productRestocks, products, productVariants, shopRoles, shops, shopUsers } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { SHOP_PERMISSIONS } from "@/features/shops/permissions";
 
@@ -131,11 +131,18 @@ export class ShopService {
 
     // --- Products ---
 
-    static async createProduct(shopId: string, data: { name: string; description?: string; price: number; stock: number; categoryId: string; unit?: string; allowSelfService?: boolean; fcv?: number }, creatorId: string) {
+    static async createProduct(shopId: string, data: { name: string; description?: string; price: number; stock: number; categoryId: string; unit?: string; allowSelfService?: boolean; fcv?: number, variants?: { name: string; quantity: number; price?: number }[] }, creatorId: string) {
         return await db.transaction(async (tx) => {
             const [newProduct] = await tx.insert(products).values({
                 shopId,
-                ...data,
+                name: data.name,
+                description: data.description,
+                price: data.price,
+                stock: data.stock,
+                categoryId: data.categoryId,
+                unit: data.unit,
+                allowSelfService: data.allowSelfService,
+                fcv: data.fcv
             }).returning();
 
             if (data.stock > 0) {
@@ -146,17 +153,81 @@ export class ShopService {
                     createdBy: creatorId
                  });
             }
+
+            if (data.variants && data.variants.length > 0) {
+                await tx.insert(productVariants).values(
+                    data.variants.map(v => ({
+                        productId: newProduct.id,
+                        name: v.name,
+                        quantity: v.quantity,
+                        price: v.price
+                    }))
+                );
+            }
+
             return newProduct;
         });
     }
 
-    static async updateProduct(shopId: string, productId: string, data: Partial<{ name: string; description?: string; price: number; stock: number; categoryId: string; unit?: string; allowSelfService?: boolean; fcv?: number }>) {
-        await db.update(products)
-            .set(data)
-            .where(and(
-                eq(products.id, productId),
-                eq(products.shopId, shopId)
-            ));
+    static async updateProduct(shopId: string, productId: string, data: Partial<{ name: string; description?: string; price: number; stock: number; categoryId: string; unit?: string; allowSelfService?: boolean; fcv?: number; variants?: { id?: string; name: string; quantity: number; price?: number }[] }>) {
+        await db.transaction(async (tx) => {
+            const { variants, ...productData } = data;
+            
+            if (Object.keys(productData).length > 0) {
+                await tx.update(products)
+                .set(productData)
+                .where(and(
+                    eq(products.id, productId),
+                    eq(products.shopId, shopId)
+                ));
+            }
+
+            if (variants) {
+                // 1. Get existing variants
+                const existingVariants = await tx.query.productVariants.findMany({
+                    where: and(
+                        eq(productVariants.productId, productId),
+                        eq(productVariants.isArchived, false)
+                    )
+                });
+
+                const existingIds = new Set(existingVariants.map(v => v.id));
+                const newIds = new Set(variants.filter(v => v.id).map(v => v.id));
+
+                // 2. Archive removed variants
+                const toArchive = existingVariants.filter(v => !newIds.has(v.id));
+                for (const v of toArchive) {
+                    await tx.update(productVariants)
+                        .set({ isArchived: true })
+                        .where(eq(productVariants.id, v.id));
+                }
+
+                // 3. Update existing variants
+                const toUpdate = variants.filter(v => v.id && existingIds.has(v.id));
+                for (const v of toUpdate) {
+                     await tx.update(productVariants)
+                        .set({
+                            name: v.name,
+                            quantity: v.quantity,
+                            price: v.price
+                        })
+                        .where(eq(productVariants.id, v.id!));
+                }
+
+                // 4. Create new variants
+                const toCreate = variants.filter(v => !v.id);
+                if (toCreate.length > 0) {
+                    await tx.insert(productVariants).values(
+                        toCreate.map(v => ({
+                            productId,
+                            name: v.name,
+                            quantity: v.quantity,
+                            price: v.price
+                        }))
+                    );
+                }
+            }
+        });
     }
 
     static async deleteProduct(shopId: string, productId: string) {

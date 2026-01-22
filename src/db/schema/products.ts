@@ -47,8 +47,25 @@ export const productCategoriesRelations = relations(productCategories, ({ one, m
   products: many(products),
 }));
 
-export const productsRelations = relations(products, ({ one }) => ({
+export const productsRelations = relations(products, ({ one, many }) => ({
   shop: one(shops, { fields: [products.shopId], references: [shops.id] }),
   event: one(events, { fields: [products.eventId], references: [events.id] }),
   category: one(productCategories, { fields: [products.categoryId], references: [productCategories.id] }),
+  variants: many(productVariants),
+}));
+
+export const productVariants = pgTable('product_variants', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  productId: uuid('product_id').references(() => products.id).notNull(),
+  
+  name: text('name').notNull(), // "Pinte", "Demi"
+  quantity: doublePrecision('quantity').notNull(), // 0.5, 0.25
+  
+  price: integer('price'), // Override price. If null, use product.price * quantity
+  
+  isArchived: boolean('is_archived').default(false),
+});
+
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, { fields: [productVariants.productId], references: [products.id] }),
 }));

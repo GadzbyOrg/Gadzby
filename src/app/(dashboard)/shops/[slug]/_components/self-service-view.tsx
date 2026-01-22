@@ -24,6 +24,12 @@ type Product = {
     categoryId: string; // Ensure compatibility with ProductGrid
 	allowSelfService: boolean;
 	isArchived: boolean;
+    variants?: {
+        id: string;
+        name: string;
+        quantity: number;
+        price: number | null;
+    }[];
 };
 
 type Category = {
@@ -68,17 +74,16 @@ export function SelfServiceView({
 		(p) => p.allowSelfService && !p.isArchived
 	);
 
-	const handleAddToCart = (product: any, delta: number) => {
+	const handleAddToCart = (product: any, delta: number, variantId?: string) => {
+		const key = variantId ? `${product.id}:${variantId}` : product.id;
 		setCart((prev) => {
-			const current = prev[product.id] || 0;
-            // Removed stock check to allow adding even if low stock (validation happens on server or user discretion)
-            // But we can enforce min 0
+			const current = prev[key] || 0;
 			const next = Math.max(0, current + delta);
 			if (next === 0) {
-				const { [product.id]: _dismiss, ...rest } = prev;
+				const { [key]: _dismiss, ...rest } = prev;
 				return rest;
 			}
-			return { ...prev, [product.id]: next };
+			return { ...prev, [key]: next };
 		});
 	};
 
@@ -88,8 +93,15 @@ export function SelfServiceView({
         }
     };
 
-    const cartTotal = Object.entries(cart).reduce((total, [productId, qty]) => {
-		const product = availableProducts.find((p) => p.id === productId);
+    const cartTotal = Object.entries(cart).reduce((total, [key, qty]) => {
+         if (key.includes(':')) {
+            const [productId, variantId] = key.split(':');
+            const product = availableProducts.find((p) => p.id === productId);
+            const variant = product?.variants?.find((v: any) => v.id === variantId);
+            const price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
+            return total + (price * qty);
+        }
+		const product = availableProducts.find((p) => p.id === key);
 		return total + (product ? product.price * qty : 0);
 	}, 0);
 
@@ -109,10 +121,16 @@ export function SelfServiceView({
 		setSuccess(null);
 
 		try {
-			const items = Object.entries(cart).map(([productId, quantity]) => ({
-				productId,
-				quantity,
-			}));
+			const items = Object.entries(cart).map(([key, quantity]) => {
+                if (key.includes(':')) {
+                    const [productId, variantId] = key.split(':');
+                    return { productId, quantity, variantId };
+                }
+                return {
+                    productId: key,
+                    quantity,
+                };
+            });
 
 			const result = await processSelfServicePurchase({
 				shopSlug,
@@ -128,7 +146,6 @@ export function SelfServiceView({
 				setCart({});
                 setIsReviewOpen(false);
 				router.refresh(); 
-
 				setTimeout(() => setSuccess(null), 3000);
 			}
 		} catch {

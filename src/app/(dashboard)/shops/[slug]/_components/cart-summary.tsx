@@ -19,7 +19,7 @@ interface CartSummaryProps {
     setSelectedFamsId: (id: string) => void;
     onValidate: () => void;
     isSubmitting: boolean;
-    onUpdateCart: (product: Product, delta: number) => void;
+    onUpdateCart: (product: any, delta: number, variantId?: string) => void;
     onClearCart?: () => void;
     error: string | null;
     success: string | null;
@@ -47,8 +47,15 @@ export function CartSummary({
 }: CartSummaryProps) {
     const cartItemsCount = Object.values(cart).reduce((a, b) => a + b, 0);
 
-    const cartTotal = Object.entries(cart).reduce((total, [productId, qty]) => {
-        const product = products.find((p) => p.id === productId);
+    const cartTotal = Object.entries(cart).reduce((total, [key, qty]) => {
+        if (key.includes(':')) {
+            const [productId, variantId] = key.split(':');
+            const product = products.find(p => p.id === productId) as any;
+            const variant = product?.variants?.find((v: any) => v.id === variantId);
+            const price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
+             return total + (price * qty);
+        }
+        const product = products.find((p) => p.id === key);
         return total + (product ? product.price * qty : 0);
     }, 0);
 
@@ -81,31 +88,47 @@ export function CartSummary({
             {/* Items List */}
             {cartItemsCount > 0 ? (
                 <ul className="space-y-2 mb-4 text-sm text-gray-300 max-h-60 overflow-y-auto custom-scrollbar">
-                    {Object.entries(cart).map(([productId, qty]) => {
-                        const product = products.find((p) => p.id === productId);
+                    {Object.entries(cart).map(([key, qty]) => {
+                        let product: any;
+                        let variant: any;
+                        let price: number = 0;
+                        let variantId: string | undefined;
+
+                        if (key.includes(':')) {
+                            const [pId, vId] = key.split(':');
+                            product = products.find(p => p.id === pId);
+                            variantId = vId;
+                            variant = product?.variants?.find((v: any) => v.id === vId);
+                             price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
+                        } else {
+                            product = products.find(p => p.id === key);
+                            price = product?.price || 0;
+                        }
+
                         if (!product) return null;
+
                         return (
                             <li
-                                key={productId}
+                                key={key}
                                 className="flex justify-between items-center bg-dark-900/50 p-2 rounded-lg"
                             >
                                 <span className="flex-1">
-                                    <div className="text-white font-medium">{product.name}</div>
-                                    <div className="text-xs text-gray-500">{(product.price / 100).toFixed(2)}€ x {qty}</div>
+                                    <div className="text-white font-medium">{product.name} {variant && <span className="text-gray-400 text-xs font-normal">({variant.name})</span>}</div>
+                                    <div className="text-xs text-gray-500">{(price / 100).toFixed(2)}€ x {qty}</div>
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <span className="font-mono font-bold text-white">
-                                        {((product.price * qty) / 100).toFixed(2)}€
+                                        {((price * qty) / 100).toFixed(2)}€
                                     </span>
                                     <div className="flex items-center gap-1 ml-2">
                                          <button
-                                            onClick={() => onUpdateCart(product, -1)}
+                                            onClick={() => onUpdateCart(product, -1, variantId)}
                                             className="h-6 w-6 bg-dark-700 hover:bg-red-500/20 hover:text-red-400 text-gray-400 rounded flex items-center justify-center transition-colors"
                                         >
                                             -
                                         </button>
                                         <button
-                                            onClick={() => onUpdateCart(product, 1)}
+                                            onClick={() => onUpdateCart(product, 1, variantId)}
                                             className="h-6 w-6 bg-dark-700 hover:bg-primary-500/20 hover:text-primary-400 text-gray-400 rounded flex items-center justify-center transition-colors"
                                         >
                                             +

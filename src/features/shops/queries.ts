@@ -3,7 +3,7 @@
 import { and, count, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { productCategories, products, shops, shopUsers } from "@/db/schema";
+import { productCategories, products, productVariants, shops, shopUsers } from "@/db/schema";
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
 
 import { 
@@ -230,7 +230,11 @@ export async function getSelfServiceProducts(shopSlug: string) {
                 eq(products.allowSelfService, true)
             ),
             with: {
-                category: true
+                category: true,
+                variants: {
+                    where: eq(productVariants.isArchived, false),
+                    orderBy: (variants, { asc }) => [asc(variants.quantity)]
+                }
             },
             orderBy: [desc(products.name)]
         });
