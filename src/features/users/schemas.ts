@@ -92,5 +92,5 @@ export const adminDeleteUserSchema = z.object({
 });
 
 export const importUsersBatchSchema = z.object({
-	rows: z.array(importUserRowSchema),
+	rows: z.array(z.record(z.string(), z.any())),
 });

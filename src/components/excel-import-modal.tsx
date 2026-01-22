@@ -124,21 +124,9 @@ export function ExcelImportModal({
 				const chunk = rows.slice(start, end);
 				
 				setStatusMessage(`Traitement du lot ${i + 1}/${totalBatches}...`);
-				const mappedChunk = chunk.map((row: any) => ({
-					nom: row["Nom"] || row["nom"],
-					prenom: row["Prenom"] || row["Prénom"] || row["prenom"],
-					email: row["Email"] || row["email"],
-						phone: row["Phone"] || row["phone"] || row["téléphone"],
-						bucque: row["Bucque"] || row["bucque"] || "",
-						promss: String(row["Promss"] || row["promss"] || ""),
-						nums: String(row["Nums"] || row["nums"] || ""),
-						tabagnss: row["Tabagn'ss"] || row["Tabagnss"] || row["tabagnss"] || "Chalon'ss",
-						username: row["Username"] || row["username"] || "",
-						balance: row["Balance"] || row["balance"] || 0,
-					}));
-
-
-					const result = await action(initialState, { rows: mappedChunk, ...additionalData });
+				
+				const cleanChunk = JSON.parse(JSON.stringify(chunk));
+				const result = await action(initialState, { rows: cleanChunk, ...additionalData });
 					
 					if (result.error) {
 						totalErrors += chunk.length;

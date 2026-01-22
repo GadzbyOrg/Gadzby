@@ -41,24 +41,37 @@ export const importProducts = authenticatedAction(
 
             if (!rawJson.length) return { error: "Fichier vide" };
 
+            console.log(`[Import] Starting import for shop ${slug} with ${rawJson.length} rows`);
+
             // Get existing categories map
             const existingCategories = await db.query.productCategories.findMany({
                 where: eq(productCategories.shopId, shop.id)
             });
             const categoryMap = new Map(existingCategories.map(c => [c.name.toLowerCase().trim(), c.id]));
+            console.log(`[Import] Found ${existingCategories.length} existing categories`);
 
             // Get existing products map to check for duplicates
             const existingProducts = await db.query.products.findMany({
                 where: and(eq(products.shopId, shop.id), eq(products.isArchived, false))
             });
             const productMap = new Map(existingProducts.map(p => [p.name.toLowerCase().trim(), p]));
+            console.log(`[Import] Found ${existingProducts.length} existing products`);
 
             let successCount = 0;
             let updateCount = 0;
             let errorCount = 0;
+            console.log(rawJson)
+
+            if (rawJson.length > 0) {
+                 const firstRowKeys = Object.keys(rawJson[0]);
+                 console.log("[Import] First row keys (original):", firstRowKeys);
+                 console.log("[Import] First row keys (sanitized):", firstRowKeys.map(k => `${k} -> ${sanitizeKey(k)}`));
+            }
 
             await db.transaction(async (tx) => {
+                let rowIndex = 0;
                 for (const row of rawJson) {
+                    rowIndex++;
                     // Expected rows
                     let name: unknown, cost: unknown, stock: unknown, categoryName: unknown;
 
@@ -71,7 +84,7 @@ export const importProducts = authenticatedAction(
                     }
 
                     if (!name || cost === undefined) {
-                        // console.log("Invalid row:", row);
+                        console.log(`[Import] Row ${rowIndex} skipped: Missing name or cost. Data:`, row);
                         errorCount++;
                         continue;
                     }
@@ -93,6 +106,7 @@ export const importProducts = authenticatedAction(
                     if (categoryMap.has(sCatLower)) {
                         categoryId = categoryMap.get(sCatLower)!;
                     } else {
+                        console.log(`[Import] Creating new category: ${sCat}`);
                         const [newCat] = await tx.insert(productCategories).values({
                             shopId: shop.id,
                             name: sCat
@@ -161,10 +175,14 @@ export const importProducts = authenticatedAction(
                     }
                 }
             });
+            
+            console.log(`[Import] Completed. Success: ${successCount}, Updated: ${updateCount}, Errors: ${errorCount}`);
 
             revalidatePath(`/shops/${slug}/manage/products`);
             return { 
-                success: `${successCount} créés, ${updateCount} mis à jour. ${errorCount} erreurs.` 
+                success: `${successCount} créés, ${updateCount} mis à jour. ${errorCount} erreurs.`,
+                importedCount: successCount + updateCount,
+                failCount: errorCount
             };
 
         } catch (error) {

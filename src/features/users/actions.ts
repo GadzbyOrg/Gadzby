@@ -17,6 +17,7 @@ import {
 	adminUpdateUserSchema,
 	changeSelfPasswordSchema,
 	createUserSchema,
+	importUserRowSchema,
 	importUsersBatchSchema,
 	toggleUserStatusSchema,
 	updateUserSchema,
@@ -221,7 +222,31 @@ export const createUserAction = authenticatedAction(
 export const importUsersBatchAction = authenticatedAction(
 	importUsersBatchSchema,
 	async (data) => {
-		const { rows } = data;
+		const { rows: rawRows } = data;
+
+        // server-side mapping to match what ExcelImportModal used to do
+        const mappedRows = rawRows.map((row: any) => ({
+            nom: row["Nom"] || row["nom"],
+            prenom: row["Prenom"] || row["Prénom"] || row["prenom"],
+            email: row["Email"] || row["email"],
+            phone: row["Phone"] || row["phone"] || row["téléphone"],
+            bucque: row["Bucque"] || row["bucque"] || "",
+            promss: String(row["Promss"] || row["promss"] || ""),
+            nums: String(row["Nums"] || row["nums"] || ""),
+            tabagnss: row["Tabagn'ss"] || row["Tabagnss"] || row["tabagnss"] || "Chalon'ss",
+            username: row["Username"] || row["username"] || "",
+            balance: row["Balance"] || row["balance"] || 0,
+        }));
+
+        // Validate mapped rows against the strict schema
+        const parseResult = z.array(importUserRowSchema).safeParse(mappedRows);
+        
+        if (!parseResult.success) {
+             const errorMsg = parseResult.error.issues.map((e: any) => `${e.path.join(".")}: ${e.message}`).join(", ");
+             return { error: `Erreur de validation: ${errorMsg}` };
+        }
+
+        const rows = parseResult.data;
 
 		try {
             const result = await UserService.importBatch(rows);
