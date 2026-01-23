@@ -131,7 +131,7 @@ export function ProductGrid({
 						>
 							<div className="space-y-1">
                                 <div className="flex justify-between items-start">
-    								<h3 className={cn("font-medium leading-tight min-h-[1.5em]", hasVariants ? "text-gray-400 text-sm" : "text-white text-sm line-clamp-2")}>
+    								<h3 className={cn("font-medium leading-tight min-h-[1.5em]", hasVariants ? "text-sm" : "text-white text-sm line-clamp-2")}>
     									{product.name}
     								</h3>
                                     {hasVariants && (
@@ -193,25 +193,25 @@ export function ProductGrid({
                                             const vQty = cart[variantKey] || 0;
                                             const vPrice = v.price ?? Math.round(product.price * v.quantity);
                                             return (
-                                                <div key={v.id} className="flex justify-between items-center bg-dark-900/40 rounded-lg p-3 border border-dark-700/50">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-base font-bold text-white">{v.name}</span>
-                                                        <span className="text-sm text-primary-400 font-bold">{(vPrice / 100).toFixed(2)}€</span>
+                                                <div key={v.id} className="flex justify-between items-center bg-dark-900/40 rounded-lg p-2 border border-dark-700/50 gap-2">
+                                                    <div className="flex flex-col min-w-0 flex-1">
+                                                        <span className="text-sm font-bold text-white truncate">{v.name}</span>
+                                                        <span className="text-xs text-primary-400 font-bold truncate">{(vPrice / 100).toFixed(2)}€</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1">
+                                                    <div className="flex items-center gap-1 shrink-0">
                                                         {vQty > 0 ? (
                                                             <>
                                                                 <button
-                                                                    className="h-8 w-8 rounded-lg bg-dark-800 hover:bg-red-500/20 hover:text-red-400 text-gray-400 flex items-center justify-center transition-colors"
+                                                                    className="h-7 w-7 rounded bg-dark-800 hover:bg-red-500/20 hover:text-red-400 text-gray-400 flex items-center justify-center transition-colors"
                                                                     onClick={() => onAddToCart(product, -1, v.id)}
                                                                 >
                                                                     -
                                                                 </button>
-                                                                <span className="min-w-[1.5rem] text-center text-base font-bold text-white">
+                                                                <span className="min-w-[1.25rem] text-center text-sm font-bold text-white">
                                                                     {vQty}
                                                                 </span>
                                                                 <button
-                                                                    className="h-8 w-8 rounded-lg bg-primary-600 hover:bg-primary-500 text-white flex items-center justify-center transition-colors"
+                                                                    className="h-7 w-7 rounded bg-primary-600 hover:bg-primary-500 text-white flex items-center justify-center transition-colors"
                                                                     onClick={() => onAddToCart(product, 1, v.id)}
                                                                 >
                                                                     +
@@ -219,7 +219,7 @@ export function ProductGrid({
                                                             </>
                                                         ) : (
                                                             <button
-                                                                className="h-8 w-8 rounded-lg bg-dark-800 hover:bg-primary-600 hover:text-white text-gray-400 flex items-center justify-center transition-colors border border-dark-700"
+                                                                className="h-7 w-7 rounded bg-dark-800 hover:bg-primary-600 hover:text-white text-gray-400 flex items-center justify-center transition-colors border border-dark-700"
                                                                 onClick={() => onAddToCart(product, 1, v.id)}
                                                             >
                                                                 +

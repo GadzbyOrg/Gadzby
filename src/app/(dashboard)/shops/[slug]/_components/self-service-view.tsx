@@ -209,16 +209,27 @@ export function SelfServiceView({
                  {/* Cart Preview (Wrapped) */}
                 {cartItemsCount > 0 && (
                      <div className="flex flex-wrap gap-2 p-3 pb-0 max-h-32 overflow-y-auto custom-scrollbar items-center content-start">
-                        {Object.entries(cart).map(([productId, qty]) => {
+                        {Object.entries(cart).map(([key, qty]) => {
+                             let productId = key;
+                             let variantId: string | undefined;
+
+                             if (key.includes(':')) {
+                                 [productId, variantId] = key.split(':');
+                             }
+
                              const product = availableProducts.find((p) => p.id === productId);
                              if (!product) return null;
+
+                             const variant = variantId ? product.variants?.find((v: any) => v.id === variantId) : null;
+                             const displayName = variant ? `${product.name} (${variant.name})` : product.name;
+
                              return (
-                                <div key={productId} className="flex-shrink-0 flex items-center gap-2 bg-dark-800 border border-dark-700 rounded-full pl-1 pr-3 py-1 text-xs">
+                                <div key={key} className="flex-shrink-0 flex items-center gap-2 bg-dark-800 border border-dark-700 rounded-full pl-1 pr-3 py-1 text-xs">
                                      <div className="flex items-center justify-center bg-primary-500/10 text-primary-400 font-bold rounded-full h-5 w-5 border border-primary-500/20">
                                          {qty}
                                      </div>
                                      <span className="text-gray-200 font-medium max-w-[100px] truncate">
-                                         {product.name}
+                                         {displayName}
                                      </span>
                                 </div>
                              );
