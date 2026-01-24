@@ -9,6 +9,7 @@ const envSchema = z.object({
 		.enum(["development", "test", "production"])
 		.default("development"),
 	JWT_SECRET: z.string(),
+	CAMPUS_NAME: z.string(),
 });
 
 const env = envSchema.safeParse(process.env);

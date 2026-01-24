@@ -1,3 +1,6 @@
+
+// TODO: maybe expand for login errors. currenly login handler returns db error directly.
+// It could also just be handled by the login action directly.
 export const handleDbError = (error: unknown): string => {
 	console.error("Database operation failed:", error);
 

@@ -5,6 +5,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 
+
 Sentry.init({
   dsn: "https://0c36721275dc5f8cb1c94accd0ad2873@o4510447234711552.ingest.de.sentry.io/4510693773672528",
 
@@ -17,4 +18,6 @@ Sentry.init({
   // Enable sending user PII (Personally Identifiable Information)
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
+
+  environment: process.env.CAMPUS_NAME || "production"
 });

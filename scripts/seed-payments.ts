@@ -10,7 +10,7 @@ async function main() {
 			{
 				slug: "lydia",
 				name: "Lydia",
-				isEnabled: true,
+				isEnabled: false,
 				fees: { fixed: 10, percentage: 1.5 },
 				config: {
 					vendorToken: "",
