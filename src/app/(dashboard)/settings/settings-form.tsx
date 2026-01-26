@@ -18,8 +18,6 @@ import { cn } from "@/lib/utils";
 function PreferredPathSelector({ defaultValue }: { defaultValue: string | null }) {
     const predefinedPaths = [
         { label: "Tableau de bord (Par défaut)", value: "/" },
-        { label: "Mes Boutiques", value: "/shops" },
-        { label: "Administration", value: "/admin" },
     ];
 
     const initialMode = predefinedPaths.some(p => p.value === defaultValue) || !defaultValue 
@@ -29,14 +27,10 @@ function PreferredPathSelector({ defaultValue }: { defaultValue: string | null }
     const [mode, setMode] = useState<"select" | "custom">(initialMode);
     const [customValue, setCustomValue] = useState(defaultValue || "");
     const [selectValue, setSelectValue] = useState(
-        predefinedPaths.some(p => p.value === defaultValue) ? defaultValue || "/" : "custom"
+        predefinedPaths.some(p => p.value === defaultValue) || !defaultValue
+            ? defaultValue || "/"
+            : "custom"
     );
-
-    useEffect(() => {
-        if (mode === "select" && selectValue !== "custom") {
-             // ensure hidden input has correct value
-        }
-    }, [mode, selectValue]);
 
     return (
         <div className="flex flex-col gap-3">
@@ -198,7 +192,10 @@ export function SettingsForm({ user }: { user: any }) {
 				<div className="sm:col-span-2">
                     <InputLabel htmlFor="preferredDashboardPath">Page de démarrage</InputLabel>
                     <div className="mt-2">
-                        <PreferredPathSelector defaultValue={user.preferredDashboardPath} />
+                        <PreferredPathSelector 
+                            key={user.preferredDashboardPath || 'default'} 
+                            defaultValue={user.preferredDashboardPath} 
+                        />
                     </div>
                 </div>
 			</div>
