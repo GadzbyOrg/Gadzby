@@ -23,7 +23,7 @@ interface UserEditFormProps {
 		email: string;
 		phone: string | null;
 		username: string;
-		bucque: string;
+		bucque?: string | null;
 		nums?: string | null;
 		promss: string;
 		tabagnss?: string;
@@ -182,11 +182,10 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							Bucque
 						</label>
 						<input
-							required
 							type="text"
 							name="bucque"
 							id="bucque"
-							defaultValue={user.bucque}
+							defaultValue={user.bucque || ""}
 							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 						/>
 					</div>
@@ -195,7 +194,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							htmlFor="promss"
 							className="text-sm font-medium text-gray-300"
 						>
-							Prom&apos;ss
+							Prom'ss
 						</label>
 						<input
 							required
