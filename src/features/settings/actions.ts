@@ -10,17 +10,17 @@ import { users } from "@/db/schema/users";
 import { verifySession } from "@/lib/session";
 
 const emailConfigSchema = z.object({
-	provider: z.enum(["smtp", "resend"]),
-	// SMTP fields (optional if provider is resend, but easier to keep structure)
-	smtpHost: z.string().optional(),
-	smtpPort: z.coerce.number().optional(),
-	smtpUser: z.string().optional(),
-	smtpPassword: z.string().optional(),
-	smtpFrom: z.email("Email invalide"), // Always required as sender
+    provider: z.enum(["smtp", "resend"]),
+    // SMTP fields (optional if provider is resend, but easier to keep structure)
+    smtpHost: z.string().optional(),
+    smtpPort: z.coerce.number().optional(),
+    smtpUser: z.string().optional(),
+    smtpPassword: z.string().optional(),
+    smtpFrom: z.email("Email invalide"), // Always required as sender
     smtpSecure: z.coerce.boolean().optional(),
-	
-	// Resend fields
-	resendApiKey: z.string().optional(),
+
+    // Resend fields
+    resendApiKey: z.string().optional(),
 });
 
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
@@ -30,7 +30,7 @@ export const getEmailConfigAction = authenticatedActionNoInput(async () => {
         const setting = await db.query.systemSettings.findFirst({
             where: eq(systemSettings.key, "email_config"),
         });
-        
+
         return { config: setting?.value || null };
     } catch (error) {
         console.error("Failed to fetch email config:", error);
@@ -92,7 +92,7 @@ export const testEmailConfigAction = authenticatedAction(
         });
 
         const formTestEmail = data.testEmail;
-        
+
         // Use provided test email or fallback to current user's email
         const testEmail = formTestEmail || user?.email || "test@gadzby.com";
 
@@ -117,7 +117,7 @@ export const testEmailConfigAction = authenticatedAction(
         try {
             // Dynamically import to avoid circular dependencies if any
             const { sendTestEmail } = await import("@/lib/email");
-            
+
             await sendTestEmail(configData as any, testEmail);
 
             return { success: `Email de test envoyé à ${testEmail}` };
@@ -133,6 +133,7 @@ export const testEmailConfigAction = authenticatedAction(
 const pennylaneConfigSchema = z.object({
     enabled: z.coerce.boolean(),
     apiKey: z.string().optional(),
+    enableImport: z.coerce.boolean().optional(),
 });
 
 export const getPennylaneConfigAction = authenticatedActionNoInput(async () => {
@@ -140,8 +141,8 @@ export const getPennylaneConfigAction = authenticatedActionNoInput(async () => {
         const setting = await db.query.systemSettings.findFirst({
             where: eq(systemSettings.key, "pennylane_config"),
         });
-        
-        return { config: setting?.value || { enabled: false, apiKey: "" } };
+
+        return { config: setting?.value || { enabled: false, apiKey: "", enableImport: false } };
     } catch (error) {
         console.error("Failed to fetch pennylane config:", error);
         return { error: "Erreur lors de la récupération de la configuration" };
@@ -178,7 +179,7 @@ export const updatePennylaneConfigAction = authenticatedAction(
             console.error("Failed to update pennylane config:", error);
             return { error: "Erreur lors de la sauvegarde" };
         }
-    }, 
+    },
     { requireAdmin: true }
 );
 
@@ -191,7 +192,7 @@ export const getShopPennylaneCategoriesAction = authenticatedActionNoInput(async
         // Ensure we return string[] even if legacy data was string
         const rawMapping = (setting?.value as Record<string, string | string[]>) || {};
         const mapping: Record<string, string[]> = {};
-        
+
         for (const [key, value] of Object.entries(rawMapping)) {
             if (Array.isArray(value)) {
                 mapping[key] = value;
@@ -213,30 +214,30 @@ export const updateShopPennylaneCategoriesAction = authenticatedAction(
     shopPennylaneCategoriesSchema,
     async (data) => {
         const mapping: Record<string, string[]> = {};
-        
+
         // Group by shop ID
         for (const [key, value] of Object.entries(data)) {
             if (key.startsWith("shop_")) {
                 const shopId = key.replace("shop_", "");
-                
+
                 if (typeof value === "string") {
-                     // Check if it's a JSON string
-                     try {
-                         if (value.startsWith("[") && value.endsWith("]")) {
-                             const parsed = JSON.parse(value);
-                             if (Array.isArray(parsed)) {
-                                 mapping[shopId] = parsed;
-                                 continue;
-                             }
-                         }
-                     } catch { /* ignore */ }
-                     
-                     // Helper for comma separation if we go that route
-                     if (value.includes(",")) {
-                         mapping[shopId] = value.split(",").filter(Boolean);
-                     } else {
-                         mapping[shopId] = value ? [value] : [];
-                     }
+                    // Check if it's a JSON string
+                    try {
+                        if (value.startsWith("[") && value.endsWith("]")) {
+                            const parsed = JSON.parse(value);
+                            if (Array.isArray(parsed)) {
+                                mapping[shopId] = parsed;
+                                continue;
+                            }
+                        }
+                    } catch { /* ignore */ }
+
+                    // Helper for comma separation if we go that route
+                    if (value.includes(",")) {
+                        mapping[shopId] = value.split(",").filter(Boolean);
+                    } else {
+                        mapping[shopId] = value ? [value] : [];
+                    }
                 } else if (Array.isArray(value)) {
                     mapping[shopId] = value;
                 }

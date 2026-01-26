@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
+import { getShopBySlug, checkTeamMemberAccess } from "@/features/shops/actions";
 import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
+import { PennylaneImportModal } from "./_components/pennylane-import-modal";
 import {
 	createShopExpense,
+
 	deleteShopExpense,
 	getShopExpenses,
 } from "@/features/shops/expenses";
@@ -50,7 +52,7 @@ export default async function ShopExpensesPage({
 		if (!description || !amountStr || !dateStr) return;
 
 		const amount = Math.round(parseFloat(amountStr) * 100); // Euros to cents
-		
+
 		let date = new Date(dateStr);
 		const now = new Date();
 		// If the user selected "today", use the current timestamp
@@ -105,12 +107,18 @@ export default async function ShopExpensesPage({
 						</h2>
 
 						{pennylaneEnabled ? (
-							<Link
-								href={`/shops/${slug}/manage/expenses/new`}
-								className="block w-full text-center py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors"
-							>
-								Scanner une facture (PennyLane)
-							</Link>
+							<>
+								<Link
+									href={`/shops/${slug}/manage/expenses/new`}
+									className="block w-full text-center py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors mb-4"
+								>
+									Scanner une facture (PennyLane)
+								</Link>
+
+								{pennylaneConfig?.enableImport && (
+									<PennylaneImportModal shopSlug={slug} />
+								)}
+							</>
 						) : (
 							<form action={addExpense} className="space-y-4">
 								<div className="space-y-2">
