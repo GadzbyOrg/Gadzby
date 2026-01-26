@@ -17,6 +17,10 @@ const eventSchema = z.object({
 	type: z.enum(["SHARED_COST", "COMMERCIAL"]),
 	acompte: z.number().min(0).optional(),
 	allowSelfRegistration: z.boolean().default(false),
+	maxParticipants: z.preprocess(
+		(val) => (val === "" ? undefined : Number(val)),
+		z.number().min(1).optional()
+	),
 });
 
 type EventFormValues = z.infer<typeof eventSchema>;
@@ -47,6 +51,7 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 					type: initialData.type,
 					acompte: (initialData.acompte || 0) / 100,
 					allowSelfRegistration: initialData.allowSelfRegistration,
+					maxParticipants: initialData.maxParticipants ?? undefined,
 			  }
 			: {
 					name: "",
@@ -56,6 +61,7 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 					type: "SHARED_COST",
 					acompte: 0,
 					allowSelfRegistration: false,
+					maxParticipants: undefined,
 			  },
 	});
 
@@ -70,6 +76,7 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 					type: data.type,
 					acompte: (data.acompte || 0) * 100,
 					allowSelfRegistration: data.allowSelfRegistration,
+					maxParticipants: data.maxParticipants,
 				};
 
 				let result;
@@ -128,7 +135,7 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 				{/* Name */}
 				<div className="flex flex-col gap-1">
 					<label className="text-sm font-medium text-gray-300">
-						Nom de l'événement
+						Nom de l&apos;événement
 					</label>
 					<input
 						type="text"
@@ -226,11 +233,31 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 								htmlFor="allowSelfRegistration"
 								className="text-sm text-gray-300"
 							>
-								Autoriser l'inscription par les utilisateurs
+								Autoriser l&apos;inscription par les utilisateurs
 							</label>
+						</div>
+
+						<div className="flex flex-col gap-1 mt-2">
+							<label className="text-sm font-medium text-gray-300">
+								Capacité limite de participants (Optionnel)
+							</label>
+							<input
+								type="number"
+								min="1"
+								placeholder="Illimité"
+								className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+								{...form.register("maxParticipants")}
+							/>
+							{form.formState.errors.maxParticipants && (
+								<span className="text-red-400 text-xs">
+									{form.formState.errors.maxParticipants.message}
+								</span>
+							)}
 						</div>
 					</div>
 				)}
+
+
 
 				<div className="flex justify-end gap-3 mt-4">
 					<button

@@ -9,6 +9,7 @@ export const createEventSchema = z.object({
 	type: z.enum(["SHARED_COST", "COMMERCIAL"]),
 	acompte: z.number().min(0).optional(),
 	allowSelfRegistration: z.boolean(),
+	maxParticipants: z.number().min(1).optional(),
 });
 
 export const updateEventSchema = z.object({
@@ -21,7 +22,8 @@ export const updateEventSchema = z.object({
 	type: z.enum(["SHARED_COST", "COMMERCIAL"]).optional(),
 	acompte: z.number().min(0).optional(),
 	allowSelfRegistration: z.boolean().optional(),
-	status: z.enum(["DRAFT", "OPEN", "CLOSED", "ARCHIVED"]).optional(),
+	maxParticipants: z.number().min(1).optional(),
+	status: z.enum(["DRAFT", "OPEN", "STARTED", "CLOSED", "ARCHIVED"]).optional(),
 });
 
 export const joinEventSchema = z.object({

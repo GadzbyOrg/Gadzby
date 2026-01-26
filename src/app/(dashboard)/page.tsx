@@ -10,14 +10,17 @@ import Link from "next/link";
 import { ExpensesByShopChart } from "@/components/dashboard/ExpensesByShopChart";
 import { ExpensesOverTimeChart } from "@/components/dashboard/ExpensesOverTimeChart";
 import { RecentActivityList } from "@/components/dashboard/RecentActivityList";
-import { UserEventsList } from "@/components/dashboard/UserEventsList";
+import { UpcomingEventsList } from "@/components/dashboard/UpcomingEventsList";
 import {
 	getUserExpensesByShop,
 	getUserExpensesOverTime,
 	getUserRecentActivity,
 	getUserStats,
 } from "@/features/dashboard/actions";
-import { getEnrolledEvents } from "@/features/events/actions";
+import {
+	getEnrolledEvents,
+	getUpcomingPublicEvents,
+} from "@/features/events/actions";
 import { getShops } from "@/features/shops/actions";
 import { verifySession } from "@/lib/session";
 
@@ -76,15 +79,21 @@ function StatCard({
 	);
 }
 
-async function UserEventsSection() {
+async function EventsSection() {
 	const session = await verifySession();
 	if (!session) return null;
 
-	const events = await getEnrolledEvents(session.userId);
+	const enrolledEvents = await getEnrolledEvents(session.userId);
+	const upcomingEvents = await getUpcomingPublicEvents(session.userId);
 
-	if (events.length === 0) return null;
 
-	return <UserEventsList events={events as any} />;
+
+	return (
+		<UpcomingEventsList
+			enrolledEvents={enrolledEvents}
+			upcomingPublicEvents={upcomingEvents}
+		/>
+	);
 }
 
 export default async function DashboardPage() {
@@ -154,7 +163,7 @@ export default async function DashboardPage() {
 				</div>
 			)}
 
-			<UserEventsSection />
+			<EventsSection />
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 				{/* Charts Section */}

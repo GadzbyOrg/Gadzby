@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
@@ -64,6 +64,17 @@ export const joinEvent = authenticatedAction(
 		});
 
 		if (existing) return { success: "Already joined" };
+
+		if (event.maxParticipants) {
+			const [result] = await db
+				.select({ count: count() })
+				.from(eventParticipants)
+				.where(eq(eventParticipants.eventId, data.eventId));
+
+			if (result.count >= event.maxParticipants) {
+				return { error: "L'événement est complet" };
+			}
+		}
 
 		const acompte = event.acompte || 0;
 		// Only charge if event is OPEN
@@ -129,6 +140,15 @@ export const leaveEvent = authenticatedAction(
 		});
 		if (!event) return { error: "Event not found" };
 
+		if (event.status === "STARTED") {
+			return {
+				error: "L'événement a commencé, impossible de quitter ou retirer un participant.",
+			};
+		}
+		if (event.status === "CLOSED" || event.status === "ARCHIVED") {
+			return { error: "L'événement est clôturé ou archivé." };
+		}
+
 		if (session.userId !== targetUserId) {
 			const authorized = await checkShopPermission(
 				session.userId,
@@ -139,14 +159,60 @@ export const leaveEvent = authenticatedAction(
 			if (!authorized) return { error: "Unauthorized" };
 		}
 
-		await db
-			.delete(eventParticipants)
-			.where(
-				and(
-					eq(eventParticipants.eventId, data.eventId),
-					eq(eventParticipants.userId, targetUserId)
-				)
-			);
+		// Check if user paid (find purchase transaction for this event)
+		const purchaseTransaction = await db.query.transactions.findFirst({
+			where: and(
+				eq(transactions.eventId, data.eventId),
+				eq(transactions.targetUserId, targetUserId),
+				eq(transactions.type, "PURCHASE")
+			),
+		});
+
+		if (purchaseTransaction) {
+			const refundAmount = Math.abs(purchaseTransaction.amount); // Amount is negative in DB
+
+			await db.transaction(async (tx) => {
+				// Refund balance
+				await tx
+					.update(users)
+					.set({ balance: sql`${users.balance} + ${refundAmount}` })
+					.where(eq(users.id, targetUserId));
+
+				// Create refund transaction
+				await tx.insert(transactions).values({
+					amount: refundAmount,
+					type: "REFUND",
+					walletSource: "PERSONAL",
+					// Issuer is the one performing the action (admin or user themselves)
+					issuerId: session.userId,
+					targetUserId: targetUserId,
+					shopId: event.shopId,
+					eventId: event.id,
+					description: `Remboursement acompte: ${event.name}`,
+					status: "COMPLETED",
+				});
+
+				// Delete participant
+				await tx
+					.delete(eventParticipants)
+					.where(
+						and(
+							eq(eventParticipants.eventId, data.eventId),
+							eq(eventParticipants.userId, targetUserId)
+						)
+					);
+			});
+		} else {
+			// No payment found, just delete
+			await db
+				.delete(eventParticipants)
+				.where(
+					and(
+						eq(eventParticipants.eventId, data.eventId),
+						eq(eventParticipants.userId, targetUserId)
+					)
+				);
+		}
 
 		revalidatePath(`/admin/shops/${event.shopId}/events/${data.eventId}`);
 		return { success: "Left event" };
@@ -203,6 +269,13 @@ export const importParticipants = authenticatedAction(
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
+		if (event.status === "STARTED") {
+			return {
+				error:
+					"L'événement a commencé, impossible d'importer des participants.",
+			};
+		}
+
 		if (event.type === "COMMERCIAL") {
 			return {
 				error:
@@ -223,6 +296,19 @@ export const importParticipants = authenticatedAction(
 		}
 
 		if (usersToImport.length > 0) {
+			if (event.maxParticipants) {
+				const [result] = await db
+					.select({ count: count() })
+					.from(eventParticipants)
+					.where(eq(eventParticipants.eventId, data.eventId));
+
+				if (result.count + usersToImport.length > event.maxParticipants) {
+					return {
+						error: `Impossible d'importer : cela dépasserait la limite de ${event.maxParticipants} participants (Actuel: ${result.count}, Import: ${usersToImport.length})`,
+					};
+				}
+			}
+
 			await db
 				.insert(eventParticipants)
 				.values(
@@ -257,6 +343,13 @@ export const importParticipantsFromList = authenticatedAction(
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
+		if (event.status === "STARTED") {
+			return {
+				error:
+					"L'événement a commencé, impossible d'importer des participants.",
+			};
+		}
+
 		if (event.type === "COMMERCIAL") {
 			return {
 				error:
@@ -277,6 +370,19 @@ export const importParticipantsFromList = authenticatedAction(
 		});
 
 		if (usersFound.length > 0) {
+			if (event.maxParticipants) {
+				const [result] = await db
+					.select({ count: count() })
+					.from(eventParticipants)
+					.where(eq(eventParticipants.eventId, data.eventId));
+
+				if (result.count + usersFound.length > event.maxParticipants) {
+					return {
+						error: `Impossible d'importer : cela dépasserait la limite de ${event.maxParticipants} participants (Actuel: ${result.count}, Import: ${usersFound.length})`,
+					};
+				}
+			}
+
 			// Create map for weights
 			const weightMap = new Map(
 				data.data.map((d) => [d.identifier, d.weight || 1])

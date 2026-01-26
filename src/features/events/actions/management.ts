@@ -40,6 +40,7 @@ export const createEvent = authenticatedAction(
 				type: data.type,
 				acompte: data.acompte || 0,
 				allowSelfRegistration: data.allowSelfRegistration,
+				maxParticipants: data.maxParticipants,
 				status: "DRAFT",
 			})
 			.returning();
@@ -70,6 +71,7 @@ export const updateEvent = authenticatedAction(
 				type: data.type,
 				acompte: data.acompte,
 				allowSelfRegistration: data.allowSelfRegistration,
+				maxParticipants: data.maxParticipants,
 				status: data.status,
 			})
 			.where(eq(events.id, data.eventId))
@@ -225,6 +227,36 @@ export const activateEvent = authenticatedAction(
 		revalidatePath(`/shops/${data.shopId}/manage/events`);
 		revalidatePath(`/shops/${data.shopId}/manage/events/${data.eventId}`);
 		return { message: "Event activated" };
+	}
+);
+
+export const startEvent = authenticatedAction(
+	eventActionSchema,
+	async (data, { session }) => {
+		const event = await db.query.events.findFirst({
+			where: eq(events.id, data.eventId),
+		});
+		if (!event) return { error: "Event not found" };
+
+		const authorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			event.shopId,
+			"MANAGE_EVENTS"
+		);
+		if (!authorized) return { error: "Unauthorized" };
+
+		if (event.status !== "OPEN") {
+			return { error: "L'événement doit être ouvert pour être démarré" };
+		}
+
+		await db
+			.update(events)
+			.set({ status: "STARTED" })
+			.where(eq(events.id, data.eventId));
+
+		revalidatePath(`/shops/${event.shopId}/manage/events/${data.eventId}`);
+		return { success: "Event started" };
 	}
 );
 

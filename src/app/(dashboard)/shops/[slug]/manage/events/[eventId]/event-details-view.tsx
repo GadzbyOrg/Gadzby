@@ -7,6 +7,7 @@ import {
 	IconCheck,
 	IconLoader2,
 	IconLock,
+	IconPlayerPlay,
 	IconReceipt,
 	IconSettings,
 	IconTrash,
@@ -24,6 +25,7 @@ import {
 	executeSettlement,
 	leaveEvent,
 	previewSettlement,
+	startEvent,
 } from "@/features/events/actions";
 
 import { EventForm } from "../create/event-form";
@@ -116,6 +118,34 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 					return;
 				}
 				toast({ title: "Succès", description: "Événement activé" });
+			} catch (e: any) {
+				toast({
+					title: "Erreur",
+					description: e.message,
+					variant: "destructive",
+				});
+			}
+		});
+	};
+
+	const handleStart = () => {
+		if (!confirm("Voulez-vous démarrer l'événement ? Les participants ne pourront plus quitter.")) return;
+		startTransition(async () => {
+			try {
+				const result = await startEvent({
+					shopId: event.shopId,
+					eventId: event.id,
+				});
+
+				if (result?.error) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+					return;
+				}
+				toast({ title: "Succès", description: "Événement démarré" });
 			} catch (e: any) {
 				toast({
 					title: "Erreur",
@@ -260,6 +290,12 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 						En cours
 					</span>
 				);
+			case "STARTED":
+				return (
+					<span className="bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded text-xs border border-purple-500/20">
+						Démarré
+					</span>
+				);
 			case "CLOSED":
 				return (
 					<span className="bg-red-500/10 text-red-400 px-2 py-0.5 rounded text-xs border border-red-500/20">
@@ -310,6 +346,40 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 					)}
 
 					{event.status === "OPEN" && (
+						<>
+							{event.type === "SHARED_COST" ? (
+								<button
+									onClick={handleStart}
+									disabled={isPending}
+									className="flex items-center gap-2 px-4 py-2 rounded-md bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 border border-orange-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									{isPending ? (
+										<IconLoader2 size={16} className="animate-spin" />
+									) : (
+										<IconPlayerPlay size={16} />
+									)}
+									Démarrer l&apos;événement
+								</button>
+							) : (
+								<button
+									onClick={handleClose}
+									disabled={isPending}
+									className="flex items-center gap-2 px-4 py-2 rounded-md bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 border border-orange-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									{isPending ? (
+										<IconLoader2 size={16} className="animate-spin" />
+									) : (
+										<IconLock size={16} />
+									)}
+									{isPayUpfront
+										? "Solder l'événement"
+										: "Clôturer l&apos;événement"}
+								</button>
+							)}
+						</>
+					)}
+
+					{event.status === "STARTED" && (
 						<button
 							onClick={handleClose}
 							disabled={isPending}

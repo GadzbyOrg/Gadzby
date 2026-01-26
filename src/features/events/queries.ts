@@ -1,6 +1,6 @@
 "use server";
 
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, notInArray, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { eventParticipants } from "@/db/schema/event-participants";
@@ -9,14 +9,68 @@ import { eventExpenseSplits,shopExpenses } from "@/db/schema/expenses";
 import { transactions } from "@/db/schema/transactions";
 import { verifySession } from "@/lib/session";
 
-export async function getShopEvents(shopId: string) {
+export async function getShopEvents({
+	shopId,
+	page = 1,
+	pageSize = 12,
+	search = "",
+	status,
+}: {
+	shopId: string;
+	page?: number;
+	pageSize?: number;
+	search?: string;
+	status?: string;
+}) {
 	const session = await verifySession();
 	if (!session) throw new Error("Unauthorized");
 
-	return await db.query.events.findMany({
-		where: eq(events.shopId, shopId),
+	const offset = (page - 1) * pageSize;
+
+	const whereConditions = [eq(events.shopId, shopId)];
+
+	if (search) {
+		whereConditions.push(sql`lower(${events.name}) LIKE ${`%${search.toLowerCase()}%`}`);
+	}
+
+	if (status === "ACTIVE") {
+		whereConditions.push(
+			inArray(events.status, ["DRAFT", "OPEN", "STARTED"])
+		);
+	} else if (status === "HISTORY") {
+		whereConditions.push(
+			inArray(events.status, ["CLOSED", "ARCHIVED"])
+		);
+	}
+
+	const whereClause = and(...whereConditions);
+
+	// Get Total Count
+	const [countResult] = await db
+		.select({ count: count() })
+		.from(events)
+		.where(whereClause);
+	
+	const totalItems = countResult.count;
+	const totalPages = Math.ceil(totalItems / pageSize);
+
+	// Get Data
+	const data = await db.query.events.findMany({
+		where: whereClause,
 		orderBy: [desc(events.startDate)],
+		limit: pageSize,
+		offset: offset,
 	});
+
+	return {
+		data,
+		metadata: {
+			totalItems,
+			totalPages,
+			currentPage: page,
+			pageSize,
+		},
+	};
 }
 
 export async function getEvent(eventId: string) {
@@ -92,7 +146,7 @@ export async function getEventStats(eventId: string) {
 			.where(
 				and(
 					eq(transactions.eventId, eventId),
-					eq(transactions.type, "PURCHASE")
+					inArray(transactions.type, ["PURCHASE", "REFUND"])
 				)
 			);
 		totalRevenue += -Number(acompteResult[0]?.total || 0);
@@ -103,7 +157,7 @@ export async function getEventStats(eventId: string) {
 			.where(
 				and(
 					eq(transactions.eventId, eventId),
-					eq(transactions.type, "PURCHASE")
+					inArray(transactions.type, ["PURCHASE", "REFUND"])
 				)
 			);
 		totalRevenue += -Number(revenueResult[0]?.total || 0);
@@ -155,8 +209,45 @@ export async function getEnrolledEvents(userId: string) {
 		orderBy: [desc(eventParticipants.joinedAt)],
 	});
 
-	return participations.map((p) => ({
-		...p.event,
-		shop: p.event.shop,
-	}));
+	return participations
+		.map((p) => ({
+			...p.event,
+			shop: p.event.shop,
+		}))
+		.filter(
+			(e) => e.status !== "CLOSED" && e.status !== "ARCHIVED" && e.status !== "DRAFT"
+		);
+}
+
+export async function getUpcomingPublicEvents(userId: string) {
+	// 1. Get IDs of events the user is already participating in
+	const userParticipations = await db.query.eventParticipants.findMany({
+		where: eq(eventParticipants.userId, userId),
+		columns: { eventId: true },
+	});
+
+	const joinedEventIds = userParticipations.map((p) => p.eventId);
+
+	// 2. Build where clause
+	const whereClause = [
+		eq(events.status, "OPEN"),
+		eq(events.allowSelfRegistration, true),
+	];
+
+	if (joinedEventIds.length > 0) {
+		whereClause.push(notInArray(events.id, joinedEventIds));
+	}
+
+	const upcomingEvents = await db.query.events.findMany({
+		where: and(...whereClause),
+		orderBy: [desc(events.startDate)],
+		with: {
+			shop: true,
+			participants: true, // Needed to check count vs max
+		},
+	});
+
+	// 3. Filter out full events manually if needed, or return all and let UI show "Full"
+	// Let's return all and handle UI
+	return upcomingEvents;
 }

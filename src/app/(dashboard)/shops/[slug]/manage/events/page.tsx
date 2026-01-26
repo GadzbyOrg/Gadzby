@@ -1,27 +1,36 @@
-import { IconCalendar,IconPlus } from "@tabler/icons-react";
+import { IconCalendar, IconPlus } from "@tabler/icons-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { getShopEvents } from "@/features/events/actions";
 import { getShopBySlug } from "@/features/shops/actions";
 
+import { EventsFilter } from "./_components/events-filter";
+import { Pagination } from "./_components/pagination";
+
 export default async function ShopEventsPage({
 	params,
+	searchParams,
 }: {
 	params: Promise<{ slug: string }>;
+	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
 	const { slug } = await params;
+	const resolvedSearchParams = await searchParams;
 	const { shop } = (await getShopBySlug({ slug })) as any;
 
 	if (!shop) return <div>Shop introuvable</div>;
 
-	const events = await getShopEvents(shop.id);
+	const page = Number(resolvedSearchParams.page) || 1;
+	const search = (resolvedSearchParams.search as string) || "";
+	const status = (resolvedSearchParams.status as string) || "ACTIVE";
 
-	const activeEvents = events.filter(
-		(e) => e.status === "DRAFT" || e.status === "OPEN"
-	);
-	const closedEvents = events.filter(
-		(e) => e.status === "CLOSED" || e.status === "ARCHIVED"
-	);
+	const { data: events, metadata } = await getShopEvents({
+		shopId: shop.id,
+		page,
+		search,
+		status,
+	});
 
 	return (
 		<div className="flex flex-col gap-6 p-4 md:p-8">
@@ -36,41 +45,25 @@ export default async function ShopEventsPage({
 				</Link>
 			</div>
 
+			<Suspense fallback={<div>Chargement...</div>}>
+				<EventsFilter />
+			</Suspense>
+
 			<div className="flex flex-col gap-8">
-				<div>
-					<h3 className="text-lg font-medium text-gray-300 mb-4 flex items-center gap-2">
-						<span className="w-2 h-2 rounded-full bg-green-500"></span>
-						En cours &amp; À venir
-					</h3>
+				{events.length > 0 ? (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-						{activeEvents.map((event) => (
+						{events.map((event) => (
 							<EventCard key={event.id} event={event} slug={slug} />
 						))}
-						{activeEvents.length === 0 && (
-							<p className="text-gray-500 text-sm">Aucun événement actif.</p>
-						)}
 					</div>
-				</div>
-
-				{closedEvents.length > 0 && (
-					<div>
-						<h3 className="text-lg font-medium text-gray-300 mb-4 flex items-center gap-2">
-							<span className="w-2 h-2 rounded-full bg-gray-500"></span>
-							Historique
-						</h3>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-75 hover:opacity-100 transition-opacity">
-							{closedEvents.map((event) => (
-								<EventCard key={event.id} event={event} slug={slug} />
-							))}
-						</div>
+				) : (
+					<div className="text-center py-12 bg-dark-900 rounded-lg border border-dark-800">
+						<p className="text-gray-500">Aucun événement trouvé.</p>
 					</div>
 				)}
+
+				<Pagination totalPages={metadata.totalPages} />
 			</div>
-			{events.length === 0 && (
-				<p className="text-gray-500 text-center py-8">
-					Aucun événement planifié.
-				</p>
-			)}
 		</div>
 	);
 }
@@ -90,6 +83,8 @@ function EventCard({ event, slug }: { event: any; slug: string }) {
 						className={`px-2 py-0.5 rounded text-xs font-medium uppercase border ${
 							event.status === "OPEN"
 								? "bg-green-500/10 text-green-400 border-green-500/20"
+								: event.status === "STARTED"
+								? "bg-purple-500/10 text-purple-400 border-purple-500/20"
 								: event.status === "DRAFT"
 								? "bg-gray-500/10 text-gray-400 border-gray-500/20"
 								: "bg-red-500/10 text-red-400 border-red-500/20"
