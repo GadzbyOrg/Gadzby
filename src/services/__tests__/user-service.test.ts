@@ -117,78 +117,45 @@ describe("UserService", () => {
 			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
 
 			await UserService.update("user-123", {
-				nom: "Doe",
-				prenom: "John",
 				email: "john@example.com",
-				promss: "215",
+				bucque: "MyBucque",
 			});
 
 			expect(db.update).toHaveBeenCalled();
 			expect(mockUpdate.set).toHaveBeenCalledWith(
 				expect.objectContaining({
-					nom: "Doe",
-					prenom: "John",
-					username: "johndoe",
+					email: "john@example.com",
+					bucque: "MyBucque",
 				})
 			);
 			expect(mockUpdate.where).toHaveBeenCalled();
 		});
 
-        test("should use nums and promss for username if provided", async () => {
+        test("should ignore restricted fields if provided (unsafe cast)", async () => {
 			const mockUpdate = mockDbChain();
 			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
 
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			await UserService.update("user-123", {
-				nom: "Doe",
-				prenom: "John",
 				email: "john@example.com",
-				promss: "215",
-				nums: "115"
-			});
-
-			expect(mockUpdate.set).toHaveBeenCalledWith(
-				expect.objectContaining({
-					username: "115215",
-				})
-			);
-		});
-
-        test("should ensure username is lowercase", async () => {
-			const mockUpdate = mockDbChain();
-			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
-
-			await UserService.update("user-123", {
-				nom: "Doe",
-				prenom: "John",
-				email: "john@example.com",
-				promss: "215",
-                nums: "115"
-			});
-
-			expect(mockUpdate.set).toHaveBeenCalledWith(
-				expect.objectContaining({
-					username: "115215",
-				})
-			);
-		});
-
-        test("should normalize promss and email on update", async () => {
-			const mockUpdate = mockDbChain();
-			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
-
-			await UserService.update("user-123", {
-				nom: "Doe",
-				prenom: "John",
-				email: "JOHN@EXAMPLE.COM",
-				promss: "me215",
-			});
+				nom: "NewName",
+				prenom: "NewPrenom",
+				balance: 1000000,
+				username: "hacked",
+			} as any);
 
 			expect(mockUpdate.set).toHaveBeenCalledWith(
 				expect.objectContaining({
 					email: "john@example.com",
-					promss: "ME215",
 				})
 			);
+            
+            // Verify restricted fields are NOT in the update call
+            const calledArg = mockUpdate.set.mock.calls[0][0];
+            expect(calledArg).not.toHaveProperty("nom");
+            expect(calledArg).not.toHaveProperty("prenom");
+            expect(calledArg).not.toHaveProperty("balance");
+            expect(calledArg).not.toHaveProperty("username");
 		});
 	});
 

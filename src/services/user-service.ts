@@ -27,10 +27,10 @@ export class UserService {
 		await db
 			.update(users)
 			.set({
-				...data,
 				phone: data.phone || null,
 				bucque: data.bucque || null,
 				email: data.email.toLowerCase(),
+				preferredDashboardPath: data.preferredDashboardPath || null,
 			})
 			.where(eq(users.id, userId));
 	}
