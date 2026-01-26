@@ -85,6 +85,7 @@ Créez votre fichier de configuration secret :
    DATABASE_URL="postgres://postgres:password@localhost:5432/gadzby"
    JWT_SECRET="a-string-secret-at-least-256-bits-long"
    NEXT_PUBLIC_APP_URL="https://domaine-de-votre-app.exemple"
+   CAMPUS_NAME="developpement"
    ```
 
 2. Editez les variables et vérifiez que `DATABASE_URL` pointe bien vers votre base de données.
