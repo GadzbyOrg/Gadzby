@@ -1,20 +1,23 @@
 import { z } from "zod";
 
+export const tbkSchema = z.enum(["ME", "CL", "CH", "KA", "PA", "BO", "LI", "AN"]);
+export type Tbk = z.infer<typeof tbkSchema>;
+
 export const updateUserSchema = z.object({
-	nom: z.string().min(1, "Le nom est requis"),
-	prenom: z.string().min(1, "Le prénom est requis"),
 	email: z.email("Email invalide").toLowerCase(),
 	phone: z.string().optional().or(z.literal("")),
 	bucque: z.string().optional().or(z.literal("")),
-	promss: z.string().min(1, "La prom'ss est requise").toUpperCase(),
-	nums: z.string().optional().or(z.literal("")),
-	tabagnss: z.string().optional().or(z.literal("")),
 	preferredDashboardPath: z.string().optional().or(z.literal("")),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 export const adminUpdateUserSchema = updateUserSchema.extend({
+	nom: z.string().min(1, "Le nom est requis"),
+	prenom: z.string().min(1, "Le prénom est requis"),
+	promss: z.string().min(1, "La prom'ss est requise").toUpperCase(),
+	nums: z.string().optional().or(z.literal("")), // TODO change this
+	tabagnss: tbkSchema,
 	userId: z.uuid(),
 	roleId: z.uuid(),
 	balance: z.preprocess(
@@ -38,7 +41,7 @@ export const createUserSchema = z.object({
 	bucque: z.string().optional().or(z.literal("")),
 	promss: z.string().min(1, "La prom'ss est requise").toUpperCase(),
 	nums: z.string().optional().or(z.literal("")),
-	tabagnss: z.string().min(1, "Le tabagn'ss est requis"),
+	tabagnss: tbkSchema,
 	password: z
 		.string()
 		.min(6, "Le mot de passe doit faire au moins 6 caractères"),
@@ -73,7 +76,7 @@ export const importUserRowSchema = z.object({
 	bucque: z.string().optional().or(z.literal("")),
 	promss: z.string().min(1).toUpperCase(), // Can be number in excel, will handle conv
 	nums: z.string().optional().or(z.literal("")), // Can be number
-	tabagnss: z.string().min(1),
+	tabagnss: z.string().min(1), // Checked later during transform
 	username: z.string().optional().or(z.literal("")),
 	balance: z.number().optional(),
 });

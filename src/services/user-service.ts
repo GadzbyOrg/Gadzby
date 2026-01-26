@@ -9,7 +9,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { famsMembers, roles, shopUsers, transactions, users } from "@/db/schema";
 import { getTabagnssCode } from "@/features/users/constants";
-import { importUserRowSchema } from "@/features/users/schemas";
+import { importUserRowSchema, type Tbk } from "@/features/users/schemas";
 
 const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
 
@@ -17,32 +17,20 @@ export class UserService {
 	static async update(
 		userId: string,
 		data: {
-			nom: string;
-			prenom: string;
 			email: string;
 			phone?: string | null;
 			bucque?: string | null;
-			promss: string;
-			nums?: string | null;
 			preferredDashboardPath?: string | null;
 		}
 	) {
-		const { nom, prenom, nums, promss } = data;
-		const newUsername =
-			nums && nums.trim()
-				? `${nums}${promss}`.toLowerCase()
-				: `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
 
 		await db
 			.update(users)
 			.set({
-				...data,
 				phone: data.phone || null,
 				bucque: data.bucque || null,
-				nums: data.nums || null,
 				email: data.email.toLowerCase(),
-				promss: data.promss.toUpperCase(),
-				username: newUsername,
+				preferredDashboardPath: data.preferredDashboardPath || null,
 			})
 			.where(eq(users.id, userId));
 	}
@@ -58,7 +46,7 @@ export class UserService {
             bucque?: string | null;
             promss: string;
             nums?: string | null;
-            tabagnss?: string | null;
+            tabagnss?: Tbk;
             username?: string | null;
             roleId: string;
             balance: number;
@@ -126,8 +114,7 @@ export class UserService {
                     balance,
                     phone: phone || null,
                     bucque: bucque || null,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    tabagnss: rest.tabagnss as any,
+                    tabagnss: rest.tabagnss,
                     ...rest
 				})
 				.where(eq(users.id, targetUserId));
@@ -152,7 +139,7 @@ export class UserService {
         bucque?: string | null;
         promss: string;
         nums?: string | null;
-        tabagnss: string;
+        tabagnss: Tbk;
         password: string;
         roleId: string;
         balance: number;
@@ -203,8 +190,7 @@ export class UserService {
             bucque: bucque || null,
             promss: promss.toUpperCase(),
             nums: nums || null,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            tabagnss: tabagnss as any,
+            tabagnss: tabagnss,
             username,
             passwordHash,
             roleId,
@@ -402,8 +388,7 @@ export class UserService {
                     bucque: bucque || null,
                     promss: promss.toUpperCase(),
                     nums: nums || null,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    tabagnss: (getTabagnssCode(tabagnss) || "ME") as any,
+                    tabagnss: (getTabagnssCode(tabagnss) || "ME") as Tbk,
                     username: item.username,
                     passwordHash: hash,
                     roleId: userRole.id,

@@ -14,6 +14,7 @@ import {
 	hardDeleteUserAction,
 } from "@/features/users/actions";
 
+// TODO: Change this to apply types in @/features/users/types.ts
 interface UserEditFormProps {
 	user: {
 		id: string;
@@ -22,8 +23,8 @@ interface UserEditFormProps {
 		email: string;
 		phone: string | null;
 		username: string;
-		bucque: string;
-		nums: string;
+		bucque?: string | null;
+		nums?: string | null;
 		promss: string;
 		tabagnss?: string;
 		appRole: "USER" | "TRESORIER" | "ADMIN";
@@ -181,11 +182,10 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							Bucque
 						</label>
 						<input
-							required
 							type="text"
 							name="bucque"
 							id="bucque"
-							defaultValue={user.bucque}
+							defaultValue={user.bucque || ""}
 							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 						/>
 					</div>
@@ -194,7 +194,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							htmlFor="promss"
 							className="text-sm font-medium text-gray-300"
 						>
-							Prom&apos;ss
+							Prom'ss
 						</label>
 						<input
 							required
@@ -212,11 +212,10 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 						Nums
 					</label>
 					<input
-						required
 						type="text"
 						name="nums"
 						id="nums"
-						defaultValue={user.nums}
+						defaultValue={user.nums || ""}
 						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
 					/>
 				</div>
