@@ -166,7 +166,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 
 			// Handle Payment events
 			if (body.eventType === "Payment") {
-				console.log("[HelloAsso] Payment event received");
+				//console.log("[HelloAsso] Payment event received");
 				const paymentData = body.data;
 				
 				// Check if payment is authorized
@@ -182,7 +182,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 
 			return { isValid: false };
 		} catch (e) {
-			console.error("[HelloAsso] Webhook verification failed", e);
+			//console.error("[HelloAsso] Webhook verification failed", e);
 			return { isValid: false };
 		}
 	}
