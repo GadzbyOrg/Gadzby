@@ -1,6 +1,6 @@
 "use server";
 
-import { and, AnyColumn, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
@@ -118,7 +118,15 @@ export async function updateProduct(shopSlug: string, productId: string, data: U
 
 
 
-export async function getShopProducts(shopSlug: string) {
+export async function getShopProducts(
+    shopSlug: string, 
+    options?: { 
+        categoryId?: string; 
+        search?: string; 
+        sortBy?: "name" | "price" | "stock"; 
+        sortOrder?: "asc" | "desc"; 
+    }
+) {
     const session = await verifySession();
     if (!session) return { error: "Non autorisé" };
 
@@ -135,11 +143,27 @@ export async function getShopProducts(shopSlug: string) {
         
         if (!isAuthorized) return { error: "Non autorisé" };
 
+        const conditions = [
+            eq(products.shopId, shop.id),
+            eq(products.isArchived, false)
+        ];
+
+        if (options?.categoryId && options.categoryId !== "all") {
+            conditions.push(eq(products.categoryId, options.categoryId));
+        }
+        
+        let orderByClause = [asc(products.displayOrder), asc(products.name)];
+        
+        if (options?.sortBy) {
+             const sortCol = options.sortBy === "price" ? products.price : 
+                             options.sortBy === "stock" ? products.stock : 
+                             products.name;
+             const direction = options.sortOrder === "desc" ? desc : asc;
+             orderByClause = [direction(sortCol)];
+        }
+
         const productsList = await db.query.products.findMany({
-            where: and(
-                eq(products.shopId, shop.id),
-                eq(products.isArchived, false)
-            ),
+            where: and(...conditions),
             with: {
                 category: true,
                 variants: {
@@ -147,10 +171,17 @@ export async function getShopProducts(shopSlug: string) {
                     orderBy: (variants, { asc }) => [asc(variants.quantity)]
                 }
             },
-            orderBy: [desc(products.name)]
+            orderBy: orderByClause
         });
+        
+        // Client-side search if needed (or backend if we add ilike)
+        let filteredProducts = productsList;
+        if (options?.search) {
+            const lowerSearch = options.search.toLowerCase();
+            filteredProducts = productsList.filter(p => p.name.toLowerCase().includes(lowerSearch));
+        }
 
-        return { products: productsList };
+        return { products: filteredProducts };
     } catch (error) {
         console.error("Failed to fetch shop products:", error);
         return { error: "Erreur de chargement" };
@@ -183,5 +214,22 @@ export async function getShopCategories(shopSlug: string) {
     } catch (error) {
         console.error("Failed to fetch shop categories:", error);
         return { error: "Erreur de chargement" };
+    }
+}
+
+export async function updateProductsOrder(shopSlug: string, productIds: string[]) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    try {
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
+
+        await ShopService.updateProductsOrder(shop.id, productIds);
+
+        revalidatePath(`/shops/${shopSlug}/manage/products`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update products order:", error);
+        return { error: "Erreur lors de la mise à jour de l'ordre" };
     }
 }
