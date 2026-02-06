@@ -1,6 +1,6 @@
 "use server";
 
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { productCategories, products, productVariants, shops, shopUsers } from "@/db/schema";
@@ -236,12 +236,31 @@ export async function getSelfServiceProducts(shopSlug: string) {
                     orderBy: (variants, { asc }) => [asc(variants.quantity)]
                 }
             },
-            orderBy: [desc(products.name)]
+            orderBy: [asc(products.displayOrder), asc(products.name)]
         });
 
         const categoriesList = await db.query.productCategories.findMany({
             where: eq(productCategories.shopId, shop.id),
             orderBy: (categories, { asc }) => [asc(categories.name)]
+        });
+
+        // Sort products in-memory to match management view: Category Name -> Display Order -> Name
+        productsList.sort((a, b) => {
+            // 1. Category Name
+            const catA = a.category?.name || "zzzzzz"; // Put uncategorized last (or first depending on preference, usually last)
+            const catB = b.category?.name || "zzzzzz";
+            
+            if (catA !== catB) return catA.localeCompare(catB);
+            
+            // 2. Display Order
+            if (a.displayOrder !== b.displayOrder) {
+                // Handle null/undefined displayOrder if necessary, though schema implies it might be set. 
+                // Assuming 0 or generic number if null, but usually it's an int.
+                return (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+            }
+
+            // 3. Name
+            return a.name.localeCompare(b.name);
         });
 
         return { products: productsList, categories: categoriesList };
