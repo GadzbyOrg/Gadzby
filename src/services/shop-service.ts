@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 
 import { db } from "@/db";
 import { productCategories, productRestocks, products, productVariants, shopRoles, shops, shopUsers } from "@/db/schema";
@@ -240,11 +240,41 @@ export class ShopService {
     }
 
     static async createCategory(shopId: string, name: string) {
+        const existingCategory = await db.query.productCategories.findFirst({
+            where: and(
+                eq(productCategories.shopId, shopId),
+                eq(productCategories.name, name)
+            ),
+        });
+
+        if (existingCategory) {
+            throw new Error("Une catégorie avec ce nom existe déjà");
+        }
+
         const [newCat] = await db.insert(productCategories).values({
             shopId,
             name
         }).returning();
         return newCat;
+    }
+
+    static async updateCategory(shopId: string, categoryId: string, name: string) {
+        const existingCategory = await db.query.productCategories.findFirst({
+            where: and(
+                eq(productCategories.shopId, shopId),
+                eq(productCategories.name, name),
+                ne(productCategories.id, categoryId)
+            ),
+        });
+
+        if (existingCategory) {
+            throw new Error("Une catégorie avec ce nom existe déjà");
+        }
+
+        await db
+            .update(productCategories)
+            .set({ name })
+            .where(and(eq(productCategories.id, categoryId), eq(productCategories.shopId, shopId)));
     }
 
     // --- Inventory ---

@@ -7,6 +7,7 @@ import { importProducts } from "@/features/shops/import";
 import { getShopProducts } from "@/features/shops/products";
 
 import { SortableProductList } from "./_components/SortableProductList";
+import { ProductFilters } from "./_components/ProductFilters";
 
 export default async function ShopProductsPage({
 	params,
@@ -109,6 +110,7 @@ export default async function ShopProductsPage({
 			</header>
 
 			<div className="bg-dark-900 border border-dark-800 rounded-2xl p-4">
+                <ProductFilters />
 				<SortableProductList products={products} shopSlug={slug} disableReorder={isFiltered} />
 			</div>
 		</div>

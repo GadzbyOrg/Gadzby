@@ -75,6 +75,9 @@ export async function createCategory(shopSlug: string, name: string) {
         return { category };
     } catch (error) {
          console.error("Failed to create category:", error);
+        if (error instanceof Error) {
+            return { error: error.message };
+        }
         return { error: "Erreur de création catégorie" };
     }
 }
@@ -82,6 +85,27 @@ export async function createCategory(shopSlug: string, name: string) {
 
 
 // Restoring original function signature for createProduct
+
+export async function updateCategory(shopSlug: string, categoryId: string, name: string) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    try {
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
+
+        await ShopService.updateCategory(shop.id, categoryId, name);
+
+        revalidatePath(`/shops/${shopSlug}/manage/products`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update category:", error);
+         if (error instanceof Error) {
+            return { error: error.message };
+        }
+        return { error: "Erreur lors de la mise à jour de la catégorie" };
+    }
+}
+
 export async function createProduct(shopSlug: string, data: CreateProductInput) {
     const session = await verifySession();
     if (!session) return { error: "Non autorisé" };
