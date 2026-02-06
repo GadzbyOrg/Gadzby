@@ -31,7 +31,7 @@ export default function DeleteProductButton({
 		<button
 			onClick={handleDelete}
 			disabled={isPending}
-			className="text-gray-500 hover:text-red-400 transition-colors disabled:opacity-50"
+			className="text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50 cursor-pointer"
 			title={`Supprimer ${productName}`}
 		>
 			<IconTrash size={18} />

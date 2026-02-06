@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
-import { IconSearch, IconSortAscending, IconSortDescending } from "@tabler/icons-react";
+import { IconSearch, IconSortAscending, IconSortDescending, IconX } from "@tabler/icons-react";
 
 export function ProductFilters() {
     const searchParams = useSearchParams();
@@ -43,6 +43,8 @@ export function ProductFilters() {
     const currentSortBy = searchParams.get("sortBy");
     const currentSortOrder = searchParams.get("sortOrder");
 
+    const isFiltered = !!searchParams.get("search") || !!searchParams.get("sortBy") || !!searchParams.get("sortOrder");
+
     return (
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-1">
@@ -57,6 +59,21 @@ export function ProductFilters() {
             </div>
             
             <div className="flex gap-2">
+                {/* Reset Button */}
+                {isFiltered && (
+                    <button
+                        onClick={() => {
+                            startTransition(() => {
+                                replace(pathname);
+                            });
+                        }}
+                        className="px-4 py-2 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <IconX size={16} />
+                        <span className="hidden sm:inline">Réinitialiser</span>
+                    </button>
+                )}
+
                 <button
                     onClick={() => handleSort("name")}
                     className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
