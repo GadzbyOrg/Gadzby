@@ -266,4 +266,17 @@ export class ShopService {
 				.where(eq(products.id, productId));
 		});
     }
+
+    static async updateProductsOrder(shopId: string, productIds: string[]) {
+        await db.transaction(async (tx) => {
+            for (let i = 0; i < productIds.length; i++) {
+                await tx.update(products)
+                    .set({ displayOrder: i })
+                    .where(and(
+                        eq(products.id, productIds[i]),
+                        eq(products.shopId, shopId)
+                    ));
+            }
+        });
+    }
 }
