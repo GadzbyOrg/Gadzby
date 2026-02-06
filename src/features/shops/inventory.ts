@@ -50,6 +50,15 @@ export async function getShopAudits(shopSlug: string) {
 			where: eq(inventoryAudits.shopId, shop.id),
 			with: {
 				creator: true,
+                items: {
+                    with: {
+                        product: {
+                            columns: {
+                                price: true
+                            }
+                        }
+                    }
+                }
 			},
 			orderBy: [desc(inventoryAudits.createdAt)],
 		});
