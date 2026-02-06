@@ -3,11 +3,11 @@
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { IconChevronDown, IconChevronRight, IconGripVertical, IconPlus } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown, IconChevronRight, IconGripVertical, IconPencil, IconPlus, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { updateProductsOrder } from "@/features/shops/products";
+import { updateCategory, updateProductsOrder } from "@/features/shops/products";
 
 import DeleteProductButton from "./DeleteProductButton";
 import RestockButton from "./RestockButton";
@@ -19,6 +19,7 @@ interface Product {
 	stock: number;
 	unit: string;
 	category?: {
+        id: string;
 		name: string | null;
 	} | null;
 }
@@ -64,13 +65,9 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
 
 			<div className="flex-1">
                 {/* Desktop View */}
-                <div className="hidden sm:grid sm:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
+                <div className="hidden sm:grid sm:grid-cols-[3fr_1fr_1fr_auto] gap-4 items-center">
                     <div className="font-medium text-white">{product.name}</div>
                     
-                    <div className="text-sm text-gray-400">
-                        {product.category?.name || "Sans catégorie"}
-                    </div>
-
                     <div className="text-sm text-gray-300">
                         {(product.price / 100).toFixed(2)} € {product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : ""}
                     </div>
@@ -116,11 +113,6 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                     <div className="flex justify-between items-start gap-4">
                         <div className="flex-1 min-w-0">
                             <div className="font-bold text-white text-lg truncate leading-tight">{product.name}</div>
-                            <div className="flex items-center gap-2 mt-1.5">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-dark-800 text-gray-300 border border-dark-700">
-                                    {product.category?.name || "Sans catégorie"}
-                                </span>
-                            </div>
                         </div>
                         <div className="text-right shrink-0">
                              <div className="text-primary-400 font-bold text-lg leading-tight">{(product.price / 100).toFixed(2)}€</div>
@@ -183,14 +175,15 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
 	);
 }
 
-// CategoryGroup component handles sorting within a specific category
 function CategoryGroup({ 
     categoryName, 
+    categoryId,
     products: initialProducts, 
     shopSlug, 
     disableReorder 
 }: { 
     categoryName: string; 
+    categoryId?: string;
     products: Product[]; 
     shopSlug: string; 
     disableReorder?: boolean; 
@@ -198,10 +191,51 @@ function CategoryGroup({
     const [products, setProducts] = useState(initialProducts);
     const [isPending, setIsPending] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedName, setEditedName] = useState(categoryName);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         setProducts(initialProducts);
     }, [initialProducts]);
+    
+    // Reset edited name if categoryName changes (e.g. after successful save)
+    useEffect(() => {
+        setEditedName(categoryName);
+    }, [categoryName]);
+
+    const handleSaveCategory = async (e: React.FormEvent) => {
+        e.preventDefault();
+        e.stopPropagation(); // Prevent accordion toggle
+        
+        if (!categoryId || !editedName.trim() || editedName === categoryName) {
+            setIsEditing(false);
+            setError(null);
+            return;
+        }
+
+        setIsSaving(true);
+        setError(null);
+
+        try {
+            const result = await updateCategory(shopSlug, categoryId, editedName);
+            if (result.success) {
+                setIsEditing(false);
+                setError(null);
+                // Name update will come from props via parent re-render (server action revalidate)
+            } else {
+                console.error(result.error);
+                setError(result.error || "Une erreur est survenue");
+            }
+        } catch (error) {
+            console.error("Failed to update category", error);
+            setError("Une erreur inattendue est survenue");
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -236,17 +270,75 @@ function CategoryGroup({
 
     return (
         <div className={`mb-8 ${isPending ? "opacity-70 pointer-events-none" : ""}`}>
-            <button 
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="flex items-center gap-2 px-1 w-full text-left group hover:opacity-80 transition-opacity mb-4"
+            <div 
+                className="flex items-center gap-2 px-1 w-full text-left mb-4"
             >
-                {isCollapsed ? <IconChevronRight size={20} className="text-gray-400" /> : <IconChevronDown size={20} className="text-gray-400" />}
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-primary-500"></span>
-                    {categoryName}
-                    <span className="text-sm font-normal text-gray-500 ml-2">({products.length})</span>
-                </h3>
-            </button>
+                <button onClick={() => setIsCollapsed(!isCollapsed)} className="hover:opacity-80 transition-opacity">
+                    {isCollapsed ? <IconChevronRight size={20} className="text-gray-400" /> : <IconChevronDown size={20} className="text-gray-400" />}
+                </button>
+                
+                <div className="flex-1 flex items-center gap-2">
+                    
+                    {isEditing ? (
+                        <div className="flex-1">
+                            <form onSubmit={handleSaveCategory} className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={editedName}
+                                    onChange={(e) => {
+                                        setEditedName(e.target.value);
+                                        setError(null);
+                                    }}
+                                    className={`bg-dark-800 border ${error ? "border-red-500" : "border-dark-700"} rounded px-2 py-1 text-white text-lg font-bold focus:outline-none focus:border-primary-500 min-w-[200px]`}
+                                    autoFocus
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                                <button 
+                                    type="submit" 
+                                    disabled={isSaving}
+                                    className="p-1 bg-primary-600/20 text-primary-400 rounded hover:bg-primary-600/30 disabled:opacity-50"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <IconCheck size={18} />
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsEditing(false);
+                                        setEditedName(categoryName);
+                                        setError(null);
+                                    }}
+                                    className="p-1 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20"
+                                >
+                                    <IconX size={18} />
+                                </button>
+                            </form>
+                            {error && (
+                                <div className="text-red-400 text-sm mt-1 ml-1">{error}</div>
+                            )}
+                        </div>
+                    ) : (
+                        <h3 className="text-xl font-bold text-white flex items-center gap-2 cursor-pointer group" onClick={() => setIsCollapsed(!isCollapsed)}>
+                            <span className="group-hover:opacity-80 transition-opacity">{categoryName}</span>
+                            <span className="text-sm font-normal text-gray-500">({products.length})</span>
+                            
+                            {categoryId && (
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsEditing(true);
+                                    }}
+                                    className="p-1 text-dark-400 hover:text-white transition-colors"
+                                    title="Renommer la catégorie"
+                                >
+                                    <IconPencil size={18} />
+                                </button>
+                            )}
+                        </h3>
+                    )}
+                </div>
+            </div>
             
             {!isCollapsed && (
                 <>
@@ -297,15 +389,25 @@ export function SortableProductList({ products, shopSlug, disableReorder }: Sort
 
     return (
         <div className="space-y-8">
-            {sortedKeys.map((catName) => (
-                <CategoryGroup 
-                    key={catName} 
-                    categoryName={catName === "Uncategorized" ? "Sans catégorie" : catName} 
-                    products={groupedProducts[catName]} 
-                    shopSlug={shopSlug}
-                    disableReorder={disableReorder}
-                />
-            ))}
+            {sortedKeys.map((catName) => {
+                const categoryProducts = groupedProducts[catName];
+                // Try to find the category ID from the first product that has this category name
+                // This assumes all products in the group share the same category object/ID
+                const categoryId = categoryProducts[0]?.category?.name === catName 
+                    ? categoryProducts[0]?.category?.id 
+                    : undefined;
+
+                return (
+                    <CategoryGroup 
+                        key={catName} 
+                        categoryName={catName === "Uncategorized" ? "Sans catégorie" : catName}
+                        categoryId={categoryId} 
+                        products={categoryProducts} 
+                        shopSlug={shopSlug}
+                        disableReorder={disableReorder}
+                    />
+                );
+            })}
             
             {products.length === 0 && (
                 <div className="text-center py-12 text-gray-500 bg-dark-900 border border-dark-800 rounded-xl">
