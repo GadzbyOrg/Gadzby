@@ -373,7 +373,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 									)}
 									{isPayUpfront
 										? "Solder l'événement"
-										: "Clôturer l&apos;événement"}
+										: "Clôturer l'événement"}
 								</button>
 							)}
 						</>
