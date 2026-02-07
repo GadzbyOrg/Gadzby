@@ -50,6 +50,15 @@ export async function getShopAudits(shopSlug: string) {
 			where: eq(inventoryAudits.shopId, shop.id),
 			with: {
 				creator: true,
+                items: {
+                    with: {
+                        product: {
+                            columns: {
+                                price: true
+                            }
+                        }
+                    }
+                }
 			},
 			orderBy: [desc(inventoryAudits.createdAt)],
 		});
@@ -75,9 +84,12 @@ export async function getAudit(shopSlug: string, auditId: string) {
 			with: {
 				items: {
 					with: {
-						product: true,
+						product: {
+                            with: {
+                                category: true,
+                            }
+                        },
 					},
-					orderBy: (items, { asc }) => [asc(items.productId)], 
 				},
 				creator: true,
 			},
@@ -85,8 +97,23 @@ export async function getAudit(shopSlug: string, auditId: string) {
 
 		if (!audit) return { error: "Inventaire non trouvé" };
 
-		// Sort items by product name manually 
-		audit.items.sort((a, b) => a.product.name.localeCompare(b.product.name));
+		// Sort items by Category Name -> Display Order -> Product Name
+		audit.items.sort((a, b) => {
+            const catA = a.product.category?.name || "zzz"; // Put uncategorized last
+            const catB = b.product.category?.name || "zzz"; 
+            
+            // 1. Category Name
+            const catDiff = catA.localeCompare(catB);
+            if (catDiff !== 0) return catDiff;
+            
+            // 2. Display Order
+            const orderA = a.product.displayOrder ?? 0;
+            const orderB = b.product.displayOrder ?? 0;
+            if (orderA !== orderB) return orderA - orderB;
+            
+            // 3. Product Name (Fallback)
+            return a.product.name.localeCompare(b.product.name);
+        });
 
 		return { audit };
 	} catch (error) {

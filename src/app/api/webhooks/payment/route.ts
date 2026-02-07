@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
 		}
 
-		console.log("Received webhook for provider:", providerSlug);
+		//console.log("Received webhook for provider:", providerSlug);
 		const verification = await provider.verifyWebhook(request);
 
 		if (!verification.isValid || !verification.transactionId) {
-			console.log("Invalid webhook verification");
+			//console.log("Invalid webhook verification");
 			return NextResponse.json(
 				{ error: "Invalid signature or missing tx ID" },
 				{ status: 400 }

@@ -23,6 +23,10 @@ export default async function ShopInventoryPage({
 	const { shop } = access;
 	const { audits } = await getShopAudits(slug);
 
+	const calculateTotalDiscrepancy = (items: { difference: number; product: { price: number } }[]) => {
+		return items.reduce((acc, item) => acc + (item.difference * item.product.price), 0) / 100;
+	};
+
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
 			<div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
@@ -68,48 +72,57 @@ export default async function ShopInventoryPage({
 						<>
 							{/* Mobile View */}
 							<div className="md:hidden divide-y divide-dark-800">
-								{audits.map((audit) => (
-									<div key={audit.id} className="p-4 space-y-3">
-										<div className="flex justify-between items-start">
-											<div>
-												<div className="text-gray-300 font-medium">
-													{new Date(audit.createdAt).toLocaleDateString()}
-												</div>
-												<div className="text-sm text-gray-500">
-													{new Date(audit.createdAt).toLocaleTimeString()}
-												</div>
-											</div>
-											<span
-												className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-													audit.status === "COMPLETED"
-														? "bg-green-500/10 text-green-400 border-green-500/20"
-														: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-												}`}
-											>
-												{audit.status === "COMPLETED" ? "Terminé" : "En cours"}
-											</span>
-										</div>
+								{audits.map((audit) => {
+                                    const discrepancy = calculateTotalDiscrepancy(audit.items);
+                                    return (
+                                        <div key={audit.id} className="p-4 space-y-3">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <div className="text-gray-300 font-medium">
+                                                        {new Date(audit.createdAt).toLocaleDateString()}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        {new Date(audit.createdAt).toLocaleTimeString()}
+                                                    </div>
+                                                </div>
+                                                <span
+                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                                                        audit.status === "COMPLETED"
+                                                            ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                                            : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+                                                    }`}
+                                                >
+                                                    {audit.status === "COMPLETED" ? "Terminé" : "En cours"}
+                                                </span>
+                                            </div>
 
-										<div className="flex justify-between items-center text-sm">
-											<div className="text-gray-400">
-												Par :{" "}
-												<span className="text-gray-300">
-													{audit.creator
-														? `${audit.creator.prenom} ${audit.creator.nom}`
-														: "Inconnu"}
-												</span>
-											</div>
-											<Link
-												href={`/shops/${shop.slug}/manage/inventory/${audit.id}`}
-												className="text-primary-400 hover:text-primary-300 font-medium"
-											>
-												{audit.status === "COMPLETED"
-													? "Voir le rapport"
-													: "Continuer"}
-											</Link>
-										</div>
-									</div>
-								))}
+                                            <div className="flex justify-between items-center text-sm">
+                                                <div className="text-gray-400">
+                                                    Par :{" "}
+                                                    <span className="text-gray-300">
+                                                        {audit.creator
+                                                            ? `${audit.creator.prenom} ${audit.creator.nom}`
+                                                            : "Inconnu"}
+                                                    </span>
+                                                </div>
+                                                <div className={discrepancy < 0 ? "text-red-400 font-mono" : discrepancy > 0 ? "text-green-400 font-mono" : "text-gray-500 font-mono"}>
+                                                    {discrepancy > 0 ? "+" : ""}{discrepancy.toFixed(2)}€
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex justify-end pt-2">
+                                                <Link
+                                                    href={`/shops/${shop.slug}/manage/inventory/${audit.id}`}
+                                                    className="text-primary-400 hover:text-primary-300 font-medium text-sm"
+                                                >
+                                                    {audit.status === "COMPLETED"
+                                                        ? "Voir le rapport"
+                                                        : "Continuer"}
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
 							</div>
 
 							{/* Desktop View */}
@@ -119,6 +132,7 @@ export default async function ShopInventoryPage({
 										<tr>
 											<th className="px-6 py-3 font-medium">Date</th>
 											<th className="px-6 py-3 font-medium">Réalisé par</th>
+                                            <th className="px-6 py-3 font-medium text-right">Écart</th>
 											<th className="px-6 py-3 font-medium">Statut</th>
 											<th className="px-6 py-3 font-medium text-right">
 												Action
@@ -126,45 +140,51 @@ export default async function ShopInventoryPage({
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-dark-800">
-										{audits.map((audit) => (
-											<tr
-												key={audit.id}
-												className="hover:bg-dark-800/50 transition-colors"
-											>
-												<td className="px-6 py-4 text-gray-300">
-													{new Date(audit.createdAt).toLocaleDateString()} à{" "}
-													{new Date(audit.createdAt).toLocaleTimeString()}
-												</td>
-												<td className="px-6 py-4 text-gray-300">
-													{audit.creator
-														? `${audit.creator.prenom} ${audit.creator.nom}`
-														: "Inconnu"}
-												</td>
-												<td className="px-6 py-4">
-													<span
-														className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-															audit.status === "COMPLETED"
-																? "bg-green-500/10 text-green-400 border-green-500/20"
-																: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-														}`}
-													>
-														{audit.status === "COMPLETED"
-															? "Terminé"
-															: "En cours"}
-													</span>
-												</td>
-												<td className="px-6 py-4 text-right">
-													<Link
-														href={`/shops/${shop.slug}/manage/inventory/${audit.id}`}
-														className="text-primary-400 hover:text-primary-300 font-medium"
-													>
-														{audit.status === "COMPLETED"
-															? "Voir le rapport"
-															: "Continuer"}
-													</Link>
-												</td>
-											</tr>
-										))}
+										{audits.map((audit) => {
+                                            const discrepancy = calculateTotalDiscrepancy(audit.items);
+                                            return (
+                                                <tr
+                                                    key={audit.id}
+                                                    className="hover:bg-dark-800/50 transition-colors"
+                                                >
+                                                    <td className="px-6 py-4 text-gray-300">
+                                                        {new Date(audit.createdAt).toLocaleDateString()} à{" "}
+                                                        {new Date(audit.createdAt).toLocaleTimeString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-gray-300">
+                                                        {audit.creator
+                                                            ? `${audit.creator.prenom} ${audit.creator.nom}`
+                                                            : "Inconnu"}
+                                                    </td>
+                                                    <td className={`px-6 py-4 text-right font-mono ${discrepancy < 0 ? "text-red-400" : discrepancy > 0 ? "text-green-400" : "text-gray-500"}`}>
+                                                        {discrepancy > 0 ? "+" : ""}{discrepancy.toFixed(2)}€
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span
+                                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                                                                audit.status === "COMPLETED"
+                                                                    ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                                                    : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+                                                            }`}
+                                                        >
+                                                            {audit.status === "COMPLETED"
+                                                                ? "Terminé"
+                                                                : "En cours"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <Link
+                                                            href={`/shops/${shop.slug}/manage/inventory/${audit.id}`}
+                                                            className="text-primary-400 hover:text-primary-300 font-medium"
+                                                        >
+                                                            {audit.status === "COMPLETED"
+                                                                ? "Voir le rapport"
+                                                                : "Continuer"}
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
 									</tbody>
 								</table>
 							</div>

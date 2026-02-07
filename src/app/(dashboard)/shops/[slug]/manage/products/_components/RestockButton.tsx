@@ -10,9 +10,10 @@ type RestockButtonProps = {
     productId: string;
     productName: string;
     currentUnit?: string;
+    trigger?: React.ReactNode;
 };
 
-export default function RestockButton({ shopSlug, productId, productName, currentUnit = "unit" }: RestockButtonProps) {
+export default function RestockButton({ shopSlug, productId, productName, currentUnit = "unit", trigger }: RestockButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [quantity, setQuantity] = useState<number | "">("");
     const [isLoading, setIsLoading] = useState(false);
@@ -42,14 +43,20 @@ export default function RestockButton({ shopSlug, productId, productName, curren
 
     return (
         <>
-            <button
-                onClick={() => setIsOpen(true)}
-                className="text-emerald-400 hover:text-emerald-300 hover:underline flex items-center gap-1"
-                title="Ajouter du stock (Entrée)"
-            >
-                <IconCirclePlus size={16} />
-                <span className="hidden lg:inline">Restock</span>
-            </button>
+            {trigger ? (
+                <div onClick={() => setIsOpen(true)} className="cursor-pointer">
+                    {trigger}
+                </div>
+            ) : (
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className="text-emerald-400 hover:text-emerald-300 hover:underline flex items-center gap-1"
+                    title="Ajouter du stock (Entrée)"
+                >
+                    <IconCirclePlus size={16} />
+                    <span className="hidden lg:inline">Restock</span>
+                </button>
+            )}
 
             {isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">

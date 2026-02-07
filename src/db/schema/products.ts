@@ -23,6 +23,8 @@ export const products = pgTable('products', {
   unit: text('unit').default('unit').notNull(), // 'unit', 'liter', 'kg'
   fcv: doublePrecision('fcv').default(1.0).notNull(), // Facteur de correction des ventes
 
+  displayOrder: integer('display_order').default(0).notNull(),
+
   allowSelfService: boolean('allow_self_service').default(false),
   
   categoryId: uuid('category_id').references(() => productCategories.id).notNull(),
