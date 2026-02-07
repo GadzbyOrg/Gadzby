@@ -354,7 +354,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 													(subItem.url.includes("/manage") &&
 														pathname.startsWith(subItem.url));
 												return (
-													<Link
+													<a
 														key={subItem.url}
 														href={subItem.url}
 														className={cn(
@@ -365,7 +365,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 														)}
 													>
 														{subItem.label}
-													</Link>
+													</a>
 												);
 											})}
 										</div>
@@ -381,7 +381,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 								link.url !== "/admin" &&
 								pathname.startsWith(link.url + "/"));
 						return (
-							<Link
+							<a
 								key={link.url}
 								href={link.url}
 								className={cn(
@@ -395,7 +395,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 								{isActive && (
 									<IconChevronRight size={14} className="text-primary-600" />
 								)}
-							</Link>
+							</a>
 						);
 					})}
 				</div>
