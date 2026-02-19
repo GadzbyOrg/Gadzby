@@ -4,6 +4,8 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import React from "react";
 
+import { ServiceWorkerUnregister } from "@/components/ServiceWorkerUnregister";
+
 export const metadata: Metadata = {
 	title: "Gadzby",
 	description: "Borgia 2.0",
@@ -30,7 +32,10 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="fr">
-			<body>{children}</body>
+			<body>
+				<ServiceWorkerUnregister />
+				{children}
+			</body>
 		</html>
 	);
 }
