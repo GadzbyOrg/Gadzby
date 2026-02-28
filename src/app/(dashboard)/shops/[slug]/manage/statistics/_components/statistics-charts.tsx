@@ -224,12 +224,12 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 		<div className="space-y-6">
 			{/* Controls */}
 			<div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-dark-900 p-4 rounded-xl border border-dark-800">
-				<div className="flex bg-dark-800 rounded-lg p-1">
+				<div className="flex bg-dark-800 rounded-lg p-1 overflow-x-auto whitespace-nowrap custom-scrollbar max-w-full">
 					{(["7d", "30d", "90d", "all", "custom"] as Timeframe[]).map((t) => (
 						<button
 							key={t}
 							onClick={() => handleTimeframeChange(t)}
-							className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+							className={`px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
 								timeframe === t
 									? "bg-primary-600 text-white shadow-sm"
 									: "text-gray-400 hover:text-white hover:bg-dark-700"
@@ -338,115 +338,117 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 								<h3 className="text-lg font-medium text-white mb-6">
 									Évolution financière
 								</h3>
-								<div className="h-[320px] w-full">
-									<ResponsiveContainer width="100%" height="100%">
-										<AreaChart
-											data={data.chartData}
-											margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-										>
-											<defs>
-												<linearGradient
-													id="colorRevenue"
-													x1="0"
-													y1="0"
-													x2="0"
-													y2="1"
-												>
-													<stop
-														offset="5%"
-														stopColor="#4ade80"
-														stopOpacity={0.3}
-													/>
-													<stop
-														offset="95%"
-														stopColor="#4ade80"
-														stopOpacity={0}
-													/>
-												</linearGradient>
-												<linearGradient
-													id="colorExpenses"
-													x1="0"
-													y1="0"
-													x2="0"
-													y2="1"
-												>
-													<stop
-														offset="5%"
-														stopColor="#f87171"
-														stopOpacity={0.3}
-													/>
-													<stop
-														offset="95%"
-														stopColor="#f87171"
-														stopOpacity={0}
-													/>
-												</linearGradient>
-											</defs>
-											<XAxis
-												dataKey="date"
-												stroke="#6b7280"
-												fontSize={12}
-												tickFormatter={(value) =>
-													new Date(value).toLocaleDateString("fr-FR", {
-														day: "2-digit",
-														month: "2-digit",
-													})
-												}
-											/>
-											<YAxis
-												stroke="#6b7280"
-												fontSize={12}
-												tickFormatter={(value) => `${value / 100}€`}
-											/>
-											<CartesianGrid
-												strokeDasharray="3 3"
-												stroke="#374151"
-												vertical={false}
-											/>
-											<Tooltip
-												contentStyle={{
-													backgroundColor: "#111827",
-													borderColor: "#374151",
-													borderRadius: "0.5rem",
-												}}
-												formatter={(value?: number) => [
-													`${((value || 0) / 100).toFixed(2)}€`,
-													"",
-												]}
-												labelStyle={{
-													color: "#9ca3af",
-													marginBottom: "0.25rem",
-												}}
-												labelFormatter={(label) =>
-													new Date(label).toLocaleDateString("fr-FR", {
-														weekday: "long",
-														year: "numeric",
-														month: "long",
-														day: "numeric",
-													})
-												}
-											/>
-											<Legend />
-											<Area
-												type="monotone"
-												dataKey="revenue"
-												name="Revenus"
-												stroke="#4ade80"
-												fillOpacity={1}
-												fill="url(#colorRevenue)"
-												strokeWidth={2}
-											/>
-											<Area
-												type="monotone"
-												dataKey="expenses"
-												name="Dépenses"
-												stroke="#f87171"
-												fillOpacity={1}
-												fill="url(#colorExpenses)"
-												strokeWidth={2}
-											/>
-										</AreaChart>
-									</ResponsiveContainer>
+								<div className="h-[320px] w-full overflow-x-auto custom-scrollbar">
+									<div className="min-w-[600px] h-full">
+										<ResponsiveContainer width="100%" height="100%">
+											<AreaChart
+												data={data.chartData}
+												margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+											>
+												<defs>
+													<linearGradient
+														id="colorRevenue"
+														x1="0"
+														y1="0"
+														x2="0"
+														y2="1"
+													>
+														<stop
+															offset="5%"
+															stopColor="#4ade80"
+															stopOpacity={0.3}
+														/>
+														<stop
+															offset="95%"
+															stopColor="#4ade80"
+															stopOpacity={0}
+														/>
+													</linearGradient>
+													<linearGradient
+														id="colorExpenses"
+														x1="0"
+														y1="0"
+														x2="0"
+														y2="1"
+													>
+														<stop
+															offset="5%"
+															stopColor="#f87171"
+															stopOpacity={0.3}
+														/>
+														<stop
+															offset="95%"
+															stopColor="#f87171"
+															stopOpacity={0}
+														/>
+													</linearGradient>
+												</defs>
+												<XAxis
+													dataKey="date"
+													stroke="#6b7280"
+													fontSize={12}
+													tickFormatter={(value) =>
+														new Date(value).toLocaleDateString("fr-FR", {
+															day: "2-digit",
+															month: "2-digit",
+														})
+													}
+												/>
+												<YAxis
+													stroke="#6b7280"
+													fontSize={12}
+													tickFormatter={(value) => `${value / 100}€`}
+												/>
+												<CartesianGrid
+													strokeDasharray="3 3"
+													stroke="#374151"
+													vertical={false}
+												/>
+												<Tooltip
+													contentStyle={{
+														backgroundColor: "#111827",
+														borderColor: "#374151",
+														borderRadius: "0.5rem",
+													}}
+													formatter={(value?: number) => [
+														`${((value || 0) / 100).toFixed(2)}€`,
+														"",
+													]}
+													labelStyle={{
+														color: "#9ca3af",
+														marginBottom: "0.25rem",
+													}}
+													labelFormatter={(label) =>
+														new Date(label).toLocaleDateString("fr-FR", {
+															weekday: "long",
+															year: "numeric",
+															month: "long",
+															day: "numeric",
+														})
+													}
+												/>
+												<Legend />
+												<Area
+													type="monotone"
+													dataKey="revenue"
+													name="Revenus"
+													stroke="#4ade80"
+													fillOpacity={1}
+													fill="url(#colorRevenue)"
+													strokeWidth={2}
+												/>
+												<Area
+													type="monotone"
+													dataKey="expenses"
+													name="Dépenses"
+													stroke="#f87171"
+													fillOpacity={1}
+													fill="url(#colorExpenses)"
+													strokeWidth={2}
+												/>
+											</AreaChart>
+										</ResponsiveContainer>
+									</div>
 								</div>
 							</div>
 

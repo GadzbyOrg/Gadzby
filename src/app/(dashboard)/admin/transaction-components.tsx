@@ -45,23 +45,23 @@ function DateRangeFilter() {
     };
 
     return (
-        <div className="flex items-center gap-2">
-            <div className="relative">
+        <div className="flex items-center gap-2 w-full">
+            <div className="relative flex-1">
                 <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
                 <input 
                     type="date"
-                    className="bg-dark-800 border-dark-700 text-gray-200 pl-10 pr-4 py-2 rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
+                    className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
                     value={searchParams.get("startDate") || ""}
                     onChange={(e) => handleDateChange("startDate", e.target.value)}
                     placeholder="Date début"
                 />
             </div>
-            <span className="text-gray-500">-</span>
-            <div className="relative">
+            <span className="text-gray-500 shrink-0">-</span>
+            <div className="relative flex-1">
                  <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
                 <input 
                     type="date"
-                    className="bg-dark-800 border-dark-700 text-gray-200 pl-10 pr-4 py-2 rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
+                    className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
                     value={searchParams.get("endDate") || ""}
                     onChange={(e) => handleDateChange("endDate", e.target.value)}
                     placeholder="Date fin"
@@ -105,8 +105,8 @@ export function TransactionToolbar() {
 	};
 
 	return (
-		<div className="flex flex-col gap-4 mb-6">
-            <div className="flex flex-col md:flex-row gap-4">
+		<div className="flex flex-col gap-3 mb-6">
+            <div className="flex flex-col md:flex-row gap-3">
                 <div className="relative flex-1">
                     <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
                     <input
@@ -117,45 +117,45 @@ export function TransactionToolbar() {
                         onChange={(e) => handleSearch(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-2">
-                    <div className="relative">
+                <div className="flex gap-2 w-full md:w-auto">
+                    <div className="relative flex-1 md:flex-none">
                         <select
-                            className="bg-dark-800 border-dark-700 text-gray-200 pl-4 pr-10 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
+                            className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
                             onChange={(e) => handleTypeFilter(e.target.value)}
                             defaultValue={searchParams.get("type")?.toString() || "ALL"}
                         >
                             <option value="ALL">Tous les types</option>
                             <option value="PURCHASE">Achats</option>
-                            <option value="TOPUP">Rechargements</option>
+                            <option value="TOPUP">Rechargement</option>
                             <option value="TRANSFER">Virements</option>
                             <option value="REFUND">Remboursements</option>
-                            <option value="DEPOSIT">Caution/Pénalité</option>
+                            <option value="DEPOSIT">Pénalité</option>
                             <option value="ADJUSTMENT">Ajustements</option>
                         </select>
-                        <IconFilter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
+                        <IconFilter className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
                     </div>
 
-                    <div className="relative">
+                    <div className="relative flex-1 md:flex-none">
                         <select
-                            className="bg-dark-800 border-dark-700 text-gray-200 pl-4 pr-10 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
+                            className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
                             onChange={(e) => handleSort(e.target.value)}
                             defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
                         >
-                            <option value="DATE_DESC">Date (Récent)</option>
-                            <option value="DATE_ASC">Date (Ancien)</option>
-                            <option value="AMOUNT_DESC">Montant (Décroissant)</option>
-                            <option value="AMOUNT_ASC">Montant (Croissant)</option>
+                            <option value="DATE_DESC">Date (Réc.)</option>
+                            <option value="DATE_ASC">Date (Anc.)</option>
+                            <option value="AMOUNT_DESC">Montant (Décr.)</option>
+                            <option value="AMOUNT_ASC">Montant (Crois.)</option>
                         </select>
                         {searchParams.get("sort")?.includes("ASC") ? (
-                            <IconSortAscending className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
+                            <IconSortAscending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
                         ) : (
-                            <IconSortDescending className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
+                            <IconSortDescending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
                         )}
                     </div>
                 </div>
             </div>
             {/* New Row for Date Filter */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full">
                  <DateRangeFilter />
             </div>
 		</div>

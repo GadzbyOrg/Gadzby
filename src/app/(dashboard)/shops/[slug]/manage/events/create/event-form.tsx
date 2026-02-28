@@ -156,14 +156,14 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 				</div>
 
 				{/* Dates */}
-				<div className="grid grid-cols-2 gap-4">
-					<div className="flex flex-col gap-1">
+				<div className="flex flex-col sm:flex-row gap-4">
+					<div className="flex flex-col gap-1 flex-1">
 						<label className="text-sm font-medium text-gray-300">
 							Date de début
 						</label>
 						<input
 							type="date"
-							className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+							className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500 w-full"
 							{...form.register("startDate")}
 						/>
 						{form.formState.errors.startDate && (
@@ -172,13 +172,13 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 							</span>
 						)}
 					</div>
-					<div className="flex flex-col gap-1">
+					<div className="flex flex-col gap-1 flex-1">
 						<label className="text-sm font-medium text-gray-300">
 							Date de fin (Optionnel)
 						</label>
 						<input
 							type="date"
-							className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+							className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500 w-full"
 							{...form.register("endDate")}
 						/>
 					</div>

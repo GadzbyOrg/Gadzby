@@ -58,8 +58,8 @@ export function StaffActivityCard({ data, loading }: StaffActivityCardProps) {
 									}}
 									className="h-8 w-8"
 								/>
-								<div>
-									<p className="text-sm font-medium text-white truncate max-w-[120px]">
+								<div className="flex-1 min-w-0">
+									<p className="text-sm font-medium text-white truncate w-full">
 										{item.user.prenom} {item.user.nom}
 									</p>
 									<p className="text-xs text-gray-400">
