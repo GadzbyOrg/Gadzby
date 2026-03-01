@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { verifySession } from "@/lib/session";
+import { logAction } from "./logger";
 
 export type ActionError = {
 	error: string;
@@ -39,6 +40,11 @@ export function authenticatedAction<T extends z.ZodType, R>(
 	) => Promise<R | { error: string } | { success: string; data?: R }>,
 	options: ActionOptions = {}
 ) {
+	const err = new Error();
+	const callerLine = err.stack?.split("\n")[2] || "";
+	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
+	const actionName = match ? `${match[1].split(/[\\/]/).pop()}:${match[2]}` : "UnknownAction";
+
 	return async (
 		prevState: any,
 		formData?: FormData | z.infer<T>
@@ -122,7 +128,18 @@ export function authenticatedAction<T extends z.ZodType, R>(
 
 		// 4. Run Handler
 		try {
-			return await handler(parsed.data, { session });
+			const result = await handler(parsed.data, { session });
+			
+			const isErrorResult = result && typeof result === "object" && "error" in result;
+			logAction({
+				userId: session.userId,
+				actionName,
+				payload: parsed.data,
+				status: isErrorResult ? "ERROR" : "SUCCESS",
+				errorMessage: isErrorResult ? (result as any).error : undefined,
+			});
+
+			return result;
 		} catch (error: any) {
 			if (
 				error.message === "NEXT_REDIRECT" ||
@@ -131,6 +148,15 @@ export function authenticatedAction<T extends z.ZodType, R>(
 				throw error;
 			}
 			console.error("Action failed:", error);
+			
+			logAction({
+				userId: session.userId,
+				actionName,
+				payload: parsed.data,
+				status: "ERROR",
+				errorMessage: error.message || "Une erreur est survenue",
+			});
+			
 			// Return safe error
 			return { error: error.message || "Une erreur est survenue" };
 		}
@@ -146,6 +172,11 @@ export function authenticatedActionNoInput<R>(
 	}) => Promise<R>,
 	options: ActionOptions = {}
 ) {
+	const err = new Error();
+	const callerLine = err.stack?.split("\n")[2] || "";
+	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
+	const actionName = match ? `${match[1].split(/[\\/]/).pop()}:${match[2]}` : "UnknownAction";
+
 	return async (): Promise<any> => {
 		const session = await verifySession();
 		if (!session) return { error: "Non autorisé" };
@@ -165,7 +196,17 @@ export function authenticatedActionNoInput<R>(
 		}
 
 		try {
-			return await handler({ session });
+			const result = await handler({ session });
+			
+			const isErrorResult = result && typeof result === "object" && "error" in result;
+			logAction({
+				userId: session.userId,
+				actionName,
+				status: isErrorResult ? "ERROR" : "SUCCESS",
+				errorMessage: isErrorResult ? (result as any).error : undefined,
+			});
+
+			return result;
 		} catch (error: any) {
 			if (
 				error.message === "NEXT_REDIRECT" ||
@@ -174,6 +215,14 @@ export function authenticatedActionNoInput<R>(
 				throw error;
 			}
 			console.error("Action failed:", error);
+			
+			logAction({
+				userId: session.userId,
+				actionName,
+				status: "ERROR",
+				errorMessage: error.message || "Erreur serveur",
+			});
+			
 			return { error: error.message || "Erreur serveur" };
 		}
 	};
@@ -188,6 +237,11 @@ export function publicAction<T extends z.ZodType, R>(
 		data: z.infer<T>
 	) => Promise<R | { error: string } | { success: string; data?: R }>
 ) {
+	const err = new Error();
+	const callerLine = err.stack?.split("\n")[2] || "";
+	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
+	const actionName = match ? `${match[1].split(/[\\/]/).pop()}:${match[2]}` : "UnknownAction";
+
 	return async (
 		prevState: any,
 		formData?: FormData | z.infer<T>
@@ -235,7 +289,18 @@ export function publicAction<T extends z.ZodType, R>(
 
 		// 2. Run Handler
 		try {
-			return await handler(parsed.data);
+			const result = await handler(parsed.data);
+
+			const isErrorResult = result && typeof result === "object" && "error" in result;
+			logAction({
+				userId: null,
+				actionName,
+				payload: parsed.data,
+				status: isErrorResult ? "ERROR" : "SUCCESS",
+				errorMessage: isErrorResult ? (result as any).error : undefined,
+			});
+
+			return result;
 		} catch (error: any) {
 			if (
 				error.message === "NEXT_REDIRECT" ||
@@ -244,15 +309,39 @@ export function publicAction<T extends z.ZodType, R>(
 				throw error;
 			}
 			console.error("Public action failed:", error);
+
+			logAction({
+				userId: null,
+				actionName,
+				payload: parsed.data,
+				status: "ERROR",
+				errorMessage: error.message || "Une erreur est survenue",
+			});
+
 			return { error: error.message || "Une erreur est survenue" };
 		}
 	};
 }
 
 export function publicActionNoInput<R>(handler: () => Promise<R>) {
+	const err = new Error();
+	const callerLine = err.stack?.split("\n")[2] || "";
+	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
+	const actionName = match ? `${match[1].split(/[\\/]/).pop()}:${match[2]}` : "UnknownAction";
+
 	return async (): Promise<any> => {
 		try {
-			return await handler();
+			const result = await handler();
+
+			const isErrorResult = result && typeof result === "object" && "error" in result;
+			logAction({
+				userId: null,
+				actionName,
+				status: isErrorResult ? "ERROR" : "SUCCESS",
+				errorMessage: isErrorResult ? (result as any).error : undefined,
+			});
+
+			return result;
 		} catch (error: any) {
 			if (
 				error.message === "NEXT_REDIRECT" ||
@@ -261,6 +350,14 @@ export function publicActionNoInput<R>(handler: () => Promise<R>) {
 				throw error;
 			}
 			console.error("Public action failed:", error);
+
+			logAction({
+				userId: null,
+				actionName,
+				status: "ERROR",
+				errorMessage: error.message || "Erreur serveur",
+			});
+
 			return { error: error.message || "Erreur serveur" };
 		}
 	};
