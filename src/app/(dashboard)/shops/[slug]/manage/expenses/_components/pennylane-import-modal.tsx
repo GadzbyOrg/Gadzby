@@ -55,7 +55,6 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
                 setCandidates(result.candidates);
                 // Select all by default
                 setSelectedIds(new Set(result.candidates.map((c: Candidate) => c.id)));
-                console.log(result.candidates);
             }
         } catch (e) {
             setError("Erreur lors du chargement des factures.");

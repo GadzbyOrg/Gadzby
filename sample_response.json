@@ -1,0 +1,55 @@
+{
+  "data": {
+    "order": {
+      "id": 74077,
+      "date": "2026-01-21T17:18:48.8238481+01:00",
+      "formSlug": "default",
+      "formType": "Checkout",
+      "organizationName": "AE ENSAM Metz",
+      "organizationSlug": "ae-ensam-metz",
+      "organizationType": "Association1901",
+      "organizationIsUnderColucheLaw": false,
+      "formName": "Checkout",
+      "meta": {
+        "createdAt": "2026-01-21T17:18:34.3161532+01:00",
+        "updatedAt": "2026-01-21T17:18:48.9092322+01:00"
+      },
+      "isAnonymous": false,
+      "isAmountHidden": false
+    },
+    "payer": {
+      "email": "louis.chabanon@gmail.com",
+      "country": "FRA",
+      "firstName": "asdgr",
+      "lastName": "asd"
+    },
+    "items": [
+      {
+        "shareAmount": 1000,
+        "shareItemAmount": 1000,
+        "id": 74077,
+        "amount": 1000,
+        "type": "Payment",
+        "state": "Processed",
+        "name": "Rechargement compte Gadzby"
+      }
+    ],
+    "cashOutState": "Transfered",
+    "paymentReceiptUrl": "https://www.helloasso-sandbox.com/associations/ae-ensam-metz/checkout/paiement-attestation/74077",
+    "id": 47604,
+    "amount": 1000,
+    "date": "2026-01-21T17:18:48.8238481+01:00",
+    "paymentMeans": "Card",
+    "installmentNumber": 1,
+    "state": "Authorized",
+    "meta": {
+      "createdAt": "2026-01-21T17:18:34.3161532+01:00",
+      "updatedAt": "2026-01-21T17:18:48.8777642+01:00"
+    },
+    "refundOperations": []
+  },
+  "eventType": "Payment",
+  "metadata": {
+    "internalTransactionId": "6a5fc7d3-3425-41ab-a5eb-7e6773e2094b"
+  }
+}

@@ -27,7 +27,7 @@ export async function getPennylaneConfig() {
 		});
 
 		const config = setting?.value as
-			| { enabled: boolean; apiKey: string }
+			| { enabled: boolean; apiKey: string; enableImport?: boolean }
 			| undefined;
 
 		if (!config || !config.enabled || !config.apiKey) {

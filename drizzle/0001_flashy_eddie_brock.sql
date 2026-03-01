@@ -1,0 +1,14 @@
+-- CREATE TABLE "product_variants" (
+-- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+-- 	"product_id" uuid NOT NULL,
+-- 	"name" text NOT NULL,
+-- 	"quantity" double precision NOT NULL,
+-- 	"price" integer,
+-- 	"is_archived" boolean DEFAULT false
+-- );
+-- --> statement-breakpoint
+ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "display_order" integer DEFAULT 0 NOT NULL;
+-- --> statement-breakpoint
+-- ALTER TABLE "transactions" ADD COLUMN "product_variant_id" uuid;--> statement-breakpoint
+-- ALTER TABLE "product_variants" ADD CONSTRAINT "product_variants_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+-- ALTER TABLE "transactions" ADD CONSTRAINT "transactions_product_variant_id_product_variants_id_fk" FOREIGN KEY ("product_variant_id") REFERENCES "public"."product_variants"("id") ON DELETE no action ON UPDATE no action;

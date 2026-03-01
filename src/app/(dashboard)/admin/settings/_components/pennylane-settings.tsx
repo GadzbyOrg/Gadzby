@@ -73,7 +73,7 @@ const CategoryMultiSelect = ({
 
 export function PennylaneSettings() {
     const { toast } = useToast();
-    const [config, setConfig] = useState<{ enabled: boolean; apiKey?: string } | null>(null);
+    const [config, setConfig] = useState<{ enabled: boolean; apiKey?: string; enableImport?: boolean } | null>(null);
     const [loading, setLoading] = useState(true);
 
     // Shop Config State
