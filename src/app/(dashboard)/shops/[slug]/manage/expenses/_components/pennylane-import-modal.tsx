@@ -29,7 +29,7 @@ interface Candidate {
     amount: string;
     supplier: string;
     description: string;
-    fileName?: string;
+    fileUrl?: string;
 }
 
 export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
@@ -40,6 +40,7 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
     const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [error, setError] = useState<string | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const fetchCandidates = async () => {
         setLoading(true);
@@ -54,6 +55,7 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
                 setCandidates(result.candidates);
                 // Select all by default
                 setSelectedIds(new Set(result.candidates.map((c: Candidate) => c.id)));
+                console.log(result.candidates);
             }
         } catch (e) {
             setError("Erreur lors du chargement des factures.");
@@ -75,7 +77,8 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
                     date: c.date,
                     amount: c.amount,
                     supplier: c.supplier,
-                    description: c.description
+                    description: c.description,
+                    fileUrl: c.fileUrl
                 }))
             });
 
@@ -153,9 +156,10 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
                                     {selectedIds.size === candidates.length ? "Tout désélectionner" : "Tout sélectionner"}
                                 </Button>
                             </div>
-                            <div className="border border-dark-700 rounded-md overflow-hidden max-h-[400px] overflow-y-auto">
+                            <div className="border border-dark-700 rounded-md overflow-hidden max-h-[600px] overflow-y-auto">
                                 {candidates.map((invoice) => (
-                                    <div key={invoice.id} className="flex items-start gap-3 p-3 border-b border-dark-700 last:border-0 hover:bg-dark-800/50 transition-colors">
+                                    <div key={invoice.id} className="flex flex-col border-b border-dark-700 last:border-0 hover:bg-dark-800/50 transition-colors">
+                                        <div className="flex items-start gap-3 p-3">
                                         <Checkbox
                                             id={invoice.id}
                                             checked={selectedIds.has(invoice.id)}
@@ -169,20 +173,57 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
                                         />
                                         <div className="flex-1 space-y-1">
                                             <Label htmlFor={invoice.id} className="font-medium text-white cursor-pointer block">
-                                                {invoice.supplier}
+                                                {invoice.description}
                                             </Label>
-                                            <p className="text-xs text-gray-400 line-clamp-1">{invoice.description}</p>
+                                            <p className="text-xs text-gray-400 line-clamp-1">{invoice.supplier}</p>
                                             <div className="flex items-center gap-3 text-xs text-gray-500">
                                                 <span>{format(new Date(invoice.date), "dd MMM yyyy", { locale: fr })}</span>
-                                                {invoice.fileName && (
-                                                    <span className="bg-dark-800 px-1.5 py-0.5 rounded text-gray-400" title={invoice.fileName}>Fichier joint</span>
+                                                {invoice.fileUrl && (
+                                                    <>
+                                                        <span className="w-1 h-1 rounded-full bg-gray-600" />
+                                                        <button
+                                                            className="text-primary-400 hover:text-primary-300 transition-colors text-xs inline-flex items-center"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                if (previewUrl === invoice.fileUrl) {
+                                                                    setPreviewUrl(null);
+                                                                } else {
+                                                                    setPreviewUrl(invoice.fileUrl!);
+                                                                }
+                                                            }}
+                                                        >
+                                                            {previewUrl === invoice.fileUrl ? "Masquer la facture" : "Aperçu de la facture"}
+                                                        </button>
+                                                    </>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="font-medium text-white whitespace-nowrap">
-                                            {format(parseFloat(invoice.amount), "0.00")} €
+                                            {invoice.amount} €
                                         </div>
                                     </div>
+                                    {previewUrl === invoice.fileUrl && (
+                                        <div className="p-3 pt-0 border-t border-dark-800">
+                                            <div className="bg-dark-950 rounded overflow-hidden mt-2 relative w-full" style={{ height: "400px" }}>
+                                                <div className="absolute top-2 right-2 flex gap-2 z-10">
+                                                    <a
+                                                        href={invoice.fileUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="bg-dark-800/80 hover:bg-dark-800 text-white text-xs px-2 py-1 rounded border border-dark-700 backdrop-blur-sm transition-colors flex items-center gap-1"
+                                                    >
+                                                        <Download className="w-3 h-3" /> Ouvrir dans un nouvel onglet
+                                                    </a>
+                                                </div>
+                                                <iframe
+                                                    src={`${invoice.fileUrl}#toolbar=0`}
+                                                    className="w-full h-full border-0 bg-white"
+                                                    title={`Facture ${invoice.supplier}`}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                                 ))}
                             </div>
                         </div>

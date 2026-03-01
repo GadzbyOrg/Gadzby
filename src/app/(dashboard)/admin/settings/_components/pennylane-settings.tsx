@@ -73,7 +73,7 @@ const CategoryMultiSelect = ({
 
 export function PennylaneSettings() {
     const { toast } = useToast();
-    const [config, setConfig] = useState<{ enabled: boolean; apiKey?: string; enableImport?: boolean } | null>(null);
+    const [config, setConfig] = useState<{ enabled: boolean; apiKey?: string } | null>(null);
     const [loading, setLoading] = useState(true);
 
     // Shop Config State
@@ -102,8 +102,7 @@ export function PennylaneSettings() {
         // Optimistic / successful update handling local state
         const enabled = formData.get("enabled") === "on";
         const apiKey = formData.get("apiKey") as string;
-        const enableImport = formData.get("enableImport") === "on";
-        setConfig({ enabled, apiKey, enableImport });
+        setConfig({ enabled, apiKey });
 
         return result;
     }, null);
@@ -192,25 +191,6 @@ export function PennylaneSettings() {
                             className="font-mono"
                         />
                     </div>
-
-                    {config?.enabled && (
-                        <div className="flex items-center justify-between p-4 bg-dark-800/50 rounded-lg border border-dark-700">
-                            <div className="space-y-0.5">
-                                <Label className="text-base text-white">Import des Factures</Label>
-                                <p className="text-sm text-gray-400">Récupérer automatiquement les factures Pennylane manquantes correspondantes aux catégories.</p>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    name="enableImport"
-                                    className="sr-only peer"
-                                    defaultChecked={config?.enableImport}
-                                    onChange={(e) => setConfig(prev => prev ? { ...prev, enableImport: e.target.checked } : null)}
-                                />
-                                <div className="w-11 h-6 bg-dark-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                            </label>
-                        </div>
-                    )}
 
                     <div className="flex justify-end">
                         <Button type="submit" disabled={isPending}>

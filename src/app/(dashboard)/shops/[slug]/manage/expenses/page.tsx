@@ -6,7 +6,6 @@ import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
 import { PennylaneImportModal } from "./_components/pennylane-import-modal";
 import {
 	createShopExpense,
-
 	deleteShopExpense,
 	getShopExpenses,
 } from "@/features/shops/expenses";
@@ -106,69 +105,57 @@ export default async function ShopExpensesPage({
 							Nouvelle Dépense
 						</h2>
 
-						{pennylaneEnabled ? (
-							<>
-								<Link
-									href={`/shops/${slug}/manage/expenses/new`}
-									className="block w-full text-center py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors mb-4"
-								>
-									Scanner une facture (PennyLane)
-								</Link>
-
-								{pennylaneConfig?.enableImport && (
-									<PennylaneImportModal shopSlug={slug} />
-								)}
-							</>
-						) : (
-							<form action={addExpense} className="space-y-4">
-								<div className="space-y-2">
-									<label className="text-sm font-medium text-gray-300">
-										Description
-									</label>
-									<input
-										name="description"
-										required
-										className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-										placeholder="Ex: Facture Métro"
-									/>
-								</div>
-
-								<div className="space-y-2">
-									<label className="text-sm font-medium text-gray-300">
-										Montant (€)
-									</label>
-									<input
-										name="amount"
-										type="number"
-										step="0.01"
-										min="0"
-										required
-										className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 no-spinner"
-										placeholder="0.00"
-									/>
-								</div>
-
-								<div className="space-y-2">
-									<label className="text-sm font-medium text-gray-300">
-										Date
-									</label>
-									<input
-										name="date"
-										type="date"
-										required
-										defaultValue={new Date().toISOString().split("T")[0]}
-										className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-									/>
-								</div>
-
-								<button
-									type="submit"
-									className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors"
-								>
-									Ajouter
-								</button>
-							</form>
+						{pennylaneEnabled && (
+							<PennylaneImportModal shopSlug={slug} />
 						)}
+						<form action={addExpense} className="space-y-4">
+							<div className="space-y-2">
+								<label className="text-sm font-medium text-gray-300">
+									Description
+								</label>
+								<input
+									name="description"
+									required
+									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+									placeholder="Ex: Facture Métro"
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<label className="text-sm font-medium text-gray-300">
+									Montant (€)
+								</label>
+								<input
+									name="amount"
+									type="number"
+									step="0.01"
+									min="0"
+									required
+									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 no-spinner"
+									placeholder="0.00"
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<label className="text-sm font-medium text-gray-300">
+									Date
+								</label>
+								<input
+									name="date"
+									type="date"
+									required
+									defaultValue={new Date().toISOString().split("T")[0]}
+									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+								/>
+							</div>
+
+							<button
+								type="submit"
+								className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors"
+							>
+								Ajouter
+							</button>
+						</form>
 					</div>
 				</div>
 

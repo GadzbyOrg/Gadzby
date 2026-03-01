@@ -133,7 +133,6 @@ export const testEmailConfigAction = authenticatedAction(
 const pennylaneConfigSchema = z.object({
     enabled: z.coerce.boolean(),
     apiKey: z.string().optional(),
-    enableImport: z.coerce.boolean().optional(),
 });
 
 export const getPennylaneConfigAction = authenticatedActionNoInput(async () => {
@@ -142,7 +141,7 @@ export const getPennylaneConfigAction = authenticatedActionNoInput(async () => {
             where: eq(systemSettings.key, "pennylane_config"),
         });
 
-        return { config: setting?.value || { enabled: false, apiKey: "", enableImport: false } };
+        return { config: setting?.value || { enabled: false, apiKey: "" } };
     } catch (error) {
         console.error("Failed to fetch pennylane config:", error);
         return { error: "Erreur lors de la récupération de la configuration" };
