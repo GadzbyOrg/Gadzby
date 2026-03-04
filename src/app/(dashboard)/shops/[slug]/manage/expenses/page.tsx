@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { IconReceipt } from "@tabler/icons-react";
 
 import { getShopBySlug, checkTeamMemberAccess } from "@/features/shops/actions";
 import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
@@ -173,15 +174,16 @@ export default async function ShopExpensesPage({
 							</div>
 						</div>
 
-						<div className="overflow-x-auto">
+						{/* Desktop view */}
+						<div className="hidden md:block overflow-x-auto">
 							<table className="w-full text-left text-sm text-gray-400">
 								<thead className="bg-dark-800 text-gray-200 uppercase font-medium">
 									<tr>
-										<th className="px-6 py-4">Date</th>
+										<th className="px-6 py-4 whitespace-nowrap">Date</th>
 										<th className="px-6 py-4">Description</th>
-										<th className="px-6 py-4">Auteur</th>
-										<th className="px-6 py-4 text-right">Montant</th>
-										<th className="px-6 py-4 text-right">Action</th>
+										<th className="px-6 py-4 whitespace-nowrap">Auteur</th>
+										<th className="px-6 py-4 text-right whitespace-nowrap">Montant</th>
+										<th className="px-6 py-4 text-right whitespace-nowrap">Action</th>
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-dark-800">
@@ -191,19 +193,19 @@ export default async function ShopExpensesPage({
 												key={expense.id}
 												className="hover:bg-dark-800/50 transition-colors"
 											>
-												<td className="px-6 py-4">
+												<td className="px-6 py-4 whitespace-nowrap">
 													{new Date(expense.date).toLocaleDateString()}
 												</td>
 												<td className="px-6 py-4 font-medium text-white">
 													{expense.description}
 												</td>
-												<td className="px-6 py-4">
+												<td className="px-6 py-4 whitespace-nowrap">
 													{expense.issuer.prenom} {expense.issuer.nom}
 												</td>
-												<td className="px-6 py-4 text-right text-white">
+												<td className="px-6 py-4 text-right text-white whitespace-nowrap">
 													{(expense.amount / 100).toFixed(2)} €
 												</td>
-												<td className="px-6 py-4 text-right">
+												<td className="px-6 py-4 text-right whitespace-nowrap">
 													<form action={removeExpense}>
 														<input type="hidden" name="id" value={expense.id} />
 														<button
@@ -228,6 +230,53 @@ export default async function ShopExpensesPage({
 									)}
 								</tbody>
 							</table>
+						</div>
+
+						{/* Mobile view */}
+						<div className="md:hidden flex flex-col divide-y divide-dark-800">
+							{expenses && expenses.length > 0 ? (
+								expenses.map((expense) => (
+									<div key={expense.id} className="p-3 flex flex-col gap-2 hover:bg-dark-800/20 transition-colors">
+										<div className="flex justify-between items-start gap-3">
+											<div className="flex items-center gap-3 flex-1 min-w-0">
+												<div className="p-2 rounded-lg shrink-0 bg-dark-800 text-gray-400 border border-dark-700">
+													<IconReceipt size={20} stroke={1.5} />
+												</div>
+												<div className="flex flex-col min-w-0">
+													<div className="font-semibold text-gray-200 line-clamp-2 text-sm leading-snug">
+														{expense.description}
+													</div>
+													<div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 min-w-0 mt-0.5">
+														<span className="shrink-0">{new Date(expense.date).toLocaleDateString()}</span>
+														<span className="w-0.5 h-0.5 bg-gray-600 rounded-full shrink-0"></span>
+														<span className="truncate">{expense.issuer.prenom} {expense.issuer.nom}</span>
+													</div>
+												</div>
+											</div>
+											<div className="flex flex-col items-end shrink-0 gap-0.5">
+												<div className="font-bold text-sm text-gray-200">
+													{(expense.amount / 100).toFixed(2)} €
+												</div>
+												<div className="mt-1 flex gap-2 justify-end z-20 relative">
+													<form action={removeExpense}>
+														<input type="hidden" name="id" value={expense.id} />
+														<button
+															className="text-red-400 hover:text-red-300 hover:bg-red-400/10 px-2 py-1 rounded transition-colors text-xs font-medium"
+															type="submit"
+														>
+															Suppr.
+														</button>
+													</form>
+												</div>
+											</div>
+										</div>
+									</div>
+								))
+							) : (
+								<div className="px-6 py-12 text-center text-gray-500 text-sm">
+									Aucune dépense déclarée.
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
