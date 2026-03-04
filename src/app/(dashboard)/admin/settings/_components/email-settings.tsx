@@ -140,7 +140,7 @@ export function EmailSettings() {
 						<label className="text-sm font-medium text-white">
 							Fournisseur
 						</label>
-						<div className="grid grid-cols-2 gap-4">
+						<div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
 							<button
 								type="button"
 								onClick={() => setProvider("smtp")}
@@ -327,8 +327,8 @@ export function EmailSettings() {
 						</div>
 					)}
 
-					<div className="pt-4 flex items-end justify-end gap-3">
-						<div className="flex-1 max-w-sm">
+					<div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-end sm:justify-end gap-3">
+						<div className="w-full sm:flex-1 sm:max-w-sm">
 							<label
 								htmlFor="testEmail"
 								className="mb-2 block text-xs font-medium text-gray-400"
@@ -348,7 +348,7 @@ export function EmailSettings() {
 							onClick={handleTestConfig}
 							disabled={testState.loading}
 							className={cn(
-								"flex items-center gap-2 rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 text-sm font-semibold text-gray-300 shadow-sm transition-all whitespace-nowrap",
+								"flex items-center justify-center gap-2 rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 text-sm font-semibold text-gray-300 shadow-sm transition-all whitespace-nowrap",
 								"hover:bg-dark-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-500",
 								"disabled:opacity-50 disabled:cursor-not-allowed"
 							)}
@@ -360,7 +360,7 @@ export function EmailSettings() {
 							)}
 							Tester la configuration
 						</button>
-						<div className="w-auto">
+						<div className="w-full sm:w-auto">
 							<SubmitButton />
 						</div>
 					</div>
