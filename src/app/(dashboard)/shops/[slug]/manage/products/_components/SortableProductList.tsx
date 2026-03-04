@@ -63,10 +63,10 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                 </button>
             )}
 
-			<div className="flex-1">
+			<div className="flex-1 min-w-0">
                 {/* Desktop View */}
                 <div className="hidden sm:grid sm:grid-cols-[3fr_1fr_1fr_auto] gap-4 items-center">
-                    <div className="font-medium text-white">{product.name}</div>
+                    <div className="font-medium text-white truncate">{product.name}</div>
                     
                     <div className="text-sm text-gray-300">
                         {(product.price / 100).toFixed(2)} € {product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : ""}
@@ -138,16 +138,16 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                     </div>
 
                     <div className="flex items-stretch gap-2 pt-1">
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                             <RestockButton
                                 shopSlug={shopSlug}
                                 productId={product.id}
                                 productName={product.name}
                                 currentUnit={product.unit}
                                 trigger={
-                                    <button className="w-full h-full bg-emerald-600/10 hover:bg-emerald-600/20 active:bg-emerald-600/30 border border-emerald-600/20 text-emerald-500 rounded-lg px-4 py-3 flex items-center justify-center gap-2 font-bold transition-colors">
-                                        <IconPlus size={18} />
-                                        Ajouter Stock
+                                    <button className="w-full h-full bg-emerald-600/10 hover:bg-emerald-600/20 active:bg-emerald-600/30 border border-emerald-600/20 text-emerald-500 rounded-lg px-2 sm:px-4 py-3 flex items-center justify-center gap-1 sm:gap-2 font-bold transition-colors min-w-0 overflow-hidden">
+                                        <IconPlus size={18} className="shrink-0" />
+                                        <span className="truncate">Ajouter Stock</span>
                                     </button>
                                 }
                             />

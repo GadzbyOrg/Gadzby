@@ -58,7 +58,7 @@ export function ProductFilters() {
                 />
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 sm:overflow-visible w-full hide-scrollbar">
                 {/* Reset Button */}
                 {isFiltered && (
                     <button
@@ -67,16 +67,16 @@ export function ProductFilters() {
                                 replace(pathname);
                             });
                         }}
-                        className="px-4 py-2 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-sm font-medium transition-colors flex items-center gap-2"
+                        className="px-4 py-2 rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
                     >
-                        <IconX size={16} />
+                        <IconX size={16} className="shrink-0" />
                         <span className="hidden sm:inline">Réinitialiser</span>
                     </button>
                 )}
 
                 <button
                     onClick={() => handleSort("name")}
-                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 ${
                         currentSortBy === "name"
                             ? "bg-primary-600/10 border-primary-600/20 text-primary-400"
                             : "bg-dark-900 border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800"
@@ -89,7 +89,7 @@ export function ProductFilters() {
                 </button>
                 <button
                     onClick={() => handleSort("price")}
-                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 ${
                         currentSortBy === "price"
                             ? "bg-primary-600/10 border-primary-600/20 text-primary-400"
                             : "bg-dark-900 border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800"
@@ -102,7 +102,7 @@ export function ProductFilters() {
                 </button>
                 <button
                     onClick={() => handleSort("stock")}
-                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 ${
                         currentSortBy === "stock"
                             ? "bg-primary-600/10 border-primary-600/20 text-primary-400"
                             : "bg-dark-900 border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800"
