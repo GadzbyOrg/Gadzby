@@ -68,7 +68,7 @@ export function UserDropdown({ user }: { user: UserProp }) {
 			</button>
 
 			{isOpen && (
-				<div className="absolute right-0 mt-2 w-60 rounded-xl border border-dark-800 bg-dark-900 shadow-xl shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-[999]">
+				<div className="absolute right-0 mt-2 w-60 rounded-xl border border-dark-800 bg-dark-900 shadow-xl shadow-black/50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
 					<div className="p-2 border-b border-dark-800">
                          <p className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             Mon Compte

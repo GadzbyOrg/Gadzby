@@ -71,7 +71,7 @@ export function DashboardShell({
 			{/* --- CONTENU PRINCIPAL --- */}
 			<main className="flex flex-1 flex-col overflow-hidden">
 				{/* HEADER */}
-				<header className="flex h-16 items-center justify-between border-b border-dark-800 bg-dark-950/50 px-6 backdrop-blur-md">
+				<header className="flex h-16 items-center justify-between border-b border-dark-800 bg-dark-950/50 px-6 backdrop-blur-md z-[20]">
 					{/* Logo Mobile (remplace le trigger menu) */}
 					<div className="md:hidden flex items-center gap-2">
 						<Link href="/" className="flex items-center gap-2">
