@@ -3,27 +3,29 @@ import { z } from "zod";
 export const createEventSchema = z.object({
 	shopId: z.string(),
 	name: z.string().min(1, "Le nom est requis"),
-	description: z.string().optional(),
+	description: z.string().optional().nullable(),
 	startDate: z.date(),
-	endDate: z.date().optional(),
+	endDate: z.date().optional().nullable(),
 	type: z.enum(["SHARED_COST", "COMMERCIAL"]),
 	acompte: z.number().min(0).optional(),
 	allowSelfRegistration: z.boolean(),
-	maxParticipants: z.number().min(1).optional(),
+	maxParticipants: z.number().min(1).optional().nullable(),
+	customMargin: z.number().optional().nullable(),
 });
 
 export const updateEventSchema = z.object({
 	shopId: z.string(),
 	eventId: z.string(),
 	name: z.string().optional(),
-	description: z.string().optional(),
+	description: z.string().optional().nullable(),
 	startDate: z.date().optional(),
-	endDate: z.date().optional(),
+	endDate: z.date().optional().nullable(),
 	type: z.enum(["SHARED_COST", "COMMERCIAL"]).optional(),
 	acompte: z.number().min(0).optional(),
 	allowSelfRegistration: z.boolean().optional(),
-	maxParticipants: z.number().min(1).optional(),
+	maxParticipants: z.number().min(1).optional().nullable(),
 	status: z.enum(["DRAFT", "OPEN", "STARTED", "CLOSED", "ARCHIVED"]).optional(),
+	customMargin: z.number().optional().nullable(),
 });
 
 export const joinEventSchema = z.object({
@@ -82,6 +84,13 @@ export const unlinkProductSchema = z.object({
 	shopId: z.string(),
 	eventId: z.string(),
 	productId: z.string(),
+});
+
+export const updateEventProductPriceSchema = z.object({
+	shopId: z.string(),
+	eventId: z.string(),
+	productId: z.string(),
+	eventPrice: z.number().nullable(),
 });
 
 export const shopIdSchema = z.object({

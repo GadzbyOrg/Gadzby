@@ -14,6 +14,7 @@ import {
 	linkProductsSchema,
 	shopIdSchema,
 	unlinkProductSchema,
+	updateEventProductPriceSchema,
 } from "../schemas";
 
 export const getAvailableProductsAction = authenticatedAction(
@@ -73,10 +74,31 @@ export const unlinkProductFromEvent = authenticatedAction(
 
 		await db
 			.update(products)
-			.set({ eventId: null })
+			.set({ eventId: null, eventPrice: null })
 			.where(eq(products.id, data.productId));
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Product unlinked" };
+	}
+);
+
+export const setEventProductPrice = authenticatedAction(
+	updateEventProductPriceSchema,
+	async (data, { session }) => {
+		const authorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			data.shopId,
+			"MANAGE_EVENTS"
+		);
+		if (!authorized) return { error: "Unauthorized" };
+
+		await db
+			.update(products)
+			.set({ eventPrice: data.eventPrice })
+			.where(and(eq(products.id, data.productId), eq(products.eventId, data.eventId)));
+
+		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+		return { success: "Product price updated" };
 	}
 );

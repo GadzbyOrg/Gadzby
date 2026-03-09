@@ -193,7 +193,8 @@ export async function getShopProducts(
                 variants: {
                     where: eq(productVariants.isArchived, false),
                     orderBy: (variants, { asc }) => [asc(variants.quantity)]
-                }
+                },
+                event: true
             },
             orderBy: orderByClause
         });

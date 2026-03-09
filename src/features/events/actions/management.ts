@@ -41,6 +41,7 @@ export const createEvent = authenticatedAction(
 				acompte: data.acompte || 0,
 				allowSelfRegistration: data.allowSelfRegistration,
 				maxParticipants: data.maxParticipants,
+				customMargin: data.customMargin || 0,
 				status: "DRAFT",
 			})
 			.returning();
@@ -73,6 +74,7 @@ export const updateEvent = authenticatedAction(
 				allowSelfRegistration: data.allowSelfRegistration,
 				maxParticipants: data.maxParticipants,
 				status: data.status,
+				customMargin: data.customMargin,
 			})
 			.where(eq(events.id, data.eventId))
 			.returning();

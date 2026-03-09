@@ -23,6 +23,9 @@ export const events = pgTable('events', {
   // SHARED_COST Specific
   acompte: integer('acompte').default(0), // Montant payé à l'avance (en centimes) pour sécuriser l'event
   
+  // Custom Pricing
+  customMargin: integer('custom_margin').default(0), // Margin percentage (e.g. 10 for +10%)
+
   // Registration
   allowSelfRegistration: boolean('allow_self_registration').default(false),
   maxParticipants: integer('max_participants'), // Capacité maximale de l'événement

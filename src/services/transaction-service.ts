@@ -308,7 +308,31 @@ export class TransactionService {
 				const product = dbProducts.find((p) => p.id === item.productId);
 				if (!product) continue; // Should be caught above
 
+				let eventIdToLink = null;
+				let customMargin = 0;
+				if (product.eventId) {
+					const linkedEvent = await tx.query.events.findFirst({
+						where: eq(events.id, product.eventId),
+						columns: { id: true, status: true, customMargin: true },
+					});
+
+					if (linkedEvent && linkedEvent.status === "OPEN") {
+						eventIdToLink = linkedEvent.id;
+						customMargin = linkedEvent.customMargin || 0;
+					}
+				}
+
                 let unitPrice = product.price;
+
+				// Apply event price or custom margin if linked to an open event
+				if (eventIdToLink) {
+					if (product.eventPrice !== null && product.eventPrice !== undefined) {
+						unitPrice = product.eventPrice;
+					} else if (customMargin > 0) {
+						unitPrice = Math.round(unitPrice * (1 + customMargin / 100));
+					}
+				}
+
                 let stockDeduction = item.quantity;
                 let description = `${descriptionPrefix} ${product.name} x${item.quantity}`;
 				let txQuantity = item.quantity;
@@ -322,10 +346,14 @@ export class TransactionService {
                     // Price
                     if (variant.price !== null) {
                         unitPrice = variant.price;
+						// Apply custom margin to variant price if applicable
+						if (eventIdToLink && customMargin > 0 && (product.eventPrice === null || product.eventPrice === undefined)) {
+							unitPrice = Math.round(unitPrice * (1 + customMargin / 100));
+						}
                     } else {
                         // Pro-rata based on base price (cents)
                         // product.price is per 1.0 unit. variant.quantity is e.g. 0.5.
-                        unitPrice = Math.round(product.price * variant.quantity);
+                        unitPrice = Math.round(unitPrice * variant.quantity);
                     }
 
                     // Stock Deduction
@@ -338,18 +366,6 @@ export class TransactionService {
 
 				const lineAmount = unitPrice * item.quantity;
 				totalAmount += lineAmount;
-
-				let eventIdToLink = null;
-				if (product.eventId) {
-					const linkedEvent = await tx.query.events.findFirst({
-						where: eq(events.id, product.eventId),
-						columns: { id: true, status: true },
-					});
-
-					if (linkedEvent && linkedEvent.status === "OPEN") {
-						eventIdToLink = linkedEvent.id;
-					}
-				}
 
 				transactionRecords.push({
 					amount: -lineAmount,
