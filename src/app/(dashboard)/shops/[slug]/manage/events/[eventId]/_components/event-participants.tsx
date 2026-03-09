@@ -215,7 +215,8 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 		<div className="flex flex-col gap-4">
 			<div className="flex justify-between items-center">
 				<span className="font-medium text-white">
-					{event.participants.length} Participants
+					{event.participants.length} /{" "}
+					{event.maxParticipants ? event.maxParticipants : "∞"} Participants
 				</span>
 				<div className="flex gap-2">
 					<UserSearch

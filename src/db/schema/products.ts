@@ -39,6 +39,7 @@ export const products = pgTable('products', {
   
   // Lien optionnel vers une Manip spécifique
   eventId: uuid('event_id').references(() => events.id),
+  eventPrice: integer('event_price'), // Prix spécifique pour une manip, override le prix normal
   
   isArchived: boolean('is_archived').default(false),
 });

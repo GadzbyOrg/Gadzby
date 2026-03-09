@@ -24,8 +24,45 @@ export default async function ShopPosPage({
 	const pRes = await getShopProducts(slug);
 	const cRes = await getShopCategories(slug);
 
-	const products = pRes.products || [];
+	const rawProducts = pRes.products || [];
 	const categories = cRes.categories || [];
+
+    // Apply event pricing if applicable
+    const products = rawProducts.map((product: any) => {
+        let effectivePrice = product.price;
+        const variants = product.variants ? product.variants.map((v: any) => ({ ...v })) : [];
+
+        if (product.event && product.event.status === "OPEN") {
+            const customMargin = product.event.customMargin || 0;
+            
+            if (product.eventPrice != null) {
+                effectivePrice = product.eventPrice;
+            } else if (customMargin > 0) {
+                effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
+            }
+            
+            // Adjust variants
+            variants.forEach((variant: any) => {
+                let vPrice = variant.price;
+                if (vPrice !== null && vPrice !== undefined) {
+                    // Variant has an explicit override price
+                    if (customMargin > 0 && product.eventPrice == null) {
+                        vPrice = Math.round(vPrice * (1 + customMargin / 100));
+                    }
+                } else {
+                    // Variant derives price from product price * quantity
+                    vPrice = Math.round(effectivePrice * (variant.quantity || 1));
+                }
+                variant.price = vPrice;
+            });
+        }
+
+        return {
+            ...product,
+            price: effectivePrice,
+            variants
+        };
+    });
 
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">

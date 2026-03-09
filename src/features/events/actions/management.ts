@@ -4,7 +4,9 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { events } from "@/db/schema/events";
+import { eventParticipants } from "@/db/schema/event-participants";
+import { eventRevenues, events } from "@/db/schema/events";
+import { eventExpenseSplits, shopExpenses } from "@/db/schema/expenses";
 import { products } from "@/db/schema/products";
 import { transactions } from "@/db/schema/transactions";
 import { users } from "@/db/schema/users";
@@ -40,6 +42,8 @@ export const createEvent = authenticatedAction(
 				type: data.type,
 				acompte: data.acompte || 0,
 				allowSelfRegistration: data.allowSelfRegistration,
+				maxParticipants: data.maxParticipants,
+				customMargin: data.customMargin || 0,
 				status: "DRAFT",
 			})
 			.returning();
@@ -70,7 +74,9 @@ export const updateEvent = authenticatedAction(
 				type: data.type,
 				acompte: data.acompte,
 				allowSelfRegistration: data.allowSelfRegistration,
+				maxParticipants: data.maxParticipants,
 				status: data.status,
+				customMargin: data.customMargin,
 			})
 			.where(eq(events.id, data.eventId))
 			.returning();
@@ -92,9 +98,22 @@ export const deleteEvent = authenticatedAction(
 		);
 		if (!authorized) return { error: "Unauthorized" };
 
-		await db.delete(events).where(eq(events.id, data.eventId));
-		revalidatePath(`/shops/${data.shopId}/manage/events`);
-		return { success: "Event deleted" };
+		try {
+			await db.transaction(async (tx) => {
+				await tx.delete(eventExpenseSplits).where(eq(eventExpenseSplits.eventId, data.eventId));
+				await tx.delete(eventRevenues).where(eq(eventRevenues.eventId, data.eventId));
+				await tx.delete(eventParticipants).where(eq(eventParticipants.eventId, data.eventId));
+				await tx.update(products).set({ eventId: null }).where(eq(products.eventId, data.eventId));
+				await tx.update(transactions).set({ eventId: null }).where(eq(transactions.eventId, data.eventId));
+				await tx.update(shopExpenses).set({ eventId: null }).where(eq(shopExpenses.eventId, data.eventId));
+				await tx.delete(events).where(eq(events.id, data.eventId));
+			});
+			revalidatePath(`/shops/${data.shopId}/manage/events`);
+			return { success: "Event deleted" };
+		} catch (error: any) {
+			console.error("Failed to delete event:", error);
+			return { error: "Impossible de supprimer l'événement" };
+		}
 	}
 );
 
@@ -225,6 +244,36 @@ export const activateEvent = authenticatedAction(
 		revalidatePath(`/shops/${data.shopId}/manage/events`);
 		revalidatePath(`/shops/${data.shopId}/manage/events/${data.eventId}`);
 		return { message: "Event activated" };
+	}
+);
+
+export const startEvent = authenticatedAction(
+	eventActionSchema,
+	async (data, { session }) => {
+		const event = await db.query.events.findFirst({
+			where: eq(events.id, data.eventId),
+		});
+		if (!event) return { error: "Event not found" };
+
+		const authorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			event.shopId,
+			"MANAGE_EVENTS"
+		);
+		if (!authorized) return { error: "Unauthorized" };
+
+		if (event.status !== "OPEN") {
+			return { error: "L'événement doit être ouvert pour être démarré" };
+		}
+
+		await db
+			.update(events)
+			.set({ status: "STARTED" })
+			.where(eq(events.id, data.eventId));
+
+		revalidatePath(`/shops/${event.shopId}/manage/events/${data.eventId}`);
+		return { success: "Event started" };
 	}
 );
 

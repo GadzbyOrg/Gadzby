@@ -8,7 +8,7 @@ import { shops } from './shops';
 import { users } from './users';
 
 export const eventTypeEnum = pgEnum('event_type', ['SHARED_COST', 'COMMERCIAL']);
-export const eventStatusEnum = pgEnum('event_status', ['DRAFT', 'OPEN', 'CLOSED', 'ARCHIVED']);
+export const eventStatusEnum = pgEnum('event_status', ['DRAFT', 'OPEN', 'STARTED', 'CLOSED', 'ARCHIVED']);
 
 export const events = pgTable('events', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -23,8 +23,12 @@ export const events = pgTable('events', {
   // SHARED_COST Specific
   acompte: integer('acompte').default(0), // Montant payé à l'avance (en centimes) pour sécuriser l'event
   
+  // Custom Pricing
+  customMargin: integer('custom_margin').default(0), // Margin percentage (e.g. 10 for +10%)
+
   // Registration
   allowSelfRegistration: boolean('allow_self_registration').default(false),
+  maxParticipants: integer('max_participants'), // Capacité maximale de l'événement
 
   // Durée de l'événement
   startDate: timestamp('start_date').notNull(),

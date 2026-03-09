@@ -18,6 +18,7 @@ interface Product {
         quantity: number;
         price: number | null;
     }[];
+    event?: { id: string; name: string; status: string } | null;
 }
 
 interface Category {
@@ -131,9 +132,19 @@ export function ProductGrid({
 						>
 							<div className="space-y-1">
                                 <div className="flex justify-between items-start">
-    								<h3 className={cn("font-medium leading-tight min-h-[1.5em]", hasVariants ? "text-sm" : "text-white text-sm line-clamp-2")}>
-    									{product.name}
-    								</h3>
+    								<div className="flex flex-col gap-1 pr-2">
+                                        <h3 className={cn("font-medium leading-tight min-h-[1.5em]", hasVariants ? "text-sm" : "text-white text-sm line-clamp-2")}>
+                                            {product.name}
+                                        </h3>
+                                        {product.event && product.event.status === "OPEN" && (
+                                            <span 
+                                                className="inline-block w-fit bg-primary-500/10 text-primary-400 text-[10px] px-1.5 py-0.5 rounded-md border border-primary-500/20 whitespace-nowrap"
+                                                title={`Manip en cours: ${product.event.name}`}
+                                            >
+                                                {product.event.name}
+                                            </span>
+                                        )}
+                                    </div>
                                     {hasVariants && (
                                          <div className="text-xs text-gray-500 font-mono text-right whitespace-nowrap ml-2">
                                             {(product.price / 100).toFixed(2)}€ / {product.unit === 'liter' ? 'L' : product.unit === 'kg' ? 'Kg' : 'u'}
@@ -256,8 +267,18 @@ export function ProductGrid({
                                 className="flex flex-col border-b border-dark-800 last:border-0"
                             >
                                 <div className={cn("grid grid-cols-[1fr_80px_120px] gap-4 p-4 items-center transition-colors", hasVariants ? "bg-dark-900/50" : "hover:bg-dark-800/50")}>
-                                    <div>
-                                        <div className={cn("font-medium", hasVariants ? "text-sm" : "text-white")}>{product.name}</div>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className={cn("font-medium", hasVariants ? "text-sm" : "text-white")}>{product.name}</div>
+                                            {product.event && product.event.status === "OPEN" && (
+                                                <span 
+                                                    className="inline-block w-fit bg-primary-500/10 text-primary-400 text-[10px] px-1.5 py-0.5 rounded-md border border-primary-500/20 whitespace-nowrap"
+                                                    title={`Manip en cours: ${product.event.name}`}
+                                                >
+                                                    {product.event.name}
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="text-xs text-gray-600">
                                             Stock: {product.stock} {product.unit === 'liter' ? 'L' : product.unit === 'kg' ? 'Kg' : 'u'}
                                         </div>

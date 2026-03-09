@@ -64,12 +64,41 @@ export default async function ShopSelfServicePage({
 			// Should not happen if enabled, but handle gracefully
 			isClosedForUser = true;
 		} else {
-			products = res.products.map((p: any) => ({
-				...p,
-				image: null,
-				allowSelfService: true, // Already filtered but required by type
-				isArchived: false, // Already filtered but required by type
-			}));
+			products = res.products.map((p: any) => {
+                let effectivePrice = p.price;
+                const variants = p.variants ? p.variants.map((v: any) => ({ ...v })) : [];
+
+                if (p.event && p.event.status === "OPEN") {
+                    const customMargin = p.event.customMargin || 0;
+                    
+                    if (p.eventPrice != null) {
+                        effectivePrice = p.eventPrice;
+                    } else if (customMargin > 0) {
+                        effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
+                    }
+                    
+                    variants.forEach((variant: any) => {
+                        let vPrice = variant.price;
+                        if (vPrice !== null && vPrice !== undefined) {
+                            if (customMargin > 0 && p.eventPrice == null) {
+                                vPrice = Math.round(vPrice * (1 + customMargin / 100));
+                            }
+                        } else {
+                            vPrice = Math.round(effectivePrice * (variant.quantity || 1));
+                        }
+                        variant.price = vPrice;
+                    });
+                }
+
+                return {
+                    ...p,
+                    price: effectivePrice,
+                    variants,
+                    image: null,
+                    allowSelfService: true,
+                    isArchived: false,
+                };
+            });
 			categories = res.categories;
 		}
 	} else {
@@ -80,12 +109,41 @@ export default async function ShopSelfServicePage({
 				getShopCategories(slug),
 			]);
 
-			products = ("products" in pRes ? pRes.products || [] : []).map((p) => ({
-				...p,
-				image: null,
-				allowSelfService: p.allowSelfService ?? false,
-				isArchived: p.isArchived ?? false,
-			}));
+			products = ("products" in pRes ? pRes.products || [] : []).map((p: any) => {
+                let effectivePrice = p.price;
+                const variants = p.variants ? p.variants.map((v: any) => ({ ...v })) : [];
+
+                if (p.event && p.event.status === "OPEN") {
+                    const customMargin = p.event.customMargin || 0;
+                    
+                    if (p.eventPrice != null) {
+                        effectivePrice = p.eventPrice;
+                    } else if (customMargin > 0) {
+                        effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
+                    }
+                    
+                    variants.forEach((variant: any) => {
+                        let vPrice = variant.price;
+                        if (vPrice !== null && vPrice !== undefined) {
+                            if (customMargin > 0 && p.eventPrice == null) {
+                                vPrice = Math.round(vPrice * (1 + customMargin / 100));
+                            }
+                        } else {
+                            vPrice = Math.round(effectivePrice * (variant.quantity || 1));
+                        }
+                        variant.price = vPrice;
+                    });
+                }
+
+                return {
+                    ...p,
+                    price: effectivePrice,
+                    variants,
+                    image: null,
+                    allowSelfService: p.allowSelfService ?? false,
+                    isArchived: p.isArchived ?? false,
+                };
+            });
 			categories = "categories" in cRes ? cRes.categories || [] : [];
 		} else {
 			isClosedForUser = true;

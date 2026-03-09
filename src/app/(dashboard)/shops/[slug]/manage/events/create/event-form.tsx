@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { ShoppingBag, Users } from "lucide-react";
 
 import { useToast } from "@/components/ui/use-toast";
 import { createEvent, updateEvent } from "@/features/events/actions";
@@ -17,6 +18,14 @@ const eventSchema = z.object({
 	type: z.enum(["SHARED_COST", "COMMERCIAL"]),
 	acompte: z.number().min(0).optional(),
 	allowSelfRegistration: z.boolean().default(false),
+	maxParticipants: z.preprocess(
+		(val) => (val === "" ? undefined : Number(val)),
+		z.number().min(1).optional()
+	),
+	customMargin: z.preprocess(
+		(val) => (val === "" ? undefined : Number(val)),
+		z.number().min(0).optional()
+	),
 });
 
 type EventFormValues = z.infer<typeof eventSchema>;
@@ -47,15 +56,19 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 					type: initialData.type,
 					acompte: (initialData.acompte || 0) / 100,
 					allowSelfRegistration: initialData.allowSelfRegistration,
+					maxParticipants: initialData.maxParticipants ?? undefined,
+					customMargin: initialData.customMargin ?? undefined,
 			  }
 			: {
 					name: "",
 					description: "",
 					startDate: "",
 					endDate: "",
-					type: "SHARED_COST",
+					type: undefined as any,
 					acompte: 0,
 					allowSelfRegistration: false,
+					maxParticipants: undefined,
+					customMargin: undefined,
 			  },
 	});
 
@@ -64,12 +77,14 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 			try {
 				const payload = {
 					name: data.name,
-					description: data.description,
+					description: data.description || null,
 					startDate: new Date(data.startDate),
-					endDate: data.endDate ? new Date(data.endDate) : undefined,
+					endDate: data.endDate ? new Date(data.endDate) : null,
 					type: data.type,
 					acompte: (data.acompte || 0) * 100,
 					allowSelfRegistration: data.allowSelfRegistration,
+					maxParticipants: data.maxParticipants ?? null,
+					customMargin: data.customMargin ?? null,
 				};
 
 				let result;
@@ -120,85 +135,161 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 	const type = form.watch("type");
 
 	return (
-		<div className="bg-dark-800 border border-dark-700 p-6 rounded-lg max-w-2xl">
+		<div className="bg-dark-800 border border-dark-700 p-4 md:p-6 rounded-lg max-w-2xl">
 			<form
 				onSubmit={form.handleSubmit(onSubmit)}
-				className="flex flex-col gap-4"
+				className="flex flex-col gap-5 md:gap-6"
 			>
-				{/* Name */}
-				<div className="flex flex-col gap-1">
+				{/* Type */}
+				<div className="flex flex-col gap-3">
 					<label className="text-sm font-medium text-gray-300">
-						Nom de l'événement
+						Type d'événement
 					</label>
-					<input
-						type="text"
-						placeholder="Ex: Soirée Foy'ss"
-						className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
-						{...form.register("name")}
-					/>
-					{form.formState.errors.name && (
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						{/* Commercial Card */}
+						<label
+							className={`relative flex flex-col items-center justify-center p-4 border rounded-xl cursor-pointer transition-all ${
+								type === "COMMERCIAL"
+									? "border-primary-500 bg-primary-500/10"
+									: "border-dark-700 bg-dark-900 hover:border-dark-600 hover:bg-dark-800"
+							}`}
+						>
+							<input
+								type="radio"
+								value="COMMERCIAL"
+								className="sr-only"
+								{...form.register("type")}
+							/>
+							<ShoppingBag
+								className={`w-8 h-8 mb-3 ${
+									type === "COMMERCIAL" ? "text-primary-400" : "text-gray-400"
+								}`}
+							/>
+							<div className="font-medium text-white mb-1">Commercial</div>
+							<div className="text-xs text-gray-400 text-center">
+								Vente de produits avec gestion des stocks et marges
+							</div>
+						</label>
+
+						{/* Shared Cost (Acompte) Card */}
+						<label
+							className={`relative flex flex-col items-center justify-center p-4 border rounded-xl cursor-pointer transition-all ${
+								type === "SHARED_COST"
+									? "border-primary-500 bg-primary-500/10"
+									: "border-dark-700 bg-dark-900 hover:border-dark-600 hover:bg-dark-800"
+							}`}
+						>
+							<input
+								type="radio"
+								value="SHARED_COST"
+								className="sr-only"
+								{...form.register("type")}
+							/>
+							<Users
+								className={`w-8 h-8 mb-3 ${
+									type === "SHARED_COST" ? "text-primary-400" : "text-gray-400"
+								}`}
+							/>
+							<div className="font-medium text-white mb-1">Acompte / Coûts Partagés</div>
+							<div className="text-xs text-gray-400 text-center">
+								Collecte d'un acompte, partage des dépenses entre les participants
+							</div>
+						</label>
+					</div>
+					{form.formState.errors.type && (
 						<span className="text-red-400 text-xs">
-							{form.formState.errors.name.message}
+							{form.formState.errors.type.message}
 						</span>
 					)}
 				</div>
 
-				{/* Description */}
-				<div className="flex flex-col gap-1">
-					<label className="text-sm font-medium text-gray-300">
-						Description
-					</label>
-					<textarea
-						placeholder="Détails de l'événement..."
-						className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white min-h-[100px] focus:outline-none focus:border-primary-500"
-						{...form.register("description")}
-					/>
-				</div>
+				{type && (
+					<>
+						{/* Name */}
+						<div className="flex flex-col gap-1">
+							<label className="text-sm font-medium text-gray-300">
+								Nom de l&apos;événement
+							</label>
+							<input
+								type="text"
+								placeholder="Ex: Soirée Foy'ss"
+								className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+								{...form.register("name")}
+							/>
+							{form.formState.errors.name && (
+								<span className="text-red-400 text-xs">
+									{form.formState.errors.name.message}
+								</span>
+							)}
+						</div>
 
-				{/* Dates */}
-				<div className="flex flex-col sm:flex-row gap-4">
-					<div className="flex flex-col gap-1 flex-1">
+						{/* Description */}
+						<div className="flex flex-col gap-1">
+							<label className="text-sm font-medium text-gray-300">
+								Description
+							</label>
+							<textarea
+								placeholder="Détails de l'événement..."
+								className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white min-h-[100px] focus:outline-none focus:border-primary-500"
+								{...form.register("description")}
+							/>
+						</div>
+
+						{/* Dates */}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="flex flex-col gap-1">
+								<label className="text-sm font-medium text-gray-300">
+									Date de début
+								</label>
+								<input
+									type="date"
+									className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+									{...form.register("startDate")}
+								/>
+								{form.formState.errors.startDate && (
+									<span className="text-red-400 text-xs">
+										{form.formState.errors.startDate.message}
+									</span>
+								)}
+							</div>
+							<div className="flex flex-col gap-1">
+								<label className="text-sm font-medium text-gray-300">
+									Date de fin (Optionnel)
+								</label>
+								<input
+									type="date"
+									className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+									{...form.register("endDate")}
+								/>
+							</div>
+						</div>
+
+						{/* Custom Margin */}
+						{type === "COMMERCIAL" && (
+							<div className="flex flex-col gap-1">
 						<label className="text-sm font-medium text-gray-300">
-							Date de début
+							Marge personnalisée (%)
 						</label>
-						<input
-							type="date"
-							className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500 w-full"
-							{...form.register("startDate")}
-						/>
-						{form.formState.errors.startDate && (
+						<div className="flex items-center gap-2">
+							<input
+								type="number"
+								min="0"
+								placeholder="0"
+								className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500 w-32 md:w-40"
+								{...form.register("customMargin")}
+							/>
+							<span className="text-gray-400 hidden md:inline">%</span>
+						</div>
+						<span className="text-gray-500 text-xs">
+							S'applique à tous les produits vendus pendant l'événement.
+						</span>
+						{form.formState.errors.customMargin && (
 							<span className="text-red-400 text-xs">
-								{form.formState.errors.startDate.message}
+								{form.formState.errors.customMargin.message}
 							</span>
 						)}
 					</div>
-					<div className="flex flex-col gap-1 flex-1">
-						<label className="text-sm font-medium text-gray-300">
-							Date de fin (Optionnel)
-						</label>
-						<input
-							type="date"
-							className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500 w-full"
-							{...form.register("endDate")}
-						/>
-					</div>
-				</div>
-
-				{/* Type */}
-				<div className="flex flex-col gap-1">
-					<label className="text-sm font-medium text-gray-300">
-						Type d'événement
-					</label>
-					<select
-						className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
-						{...form.register("type")}
-					>
-						<option value="SHARED_COST">
-							Coûts Partagés (Acompte + Justif)
-						</option>
-						<option value="COMMERCIAL">Commercial (Vente de produits)</option>
-					</select>
-				</div>
+				)}
 
 				{/* Acompte */}
 				{type === "SHARED_COST" && (
@@ -226,10 +317,30 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 								htmlFor="allowSelfRegistration"
 								className="text-sm text-gray-300"
 							>
-								Autoriser l'inscription par les utilisateurs
+								Autoriser l&apos;inscription par les utilisateurs
 							</label>
 						</div>
+
+						<div className="flex flex-col gap-1 mt-2">
+							<label className="text-sm font-medium text-gray-300">
+								Capacité limite de participants (Optionnel)
+							</label>
+							<input
+								type="number"
+								min="1"
+								placeholder="Illimité"
+								className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+								{...form.register("maxParticipants")}
+							/>
+							{form.formState.errors.maxParticipants && (
+								<span className="text-red-400 text-xs">
+									{form.formState.errors.maxParticipants.message}
+								</span>
+							)}
+						</div>
 					</div>
+				)}
+				</>
 				)}
 
 				<div className="flex justify-end gap-3 mt-4">

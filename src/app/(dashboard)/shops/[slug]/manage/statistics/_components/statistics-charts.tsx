@@ -213,8 +213,11 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 			const { getShopBySlug } = await import("@/features/shops/actions");
 			const shopRes = await getShopBySlug(slug);
 			if (shopRes.shop) {
-				const eventsRes = await getShopEvents(shopRes.shop.id);
-				setEvents(eventsRes);
+				const { data } = await getShopEvents({
+					shopId: shopRes.shop.id,
+					pageSize: 100, // Load reasonable amount for dropdown
+				});
+				setEvents(data);
 			}
 		};
 		loadEvents();

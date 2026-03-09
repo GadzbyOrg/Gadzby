@@ -234,7 +234,8 @@ export async function getSelfServiceProducts(shopSlug: string) {
                 variants: {
                     where: eq(productVariants.isArchived, false),
                     orderBy: (variants, { asc }) => [asc(variants.quantity)]
-                }
+                },
+                event: true
             },
             orderBy: [asc(products.displayOrder), asc(products.name)]
         });
