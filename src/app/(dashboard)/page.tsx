@@ -51,9 +51,9 @@ function StatCard({
 					</h3>
 				</div>
 				<div
-					className={`rounded-xl p-3 ${color} bg-opacity-10 ring-1 ring-inset ring-white/5`}
+					className={`rounded-xl p-3 ${color} ring-1 ring-inset ring-white/5`}
 				>
-					<Icon size={24} className={color.replace("bg-", "text-")} />
+					<Icon size={24} />
 				</div>
 			</div>
 			<div className="mt-4 flex items-center text-sm">
@@ -116,7 +116,7 @@ export default async function DashboardPage() {
 					value={`${stats.balance.toFixed(2)} €`}
 					sub="Disponible"
 					icon={IconWallet}
-					color="bg-blue-500 text-blue-400"
+					color="bg-blue-500/10 text-blue-500"
 				/>
 				<StatCard
 					title="Dépenses ce mois"
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
 					sub="par rapport au mois dernier"
 					trend={stats.percentageChange}
 					icon={IconShoppingBag}
-					color="bg-primary-500 text-primary-400"
+					color="bg-primary-500/10 text-primary-500"
 				/>
 			</div>
 
