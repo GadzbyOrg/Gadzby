@@ -52,12 +52,15 @@ Ce projet est construit avec des technologies modernes pour assurer performance 
 
 ## 📦 Installation et Démarrage
 
+> */!\ Cette section est valable pour un envrionement de developpement* pour configurer
+> Gadzby en production voir [la documentation](./DOCS/SYSADMIN.md)
+
 ### 1. Prérequis
 
 Avant de commencer, installez ces outils :
 - [Node.js](https://nodejs.org/) (Version LTS recommandée)
 - [Git](https://git-scm.com/)
-- [PostgreSQL](https://www.postgresql.org/) (Ou utilisez Docker)
+- [PostgreSQL](https://www.postgresql.org/)
 
 ### 2. Cloner le projet
 
@@ -109,26 +112,6 @@ npm run dev
 
 Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 Connectez-vous avec un des comptes de test (ex: Admin généré par le script).
-
-## 🚀 Déploiement
-
-> [Coolify](https://coolify.io/) est un outil qui permet de déployer des applications web facilement.
-
-### 1. Migration depuis Borgia
-
-*note: la migration depuis Borgia est encore en cours de développement*
-
-Pour migrer les utilisateurs de Borgia vers Gadzby, il faut suivre la procédure suivante :
-
-1. Créer la base de donnée Gadzby.
-2. Executer les commandes `npx drizzle-kit generate` et `npx drizzle-kit push` pour créer les tables.
-3. Cloner le repo [BtoG](https://github.com/GadzbyOrg/BtoG.git), suivez les instructions du README.md pour dumper la base de donnée Borgia et transferer les données vers Gadzby.
-4. Executer le script `npx tsx scripts/setup-prod.ts` pour configurer les rôles, les paiements et l'utilisateur admin.
-
-### 2. Déploiement en production
-
-Utiliser [Coolify](https://coolify.io/) ou [Vercel](https://vercel.com/) pour déployer l'application est fortement recommandé. Cela permet de maintenir l'application à jour automatiquement.
-
 
 ## Guide de configuration
 
