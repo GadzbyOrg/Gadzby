@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import { useMemo,useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -259,10 +259,11 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 			{/* --- COLONNE 1 : ICONES (80px) --- */}
 			<div className="flex w-[80px] flex-col items-center border-r border-dark-800 bg-dark-950 py-6">
 				{/* Logo */}
-				<div className="mb-8 flex h-10 w-10 items-center justify-center">
+				<div className="mb-8 flex h-10 w-10 items-center justify-center cursor-pointer">
 					<Image
 						src="/Gadzby_logo.svg"
 						alt="Gadzby Logo"
+						onClick={() => redirect("/") && setActiveMain("Général") }
 						width={40}
 						height={40}
 						className="h-full w-full object-contain"
