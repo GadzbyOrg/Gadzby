@@ -91,7 +91,7 @@ export default async function ShopProductsPage({
 						Gérez l&apos;inventaire de {shop.name} ({products.length} produits)
 					</p>
 				</div>
-				<div className="flex gap-4 items-center">
+				<div className="flex flex-wrap sm:flex-nowrap gap-4 items-center">
 					<ExcelImportModal
 						action={importProducts}
 						triggerLabel="Importer Excel"

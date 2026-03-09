@@ -605,16 +605,14 @@ function TransactionMobileCard({
                     </div>
                     <div className="flex flex-col min-w-0">
                          {/* Title Row */}
-                        <div className="flex items-center gap-2">
-                             <div className={cn("font-semibold text-gray-200 truncate text-sm", isCancelled && "line-through")}>
-                                {title}
-                            </div>
+                         <div className={cn("font-semibold text-gray-200 line-clamp-2 text-sm leading-snug", isCancelled && "line-through")}>
+                            {title}
                         </div>
                         {/* Subtitle Row */}
-                        <div className="text-xs text-gray-400 capitalize truncate flex items-center gap-1.5">
-                            <span>{subtitle}</span>
-                             <span className="w-0.5 h-0.5 bg-gray-600 rounded-full"></span>
-                            <span>{typeLabel}</span>
+                        <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 min-w-0 mt-0.5">
+                            <span className="shrink-0">{subtitle}</span>
+                             <span className="w-0.5 h-0.5 bg-gray-600 rounded-full shrink-0"></span>
+                            <span className="truncate">{typeLabel}</span>
                         </div>
                     </div>
                 </div>
@@ -705,39 +703,38 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
                 className="p-3 flex flex-col gap-2 cursor-pointer hover:bg-dark-800/50 transition-colors relative"
                 onClick={() => setExpanded(!expanded)}
             >
-                 <div className="flex justify-between items-center gap-3">
-                    <div className="flex items-center gap-3 overflow-hidden">
+                 <div className="flex justify-between items-start gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className={cn("p-2 rounded-lg shrink-0", isPositive ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500", "border border-white/5")}>
                              {/* Show stack icon or specific icon */}
                             <IconStack size={20} stroke={1.5} className={cn("absolute opacity-50 translate-x-1 translate-y-1", isUniformType && "hidden")} />
                             <Icon size={20} stroke={1.5} className="relative z-10" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <div className={cn("font-semibold text-gray-200 text-sm truncate", allCancelled && "line-through")}>
+                            <div className={cn("font-semibold text-gray-200 text-sm line-clamp-2 leading-snug", allCancelled && "line-through")}>
                                 {group.data.description || "Groupe"}
                             </div>
-                            <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5">
-                                <span className="bg-dark-800 px-1.5 rounded text-[10px] font-medium border border-dark-700">{items.length} ops</span>
-                                <span>{subtitle}</span>
+                            <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 mt-0.5 min-w-0">
+                                <span className="bg-dark-800 px-1.5 rounded text-[10px] font-medium border border-dark-700 whitespace-nowrap shrink-0">{items.length} ops</span>
+                                <span className="truncate">{subtitle}</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="flex flex-col items-end shrink-0 gap-0.5">
+                    <div className="flex flex-col items-end shrink-0 gap-1">
                         <div className={cn("font-bold text-sm", isPositive ? "text-emerald-500" : "text-gray-200", allCancelled && "line-through decoration-current")}>
                             {isPositive ? "+" : ""}{amountFormatted} €
                         </div>
-                         <div className="text-gray-500 transition-transform duration-200 mt-1" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)'}}>
+                        {isAdmin && !allCancelled && (
+                            <div className="mt-1 flex gap-2 justify-end z-20 relative pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                                <CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />
+                            </div>
+                        )}
+                        <div className="text-gray-500 transition-transform duration-200 mt-1 flex items-center justify-center" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)'}}>
                             <IconChevronDown size={14} />
                         </div>
                     </div>
                 </div>
-
-                 {isAdmin && !allCancelled && (
-                     <div className="absolute top-3 right-12" onClick={(e) => e.stopPropagation()}>
-                        <CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />
-                    </div>
-                 )}
             </div>
 
             {expanded && (

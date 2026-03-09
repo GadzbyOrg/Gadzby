@@ -58,8 +58,8 @@ export function ProductPerformanceCard({
 								>
 									{index + 1}
 								</span>
-								<div>
-									<p className="text-sm font-medium text-white truncate max-w-[150px]">
+								<div className="flex-1 min-w-0">
+									<p className="text-sm font-medium text-white truncate w-full">
 										{item.product.name}
 									</p>
 									<p className="text-xs text-gray-500">

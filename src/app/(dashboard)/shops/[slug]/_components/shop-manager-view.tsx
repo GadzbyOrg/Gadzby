@@ -213,7 +213,7 @@ export function ShopManagerView({
 			</div>
 
 			{/* Mobile Sticky Footer */}
-			<div className="md:hidden fixed bottom-0 left-0 right-0 bg-dark-950/95 backdrop-blur-md border-t border-dark-800 z-40 transition-transform duration-300 flex flex-col shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.5)]">
+			<div className="md:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 bg-dark-950/95 backdrop-blur-md border-t border-dark-800 z-40 transition-transform duration-300 flex flex-col shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.5)]">
 				{/* Cart Preview */}
 				{cartItemsCount > 0 && (
 					<div className="flex flex-wrap gap-2 p-3 pb-0 max-h-32 overflow-y-auto custom-scrollbar items-center content-start">

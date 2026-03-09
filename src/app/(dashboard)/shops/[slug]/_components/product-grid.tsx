@@ -108,7 +108,7 @@ export function ProductGrid({
 			</div>
 
 			{/* Mobile Grid View (< md) */}
-			<div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:hidden">
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:hidden">
 				{filteredProducts.map((product) => {
 					const quantityInCart = getProductCartQuantity(product);
                     const hasVariants = product.variants && product.variants.length > 0;
@@ -117,7 +117,7 @@ export function ProductGrid({
 						<div
 							key={product.id}
 							className={cn(
-								"flex flex-col justify-between rounded-xl border p-3 transition-all",
+								"flex flex-col justify-center rounded-xl border p-3 transition-all",
 								quantityInCart > 0
 									? "bg-dark-800 border-primary-500/50 shadow-[0_0_15px_-3px_rgba(var(--primary-500-rgb),0.3)]"
 									: "bg-dark-900 border-dark-700 hover:border-dark-600"

@@ -390,7 +390,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 							) : (
 								<IconLock size={16} />
 							)}
-							{isPayUpfront ? "Solder l'événement" : "Clôturer l&apos;événement"}
+							{isPayUpfront ? "Solder l'événement" : "Clôturer l'événement"}
 						</button>
 					)}
 				</div>

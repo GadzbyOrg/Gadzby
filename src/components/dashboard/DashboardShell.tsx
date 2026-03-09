@@ -6,6 +6,7 @@ import {useState } from "react";
 
 import { cn } from "@/lib/utils";
 
+import { BottomNav } from "./BottomNav";
 import { Footer } from "./Footer";
 import { Sidebar } from "./Sidebar";
 import { UserDropdown } from "./UserDropdown";
@@ -45,16 +46,7 @@ export function DashboardShell({
 	user: UserProp;
 	shops: ShopProp[];
 }) {
-	// État pour le mobile (Sidebar drawer)
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const pathname = usePathname();
-
-	// Fermer le menu mobile lors de la navigation
-	const [prevPath, setPrevPath] = useState(pathname);
-	if (pathname !== prevPath) {
-		setPrevPath(pathname);
-		setMobileMenuOpen(false);
-	}
 
 	const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " €";
 
@@ -69,38 +61,23 @@ export function DashboardShell({
 				/>
 			</div>
 
-			{/* --- SIDEBAR MOBILE (Overlay) --- */}
-			<div
-				className={cn(
-					"fixed inset-0 z-50 flex transform transition-transform duration-300 md:hidden",
-					mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-				)}
-			>
-				<div className="relative z-50">
-					<Sidebar
-						userRole={user.appRole}
-						permissions={user.permissions}
-						shops={shops}
-					/>
-				</div>
-				{/* Backdrop pour fermer */}
-				<div
-					className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-					onClick={() => setMobileMenuOpen(false)}
-				/>
-			</div>
+			{/* --- BOTTOM NAV MOBILE --- */}
+			<BottomNav
+				userRole={user.appRole}
+				permissions={user.permissions}
+				shops={shops}
+			/>
 
 			{/* --- CONTENU PRINCIPAL --- */}
 			<main className="flex flex-1 flex-col overflow-hidden">
 				{/* HEADER */}
 				<header className="flex h-16 items-center justify-between border-b border-dark-800 bg-dark-950/50 px-6 backdrop-blur-md">
-					{/* Trigger Mobile */}
-					<button
-						className="rounded-md p-2 text-gray-400 hover:bg-dark-800 md:hidden"
-						onClick={() => setMobileMenuOpen(true)}
-					>
-						<IconMenu2 size={24} />
-					</button>
+					{/* Logo Mobile (remplace le trigger menu) */}
+					<div className="md:hidden flex items-center gap-2">
+						<Link href="/" className="flex items-center gap-2">
+							<span className="text-lg font-bold text-gray-200">Gadzby</span>
+						</Link>
+					</div>
 
 					{/* Titre */}
 					<div className="hidden md:flex items-center gap-1">
@@ -131,7 +108,7 @@ export function DashboardShell({
 				</header>
 
 				{/* PAGE CONTENT (Scrollable) */}
-				<div className="flex-1 overflow-y-auto bg-dark-950 flex flex-col">
+				<div className="flex-1 overflow-y-auto bg-dark-950 flex flex-col pb-20 md:pb-0">
 					<div className="flex-1 p-6 md:p-8">
 						<div className="mx-auto max-w-6xl animate-in fade-in zoom-in-95 duration-300">
 							{children}
