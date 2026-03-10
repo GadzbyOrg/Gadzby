@@ -9,7 +9,7 @@ Utiliser un service comme Vercel, Netlify ou **Coolify** est recommandé pour h�
 *   **Nom de domaine** : Accès à la gestion DNS du domaine souhaité (ex: `gadzby-app.com`).
 *   **Accès SSH** : Accès root à votre serveur.
 
-à ce jour la taille max de la BDD n'est pas connue, mais il faut prévoir large.
+À ce jour la taille max de la BDD n'est pas connue, mais il faut prévoir large.
 
 ## 2. Installation de Coolify sur le serveur
 
@@ -33,7 +33,7 @@ Dans l'interface de gestion de votre nom de domaine (OVH, Cloudflare, etc.) :
 1. Créez un enregistrement DNS de type **A** pour votre panel Coolify (ex: `coolify.gadzby.com`) pointant vers l'IP de votre serveur.
 2. Créez un autre enregistrement de type **A** pour votre application (ex: `app.gadzby.com` ou `gadzby.com`) pointant également vers la même IP.
 
-Si votre serveur est derrière un Reverse Proxy, faitent pointer les enregistrements vers l'adresse du Reverse Proxy. Il faudra configurer le Reverse Proxy pour qu'il redirige les requêtes vers Coolify.
+Si votre serveur est derrière un Reverse Proxy, faites pointer les enregistrements vers l'adresse du Reverse Proxy. Il faudra configurer le Reverse Proxy pour qu'il redirige les requêtes vers Coolify.
 
 Dans l'interface de Coolify (onglet *Settings*), vous pouvez configurer votre domaine pour l'URL système afin d'accéder à Coolify de manière sécurisée.
 
@@ -44,8 +44,8 @@ Dans l'interface de Coolify (onglet *Settings*), vous pouvez configurer votre do
 Avant de déployer l'application, configurons la base de données :
 
 1. Dans Coolify, rendez-vous dans la section **Projects** puis cliquez sur **+ Add**. Nommez-le "Gadzby".
-2. Une fois votre projet créé, l'environement **Production** est créé automatiquement, cliquez sur **+ Add Resource**.
-3. Sous **Database** choisissez **PostgreSQL** (pas de version specifique, laissez la derniere version disponible).
+2. Une fois votre projet créé, l'environnement **Production** est créé automatiquement, cliquez sur **+ Add Resource**.
+3. Sous **Database** choisissez **PostgreSQL** (pas de version spécifique, laissez la dernière version disponible).
 4. Vous pouvez laisser les paramètres générés automatiquement ou définir vos propres identifiants (Db Name, Db User, Db Password).
 5. Cliquez sur **Start** pour lancer la base de données.
 6. Une fois le statut *Running* affiché, allez dans la section **Network**. Copiez l'URL de connexion interne (Postgres URL (internal)), par ex: `postgresql://user:pass@postgresql-id:5432/db`). Cette URL servira pour configurer Gadzby.
@@ -56,14 +56,14 @@ Avant de déployer l'application, configurons la base de données :
 
 1. Au sein du même projet/environnement sur Coolify, cliquez sur **+ New** pour ajouter une nouvelle ressource.
 2. Sous **Application / Git Based** choisissez public Repository.
-3. Entrez l'URL du dépôt GitHub : `https://github.com/GadzbyOrg/Gadzby`. Laisser les paramétres par défaut (branche `main`, port 3000).
+3. Entrez l'URL du dépôt GitHub : `https://github.com/GadzbyOrg/Gadzby`. Laissez les paramètres par défaut (branche `main`, port 3000).
 4. **Configuration Générale de la ressource :**
     *   **Build Pack** : Laisser l'option par défaut **Nixpacks**. Elle s'occupera d'identifier Gadzby comme projet Node/Next.js et de tout installer correctement.
     *   **Domains** : Indiquez le domaine de votre app, par ex: `https://gadzby-app.com`. Coolify s'occupera automatiquement et de la génération du certificat SSL Let's Encrypt.
 
-> Si vous avez un reverse-proxy, ne mettez pas de https ici, laisser votre reverse-proxy gérer le https. Votre config doit ressembrer à :
+> Si vous avez un reverse-proxy, ne mettez pas de https ici, laissez votre reverse-proxy gérer le https. Votre config doit ressembler à :
 > *   **Dans Coolify** : `http://gadzby-app.com`
-> *   **Dans votre reverse-proxy** : `https://gadzby-app.com` -> `http://<ip-de-votre-serveur>:80` (le reverse-proxy interne à Coolify gére la redirection 3000 -> 80)
+> *   **Dans votre reverse-proxy** : `https://gadzby-app.com` -> `http://<ip-de-votre-serveur>:80` (le reverse-proxy interne à Coolify gère la redirection 3000 -> 80)
 > *   **Dans votre reverse-proxy** : Scheme: `http` ; **Activer le support pour les Websockets!!** et configurer le certificat https.
 
 5. **Configuration des Variables d'Environnement :**
@@ -81,18 +81,18 @@ Avant de déployer l'application, configurons la base de données :
 
 ## 6. Initialisation de l'application
 
-*   Une fois l'application déployée vous devez appliquer le schéma de base de donnée. Pour ce faire 
+*   Une fois l'application déployée vous devez appliquer le schéma de base de données. Pour ce faire 
     ```bash
     npx drizzle-kit generate
     npx drizzle-kit push
     ```
-* Si vous souhaitez migrer les utilisateurs depuis Borgia il faut cloner le repo [BtoG](https://github.com/GadzbyOrg/BtoG) et suivres [les instructions](https://github.com/GadzbyOrg/BtoG/blob/main/README.md)
+* Si vous souhaitez migrer les utilisateurs depuis Borgia il faut cloner le repo [BtoG](https://github.com/GadzbyOrg/BtoG) et suivre [les instructions](https://github.com/GadzbyOrg/BtoG/blob/main/README.md)
 
 *   Puis executer le script d'initialisation pour la production :
     ```bash
     npx tsx scripts/setup-prod.ts
     ```
-    Ce script vas, entre autre, créer l'utilisateur admin.
+    Ce script va, entre autres, créer l'utilisateur admin.
 
 ## 7. Mises à Jour Automatisées
 
@@ -124,7 +124,7 @@ Il est fortement recommandé d'appliquer la règle d'or **3-2-1** pour la sauveg
 3. Dans la section **Backup Destinations**, vous pouvez configurer où les sauvegardes seront stockées (localement sur le serveur, ou sur un bucket S3 compatible tel que AWS S3, MinIO, Scaleway, etc. ce qui est fortement recommandé).
 4. Dans la section **Scheduled Backups**, cliquez sur **+ Add**.
 5. Définissez :
-   - **Database**: Laissez par defaut le nom de votre DB.
+   - **Database**: Laissez par défaut le nom de votre DB.
    - **Schedule**: Utilisez une expression Cron ou `daily`. Par exemple, `0 5 * * *` pour une sauvegarde tous les jours à 5h00 du matin (UTC).
    - **Number of backups to keep**: Indiquez combien d'archives conserver (ex: 7 pour garder les 7 derniers jours).
 6. Cliquez sur **Save**. Vous pouvez tester la sauvegarde immédiate en cliquant sur **Backup Now**.
