@@ -317,11 +317,12 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 							</p>
 						</div>
 					</div>
+					{/* Disable stock projection for now
 
-					{/* Stock Projections (Only show if there are alerts) */}
 					{projections.length > 0 && (
 						<StockProjectionsCard data={projections} loading={loading} />
-					)}
+					)} 
+					*/}
 
 					{/* Main Analytics Grid */}
 					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
