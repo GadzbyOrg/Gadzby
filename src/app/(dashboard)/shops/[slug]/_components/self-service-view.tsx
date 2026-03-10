@@ -9,6 +9,7 @@ import {
 	getUserFamss,
 	processSelfServicePurchase,
 } from "@/features/shops/actions";
+import { logoutAction } from "@/features/auth/actions";
 
 import { CartSummary } from "./cart-summary";
 import { ProductGrid } from "./product-grid";
@@ -41,12 +42,14 @@ interface SelfServiceViewProps {
 	shopSlug: string;
 	products: Product[];
 	categories: Category[];
+	disconnectAfterCheckout: boolean;
 }
 
 export function SelfServiceView({
 	shopSlug,
 	products,
 	categories,
+	disconnectAfterCheckout,
 }: SelfServiceViewProps) {
 	const router = useRouter();
 	const [cart, setCart] = useState<{ [key: string]: number }>({});
@@ -146,7 +149,14 @@ export function SelfServiceView({
 				setCart({});
                 setIsReviewOpen(false);
 				router.refresh(); 
-				setTimeout(() => setSuccess(null), 3000);
+
+				if (disconnectAfterCheckout) {
+					setTimeout(async () => {
+						await logoutAction();
+					}, 1000);
+				} else {
+					setTimeout(() => setSuccess(null), 3000);
+				}
 			}
 		} catch {
 			setError("Une erreur inattendue est survenue");

@@ -24,6 +24,7 @@ export const shops = pgTable("shops", {
 	defaultMargin: integer("default_margin").default(10).notNull(), // Default margin for shops is 10%
 
 	isSelfServiceEnabled: boolean("is_self_service_enabled").default(false),
+	disconnectAfterCheckout: boolean("disconnect_after_checkout").default(false),
 
 	isActive: boolean("is_active").default(true),
 

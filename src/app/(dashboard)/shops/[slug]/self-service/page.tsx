@@ -229,6 +229,7 @@ export default async function ShopSelfServicePage({
 				shopSlug={slug}
 				products={products}
 				categories={categories}
+				disconnectAfterCheckout={shop.disconnectAfterCheckout ?? false}
 			/>
 		</div>
 	);

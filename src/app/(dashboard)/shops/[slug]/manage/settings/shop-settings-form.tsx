@@ -8,6 +8,7 @@ interface ShopSettingsFormProps {
 	slug: string;
 	initialDescription: string | null; // Allow null
 	initialSelfService: boolean; // Must be boolean
+	initialDisconnectAfterCheckout: boolean;
 	initialDefaultMargin: number;
 }
 
@@ -15,10 +16,12 @@ export function ShopSettingsForm({
 	slug,
 	initialDescription,
 	initialSelfService,
+	initialDisconnectAfterCheckout,
 	initialDefaultMargin,
 }: ShopSettingsFormProps) {
 	const [description, setDescription] = useState(initialDescription || "");
 	const [isSelfService, setIsSelfService] = useState(initialSelfService);
+	const [disconnectAfterCheckout, setDisconnectAfterCheckout] = useState(initialDisconnectAfterCheckout);
 	const [defaultMargin, setDefaultMargin] = useState(initialDefaultMargin);
 	const [isLoading, setIsLoading] = useState(false);
 	const [message, setMessage] = useState<{
@@ -35,6 +38,7 @@ export function ShopSettingsForm({
 			data: {
 				description,
 				isSelfServiceEnabled: isSelfService,
+				disconnectAfterCheckout,
 				defaultMargin,
 			},
 		});
@@ -99,6 +103,27 @@ export function ShopSettingsForm({
 					<span
 						className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
 							isSelfService ? "translate-x-6" : "translate-x-1"
+						}`}
+					/>
+				</button>
+			</div>
+
+			<div className="flex items-center justify-between p-4 bg-dark-800 rounded-lg border border-dark-700">
+				<div className="space-y-1">
+					<div className="font-medium text-white">Déconnecter après achat</div>
+					<div className="text-sm text-gray-400">
+						Déconnecte automatiquement l'utilisateur du shop après avoir validé un panier en self-service.
+					</div>
+				</div>
+				<button
+					onClick={() => setDisconnectAfterCheckout(!disconnectAfterCheckout)}
+					className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/50 ${
+						disconnectAfterCheckout ? "bg-primary-600" : "bg-gray-700"
+					}`}
+				>
+					<span
+						className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+							disconnectAfterCheckout ? "translate-x-6" : "translate-x-1"
 						}`}
 					/>
 				</button>

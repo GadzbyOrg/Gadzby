@@ -61,6 +61,7 @@ export const updateShopSchema = z.object({
 	data: z.object({
 		description: z.string().optional(),
 		isSelfServiceEnabled: z.boolean().optional(),
+		disconnectAfterCheckout: z.boolean().optional(),
 		defaultMargin: z.number().optional(),
 	}),
 });
