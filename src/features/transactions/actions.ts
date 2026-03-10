@@ -174,9 +174,17 @@ export const exportTransactionsAction = authenticatedAction(
 export const cancelTransactionAction = authenticatedAction(
 	z.object({ transactionId: z.string() }),
 	async ({ transactionId }, { session }) => {
+		const tx = await db.query.transactions.findFirst({
+			where: eq(transactions.id, transactionId),
+			with: { shop: true },
+		});
+
 		await TransactionService.cancelTransaction(transactionId, session.userId);
 		revalidatePath("/admin");
 		revalidatePath("/admin/users");
+		if (tx?.shop?.slug) {
+			revalidatePath(`/shops/${tx.shop.slug}`, "layout");
+		}
 		return { success: "Transaction annulée avec succès" };
 	},
 	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
@@ -221,6 +229,11 @@ export const topUpUserAction = authenticatedAction(
 export const cancelTransactionGroupAction = authenticatedAction(
 	z.object({ groupId: z.string() }),
 	async ({ groupId }, { session }) => {
+		const tx = await db.query.transactions.findFirst({
+			where: eq(transactions.groupId, groupId),
+			with: { shop: true },
+		});
+
 		const result = await TransactionService.cancelTransactionGroup(
 			groupId,
 			session.userId
@@ -228,6 +241,9 @@ export const cancelTransactionGroupAction = authenticatedAction(
 		revalidatePath("/admin");
 		revalidatePath("/admin/transactions");
 		revalidatePath("/");
+		if (tx?.shop?.slug) {
+			revalidatePath(`/shops/${tx.shop.slug}`, "layout");
+		}
 		return { success: `${result.count} transactions annulées avec succès` };
 	},
 	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
@@ -239,6 +255,11 @@ export const updateTransactionQuantityAction = authenticatedAction(
 		newQuantity: z.number().min(0),
 	}),
 	async ({ transactionId, newQuantity }, { session }) => {
+		const tx = await db.query.transactions.findFirst({
+			where: eq(transactions.id, transactionId),
+			with: { shop: true },
+		});
+
 		const result = await TransactionService.updateTransactionQuantity(
 			transactionId,
 			newQuantity,
@@ -247,6 +268,9 @@ export const updateTransactionQuantityAction = authenticatedAction(
 		revalidatePath("/admin");
 		revalidatePath("/admin/transactions");
 		revalidatePath("/");
+		if (tx?.shop?.slug) {
+			revalidatePath(`/shops/${tx.shop.slug}`, "layout");
+		}
 		return { success: result.message || "Quantité mise à jour avec succès" };
 	},
 	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }

@@ -1,6 +1,6 @@
 "use server";
 
-import { and, count, desc, eq, gte, lte,sql, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, notInArray, sql, sum } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -45,6 +45,7 @@ export const getMostActiveStaff = authenticatedAction(
 
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
+			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
 			endDate ? lte(transactions.createdAt, endDate) : undefined
 		);
@@ -93,6 +94,7 @@ export const getBestCustomers = authenticatedAction(
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
 			eq(transactions.type, "PURCHASE"),
+			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
 			endDate ? lte(transactions.createdAt, endDate) : undefined
 		);
@@ -147,6 +149,7 @@ export const getProductSalesStats = authenticatedAction(
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
 			eq(transactions.type, "PURCHASE"),
+			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
 			endDate ? lte(transactions.createdAt, endDate) : undefined
 		);
@@ -219,6 +222,7 @@ export const getStockProjections = authenticatedAction(
             .where(and(
                 eq(transactions.shopId, shop.id),
                 eq(transactions.type, "PURCHASE"),
+                notInArray(transactions.status, ["CANCELLED", "FAILED"]),
                 gte(transactions.createdAt, thirtyDaysAgo)
             ))
             .groupBy(transactions.productId);
@@ -277,6 +281,7 @@ export const getShopStats = authenticatedAction(
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
 			eq(transactions.type, "PURCHASE"),
+			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
 			endDate ? lte(transactions.createdAt, endDate) : undefined
 		);
