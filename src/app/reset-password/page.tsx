@@ -128,6 +128,11 @@ function ResetPasswordContent() {
                     ) : (
 					<form action={action} className="space-y-6">
                         <input type="hidden" name="token" value={token} />
+                        {state?.fieldErrors?.token && (
+                            <p className="mt-2 text-sm text-red-400">
+                                {state.fieldErrors.token[0]}
+                            </p>
+                        )}
 						{/* Affichage des Erreurs */}
 						{state?.error && (
 							<div className="rounded-md bg-red-900/20 border border-red-900/50 p-4">
@@ -178,6 +183,11 @@ function ResetPasswordContent() {
                                     {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
                                 </button>
 							</div>
+                            {state?.fieldErrors?.password && (
+                                <p className="mt-2 text-sm text-red-400">
+                                    {state.fieldErrors.password[0]}
+                                </p>
+                            )}
 						</div>
                         
                         {/* Champ Confirm Mot de passe */}
@@ -201,6 +211,11 @@ function ResetPasswordContent() {
 									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 pr-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
 								/>
 							</div>
+                            {state?.fieldErrors?.confirmPassword && (
+                                <p className="mt-2 text-sm text-red-400">
+                                    {state.fieldErrors.confirmPassword[0]}
+                                </p>
+                            )}
 						</div>
 
 						{/* Bouton Submit */}
