@@ -94,10 +94,11 @@ export async function getUsers(
             db.query.users.findMany({
                 where: whereCondition,
                 orderBy: (t, { asc, desc }) => {
-                    if (sort && order) {
-                        const column = t[sort as keyof typeof t];
+                    if (sort) {
+                        const sortKey = sort === "role" ? "roleId" : sort;
+                        const column = t[sortKey as keyof typeof t];
                         if (column) {
-                            return order === "asc" ? [asc(column)] : [desc(column)];
+                            return (order === "desc") ? [desc(column)] : [asc(column)];
                         }
                     }
                     return [desc(t.username)];

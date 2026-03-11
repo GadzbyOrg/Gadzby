@@ -219,11 +219,12 @@ function SortIcon({ column, currentSort, currentOrder }: { column: string, curre
         return (
             <IconArrowsSort className="w-3 h-3 opacity-30 group-hover:opacity-100" />
         );
-    return currentOrder === "asc" ? (
-        <IconSortAscending className="w-3 h-3 text-primary-400" />
-    ) : (
-        <IconSortDescending className="w-3 h-3 text-primary-400" />
-    );
+    
+    if (currentOrder === "desc") {
+        return <IconSortDescending className="w-3 h-3 text-primary-400" />;
+    }
+    
+    return <IconSortAscending className="w-3 h-3 text-primary-400" />;
 }
 
 export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, promssList = [] }: UsersTableProps) {
@@ -271,8 +272,12 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 		const currentOrder = params.get("order");
 
 		if (currentSort === column) {
-			if (currentOrder === "asc") params.set("order", "desc");
-			else params.delete("order");
+			if (currentOrder === "asc") {
+                params.set("order", "desc");
+            } else {
+                params.delete("sort");
+                params.delete("order");
+            }
 		} else {
 			params.set("sort", column);
 			params.set("order", "asc"); // Default to asc
@@ -418,7 +423,12 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 										Bucque / Email <SortIcon column="bucque" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
-                                <th className="py-3 px-6 font-medium">Tabagn&apos;ss</th>
+                                <th className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+									onClick={() => handleSort("tabagnss")}>
+										<div className="flex items-center gap-1">
+											Tabagn&apos;ss <SortIcon column="tabagnss" currentSort={currentSort} currentOrder={currentOrder} />
+										</div>
+									</th>
                                 <th
 									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
 									onClick={() => handleSort("promss")}
@@ -427,7 +437,13 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 										Promss <SortIcon column="promss" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
-								<th className="py-3 px-6 font-medium">Rôle</th>
+								<th className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+									onClick={() => handleSort("role")}
+								>
+									<div className="flex items-center gap-1">
+										Rôle <SortIcon column="role" currentSort={currentSort} currentOrder={currentOrder} />
+									</div>
+								</th>
 								<th
 									className="py-3 px-6 font-medium text-right cursor-pointer hover:text-white group transition-colors"
 									onClick={() => handleSort("balance")}
