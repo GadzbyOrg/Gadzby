@@ -6,8 +6,8 @@ import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
 import { importProducts } from "@/features/shops/import";
 import { getShopProducts } from "@/features/shops/products";
 
-import { SortableProductList } from "./_components/SortableProductList";
 import { ProductFilters } from "./_components/ProductFilters";
+import { SortableProductList } from "./_components/SortableProductList";
 
 export default async function ShopProductsPage({
 	params,

@@ -5,11 +5,9 @@ import {
 	IconLoader2,
 	IconMail,
 	IconPhone,
-	IconSchool,
-	IconUser,
 } from "@tabler/icons-react";
 import { IconLayoutDashboard } from "@tabler/icons-react";
-import { useEffect,useState } from "react";
+import {useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
 import { updateUserAction } from "@/features/users/actions";

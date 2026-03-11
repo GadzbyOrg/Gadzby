@@ -1,20 +1,19 @@
 "use server";
 
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import {
 	inventoryAuditItems,
 	inventoryAudits,
-	productRestocks,
 	products,
 } from "@/db/schema";
 import { verifySession } from "@/lib/session";
 import { ShopService } from "@/services/shop-service";
 
-import { getShopOrThrow } from "./utils";
 import { SHOP_PERM } from "./permissions";
+import { getShopOrThrow } from "./utils";
 
 export async function restockProduct(
 	shopSlug: string,

@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { utils } from "xlsx";
 
 import { db } from "@/db";
 import { UserService } from "@/services/user-service";
@@ -135,7 +134,7 @@ describe("UserService", () => {
 			const mockUpdate = mockDbChain();
 			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
 
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 			await UserService.update("user-123", {
 				email: "john@example.com",
 				nom: "NewName",

@@ -300,7 +300,7 @@ export const getShopStats = authenticatedAction(
         // Process data for charts
         const dailyStats = new Map<string, { revenue: number, expenses: number, profit: number }>();
         let totalRevenue = 0;
-        let totalExpenses = 0; // Assuming 0 for now as we don't strictly track COGS yet
+        const totalExpenses = 0; // Assuming 0 for now as we don't strictly track COGS yet
         let totalOrders = 0;
 
         txs.forEach(tx => {
@@ -324,7 +324,7 @@ export const getShopStats = authenticatedAction(
         // Fill in missing dates if range is defined
         const chartData = [];
         if (startDate && endDate) {
-            let currentDate = new Date(startDate);
+            const currentDate = new Date(startDate);
             // End date is usually included, ensure we cover it logic
              while (currentDate <= endDate) {
                 const dateKey = currentDate.toISOString().split('T')[0];

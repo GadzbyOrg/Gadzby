@@ -1,8 +1,8 @@
 import { and, eq, ne } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { productCategories, productRestocks, products, productVariants, shopRoles, shops, shopUsers } from "@/db/schema";
-import { sql } from "drizzle-orm";
 import { SHOP_PERMISSIONS } from "@/features/shops/permissions";
 
 export class ShopService {

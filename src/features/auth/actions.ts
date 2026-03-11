@@ -1,5 +1,6 @@
 "use server";
 
+import { logger, setUser } from "@sentry/nextjs";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
@@ -9,7 +10,6 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { publicAction, publicActionNoInput } from "@/lib/actions";
 import { createSession, deleteSession } from "@/lib/session";
-import { logger, setUser } from "@sentry/nextjs";
 
 const loginSchema = z.object({
 	username: z.string().min(1, "Identifiant requis"),

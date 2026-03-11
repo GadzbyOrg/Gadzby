@@ -5,12 +5,12 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { shops, shopUsers } from "@/db/schema";
-import { authenticatedAction } from "@/lib/actions"; // If used
+// If used
 import { verifySession } from "@/lib/session";
 import { ShopService } from "@/services/shop-service";
 
-import { getShopOrThrow, checkShopPermission } from "./utils";
 import { SHOP_PERM, ShopPermission } from "./permissions";
+import { checkShopPermission,getShopOrThrow } from "./utils";
 
 
 export async function addShopMember(

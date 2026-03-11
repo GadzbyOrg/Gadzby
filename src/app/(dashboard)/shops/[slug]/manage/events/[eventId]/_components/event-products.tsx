@@ -5,7 +5,6 @@ import { useState } from 'react';
 
 import { useToast } from "@/components/ui/use-toast";
 import { getAvailableProductsAction,linkProductsToEvent, unlinkProductFromEvent } from '@/features/events/actions';
-
 import { setEventProductPrice } from '@/features/events/actions/products';
 
 interface Props {

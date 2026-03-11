@@ -4,13 +4,13 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { shopRoles, shops } from "@/db/schema";
+import { shopRoles } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
 import { ShopService } from "@/services/shop-service";
 
-import { createShopRoleSchema, deleteShopRoleSchema, updateShopRoleSchema, getShopBySlugSchema } from "./schemas";
-import { getShopOrThrow } from "./utils";
 import { SHOP_PERM } from "./permissions";
+import { createShopRoleSchema, deleteShopRoleSchema, getShopBySlugSchema,updateShopRoleSchema } from "./schemas";
+import { getShopOrThrow } from "./utils";
 
 export const getShopRoles = authenticatedAction(
 	getShopBySlugSchema, 

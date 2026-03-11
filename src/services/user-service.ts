@@ -3,7 +3,6 @@ import { eq, inArray, or } from "drizzle-orm";
 import { existsSync } from "fs";
 import { unlink } from "fs/promises";
 import { join } from "path";
-import * as XLSX from "xlsx";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -271,7 +270,7 @@ export class UserService {
     static async importBatch(rows: z.infer<typeof importUserRowSchema>[]) {
         let successCount = 0;
         let skippedCount = 0;
-        let failCount = 0; 
+        const failCount = 0; 
         const skipped: string[] = [];
         const errors: string[] = [];
 

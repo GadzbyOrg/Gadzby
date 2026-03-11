@@ -1,6 +1,6 @@
 "use server";
 
-import { and, count, desc, eq, gte, inArray, notInArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { eventParticipants } from "@/db/schema/event-participants";

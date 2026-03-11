@@ -1,7 +1,8 @@
 
 import { eq, isNull } from "drizzle-orm";
+
 import { db } from "@/db";
-import { users, roles } from "@/db/schema";
+import { roles,users } from "@/db/schema";
 
 async function main() {
 	console.log("🌱 Assigning Base Role to Users...");

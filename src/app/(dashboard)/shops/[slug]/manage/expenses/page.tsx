@@ -1,16 +1,16 @@
+import { IconReceipt } from "@tabler/icons-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { IconReceipt } from "@tabler/icons-react";
 
-import { getShopBySlug, checkTeamMemberAccess } from "@/features/shops/actions";
-import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
-import { PennylaneImportModal } from "./_components/pennylane-import-modal";
+import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
 import {
 	createShopExpense,
-
 	deleteShopExpense,
 	getShopExpenses,
 } from "@/features/shops/expenses";
+import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
+
+import { PennylaneImportModal } from "./_components/pennylane-import-modal";
 
 export default async function ShopExpensesPage({
 	params,

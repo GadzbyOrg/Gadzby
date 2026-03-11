@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect,useState } from "react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { logoutAction } from "@/features/auth/actions";
 import {
 	getUserFamss,
 	processSelfServicePurchase,
 } from "@/features/shops/actions";
-import { logoutAction } from "@/features/auth/actions";
 
 import { CartSummary } from "./cart-summary";
 import { ProductGrid } from "./product-grid";

@@ -4,13 +4,14 @@ import { and, asc, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { productCategories, products, productVariants, shops } from "@/db/schema"; // productRestocks removed
+import { productCategories, products, productVariants } from "@/db/schema"; // productRestocks removed
 import { authenticatedAction } from "@/lib/actions";
 import { verifySession } from "@/lib/session";
 import { ShopService } from "@/services/shop-service";
-import { getShopOrThrow, getUserShopPermissions } from "./utils";
+
 import { SHOP_PERM } from "./permissions";
-import { CreateProductInput, UpdateProductInput, deleteProductSchema } from "./schemas";
+import { CreateProductInput, deleteProductSchema,UpdateProductInput } from "./schemas";
+import { getShopOrThrow, getUserShopPermissions } from "./utils";
 
 export const deleteProduct = authenticatedAction(
 	deleteProductSchema,

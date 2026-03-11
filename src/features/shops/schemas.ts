@@ -66,7 +66,6 @@ export const updateShopSchema = z.object({
 	}),
 });
 
-import { SHOP_PERMISSIONS } from "./permissions";
 
 export const createShopRoleSchema = z.object({
 	shopSlug: z.string(),

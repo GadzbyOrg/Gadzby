@@ -6,13 +6,12 @@ import { db } from "@/db";
 import { productCategories, products, productVariants, shops, shopUsers } from "@/db/schema";
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
 
+import { SHOP_PERMISSIONS } from "./permissions";
 import { 
     getShopBySlugSchema, 
     getUserFamssSchema,
     searchUsersSchema,
 } from "./schemas";
-
-import { SHOP_PERMISSIONS } from "./permissions";
 
 // --- Queries / Getters ---
 

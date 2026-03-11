@@ -4,14 +4,12 @@
 
 import {
 	IconCalendar,
-	IconCheck,
 	IconLoader2,
 	IconLogin,
 	IconLogout,
 	IconMapPin,
 	IconTicket,
 } from "@tabler/icons-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 

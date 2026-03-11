@@ -10,6 +10,7 @@ import Link from "next/link";
 import { ExpensesByShopChart } from "@/components/dashboard/ExpensesByShopChart";
 import { ExpensesOverTimeChart } from "@/components/dashboard/ExpensesOverTimeChart";
 import { UpcomingEventsList } from "@/components/dashboard/UpcomingEventsList";
+import { TransactionTable } from "@/components/transactions/transaction-table";
 import {
 	getUserExpensesByShop,
 	getUserExpensesOverTime,
@@ -22,7 +23,6 @@ import {
 } from "@/features/events/actions";
 import { getShops } from "@/features/shops/actions";
 import { verifySession } from "@/lib/session";
-import { TransactionTable } from "@/components/transactions/transaction-table";
 
 interface StatCardProps {
 	title: string;

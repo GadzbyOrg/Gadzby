@@ -1,9 +1,9 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useTransition } from "react";
-import { useDebouncedCallback } from "use-debounce";
 import { IconSearch, IconSortAscending, IconSortDescending, IconX } from "@tabler/icons-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
 export function ProductFilters() {
     const searchParams = useSearchParams();

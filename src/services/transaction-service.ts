@@ -5,7 +5,6 @@ import {
 	events,
 	famsMembers,
 	famss,
-	productVariants,
 	products,
 	transactions,
 	users,

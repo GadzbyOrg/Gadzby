@@ -7,7 +7,6 @@ import { z } from "zod";
 import { db } from "@/db";
 import { systemSettings } from "@/db/schema/settings";
 import { users } from "@/db/schema/users";
-import { verifySession } from "@/lib/session";
 
 const emailConfigSchema = z.object({
     provider: z.enum(["smtp", "resend"]),

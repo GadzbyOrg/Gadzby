@@ -7,15 +7,15 @@ import { db } from "@/db";
 import { shops, transactions } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
 import { TransactionService } from "@/services/transaction-service";
-import { getTransactionsQuery } from "../transactions/queries"; // Import from sibling feature
 
+import { getTransactionsQuery } from "../transactions/queries"; // Import from sibling feature
+import { SHOP_PERM } from "./permissions";
 import { 
     getShopTransactionsSchema, 
     processSaleSchema, 
     processSelfServicePurchaseSchema 
 } from "./schemas";
 import { getShopOrThrow } from "./utils";
-import { SHOP_PERM } from "./permissions";
 
 
 export const processSale = authenticatedAction(

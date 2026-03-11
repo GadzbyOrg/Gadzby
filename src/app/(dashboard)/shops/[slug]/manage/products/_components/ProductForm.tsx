@@ -1,8 +1,8 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation"; // Correct import for App Router
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
 
 import { createCategory,createProduct, updateProduct } from "@/features/shops/products";
 

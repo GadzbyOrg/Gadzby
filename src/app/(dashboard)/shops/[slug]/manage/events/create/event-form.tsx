@@ -1,11 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ShoppingBag, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ShoppingBag, Users } from "lucide-react";
 
 import { useToast } from "@/components/ui/use-toast";
 import { createEvent, updateEvent } from "@/features/events/actions";

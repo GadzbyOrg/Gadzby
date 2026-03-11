@@ -1,8 +1,7 @@
 "use client";
 
-import { IconMenu2 } from "@tabler/icons-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -10,7 +9,6 @@ import { BottomNav } from "./BottomNav";
 import { Footer } from "./Footer";
 import { Sidebar } from "./Sidebar";
 import { UserDropdown } from "./UserDropdown";
-import Link from "next/link";
 
 type UserProp = {
     id: string;

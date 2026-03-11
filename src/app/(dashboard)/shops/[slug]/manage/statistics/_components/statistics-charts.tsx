@@ -25,7 +25,7 @@ import { formatPrice } from "@/lib/utils";
 
 import { ProductPerformanceCard,ProductStats } from "./product-performance-card";
 import { StaffActivityCard, StaffStats } from "./staff-activity-card";
-import { StockProjection,StockProjectionsCard } from "./stock-projection-card";
+import { StockProjection } from "./stock-projection-card";
 import { CustomerStats,TopCustomersCard } from "./top-customers-card";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";

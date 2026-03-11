@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, Download, RefreshCw, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { AlertCircle,Download, Loader2, RefreshCw } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogContent,
@@ -15,7 +16,6 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import {
