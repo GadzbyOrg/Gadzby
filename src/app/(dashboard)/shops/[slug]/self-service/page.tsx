@@ -46,10 +46,21 @@ export default async function ShopSelfServicePage({
 
 	// Access Control & Data Fetching
 	const isEnabled = shop.isSelfServiceEnabled;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let products: any[] = [];
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let categories: any[] = [];
+
+	interface VariantData { price: number | null; quantity: number | null; id?: string }
+	interface ProductData { 
+		id?: string;
+		name?: string;
+		price: number | null; 
+		variants?: VariantData[]; 
+		event?: { status: string; customMargin?: number | null; } | null; 
+		eventPrice?: number | null; 
+		allowSelfService?: boolean | null;
+		isArchived?: boolean | null;
+	}
+
+	let products: ProductData[] = [];
+	let categories: { id: string; name: string }[] = [];
 	let isClosedForUser = false;
 
 	if (isEnabled) {
@@ -64,9 +75,9 @@ export default async function ShopSelfServicePage({
 			// Should not happen if enabled, but handle gracefully
 			isClosedForUser = true;
 		} else {
-			products = res.products.map((p: any) => {
-                let effectivePrice = p.price;
-                const variants = p.variants ? p.variants.map((v: any) => ({ ...v })) : [];
+			products = res.products.map((p: ProductData) => {
+                let effectivePrice = p.price || 0;
+                const variants = p.variants ? p.variants.map((v: VariantData) => ({ ...v })) : [];
 
                 if (p.event && p.event.status === "OPEN") {
                     const customMargin = p.event.customMargin || 0;
@@ -77,7 +88,7 @@ export default async function ShopSelfServicePage({
                         effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
                     }
                     
-                    variants.forEach((variant: any) => {
+                    variants.forEach((variant: VariantData) => {
                         let vPrice = variant.price;
                         if (vPrice !== null && vPrice !== undefined) {
                             if (customMargin > 0 && p.eventPrice == null) {
@@ -109,9 +120,9 @@ export default async function ShopSelfServicePage({
 				getShopCategories(slug),
 			]);
 
-			products = ("products" in pRes ? pRes.products || [] : []).map((p: any) => {
-                let effectivePrice = p.price;
-                const variants = p.variants ? p.variants.map((v: any) => ({ ...v })) : [];
+			products = ("products" in pRes ? pRes.products || [] : []).map((p: ProductData) => {
+                let effectivePrice = p.price || 0;
+                const variants = p.variants ? p.variants.map((v: VariantData) => ({ ...v })) : [];
 
                 if (p.event && p.event.status === "OPEN") {
                     const customMargin = p.event.customMargin || 0;
@@ -122,7 +133,7 @@ export default async function ShopSelfServicePage({
                         effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
                     }
                     
-                    variants.forEach((variant: any) => {
+                    variants.forEach((variant: VariantData) => {
                         let vPrice = variant.price;
                         if (vPrice !== null && vPrice !== undefined) {
                             if (customMargin > 0 && p.eventPrice == null) {
@@ -227,8 +238,8 @@ export default async function ShopSelfServicePage({
 
 			<SelfServiceView
 				shopSlug={slug}
-				products={products}
-				categories={categories}
+				products={products as any}
+				categories={categories as any}
 				disconnectAfterCheckout={shop.disconnectAfterCheckout ?? false}
 			/>
 		</div>

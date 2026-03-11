@@ -3,7 +3,7 @@
 /**
  * Sanitizes the payload by removing sensitive fields (like passwords, tokens).
  */
-function sanitizePayload(payload: any): any {
+function sanitizePayload(payload: unknown): unknown {
 	if (!payload) return payload;
 
 	if (typeof payload !== "object") {
@@ -14,7 +14,7 @@ function sanitizePayload(payload: any): any {
 		return payload.map(sanitizePayload);
 	}
 
-	const sanitized = { ...payload };
+	const sanitized: Record<string, unknown> = { ...(payload as Record<string, unknown>) };
 	
 	// List of sensitive fields to redact
 	const sensitiveFields = [
@@ -52,7 +52,7 @@ export function logAction({
 }: {
 	userId?: string | null;
 	actionName: string;
-	payload?: any;
+	payload?: unknown;
 	status: "SUCCESS" | "ERROR";
 	errorMessage?: string;
 }) {

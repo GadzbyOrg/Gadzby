@@ -23,17 +23,39 @@ import { getPromssListAction } from "@/features/transactions/mass-payment-action
 
 import { UserSearch } from "./user-search";
 
+interface ParticipantData {
+	userId: string;
+	status: string;
+	weight?: number;
+	user: {
+		nom: string;
+		prenom: string;
+		username: string;
+		bucque: string | null;
+		balance: number;
+	};
+}
+
+interface EventData {
+	id: string;
+	shopId: string;
+	type: string;
+	acompte: number | null;
+	maxParticipants: number | null;
+	participants: ParticipantData[];
+}
+
 interface Props {
-	event: any;
+	event: EventData;
 	slug: string;
 }
 
-export function EventParticipants({ event, slug: _slug }: Props) {
+export function EventParticipants({ event }: Props) {
 	const router = useRouter();
 	const { toast } = useToast();
 
 	// Add User Logic
-	const handleAddUser = async (user: any) => {
+	const handleAddUser = async (user: { id: string }) => {
 		try {
 			const result = await joinEvent({
 				shopId: event.shopId,
@@ -47,10 +69,10 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 				variant: "default",
 			});
 			router.refresh();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			toast({
 				title: "Erreur",
-				description: error.message || "Impossible d'ajouter le participant",
+				description: (error as Error).message || "Impossible d'ajouter le participant",
 				variant: "destructive",
 			});
 		}
@@ -124,11 +146,11 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 				variant: "default",
 			});
 			setImportOpen(false);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error(error);
 			toast({
 				title: "Erreur",
-				description: error.message || "Erreur lors de la lecture du fichier",
+				description: (error as Error).message || "Erreur lors de la lecture du fichier",
 				variant: "destructive",
 			});
 		} finally {
@@ -154,10 +176,10 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 			});
 			setImportOpen(false);
 			setPromss("");
-		} catch (error: any) {
+		} catch (error: unknown) {
 			toast({
 				title: "Erreur",
-				description: error.message || "Erreur lors de l'import",
+				description: (error as Error).message || "Erreur lors de l'import",
 				variant: "destructive",
 			});
 		} finally {
@@ -179,10 +201,10 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 				description: "Poids mis à jour",
 				variant: "default",
 			});
-		} catch (error: any) {
+		} catch (error: unknown) {
 			toast({
 				title: "Erreur",
-				description: error.message || "Impossible de mettre à jour",
+				description: (error as Error).message || "Impossible de mettre à jour",
 				variant: "destructive",
 			});
 		}
@@ -202,10 +224,10 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 				description: "Participant retiré",
 				variant: "default",
 			});
-		} catch (error: any) {
+		} catch (error: unknown) {
 			toast({
 				title: "Erreur",
-				description: error.message || "Impossible de retirer le participant",
+				description: (error as Error).message || "Impossible de retirer le participant",
 				variant: "destructive",
 			});
 		}
@@ -221,7 +243,7 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 				<div className="flex gap-2">
 					<UserSearch
 						onSelect={handleAddUser}
-						excludeIds={event.participants.map((p: any) => p.userId)}
+						excludeIds={event.participants.map((p: ParticipantData) => p.userId)}
 					/>
 					<button
 						onClick={() => setImportOpen(true)}
@@ -247,7 +269,7 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-dark-700 bg-dark-900">
-						{event.participants.map((p: any) => (
+						{event.participants.map((p: ParticipantData) => (
 							<tr key={p.userId} className="hover:bg-dark-800/50">
 								<td className="px-4 py-3">
 									<div className="font-medium text-white flex items-center gap-2">
@@ -260,16 +282,16 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 								<td className="px-4 py-3">
 									<div
 										className={`flex items-center ${
-											(event.acompte || 0) > 0 && p.user.balance < event.acompte
+											(event.acompte || 0) > 0 && p.user.balance < (event.acompte || 0)
 												? "text-orange-400 font-semibold  px-2 py-1 rounded"
 												: ""
 										}`}
 									>
 										{(event.acompte || 0) > 0 &&
-											p.user.balance < event.acompte && (
+											p.user.balance < (event.acompte || 0) && (
 												<div
 													title={`Solde insuffisant (Manque ${(
-														(event.acompte - p.user.balance) /
+														((event.acompte || 0) - p.user.balance) /
 														100
 													).toFixed(2)}€)`}
 													className="text-orange-400 mr-1"
@@ -279,10 +301,10 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 											)}
 										{(p.user.balance / 100).toFixed(2)}€{" "}
 										{(event.acompte || 0) > 0 &&
-											p.user.balance < event.acompte && (
+											p.user.balance < (event.acompte || 0) && (
 												<span className="text-xs text-orange-200 ml-2">
 													Solde insuffisant (manque{" "}
-													{((event.acompte - p.user.balance) / 100).toFixed(2)}
+													{(((event.acompte || 0) - p.user.balance) / 100).toFixed(2)}
 													€)
 												</span>
 											)}
@@ -345,7 +367,7 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 						<div className="flex flex-col gap-4">
 							<div className="flex flex-col gap-1">
 								<label className="text-sm font-medium text-gray-300">
-									Via Prom'ss
+									Via Prom&apos;ss
 								</label>
 								<div className="flex gap-2">
 									<PromssSelector
@@ -376,8 +398,8 @@ export function EventParticipants({ event, slug: _slug }: Props) {
 									Via Fichier Excel (.xlsx)
 								</label>
 								<p className="text-xs text-gray-500 mb-2">
-									Le fichier doit contenir une colonne "Username" (Num'ss +
-									Prom'ss) Et une colonne "Poids" (Optionnelle)
+									Le fichier doit contenir une colonne &quot;Username&quot; (Num&apos;ss +
+									Prom&apos;ss) Et une colonne &quot;Poids&quot; (Optionnelle)
 								</p>
 								<input
 									type="file"

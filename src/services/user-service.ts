@@ -351,22 +351,22 @@ export class UserService {
         const existingEmails = new Set(existingUsers.map(u => u.email));
         const existingPhones = new Set(existingUsers.map(u => u.phone).filter(Boolean));
 
-        const usersToInsert: any[] = [];
+        const usersToInsert: (typeof users.$inferInsert)[] = [];
         // Generate passwords/hashes
         const passwordPromises = uniqueChunk.map(async (item) => {
              if (existingUsernames.has(item.username)) {
-                 return { status: "skipped", reason: `Utilisateur déjà existant: ${item.username}` };
+                 return { status: "skipped" as const, reason: `Utilisateur déjà existant: ${item.username}` };
              }
              if (item.data.email && existingEmails.has(item.data.email)) {
-                 return { status: "skipped", reason: `Email déjà utilisé: ${item.data.email}` };
+                 return { status: "skipped" as const, reason: `Email déjà utilisé: ${item.data.email}` };
              }
              if (item.data.phone && existingPhones.has(item.data.phone)) {
-                 return { status: "skipped", reason: `Téléphone déjà utilisé: ${item.data.phone}` };
+                 return { status: "skipped" as const, reason: `Téléphone déjà utilisé: ${item.data.phone}` };
              }
 
              const password = Math.random().toString(36).slice(-10);
              const hash = await bcrypt.hash(password, 10);
-             return { status: "resolved", hash, item };
+             return { status: "resolved" as const, hash, item };
         });
 
         const results = await Promise.all(passwordPromises);
@@ -376,13 +376,12 @@ export class UserService {
                 skippedCount++;
                 skipped.push(res.reason as string);
             } else if (res.status === "resolved") {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const { hash, item } = res as { status: "resolved"; hash: string; item: any };
+                const { hash, item } = res;
                 const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, balance } = item.data;
                 usersToInsert.push({
                     nom,
                     prenom,
-                    email: email ? email.toLowerCase() : email,
+                    email: email ? email.toLowerCase() : `${item.username}@gadzby.local`,
                     phone: phone || null,
                     bucque: bucque || null,
                     promss: promss.toUpperCase(),

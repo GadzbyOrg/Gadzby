@@ -117,7 +117,7 @@ export const testEmailConfigAction = authenticatedAction(
             // Dynamically import to avoid circular dependencies if any
             const { sendTestEmail } = await import("@/lib/email");
 
-            await sendTestEmail(configData as any, testEmail);
+            await sendTestEmail(configData, testEmail);
 
             return { success: `Email de test envoyé à ${testEmail}` };
         } catch (error: unknown) {

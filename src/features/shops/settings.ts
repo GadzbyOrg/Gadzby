@@ -59,7 +59,7 @@ export const toggleShopStatusAction = authenticatedAction(
             revalidatePath(`/shops/${shopId}`); // Revalidate shop page
             return { success: "Statut mis à jour" };
         } catch (error) {
-            return { error: "Erreur lors de la mise à jour du statut" };
+            return { error: error instanceof Error ? error.message : "Erreur lors de la mise à jour du statut" };
         }
     }
 );

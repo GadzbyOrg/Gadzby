@@ -7,7 +7,8 @@ import { SHOP_PERMISSIONS } from "@/features/shops/permissions";
 
 export class ShopService {
     static async create(data: { name: string; slug?: string; description?: string; category?: string }) {
-        let { slug, name, description, category } = data;
+        let { slug } = data;
+        const { name, description, category } = data;
 
         if (!slug) {
             slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");

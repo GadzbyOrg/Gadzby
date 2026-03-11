@@ -142,9 +142,9 @@ export const transferToFamsAction = authenticatedAction(
 
 			revalidatePath(`/famss/${data.famsName}`);
 			return { success: true };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to transfer:", error);
-			return { error: error.message || "Erreur lors du virement" };
+			return { error: (error as Error).message || "Erreur lors du virement" };
 		}
 	}
 );

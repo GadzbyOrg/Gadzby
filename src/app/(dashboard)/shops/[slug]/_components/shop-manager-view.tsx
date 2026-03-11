@@ -16,10 +16,47 @@ import { getUserFamss,processSale } from "@/features/shops/actions";
 import { CartSummary } from "./cart-summary";
 import { ProductGrid } from "./product-grid";
 
+interface CategoryData {
+	id: string;
+	name: string;
+}
+
+interface ProductVariant {
+	id: string;
+	name: string;
+	price: number | null;
+	quantity: number;
+}
+
+interface ProductData {
+	id: string;
+	name: string;
+	price: number;
+	categoryId: string;
+	stock: number;
+	variants?: ProductVariant[];
+}
+
+interface ClientData {
+	id: string;
+	prenom: string;
+	nom: string;
+	username: string;
+	bucque: string;
+	balance: number;
+	isAsleep: boolean | null;
+}
+
+interface FamsData {
+	id: string;
+	name: string;
+	balance: number;
+}
+
 interface ShopManagerViewProps {
 	shopSlug: string;
-	products: any[];
-	categories: any[];
+	products: ProductData[];
+	categories: CategoryData[];
 }
 
 export function ShopManagerView({
@@ -28,8 +65,8 @@ export function ShopManagerView({
 	categories,
 }: ShopManagerViewProps) {
 	const router = useRouter();
-	const [selectedClient, setSelectedClient] = useState<any>(null);
-	const [clientFamss, setClientFamss] = useState<any[]>([]);
+	const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
+	const [clientFamss, setClientFamss] = useState<FamsData[]>([]);
 	const [cart, setCart] = useState<Record<string, number>>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -57,12 +94,13 @@ export function ShopManagerView({
 		}
 	}, [selectedClient]);
 
-	const handleAddToCart = (product: any, delta: number, variantId?: string) => {
+	const handleAddToCart = (product: ProductData, delta: number, variantId?: string) => {
         const key = variantId ? `${product.id}:${variantId}` : product.id;
 		setCart((prev) => {
 			const current = prev[key] || 0;
 			const next = Math.max(0, current + delta);
 			if (next === 0) {
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { [key]: _dismiss, ...rest } = prev;
 				return rest;
 			}
@@ -80,7 +118,7 @@ export function ShopManagerView({
         if (key.includes(':')) {
             const [productId, variantId] = key.split(':');
             const product = products.find(p => p.id === productId);
-            const variant = product?.variants?.find((v: any) => v.id === variantId);
+            const variant = product?.variants?.find((v: ProductVariant) => v.id === variantId);
             const price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
             return total + (price * qty);
         }

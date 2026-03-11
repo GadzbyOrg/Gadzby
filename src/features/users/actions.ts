@@ -90,23 +90,18 @@ export async function getUsers(
 
         const whereCondition = and(...conditions);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const orderByClause = (users: any, { asc, desc }: { asc: (col: any) => any; desc: (col: any) => any }) => {
-			if (sort && order) {
-				const column = users[sort];
-				if (column) {
-					return order === "asc" ? asc(column) : desc(column);
-				}
-			}
-			return [desc(users.username)];
-		};
-
 		const [allUsers, countResult] = await Promise.all([
             db.query.users.findMany({
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                where: whereCondition as any,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                orderBy: orderByClause as any,
+                where: whereCondition,
+                orderBy: (t, { asc, desc }) => {
+                    if (sort && order) {
+                        const column = t[sort as keyof typeof t];
+                        if (column) {
+                            return order === "asc" ? [asc(column)] : [desc(column)];
+                        }
+                    }
+                    return [desc(t.username)];
+                },
                 limit: limit,
                 offset: offset,
                 with: {
@@ -225,7 +220,7 @@ export const importUsersBatchAction = authenticatedAction(
 		const { rows: rawRows } = data;
 
         // server-side mapping to match what ExcelImportModal used to do
-        const mappedRows = rawRows.map((row: any) => ({
+        const mappedRows = rawRows.map((row: Record<string, string | number | boolean | null | undefined>) => ({
             nom: row["Nom"] || row["nom"],
             prenom: row["Prenom"] || row["Prénom"] || row["prenom"],
             email: row["Email"] || row["email"],
@@ -242,7 +237,7 @@ export const importUsersBatchAction = authenticatedAction(
         const parseResult = z.array(importUserRowSchema).safeParse(mappedRows);
         
         if (!parseResult.success) {
-             const errorMsg = parseResult.error.issues.map((e: any) => `${e.path.join(".")}: ${e.message}`).join(", ");
+             const errorMsg = parseResult.error.issues.map((e: z.ZodIssue) => `${e.path.join(".")}: ${e.message}`).join(", ");
              return { error: `Erreur de validation: ${errorMsg}` };
         }
 

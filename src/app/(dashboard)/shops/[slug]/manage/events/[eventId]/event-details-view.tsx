@@ -35,10 +35,53 @@ import { EventParticipants } from "./_components/event-participants";
 import { EventProducts } from "./_components/event-products";
 import { EventRevenues } from "./_components/event-revenues";
 
+interface ParticipantData {
+	userId: string;
+	status: string;
+	user: {
+		id: string;
+		prenom: string;
+		nom: string;
+		username: string;
+		email: string;
+		bucque: string | null;
+		balance: number;
+	};
+}
+
+interface EventData {
+	id: string;
+	shopId: string;
+	name: string;
+	status: string;
+	type: string;
+	startDate: Date | string;
+	endDate: Date | string | null;
+	acompte: number | null;
+	revenues: Record<string, unknown>[];
+	participants: ParticipantData[];
+	maxParticipants: number | null;
+	description: string | null;
+	customMargin: number | null;
+}
+
+interface SettlementPreviewData {
+	totalExpenses: number;
+	totalWeight: number;
+	costPerUnit: number;
+	breakdown: Array<{
+		userId: string;
+		name: string;
+		weight: number;
+		alreadyPaid: number;
+		diff: number;
+	}>;
+}
+
 interface Props {
-	event: any;
+	event: EventData;
 	slug: string;
-	stats: any;
+	stats: Record<string, unknown>;
 }
 
 export function EventDetailsView({ event, slug, stats }: Props) {
@@ -57,23 +100,27 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 
 	// Settlement State
 	const [settleOpen, setSettleOpen] = useState(false);
-	const [settlementPreview, setSettlementPreview] = useState<any>(null);
+	const [settlementPreview, setSettlementPreview] = useState<SettlementPreviewData | null>(null);
 	const [isSettling, setIsSettling] = useState(false);
 
-	const isPayUpfront = event.acompte > 0;
+	const isPayUpfront = (event.acompte || 0) > 0;
 
 	const handleActivate = () => {
 		if (!confirm("Voulez-vous vraiment activer cet événement ?")) return;
 		startTransition(async () => {
 			try {
+				interface ActivateEventResult { 
+					insufficientUsers?: Array<{ id: string; name: string; }>; 
+					error?: string; 
+				}
 				let result = (await activateEvent({
 					shopId: event.shopId,
 					eventId: event.id,
-				})) as any;
+				})) as ActivateEventResult;
 
 				if (result?.insufficientUsers) {
 					const names = result.insufficientUsers
-						.map((u: any) => u.name)
+						.map((u: { name: string }) => u.name)
 						.join("\n- ");
 					const confirmRemove = confirm(
 						`Les utilisateurs suivants n'ont pas assez de solde pour l'acompte :\n- ${names}\n\nVoulez-vous les retirer de l'événement et continuer l'activation ?`
@@ -118,10 +165,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 					return;
 				}
 				toast({ title: "Succès", description: "Événement activé" });
-			} catch (e: any) {
+			} catch (e: unknown) {
 				toast({
 					title: "Erreur",
-					description: e.message,
+					description: (e as Error).message,
 					variant: "destructive",
 				});
 			}
@@ -146,10 +193,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 					return;
 				}
 				toast({ title: "Succès", description: "Événement démarré" });
-			} catch (e: any) {
+			} catch (e: unknown) {
 				toast({
 					title: "Erreur",
-					description: e.message,
+					description: (e as Error).message,
 					variant: "destructive",
 				});
 			}
@@ -184,10 +231,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 					title: "Succès",
 					description: isPayUpfront ? "Événement soldé" : "Événement clôturé",
 				});
-			} catch (e: any) {
+			} catch (e: unknown) {
 				toast({
 					title: "Erreur",
-					description: e.message,
+					description: (e as Error).message,
 					variant: "destructive",
 				});
 			}
@@ -215,10 +262,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 				}
 				toast({ title: "Succès", description: "Événement supprimé" });
 				router.push(`/shops/${slug}/manage/events`);
-			} catch (e: any) {
+			} catch (e: unknown) {
 				toast({
 					title: "Erreur",
-					description: e.message,
+					description: (e as Error).message,
 					variant: "destructive",
 				});
 			}
@@ -265,10 +312,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 			});
 			setSettleOpen(false);
 			router.refresh();
-		} catch (error: any) {
+		} catch (error: unknown) {
 			toast({
 				title: "Erreur",
-				description: error.message || "Erreur lors du solde",
+				description: (error as Error).message || "Erreur lors du solde",
 				variant: "destructive",
 			});
 		} finally {
@@ -617,7 +664,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 											</tr>
 										</thead>
 										<tbody className="divide-y divide-dark-700">
-											{settlementPreview.breakdown.map((item: any) => (
+											{settlementPreview.breakdown.map((item) => (
 												<tr key={item.userId}>
 													<td className="px-4 py-2">{item.name}</td>
 													<td className="px-4 py-2">

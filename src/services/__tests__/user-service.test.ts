@@ -192,7 +192,7 @@ describe("UserService", () => {
                 roleId: "role-1",
                 balance: 500, // Changed to 5 euros
                 isAsleep: false,
-                tabagnss: "Siber'ss"
+                tabagnss: "ME"
             });
 
             // Should insert transaction for difference (400)
@@ -222,7 +222,7 @@ describe("UserService", () => {
                  prenom: "User",
                  email: "test@example.com",
                  promss: "223",
-                 tabagnss: "Siber'ss",
+                 tabagnss: "ME",
                  password: "password123",
                  roleId: "role-1",
                  balance: 0
@@ -249,7 +249,7 @@ describe("UserService", () => {
                  prenom: "John",
                  email: "john@example.com",
                  promss: "223",
-                 tabagnss: "Siber'ss",
+                 tabagnss: "ME",
                  password: "password123",
                  roleId: "role-1",
                  balance: 0
@@ -268,7 +268,7 @@ describe("UserService", () => {
                  email: "john2@example.com",
                  promss: "223",
                  nums: "ABC", // Should be lowercased
-                 tabagnss: "Siber'ss",
+                 tabagnss: "ME",
                  password: "password123",
                  roleId: "role-1",
                  balance: 0
@@ -292,7 +292,7 @@ describe("UserService", () => {
                  prenom: "User",
                  email: "TEST@EXAMPLE.COM",
                  promss: "me223",
-                 tabagnss: "Siber'ss",
+                 tabagnss: "ME",
                  password: "password123",
                  roleId: "role-1",
                  balance: 0
@@ -314,7 +314,7 @@ describe("UserService", () => {
                  prenom: "User",
                  email: "test@example.com",
                  promss: "223",
-                 tabagnss: "Siber'ss",
+                 tabagnss: "ME",
                  password: "password123",
                  roleId: "role-1",
                  balance: 0
@@ -399,7 +399,7 @@ describe("UserService", () => {
                     "prenom": "Jane",
                     "email": "jane@example.com",
                     "promss": "223",
-                    "tabagnss": "Siber'ss",
+                    "tabagnss": "ME",
                     // other optional fields can be missing or null
                     "phone": null,
                     "bucque": null,
@@ -436,7 +436,7 @@ describe("UserService", () => {
                     "prenom": "Jane",
                     "email": "jane@example.com",
                     "promss": "223",
-                    "tabagnss": "Siber'ss"
+                    "tabagnss": "ME"
                 }
             ];
 
@@ -460,14 +460,14 @@ describe("UserService", () => {
                     "prenom": "Jane",
                     "email": "jane@example.com",
                     "promss": "223",
-                    "tabagnss": "Siber'ss"
+                    "tabagnss": "ME"
                 },
                 {
                     "nom": "Doe", // Duplicate of above (same computed username/email)
                     "prenom": "Jane",
                     "email": "jane@example.com",
                     "promss": "223",
-                    "tabagnss": "Siber'ss"
+                    "tabagnss": "ME"
                 }
             ];
 

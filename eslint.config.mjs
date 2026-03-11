@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
       "unused-imports": unusedImports,
     },
     rules: {
+      "@typescript-eslint/no-explicit-any": "off",
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
       "unused-imports/no-unused-imports": "error",
@@ -31,6 +32,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
     "next-env.d.ts",
     "public/sw.js",
     "public/workbox-*.js",

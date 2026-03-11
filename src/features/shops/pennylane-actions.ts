@@ -148,7 +148,7 @@ export const getPennylaneImportCandidates = authenticatedAction(
 						if (catRes.ok) {
 							const catData = await catRes.json();
 							const categoryItems = Array.isArray(catData) ? catData : catData.items || [];
-							invCatIds = categoryItems.map((c: any) => c.category_id || c.id).filter(Boolean);
+							invCatIds = categoryItems.map((c: { category_id?: string; id?: string }) => c.category_id || c.id).filter(Boolean);
 						}
 					} catch (err) {
 						console.error(`Failed to fetch categories for invoice ${inv.id}`, err);

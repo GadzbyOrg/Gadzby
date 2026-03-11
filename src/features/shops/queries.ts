@@ -215,7 +215,7 @@ export async function getSelfServiceProducts(shopSlug: string) {
     // Public/Self-service
     // logic moved from products.ts, imports updated (db, shops, products, eq, etc.)
     const shop = await db.query.shops.findFirst({
-        where: eq(shops.slug as any, shopSlug), 
+        where: eq(shops.slug, shopSlug), 
         columns: { id: true, isSelfServiceEnabled: true }
     });
 

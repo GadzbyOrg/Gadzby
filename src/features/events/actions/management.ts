@@ -110,9 +110,9 @@ export const deleteEvent = authenticatedAction(
 			});
 			revalidatePath(`/shops/${data.shopId}/manage/events`);
 			return { success: "Event deleted" };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to delete event:", error);
-			return { error: "Impossible de supprimer l'événement" };
+			return { error: (error as Error).message || "Impossible de supprimer l'événement" };
 		}
 	}
 );

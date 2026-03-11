@@ -19,11 +19,11 @@ const eventSchema = z.object({
 	acompte: z.number().min(0).optional(),
 	allowSelfRegistration: z.boolean().default(false),
 	maxParticipants: z.preprocess(
-		(val) => (val === "" ? undefined : Number(val)),
+		(val) => (val === "" || val == null ? undefined : Number(val)),
 		z.number().min(1).optional()
 	),
 	customMargin: z.preprocess(
-		(val) => (val === "" ? undefined : Number(val)),
+		(val) => (val === "" || val == null ? undefined : Number(val)),
 		z.number().min(0).optional()
 	),
 });
@@ -33,7 +33,18 @@ type EventFormValues = z.infer<typeof eventSchema>;
 interface EventFormProps {
 	shopId: string;
 	slug: string;
-	initialData?: any;
+	initialData?: {
+		id: string;
+		name: string;
+		description?: string | null;
+		startDate: Date | string;
+		endDate?: Date | string | null;
+		type: string;
+		acompte?: number | null;
+		allowSelfRegistration?: boolean | null;
+		maxParticipants?: number | null;
+		customMargin?: number | null;
+	};
 }
 
 export function EventForm({ shopId, slug, initialData }: EventFormProps) {
@@ -42,14 +53,15 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 	const [isPending, startTransition] = useTransition();
 
 	const form = useForm<EventFormValues>({
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		resolver: zodResolver(eventSchema) as any,
-		defaultValues: initialData
+		defaultValues: (initialData
 			? {
 					name: initialData.name,
 					description: initialData.description,
-					startDate: new Date(initialData.startDate)
-						.toISOString()
-						.split("T")[0],
+					startDate: initialData.startDate
+						? new Date(initialData.startDate).toISOString().split("T")[0]
+						: "",
 					endDate: initialData.endDate
 						? new Date(initialData.endDate).toISOString().split("T")[0]
 						: "",
@@ -64,12 +76,12 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 					description: "",
 					startDate: "",
 					endDate: "",
-					type: undefined as any,
+					type: undefined as unknown as "SHARED_COST" | "COMMERCIAL",
 					acompte: 0,
 					allowSelfRegistration: false,
 					maxParticipants: undefined,
 					customMargin: undefined,
-			  },
+			  }) as Partial<EventFormValues>,
 	});
 
 	const onSubmit = (data: EventFormValues) => {
@@ -192,7 +204,7 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 							/>
 							<div className="font-medium text-white mb-1">Acompte / Coûts Partagés</div>
 							<div className="text-xs text-gray-400 text-center">
-								Collecte d'un acompte, partage des dépenses entre les participants
+								Collecte d&apos;un acompte, partage des dépenses entre les participants
 							</div>
 						</label>
 					</div>
@@ -281,7 +293,7 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 							<span className="text-gray-400 hidden md:inline">%</span>
 						</div>
 						<span className="text-gray-500 text-xs">
-							S'applique à tous les produits vendus pendant l'événement.
+							S&apos;applique à tous les produits vendus pendant l&apos;événement.
 						</span>
 						{form.formState.errors.customMargin && (
 							<span className="text-red-400 text-xs">

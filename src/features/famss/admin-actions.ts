@@ -21,7 +21,7 @@ const ADMIN_PERMISSIONS = ["MANAGE_FAMSS"];
 
 export const getAdminFamssAction = authenticatedAction(
 	getAdminFamssSchema,
-	async ({ page, limit, search }, { session }) => {
+	async ({ page, limit, search }) => {
 		const offset = (page - 1) * limit;
 
 		const whereClause = search ? ilike(famss.name, `%${search}%`) : undefined;
@@ -48,7 +48,7 @@ export const getAdminFamssAction = authenticatedAction(
 
 export const createFamsAction = authenticatedAction(
 	adminFamsSchema,
-	async (data, { session }) => {
+	async (data) => {
 		try {
 			await db.insert(famss).values({
 				name: data.name,
@@ -57,9 +57,9 @@ export const createFamsAction = authenticatedAction(
 
 			revalidatePath("/admin/famss");
 			return { success: "Fam'ss créée avec succès" };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to create fams:", error);
-			if (error.code === "23505") return { error: "Ce nom existe déjà" };
+			if (error && typeof error === "object" && "code" in error && error.code === "23505") return { error: "Ce nom existe déjà" };
 			throw new Error("Erreur lors de la création");
 		}
 	},
@@ -111,10 +111,10 @@ export const updateFamsAction = authenticatedAction(
 
 			revalidatePath("/admin/famss");
 			return { success: "Fam'ss mise à jour" };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to update fams:", error);
-			if (error.code === "23505") return { error: "Ce nom existe déjà" };
-			if (error.message === "Fams not found")
+			if (error && typeof error === "object" && "code" in error && error.code === "23505") return { error: "Ce nom existe déjà" };
+			if (error instanceof Error && error.message === "Fams not found")
 				return { error: "Fam'ss introuvable" };
 			throw new Error("Erreur lors de la mise à jour");
 		}
@@ -124,16 +124,16 @@ export const updateFamsAction = authenticatedAction(
 
 export const deleteFamsAction = authenticatedAction(
 	famsIdSchema,
-	async ({ famsId }, { session }) => {
+	async ({ famsId }) => {
 		try {
 			await db.delete(famsMembers).where(eq(famsMembers.famsId, famsId));
 			await db.delete(famss).where(eq(famss.id, famsId));
 
 			revalidatePath("/admin/famss");
 			return { success: "Fam'ss supprimée" };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to delete fams:", error);
-			if (error.code === "23503")
+			if (error && typeof error === "object" && "code" in error && error.code === "23503")
 				return {
 					error:
 						"Impossible de supprimer une Fam'ss avec des transactions liées",
@@ -148,7 +148,7 @@ export const deleteFamsAction = authenticatedAction(
 
 export const getFamsMembersAction = authenticatedAction(
 	famsIdSchema,
-	async ({ famsId }, { session }) => {
+	async ({ famsId }) => {
 		const members = await db.query.famsMembers.findMany({
 			where: eq(famsMembers.famsId, famsId),
 			with: {
@@ -168,7 +168,7 @@ export const getFamsMembersAction = authenticatedAction(
 
 export const addMemberAction = authenticatedAction(
 	addAdminMemberSchema,
-	async ({ famsId, username }, { session }) => {
+	async ({ famsId, username }) => {
 		const user = await db.query.users.findFirst({
 			where: eq(users.username, username),
 		});
@@ -184,9 +184,9 @@ export const addMemberAction = authenticatedAction(
 
 			revalidatePath("/admin/famss");
 			return { success: "Membre ajouté" };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Failed to add member:", error);
-			if (error.code === "23505") return { error: "Déjà membre" };
+			if (error && typeof error === "object" && "code" in error && error.code === "23505") return { error: "Déjà membre" };
 			throw new Error("Erreur lors de l'ajout");
 		}
 	},
@@ -195,7 +195,7 @@ export const addMemberAction = authenticatedAction(
 
 export const updateMemberRoleAction = authenticatedAction(
 	updateMemberRoleSchema,
-	async ({ famsId, userId, isAdmin }, { session }) => {
+	async ({ famsId, userId, isAdmin }) => {
 		await db
 			.update(famsMembers)
 			.set({ isAdmin })
@@ -210,7 +210,7 @@ export const updateMemberRoleAction = authenticatedAction(
 
 export const removeMemberAction = authenticatedAction(
 	removeMemberSchema,
-	async ({ famsId, userId }, { session }) => {
+	async ({ famsId, userId }) => {
 		await db
 			.delete(famsMembers)
 			.where(
@@ -227,7 +227,7 @@ export const removeMemberAction = authenticatedAction(
 
 export const getFamsTransactionsAction = authenticatedAction(
 	famsIdSchema,
-	async ({ famsId }, { session }) => {
+	async ({ famsId }) => {
 		const history = await db.query.transactions.findMany({
 			where: eq(transactions.famsId, famsId),
 			orderBy: [desc(transactions.createdAt)],
