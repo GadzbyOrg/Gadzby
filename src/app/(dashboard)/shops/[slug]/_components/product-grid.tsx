@@ -90,13 +90,13 @@ export function ProductGrid({
 			</div>
 
 			{/* Category Tabs */}
-			<div className="flex flex-wrap gap-2 pb-2 overflow-x-auto touch-pan-x no-scrollbar">
+			<div className="flex flex-wrap gap-2 pb-2">
 				{tabs.map((tab) => (
 					<button
 						key={tab.id}
 						onClick={() => setSelectedCategory(tab.id)}
 						className={cn(
-							"px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap border",
+							"px-4 py-2 rounded-full text-sm font-medium transition-colors border",
 							selectedCategory === tab.id
 								? "bg-white text-black border-white"
 								: "text-gray-400 border-dark-700 bg-dark-800 hover:text-white hover:bg-dark-700 hover:border-dark-600"
