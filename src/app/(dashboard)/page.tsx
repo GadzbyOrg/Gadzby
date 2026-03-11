@@ -9,7 +9,6 @@ import Link from "next/link";
 
 import { ExpensesByShopChart } from "@/components/dashboard/ExpensesByShopChart";
 import { ExpensesOverTimeChart } from "@/components/dashboard/ExpensesOverTimeChart";
-import { RecentActivityList } from "@/components/dashboard/RecentActivityList";
 import { UpcomingEventsList } from "@/components/dashboard/UpcomingEventsList";
 import {
 	getUserExpensesByShop,
@@ -23,6 +22,7 @@ import {
 } from "@/features/events/actions";
 import { getShops } from "@/features/shops/actions";
 import { verifySession } from "@/lib/session";
+import { TransactionTable } from "@/components/transactions/transaction-table";
 
 interface StatCardProps {
 	title: string;
@@ -191,7 +191,9 @@ export default async function DashboardPage() {
 				<h3 className="mb-6 text-lg font-semibold text-white">
 					Activité Récente
 				</h3>
-				<RecentActivityList activities={recentActivity} />
+				<div className="mt-2">
+					<TransactionTable transactions={recentActivity} />
+				</div>
 			</div>
 		</div>
 	);
