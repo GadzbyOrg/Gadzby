@@ -18,5 +18,5 @@ export default async function EventDetailsPage({
 
 	const stats = await getEventStats(eventId);
 
-	return <EventDetailsView event={event} slug={slug} stats={stats} />;
+	return <EventDetailsView event={event} slug={slug} stats={stats as any} />;
 }
