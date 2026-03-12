@@ -300,7 +300,12 @@ function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean
     }
 
     if (isCancelled) {
-        title += " (Annulé)";
+        const cancelledByMatch = t.description?.match(/\[CANCELLED\] par (.*)/);
+        if (cancelledByMatch && cancelledByMatch[1]) {
+            title += ` (Annulé par ${cancelledByMatch[1]})`;
+        } else {
+            title += " (Annulé)";
+        }
     }
 
     return {

@@ -254,12 +254,18 @@ export class TransactionService {
 		});
 
 		// 5. Mark original as cancelled
+		const adminUser = await tx.query.users.findFirst({
+			where: eq(users.id, performedByUserId),
+			columns: { username: true, prenom: true, nom: true }
+		});
+		const adminName = adminUser ? (adminUser.username || `${adminUser.prenom} ${adminUser.nom}`) : "Admin";
+
 		await tx
 			.update(transactions)
 			.set({
 				description: originalTx.description
-					? `${originalTx.description} [CANCELLED]`
-					: "[CANCELLED]",
+					? `${originalTx.description} [CANCELLED] par ${adminName}`
+					: `[CANCELLED] par ${adminName}`,
 				status: "CANCELLED",
 			})
 			.where(eq(transactions.id, originalTx.id));
