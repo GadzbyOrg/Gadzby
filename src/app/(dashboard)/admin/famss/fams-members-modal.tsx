@@ -4,12 +4,12 @@ import {
 	IconShield,
 	IconShieldOff,
 	IconTrash,
-	IconUserPlus,
 	IconX,
 } from "@tabler/icons-react";
 import { useCallback,useEffect,useState } from "react";
 
 import { UserAvatar } from "@/components/user-avatar";
+import { UserSearch } from "@/components/user-search";
 import {
 	addMemberAction,
 	getFamsMembersAction,
@@ -35,7 +35,6 @@ interface FamsMembersModalProps {
 export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 	const [members, setMembers] = useState<FamsMember[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [newMemberUsername, setNewMemberUsername] = useState("");
 	const [error, setError] = useState<string | null>(null);
 
 	const loadMembers = useCallback(async () => {
@@ -56,20 +55,18 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 		loadMembers();
 	}, [loadMembers]);
 
-	async function handleAdd(e: React.FormEvent) {
-		e.preventDefault();
+	async function handleSelectUser(user: any) {
 		setLoading(true);
 		setError(null);
-		if (!newMemberUsername.trim()) return;
 
 		const res = await addMemberAction({
 			famsId: fams.id,
-			username: newMemberUsername.trim(),
+			username: user.username,
 		});
 		if (res.error) {
 			setError(res.error);
+			setLoading(false);
 		} else {
-			setNewMemberUsername("");
 			loadMembers();
 		}
 	}
@@ -77,9 +74,11 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 	async function handleRemove(userId: string) {
 		if (!confirm("Retirer ce membre ?")) return;
 
+		setLoading(true);
 		const res = await removeMemberAction({ famsId: fams.id, userId });
 		if (res.error) {
 			setError(res.error);
+			setLoading(false);
 		} else {
 			loadMembers();
 		}
@@ -88,7 +87,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 	async function toggleAdmin(member: FamsMember) {
 		// Optimistic update could be safer but simple fetch refresh is fine here
 		const newStatus = !member.isAdmin;
-        setLoading(true);
+		setLoading(true);
 		const res = await updateMemberRoleAction({
 			famsId: fams.id,
 			userId: member.id,
@@ -97,6 +96,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 
 		if (res.error) {
 			setError(res.error);
+			setLoading(false);
 		} else {
 			loadMembers();
 		}
@@ -125,23 +125,15 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 						</div>
 					)}
 
-					{/* Add Member Form */}
-					<form onSubmit={handleAdd} className="flex gap-2 mb-6">
-						<input
-							type="text"
-							placeholder="Nom d'utilisateur (ex: bucque)"
-							value={newMemberUsername}
-							onChange={(e) => setNewMemberUsername(e.target.value)}
-							className="flex-1 bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
+					{/* Add Member */}
+					<div className="mb-6 z-20 relative">
+						<UserSearch
+							onSelect={handleSelectUser}
+							placeholder="Rechercher un utilisateur à ajouter..."
+							excludeIds={members.map((m) => m.id)}
+							className="w-full max-w-full"
 						/>
-						<button
-							type="submit"
-							className="bg-dark-800 hover:bg-dark-700 text-white px-3 py-2 rounded-lg border border-dark-700 transition-colors"
-							title="Ajouter"
-						>
-							<IconUserPlus size={18} />
-						</button>
-					</form>
+					</div>
 
 					{/* Members List */}
 					{loading ? (
