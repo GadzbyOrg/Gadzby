@@ -33,3 +33,7 @@ jobs:
         run: npm run build
         env:
           SENTRY_DISABLE_AUTO_UPLOAD: 1
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          CAMPUS_NAME: ${{ secrets.CAMPUS_NAME }}
+          
