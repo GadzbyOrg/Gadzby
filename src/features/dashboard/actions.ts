@@ -83,7 +83,7 @@ export async function getUserRecentActivity() {
 
 	const recentTransactions = await db.query.transactions.findMany({
 		where: and(
-			eq(transactions.issuerId, session.userId)
+			eq(transactions.targetUserId, session.userId)
 		),
 		with: {
 			shop: true,
