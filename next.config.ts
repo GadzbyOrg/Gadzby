@@ -2,10 +2,8 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-	experimental: {
-		serverActions: {
-			bodySizeLimit: "50mb", // Allow sending pictures to pennylane
-		},
+	turbopack: {
+		root: "./",
 	},
 };
 
@@ -31,7 +29,7 @@ export default withSentryConfig(nextConfig, {
 	// Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
 	// side errors will fail.
 	// tunnelRoute: "/monitoring",
-
+	
 	webpack: {
 		// Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
 		// See the following for more information:
