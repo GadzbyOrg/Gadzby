@@ -95,13 +95,13 @@ export function DashboardShell({
 						{/* Solde Widget */}
 						<div
 							className={cn(
-								"flex items-center gap-2 rounded-full border bg-dark-900 px-4 py-1.5 text-sm font-medium shadow-sm",
+								"flex items-center gap-2 rounded-full border bg-dark-900 md:px-4 md:py-1.5 px-2 py-1 text-sm font-medium shadow-sm",
 								user.balance < 0
 									? "border-red-900/50 text-red-400"
 									: "border-green-900/50 text-green-400"
 							)}
 						>
-							<span className="text-gray-400">Solde:</span>
+							<span className="text-gray-400 hidden md:block">Solde:</span>
 							<span className="font-bold tracking-wide">
 								{formatPrice(user.balance)}
 							</span>
