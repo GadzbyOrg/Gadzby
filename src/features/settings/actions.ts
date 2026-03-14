@@ -317,3 +317,46 @@ export const updateFamssSettingAction = authenticatedAction(
     },
     { requireAdmin: true }
 );
+
+export const getCampusNameAction = authenticatedActionNoInput(async () => {
+    try {
+        const setting = await db.query.systemSettings.findFirst({
+            where: eq(systemSettings.key, "campus_name"),
+        });
+
+        const value = setting?.value as { name: string } | null;
+        return { name: value?.name ?? process.env.CAMPUS_NAME };
+    } catch (error) {
+        console.error("Failed to fetch campus name:", error);
+        return { error: "Erreur lors de la récupération du nom du campus" };
+    }
+}, { requireAdmin: true });
+
+export const updateCampusNameAction = authenticatedAction(
+    z.object({ name: z.string() }),
+    async (data) => {
+        try {
+            await db.insert(systemSettings)
+                .values({
+                    key: "campus_name",
+                    value: { name: data.name },
+                    description: "Nom du campus",
+                    updatedAt: new Date(),
+                })
+                .onConflictDoUpdate({
+                    target: systemSettings.key,
+                    set: {
+                        value: { name: data.name },
+                        updatedAt: new Date(),
+                    }
+                });
+
+            revalidatePath("/admin/settings");
+            return { success: "Nom du campus sauvegardé avec succès" };
+        } catch (error) {
+            console.error("Failed to update campus name:", error);
+            return { error: "Erreur lors de la sauvegarde du nom du campus" };
+        }
+    },
+    { requireAdmin: true }
+);

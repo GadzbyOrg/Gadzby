@@ -9,6 +9,7 @@ import { EmailSettings } from "./_components/email-settings";
 import { FamssSettings } from "./_components/famss-settings";
 import { PaymentsSettings } from "./_components/payments-settings";
 import { PennylaneSettings } from "./_components/pennylane-settings";
+import { CampusSettings } from "./_components/campus-settings";
 
 export default async function AdminSettingsPage() {
     const session = await verifySession();
@@ -38,6 +39,12 @@ export default async function AdminSettingsPage() {
             </div>
 
             <div className="space-y-12">
+                <section>
+                    <CampusSettings />
+                </section>
+
+                <div className="h-px bg-dark-800" />
+
                 <section>
                     <FamssSettings />
                 </section>

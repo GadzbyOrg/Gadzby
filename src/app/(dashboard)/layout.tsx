@@ -6,6 +6,7 @@ import { ToastProvider } from "@/components/ui/use-toast";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getShops } from "@/features/shops/actions";
+import { getCampusName } from "@/features/settings/queries";
 import { verifySession } from "@/lib/session";
 
 export default async function Layout({
@@ -48,9 +49,11 @@ export default async function Layout({
 		permissions: session.permissions || [],
 	};
 
+	const campusName = await getCampusName();
+
 	return (
 		<ToastProvider>
-			<DashboardShell user={userWithPermissions} shops={activeShops || []}>
+			<DashboardShell user={userWithPermissions} shops={activeShops || []} campusName={campusName}>
 				{children}
 			</DashboardShell>
 		</ToastProvider>

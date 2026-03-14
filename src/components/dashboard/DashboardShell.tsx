@@ -39,10 +39,12 @@ export function DashboardShell({
 	children,
 	user,
 	shops,
+	campusName,
 }: {
 	children: React.ReactNode;
 	user: UserProp;
 	shops: ShopProp[];
+	campusName?: string;
 }) {
 	const pathname = usePathname();
 
@@ -74,13 +76,18 @@ export function DashboardShell({
 					<div className="md:hidden flex items-center gap-2">
 						<Link href="/" className="flex items-center gap-2">
 							<span className="text-lg font-bold text-gray-200">Gadzby</span>
+							{campusName && (
+								<span className="text-xl italic font-semibold text-primary-400" style={{ fontFamily: "'Playfair Display', serif" }}>{campusName}</span>
+							)}
 						</Link>
 					</div>
 
 					{/* Titre */}
 					<div className="hidden md:flex items-center gap-1">
-						<Link className="text-lg font-bold text-primary-500 hover:underline" href="https://forms.gle/ngwX9tdf2aaa2quw5" target="_blank">[BETA]</Link>
 						<h1 className="text-lg font-semibold text-gray-200">Gadzby</h1>
+						{campusName && (
+							<span className="text-xl italic font-semibold text-primary-400" style={{ fontFamily: "'Playfair Display', serif" }}>{campusName}</span>
+						)}
 					</div>
 
 					{/* User Info & Actions */}

@@ -32,6 +32,12 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="fr">
+			<head>
+				{/* Playfair Display font for campus name display */}
+				<link rel="preconnect" href="https://fonts.googleapis.com" />
+				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+				<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,600;1,700&display=swap" rel="stylesheet" />
+			</head>
 			<body>
 				<ServiceWorkerUnregister />
 				{children}
