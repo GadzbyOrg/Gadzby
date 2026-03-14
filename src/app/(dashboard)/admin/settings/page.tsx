@@ -6,6 +6,7 @@ import { paymentMethods } from "@/db/schema/payment-methods";
 import { verifySession } from "@/lib/session";
 
 import { EmailSettings } from "./_components/email-settings";
+import { FamssSettings } from "./_components/famss-settings";
 import { PaymentsSettings } from "./_components/payments-settings";
 import { PennylaneSettings } from "./_components/pennylane-settings";
 
@@ -37,6 +38,12 @@ export default async function AdminSettingsPage() {
             </div>
 
             <div className="space-y-12">
+                <section>
+                    <FamssSettings />
+                </section>
+
+                <div className="h-px bg-dark-800" />
+
                 <section>
                      <EmailSettings />
                 </section>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { IconLoader2, IconTrash,IconUsers, IconWallet } from "@tabler/icons-react";
 
 interface Product {
@@ -24,6 +25,7 @@ interface CartSummaryProps {
     error: string | null;
     success: string | null;
     isSelfService?: boolean;
+    famssEnabled?: boolean;
     className?: string;
 }
 
@@ -43,9 +45,17 @@ export function CartSummary({
     error,
     success,
     isSelfService = false,
+    famssEnabled = true,
     className
 }: CartSummaryProps) {
     const cartItemsCount = Object.values(cart).reduce((a, b) => a + b, 0);
+
+    // Force PERSONAL when fam'ss is globally disabled
+    useEffect(() => {
+        if (!famssEnabled && paymentSource === "FAMILY") {
+            setPaymentSource("PERSONAL");
+        }
+    }, [famssEnabled, paymentSource, setPaymentSource]);
 
     const cartTotal = Object.entries(cart).reduce((total, [key, qty]) => {
         if (key.includes(':')) {
@@ -154,7 +164,8 @@ export function CartSummary({
 
             {showPaymentOptions ? (
                 <div className="space-y-3 mb-4">
-                    {/* Payment Source Selector */}
+                    {/* Payment Source Selector — only when fam'ss feature is on */}
+                    {famssEnabled && (
                     <div className="grid grid-cols-2 gap-2">
                         <button
                             onClick={() => setPaymentSource("PERSONAL")}
@@ -185,6 +196,7 @@ export function CartSummary({
                             Fam'ss
                         </button>
                     </div>
+                    )}
 
                     {paymentSource === "FAMILY" && clientFamss.length > 0 && (
                         <select

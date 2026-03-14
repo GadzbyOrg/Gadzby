@@ -267,3 +267,53 @@ export const updateShopPennylaneCategoriesAction = authenticatedAction(
     },
     { requireAdmin: true }
 );
+
+// ─── Famss Feature Toggle ─────────────────────────────────────────────────────
+
+const famssSettingSchema = z.object({
+    enabled: z.union([z.boolean(), z.string().transform((v) => v === "true")]),
+});
+
+export const getFamssSettingAction = authenticatedActionNoInput(async () => {
+    try {
+        const setting = await db.query.systemSettings.findFirst({
+            where: eq(systemSettings.key, "famss_enabled"),
+        });
+
+        const value = setting?.value as { enabled: boolean } | null;
+        return { enabled: value?.enabled ?? true }; // Default: feature is enabled
+    } catch (error) {
+        console.error("Failed to fetch famss setting:", error);
+        return { error: "Erreur lors de la récupération du paramètre" };
+    }
+}, { requireAdmin: true });
+
+export const updateFamssSettingAction = authenticatedAction(
+    famssSettingSchema,
+    async (data) => {
+        try {
+            await db.insert(systemSettings)
+                .values({
+                    key: "famss_enabled",
+                    value: { enabled: data.enabled },
+                    description: "Activation de la fonctionnalité Fam'ss",
+                    updatedAt: new Date(),
+                })
+                .onConflictDoUpdate({
+                    target: systemSettings.key,
+                    set: {
+                        value: { enabled: data.enabled },
+                        updatedAt: new Date(),
+                    }
+                });
+
+            revalidatePath("/admin/settings");
+            revalidatePath("/famss");
+            return { success: data.enabled ? "Fam'ss activée" : "Fam'ss désactivée" };
+        } catch (error) {
+            console.error("Failed to update famss setting:", error);
+            return { error: "Erreur lors de la sauvegarde" };
+        }
+    },
+    { requireAdmin: true }
+);

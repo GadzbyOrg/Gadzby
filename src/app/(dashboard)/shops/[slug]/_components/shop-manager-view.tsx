@@ -57,12 +57,14 @@ interface ShopManagerViewProps {
 	shopSlug: string;
 	products: ProductData[];
 	categories: CategoryData[];
+	famssEnabled: boolean;
 }
 
 export function ShopManagerView({
 	shopSlug,
 	products,
 	categories,
+	famssEnabled,
 }: ShopManagerViewProps) {
 	const router = useRouter();
 	const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
@@ -86,13 +88,15 @@ export function ShopManagerView({
 			setClientFamss([]);
 			setSelectedFamsId("");
 
-			getUserFamss({ userId: selectedClient.id }).then((res) => {
-				if (res.famss) {
-					setClientFamss(res.famss);
-				}
-			});
+			if (famssEnabled) {
+				getUserFamss({ userId: selectedClient.id }).then((res) => {
+					if (res.famss) {
+						setClientFamss(res.famss);
+					}
+				});
+			}
 		}
-	}, [selectedClient]);
+	}, [selectedClient, famssEnabled]);
 
 	const handleAddToCart = (product: ProductData, delta: number, variantId?: string) => {
         const key = variantId ? `${product.id}:${variantId}` : product.id;
@@ -233,6 +237,7 @@ export function ShopManagerView({
 						onClearCart={handleClearCart}
 						error={error}
 						success={success}
+						famssEnabled={famssEnabled}
 					/>
 				</div>
 			</div>
@@ -325,6 +330,7 @@ export function ShopManagerView({
 							onClearCart={handleClearCart}
 							error={error}
 							success={success}
+							famssEnabled={famssEnabled}
 							className="border-0 bg-transparent p-0"
 						/>
 					</div>

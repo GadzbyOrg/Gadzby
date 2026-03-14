@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { famsMembers, famsRequests,famss } from "@/db/schema";
+import { systemSettings } from "@/db/schema/settings";
 import { verifySession } from "@/lib/session";
 
 import { CancelRequestButton,JoinFamsButton } from "./[name]/details-components";
@@ -13,6 +14,28 @@ import { SearchInput } from "./search-input";
 export default async function FamssPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
 	const session = await verifySession();
 	if (!session) redirect("/login");
+
+	// Check global feature toggle
+	const famssToggle = await db.query.systemSettings.findFirst({
+		where: eq(systemSettings.key, "famss_enabled"),
+	});
+	const famssEnabled = famssToggle
+		? (famssToggle.value as { enabled: boolean }).enabled
+		: true; // Default: enabled
+
+	if (!famssEnabled) {
+		return (
+			<div className="p-6 max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center">
+				<div className="flex h-16 w-16 items-center justify-center rounded-full bg-dark-800 text-gray-500">
+					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+				</div>
+				<div>
+					<h1 className="text-2xl font-bold text-white mb-2">Fam&apos;ss indisponible</h1>
+					<p className="text-gray-400">Cette fonctionnalité a été désactivée par les administrateurs.</p>
+				</div>
+			</div>
+		);
+	}
 
 	const params = await searchParams;
 	const query = params.q;

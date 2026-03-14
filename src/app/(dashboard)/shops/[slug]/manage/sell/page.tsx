@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { db } from "@/db";
 import { checkTeamMemberAccess } from "@/features/shops/actions";
 import { getShopCategories,getShopProducts } from "@/features/shops/products";
+import { systemSettings } from "@/db/schema/settings";
+import { eq } from "drizzle-orm";
 
 import { ShopManagerView } from "../../_components/shop-manager-view";
 
@@ -19,6 +22,14 @@ export default async function ShopPosPage({
 	}
 
 	const { shop } = access;
+
+	// Check famss feature toggle
+	const famssToggle = await db.query.systemSettings.findFirst({
+		where: eq(systemSettings.key, "famss_enabled"),
+	});
+	const famssEnabled = famssToggle
+		? (famssToggle.value as { enabled: boolean }).enabled
+		: true;
 
 	// Fetch Manager Data (All products)
 	const pRes = await getShopProducts(slug);
@@ -89,6 +100,7 @@ export default async function ShopPosPage({
 				shopSlug={slug}
 				products={products}
 				categories={categories}
+				famssEnabled={famssEnabled}
 			/>
 		</div>
 	);

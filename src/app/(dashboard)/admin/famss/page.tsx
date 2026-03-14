@@ -1,5 +1,9 @@
+import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
+import { db } from "@/db";
+import { systemSettings } from "@/db/schema/settings";
 import { getAdminFamssAction } from "@/features/famss/admin-actions";
 import { verifySession } from "@/lib/session";
 
@@ -29,6 +33,14 @@ export default async function AdminFamssPage({
 		search: searchTerm,
 	});
 
+	// Check global feature toggle
+	const famssToggle = await db.query.systemSettings.findFirst({
+		where: eq(systemSettings.key, "famss_enabled"),
+	});
+	const famssEnabled = famssToggle
+		? (famssToggle.value as { enabled: boolean }).enabled
+		: true;
+
 	if (error) {
 		return <div className="p-8 text-center text-red-400">{error}</div>;
 	}
@@ -49,6 +61,21 @@ export default async function AdminFamssPage({
 					</p>
 				</div>
 			</header>
+
+			{!famssEnabled && (
+				<div className="flex items-start gap-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-5 py-4">
+					<span className="mt-0.5 text-xl">⚠️</span>
+					<div>
+						<p className="font-medium text-yellow-400">Fam&apos;ss désactivée</p>
+						<p className="text-sm text-yellow-400/70 mt-0.5">
+							La fonctionnalité Fam&apos;ss est actuellement désactivée globalement. Les utilisateurs ne peuvent pas accéder à la page Fam&apos;ss ni payer via un compte Fam&apos;ss.{" "}
+							<Link href="/admin/settings" className="underline hover:text-yellow-300 transition-colors">
+								Activer dans les paramètres
+							</Link>
+						</p>
+					</div>
+				</div>
+			)}
 
 			<FamssTable famss={safeFamss} />
 		</div>

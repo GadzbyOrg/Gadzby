@@ -11,7 +11,16 @@ import {
 	transactions,
 	users,
 } from "@/db/schema";
+import { systemSettings } from "@/db/schema/settings";
 import { authenticatedAction } from "@/lib/actions";
+
+/** Reads the global famss_enabled toggle. Defaults to true if not set. */
+async function isFamssEnabled(): Promise<boolean> {
+	const row = await db.query.systemSettings.findFirst({
+		where: eq(systemSettings.key, "famss_enabled"),
+	});
+	return row ? (row.value as { enabled: boolean }).enabled : true;
+}
 
 import {
 	addMemberSchema,
@@ -25,6 +34,7 @@ import {
 export const createFamsAction = authenticatedAction(
 	createFamsSchema,
 	async (data, { session }) => {
+		if (!await isFamssEnabled()) return { error: "La fonctionnalité Fam'ss est actuellement désactivée" };
 		try {
 			await db.transaction(async (tx) => {
 				const [newFams] = await tx
@@ -97,6 +107,7 @@ export const addMemberAction = authenticatedAction(
 export const transferToFamsAction = authenticatedAction(
 	transferSchema,
 	async (data, { session }) => {
+		if (!await isFamssEnabled()) return { error: "La fonctionnalité Fam'ss est actuellement désactivée" };
 		try {
 			const amountInCents = Math.floor(data.amountCents);
 
@@ -233,6 +244,7 @@ export const promoteMemberAction = authenticatedAction(
 export const requestToJoinFamsAction = authenticatedAction(
 	requestSchema,
 	async (data, { session }) => {
+		if (!await isFamssEnabled()) return { error: "La fonctionnalité Fam'ss est actuellement désactivée" };
 		try {
 			const fams = await db.query.famss.findFirst({
 				where: eq(famss.name, data.famsName),
@@ -274,6 +286,7 @@ export const requestToJoinFamsAction = authenticatedAction(
 export const cancelRequestAction = authenticatedAction(
 	requestSchema,
 	async (data, { session }) => {
+		if (!await isFamssEnabled()) return { error: "La fonctionnalité Fam'ss est actuellement désactivée" };
 		try {
 			const fams = await db.query.famss.findFirst({
 				where: eq(famss.name, data.famsName),

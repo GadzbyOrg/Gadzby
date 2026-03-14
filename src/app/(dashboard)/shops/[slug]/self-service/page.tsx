@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { eq } from "drizzle-orm";
 import { getShopPublicEvents } from "@/features/events/queries";
 import {
 	getShopBySlug,
 	getShopDetailsForMember,
 } from "@/features/shops/actions";
 import { getShopCategories,getShopProducts } from "@/features/shops/products";
+import { db } from "@/db";
+import { systemSettings } from "@/db/schema/settings";
 import { verifySession } from "@/lib/session";
 
 import { SelfServiceView } from "../_components/self-service-view";
@@ -27,6 +30,14 @@ export default async function ShopSelfServicePage({
 		return notFound();
 	}
 	const { shop } = shopResult;
+
+	// Check famss feature toggle
+	const famssToggle = await db.query.systemSettings.findFirst({
+		where: eq(systemSettings.key, "famss_enabled"),
+	});
+	const famssEnabled = famssToggle
+		? (famssToggle.value as { enabled: boolean }).enabled
+		: true;
 
 	// Check if user is manager to show "Manage" button
 	let isManager = false;
@@ -241,6 +252,7 @@ export default async function ShopSelfServicePage({
 				products={products as any}
 				categories={categories as any}
 				disconnectAfterCheckout={shop.disconnectAfterCheckout ?? false}
+				famssEnabled={famssEnabled}
 			/>
 		</div>
 	);

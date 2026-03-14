@@ -43,6 +43,7 @@ interface SelfServiceViewProps {
 	products: Product[];
 	categories: Category[];
 	disconnectAfterCheckout: boolean;
+	famssEnabled: boolean;
 }
 
 export function SelfServiceView({
@@ -50,6 +51,7 @@ export function SelfServiceView({
 	products,
 	categories,
 	disconnectAfterCheckout,
+	famssEnabled,
 }: SelfServiceViewProps) {
 	const router = useRouter();
 	const [cart, setCart] = useState<{ [key: string]: number }>({});
@@ -65,12 +67,13 @@ export function SelfServiceView({
 	const [selectedFamsId, setSelectedFamsId] = useState<string>("");
 
 	useEffect(() => {
+		if (!famssEnabled) return;
 		getUserFamss({}).then((res) => {
 			if (res.famss && res.famss.length > 0) {
 				setUserFamss(res.famss);
 			}
 		});
-	}, []);
+	}, [famssEnabled]);
 
 	// Filter self-service only
 	const availableProducts = products.filter(
@@ -197,6 +200,7 @@ export function SelfServiceView({
                         onClearCart={handleClearCart}
                         error={error}
                         success={success}
+                        famssEnabled={famssEnabled}
                     />
 				</div>
 			</div>
@@ -292,6 +296,7 @@ export function SelfServiceView({
                             onClearCart={handleClearCart}
                             error={error}
                             success={success}
+                            famssEnabled={famssEnabled}
                             className="border-0 bg-transparent p-0"
                         />
                     </div>

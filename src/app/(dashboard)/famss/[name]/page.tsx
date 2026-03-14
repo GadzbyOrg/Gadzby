@@ -3,6 +3,7 @@ import { notFound,redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { famss, transactions } from "@/db/schema";
+import { systemSettings } from "@/db/schema/settings";
 import { verifySession } from "@/lib/session";
 
 import { AddMemberForm, MembershipRequestsList,PromoteMemberButton, RemoveMemberButton, TransferForm } from "./details-components";
@@ -12,6 +13,16 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
 
     const session = await verifySession();
     if (!session) redirect("/login");
+
+    // Check global feature toggle
+    const famssToggle = await db.query.systemSettings.findFirst({
+        where: eq(systemSettings.key, "famss_enabled"),
+    });
+    const famssEnabled = famssToggle
+        ? (famssToggle.value as { enabled: boolean }).enabled
+        : true;
+    if (!famssEnabled) redirect("/famss");
+
     const resolvedParams = await params;
     
     // Decode name as it might be URL encoded
