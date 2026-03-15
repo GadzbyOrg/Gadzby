@@ -30,8 +30,8 @@ Une fois l'installation terminée, l'interface réseau affichera les accès de c
 ## 3. Configuration des DNS
 
 Dans l'interface de gestion de votre nom de domaine (OVH, Cloudflare, etc.) :
-1. Créez un enregistrement DNS de type **A** pour votre panel Coolify (ex: `coolify.gadzby.com`) pointant vers l'IP de votre serveur.
-2. Créez un autre enregistrement de type **A** pour votre application (ex: `app.gadzby.com` ou `gadzby.com`) pointant également vers la même IP.
+1. Créez un enregistrement DNS de type **A** pour votre panel Coolify (ex: `coolify.gadzby-app.com`) pointant vers l'IP de votre serveur.
+2. Créez un autre enregistrement de type **A** pour votre application (ex: `app.gadzby-app.com` ou `gadzby-app.com`) pointant également vers la même IP.
 
 Si votre serveur est derrière un Reverse Proxy, faites pointer les enregistrements vers l'adresse du Reverse Proxy. Il faudra configurer le Reverse Proxy pour qu'il redirige les requêtes vers Coolify.
 
