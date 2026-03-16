@@ -46,8 +46,6 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
 
     if (!fams) notFound();
 
-    console.log(fams);
-
     // Check membership
     const membership = fams.members.find(m => m.userId === session.userId);
     if (!membership) {

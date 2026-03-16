@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 		const providerSlug = searchParams.get("provider");
 
 		if (!providerSlug) {
-			console.log("Missing provider param");
+			//console.log("Missing provider param");
 			return NextResponse.json(
 				{ error: "Missing provider param" },
 				{ status: 400 }
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
 		const provider = await getPaymentProvider(providerSlug);
 		if (!provider) {
-			console.log("Invalid provider");
+			//console.log("Invalid provider");
 			return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
 		}
 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 			}
 
 			if (currentTx.status === "COMPLETED") {
-				console.log(`Transaction ${txId} already completed. Ignoring.`);
+				//console.log(`Transaction ${txId} already completed. Ignoring.`);
 				return;
 			}
 

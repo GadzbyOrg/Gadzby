@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { ENV } from "@/lib/env";
 import { COOKIE_NAME } from "@/lib/session";
 
-const publicRoutes = ["/login"];
+const publicRoutes = ["/login", "/forgot-password", "reset-password"];
 
 export default async function middleware(req: NextRequest) {
 	const currentPath = req.nextUrl.pathname;
@@ -23,7 +23,7 @@ export default async function middleware(req: NextRequest) {
 			await jwtVerify(session, secret);
 
 			if (isPublicRoute) {
-				console.log("Redirecting to dashboard");
+				//console.log("Redirecting to dashboard");
 				const payload = await jwtVerify(session, secret);
 				const preferredPath = (payload.payload as any).preferredDashboardPath;
 				return NextResponse.redirect(new URL(preferredPath || "/", req.url));

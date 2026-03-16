@@ -18,7 +18,7 @@ export default async function Layout({
 	const session = await verifySession();
 
 	if (!session) {
-		console.log("Invalid session redirecting to login");
+		//console.log("Invalid session redirecting to login");
 		redirect("/login");
 	}
 

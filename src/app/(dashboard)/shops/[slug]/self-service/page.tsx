@@ -25,7 +25,6 @@ export default async function ShopSelfServicePage({
 
 	// Fetch shop details checking visibility
 	const shopResult = await getShopBySlug({ slug });
-	console.log("Shop Result:", shopResult);
 	if ("error" in shopResult || !shopResult.shop) {
 		return notFound();
 	}

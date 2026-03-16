@@ -16,9 +16,9 @@ Le but de Gadzby est d'offrir une solution robuste et "student-proof" permettant
 L'expérience utilisateur est centrée sur la rapidité et la transparence.
 
 - **Débucquage Multi-Comptes** : Paiement via solde personnel ou via le compte commun de Fam'ss.
-- **Rechargement Autonome** : Intégration API (Lydia/Sumup) avec calcul dynamique des frais à la charge de l'utilisateur (zéro coût pour l'asso).
-- **Self-Service** : Possibilité de se servir soi-même dans les boquettes autorisées, avec contrôle de solde en temps réel.
-- **Social & P2P** : Transfert d'argent instantané entre utilisateurs.
+- **Rechargement Autonome** : Intégration API (Lydia/Sumup) avec calcul des frais à la charge de l'utilisateur (zéro coût pour l'asso).
+- **Self-Service** : Possibilité de se servir soi-même dans les boquettes autorisées.
+- **Social & P2P** : Transfert d'argent entre utilisateurs.
 
 ### 2. Pour les Gestionnaires de Boquette
 
@@ -27,21 +27,21 @@ L'expérience utilisateur est centrée sur la rapidité et la transparence.
 - **Analyses & Statistiques** : Tableaux de bord détaillés sur les ventes, produits phares et performances financières.
 - **Rayons Dynamiques** : Organisation flexible des produits par catégories.
 - **Gestion des Manips** : Création d'événements temporaires avec produits exclusifs et dates de validité.
-- **Rôles Boutique** : Gestion fine des permissions pour chaque membre de l'équipe (Membre, VP, etc...).
+- **Rôles Boutique** : Gestion fine des permissions pour chaque membre (Membre, VP, etc...).
 
 ### 3. Pour les Grip'ss (Admins)
 Une supervision globale pour garantir la pérennité de l'AE.
 
-- **Gestion Globale des Boutiques** : Création et administration de nouvelles boquettes en quelques clics.
+- **Gestion Globale des Boutiques** : Création et administration de nouvelles boquettes.
 - **Gestion des Utilisateurs & Rôles** : Un annuaire complet avec recherche, édition et attribution de rôles précis (Admin, Manager, etc.) pour chaque context (Boquette ou Global).
 - **Opérations de Masse** : Débucquage groupé (import Excel) pour gérer les événements majeurs rapidement.
 - **Gestion des Fam'ss** : Supervision des comptes communs et des membres associés.
 - **Sécurité et Maintenance** : Logs d'activité, annulation de transactions,gestion des mandats et outils de suppression, désactivation d'utilisateurs.
-- **Intégration Pennylane** : Envoi automatique des factures fournisseurs sur Pennylane.
+- **Intégration Pennylane** : Réception automatique des factures fournisseurs depuis Pennylane.
 
 ## Stack Technique
 
-Ce projet est construit avec des technologies modernes pour assurer performance et maintenabilité :
+Ce projet est construit avec les technologies suivantes :
 
 - **Framework** : [Next.js 16](https://nextjs.org/) (App Router)
 - **Langage** : TypeScript
@@ -158,4 +158,4 @@ L'intégration Pennylane permet aux boul'c d'envoyer les factures fournisseurs d
 - Clé API Pennylane : Pour créer une clé API, vous devez vous rendre sur la page "Connectivité" du dashboard Pennylane, puis dans l'onglet Développeurs cliquez sur "Générer un Token API". Vous devez donner les droits en lecture et écriture sur :
     * Factures Fournisseurs
     * Fichiers
-    * Catégories (Pas encore strictement besoin mais en cours de développement)
+    * Catégories
