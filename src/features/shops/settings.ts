@@ -6,7 +6,7 @@ import { authenticatedAction } from "@/lib/actions";
 import { ShopService } from "@/services/shop-service";
 
 import { SHOP_PERM } from "./permissions";
-import { createShopSchema, toggleShopStatusSchema,updateShopSchema } from "./schemas";
+import { createShopSchema, toggleShopStatusSchema, updateShopSchema, deleteShopSchema } from "./schemas";
 import { getShopOrThrow } from "./utils";
 
 export const createShopAction = authenticatedAction(
@@ -62,4 +62,18 @@ export const toggleShopStatusAction = authenticatedAction(
             return { error: error instanceof Error ? error.message : "Erreur lors de la mise à jour du statut" };
         }
     }
+);
+
+export const deleteShopAction = authenticatedAction(
+    deleteShopSchema,
+    async ({ shopId }, { session }) => {
+        try {
+            await ShopService.delete(shopId);
+            revalidatePath("/admin/shops");
+            revalidatePath("/shops");
+            return { success: "Shop supprimé avec succès" };
+        } catch (error) {
+            return { error: error instanceof Error ? error.message : "Erreur lors de la suppression du shop" };
+        }
+    }, { permissions: ["ADMIN_ACCESS"]}
 );

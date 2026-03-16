@@ -1,11 +1,11 @@
 "use client";
 
-import { IconBuildingStore, IconLoader2,IconUsers } from "@tabler/icons-react";
+import { IconBuildingStore, IconLoader2,IconUsers, IconTrash } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { useToast } from "@/components/ui/use-toast";
-import { toggleShopStatusAction } from "@/features/shops/actions";
+import { toggleShopStatusAction, deleteShopAction } from "@/features/shops/actions";
 
 interface ShopCardProps {
 	shop: {
@@ -47,6 +47,29 @@ export function ShopCard({ shop }: ShopCardProps) {
 		}
 	}
 
+	async function handleDelete() {
+		if (loading) return;
+		if (!window.confirm(`Êtes-vous sûr de vouloir supprimer DÉFINITIVEMENT le shop ${shop.name} ? Cette action supprimera également tous les produits, membres et événements associés.`)) return;
+		setLoading(true);
+
+		const res = await deleteShopAction({ shopId: shop.id });
+
+		setLoading(false);
+
+		if (res.error) {
+			toast({
+				title: "Erreur",
+				description: res.error,
+				variant: "destructive",
+			});
+		} else {
+			toast({
+				title: "Shop supprimé",
+				description: "Le shop a été supprimé avec succès.",
+			});
+		}
+	}
+
 	return (
 		<div
 			className={`bg-dark-900 border rounded-xl overflow-hidden transition-colors group ${
@@ -66,25 +89,35 @@ export function ShopCard({ shop }: ShopCardProps) {
 					>
 						<IconBuildingStore size={24} stroke={1.5} />
 					</div>
-					<button
-						onClick={handleToggleStatus}
-						disabled={loading}
-						className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-900 ${
-							shop.isActive ? "bg-emerald-600" : "bg-dark-700"
-						}`}
-					>
-						<span className="sr-only">Activer le shop</span>
-						<span
-							className={`pointer-events-none block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-								shop.isActive ? "translate-x-5" : "translate-x-0"
+					<div className="flex items-center gap-3">
+						<button
+							onClick={handleDelete}
+							disabled={loading}
+							title="Supprimer définitivement"
+							className="p-1.5 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+						>
+							<IconTrash size={18} />
+						</button>
+						<button
+							onClick={handleToggleStatus}
+							disabled={loading}
+							className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-900 ${
+								shop.isActive ? "bg-emerald-600" : "bg-dark-700"
 							}`}
-						/>
-						{loading && (
-							<span className="absolute inset-0 flex items-center justify-center">
-								<IconLoader2 size={12} className="animate-spin text-gray-500" />
-							</span>
-						)}
-					</button>
+						>
+							<span className="sr-only">Activer le shop</span>
+							<span
+								className={`pointer-events-none block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+									shop.isActive ? "translate-x-5" : "translate-x-0"
+								}`}
+							/>
+							{loading && (
+								<span className="absolute inset-0 flex items-center justify-center">
+									<IconLoader2 size={12} className="animate-spin text-gray-500" />
+								</span>
+							)}
+						</button>
+					</div>
 					{/* <Badge variant={shop.isActive ? "default" : "secondary"} className={shop.isActive ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20" : "bg-gray-800 text-gray-400"}>
                         {shop.isActive ? "Actif" : "Inactif"}
                     </Badge> */}

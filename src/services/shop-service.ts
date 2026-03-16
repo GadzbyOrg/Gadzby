@@ -1,8 +1,8 @@
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { productCategories, productRestocks, products, productVariants, shopRoles, shops, shopUsers } from "@/db/schema";
+import { productCategories, productRestocks, products, productVariants, shopRoles, shops, shopUsers, transactions, inventoryAudits, inventoryAuditItems, shopExpenses, events, eventRevenues, eventExpenseSplits, eventParticipants } from "@/db/schema";
 import { SHOP_PERMISSIONS } from "@/features/shops/permissions";
 
 export class ShopService {
@@ -57,6 +57,72 @@ export class ShopService {
                 updatedAt: new Date(),
             })
             .where(eq(shops.id, shopId));
+    }
+
+    static async delete(shopId: string) {
+        await db.transaction(async (tx) => {
+            const shopEvents = await tx.query.events.findMany({
+                where: eq(events.shopId, shopId),
+                columns: { id: true }
+            });
+            const eventIds = shopEvents.map(e => e.id);
+
+            const shopProducts = await tx.query.products.findMany({
+                where: eq(products.shopId, shopId),
+                columns: { id: true }
+            });
+            const productIds = shopProducts.map(p => p.id);
+
+            const audits = await tx.query.inventoryAudits.findMany({
+                where: eq(inventoryAudits.shopId, shopId),
+                columns: { id: true }
+            });
+            const auditIds = audits.map(a => a.id);
+
+            if (eventIds.length > 0) {
+                await tx.delete(eventRevenues).where(inArray(eventRevenues.eventId, eventIds));
+                await tx.delete(eventExpenseSplits).where(inArray(eventExpenseSplits.eventId, eventIds));
+                await tx.delete(eventParticipants).where(inArray(eventParticipants.eventId, eventIds));
+                
+                // Préserver les transactions, on enlève juste le lien avec l'évent
+                await tx.update(transactions)
+                    .set({ eventId: null })
+                    .where(inArray(transactions.eventId, eventIds));
+            }
+
+            if (productIds.length > 0) {
+                // Préserver les transactions, on enlève le lien vers le produit/variant supprimé
+                await tx.update(transactions)
+                    .set({ productId: null, productVariantId: null })
+                    .where(inArray(transactions.productId, productIds));
+                    
+                await tx.delete(productVariants).where(inArray(productVariants.productId, productIds));
+            }
+
+            // Préserver les transactions liès au shop, on enlève juste le shopId
+            await tx.update(transactions)
+                .set({ shopId: null })
+                .where(eq(transactions.shopId, shopId));
+
+            if (auditIds.length > 0) {
+                await tx.delete(inventoryAuditItems).where(inArray(inventoryAuditItems.auditId, auditIds));
+            }
+
+            await tx.delete(productRestocks).where(eq(productRestocks.shopId, shopId));
+            
+            await tx.delete(products).where(eq(products.shopId, shopId));
+            await tx.delete(inventoryAudits).where(eq(inventoryAudits.shopId, shopId));
+            await tx.delete(shopExpenses).where(eq(shopExpenses.shopId, shopId));
+
+            if (eventIds.length > 0) {
+                await tx.delete(events).where(inArray(events.id, eventIds));
+            }
+
+            await tx.delete(productCategories).where(eq(productCategories.shopId, shopId));
+            await tx.delete(shopUsers).where(eq(shopUsers.shopId, shopId));
+            await tx.delete(shopRoles).where(eq(shopRoles.shopId, shopId));
+            await tx.delete(shops).where(eq(shops.id, shopId));
+        });
     }
 
     // --- Roles ---

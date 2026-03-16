@@ -66,6 +66,10 @@ export const updateShopSchema = z.object({
 	}),
 });
 
+export const deleteShopSchema = z.object({
+	shopId: z.string(),
+});
+
 
 export const createShopRoleSchema = z.object({
 	shopSlug: z.string(),
