@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
 import { importProducts } from "@/features/shops/import";
-import { getShopProducts } from "@/features/shops/products";
+import { getShopProducts, getShopCategories } from "@/features/shops/products";
 
 import { ProductFilters } from "./_components/ProductFilters";
 import { SortableProductList } from "./_components/SortableProductList";
@@ -44,14 +44,15 @@ export default async function ShopProductsPage({
 			: undefined;
 
 	// Fetch filters, shop and products in parallel
-	const [shopResult, productsResult] = await Promise.all([
+	const [shopResult, productsResult, categoriesResult] = await Promise.all([
 		getShopBySlug({ slug }),
 		getShopProducts(slug, {
             categoryId,
             search,
             sortBy,
             sortOrder
-        })
+        }),
+        getShopCategories(slug)
 	]);
 
 	if ("error" in shopResult || !shopResult.shop) {
@@ -64,6 +65,7 @@ export default async function ShopProductsPage({
 
 	const { shop } = shopResult;
 	const { products } = productsResult || { products: [] };
+    const { categories } = categoriesResult || { categories: [] };
     
     // Disable reordering if any filter is active
     const isFiltered = !!categoryId || !!search || !!sortBy;
@@ -111,7 +113,7 @@ export default async function ShopProductsPage({
 
 			<div className="bg-dark-900 border border-dark-800 rounded-2xl p-4">
                 <ProductFilters />
-				<SortableProductList products={products} shopSlug={slug} disableReorder={isFiltered} />
+				<SortableProductList products={products} categories={categories} shopSlug={slug} disableReorder={isFiltered} />
 			</div>
 		</div>
 	);

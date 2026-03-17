@@ -3,11 +3,11 @@
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { IconCheck, IconChevronDown, IconChevronRight, IconGripVertical, IconPencil, IconPlus, IconX } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown, IconChevronRight, IconGripVertical, IconPencil, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { updateCategory, updateProductsOrder } from "@/features/shops/products";
+import { updateCategory, updateProductsOrder, deleteCategory } from "@/features/shops/products";
 
 import DeleteProductButton from "./DeleteProductButton";
 import RestockButton from "./RestockButton";
@@ -26,6 +26,7 @@ interface Product {
 
 interface SortableProductListProps {
 	products: Product[];
+    categories?: { id: string; name: string }[];
 	shopSlug: string;
     disableReorder?: boolean;
 }
@@ -196,6 +197,7 @@ function CategoryGroup({
     const [editedName, setEditedName] = useState(categoryName);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         setProducts(initialProducts);
@@ -205,6 +207,32 @@ function CategoryGroup({
     useEffect(() => {
         setEditedName(categoryName);
     }, [categoryName]);
+
+    const handleDeleteCategory = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!categoryId) return;
+        
+        if (products.length > 0) {
+            setError("Impossible de supprimer une catégorie qui contient des produits");
+            return;
+        }
+
+        if (window.confirm("Êtes-vous sûr de vouloir supprimer cette catégorie vide ?")) {
+            setIsDeleting(true);
+            setError(null);
+            try {
+                const result = await deleteCategory(shopSlug, categoryId);
+                if (!result.success) {
+                    setError(result.error || "Une erreur est survenue lors de la suppression");
+                }
+            } catch (error) {
+                console.error("Failed to delete category", error);
+                setError("Une erreur inattendue est survenue");
+            } finally {
+                setIsDeleting(false);
+            }
+        }
+    };
 
     const handleSaveCategory = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -335,10 +363,25 @@ function CategoryGroup({
                                     <IconPencil size={18} />
                                 </button>
                             )}
+                            {categoryId && products.length === 0 && (
+                                <button 
+                                    onClick={handleDeleteCategory}
+                                    disabled={isDeleting}
+                                    className="p-1 text-dark-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                                    title="Supprimer la catégorie"
+                                >
+                                    <IconTrash size={18} />
+                                </button>
+                            )}
                         </h3>
                     )}
                 </div>
             </div>
+            
+            {error && !isEditing && (
+                <div className="text-red-400 text-sm mb-4 px-8">{error}</div>
+            )}
+
             
             {!isCollapsed && (
                 <>
@@ -370,7 +413,7 @@ function CategoryGroup({
     );
 }
 
-export function SortableProductList({ products, shopSlug, disableReorder }: SortableProductListProps) {
+export function SortableProductList({ products, categories = [], shopSlug, disableReorder }: SortableProductListProps) {
     // Group products by category
     const groupedProducts = products.reduce((acc, product) => {
         const catName = product.category?.name || "Uncategorized"; // Internal key, display name handled later
@@ -380,6 +423,13 @@ export function SortableProductList({ products, shopSlug, disableReorder }: Sort
         acc[catName].push(product);
         return acc;
     }, {} as Record<string, Product[]>);
+    
+    // Add empty categories
+    categories.forEach(category => {
+        if (!groupedProducts[category.name]) {
+            groupedProducts[category.name] = [];
+        }
+    });
     
     const sortedKeys = Object.keys(groupedProducts).sort((a, b) => {
         if (a === "Uncategorized") return 1;
@@ -392,10 +442,10 @@ export function SortableProductList({ products, shopSlug, disableReorder }: Sort
             {sortedKeys.map((catName) => {
                 const categoryProducts = groupedProducts[catName];
                 // Try to find the category ID from the first product that has this category name
-                // This assumes all products in the group share the same category object/ID
+                // Alternatively, find it from the categories prop that includes empty categories
                 const categoryId = categoryProducts[0]?.category?.name === catName 
                     ? categoryProducts[0]?.category?.id 
-                    : undefined;
+                    : categories.find(c => c.name === catName)?.id;
 
                 return (
                     <CategoryGroup 

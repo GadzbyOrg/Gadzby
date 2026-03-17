@@ -344,6 +344,62 @@ export class ShopService {
             .where(and(eq(productCategories.id, categoryId), eq(productCategories.shopId, shopId)));
     }
 
+    static async deleteCategory(shopId: string, categoryId: string) {
+        const activeProducts = await db.query.products.findFirst({
+            where: and(
+                eq(products.shopId, shopId),
+                eq(products.categoryId, categoryId),
+                eq(products.isArchived, false)
+            ),
+        });
+
+        if (activeProducts) {
+            throw new Error("Impossible de supprimer une catégorie qui contient des produits");
+        }
+
+        await db.transaction(async (tx) => {
+            const archivedProducts = await tx.query.products.findMany({
+                where: and(
+                    eq(products.shopId, shopId),
+                    eq(products.categoryId, categoryId),
+                    eq(products.isArchived, true)
+                ),
+                columns: { id: true }
+            });
+
+            if (archivedProducts.length > 0) {
+                // Find or create hidden "__system_archived" category
+                let archiveCat = await tx.query.productCategories.findFirst({
+                    where: and(
+                        eq(productCategories.shopId, shopId),
+                        eq(productCategories.name, "__system_archived")
+                    )
+                });
+
+                if (!archiveCat) {
+                    const [newCat] = await tx.insert(productCategories).values({
+                        shopId,
+                        name: "__system_archived"
+                    }).returning();
+                    archiveCat = newCat;
+                }
+
+                if (categoryId === archiveCat.id) {
+                    throw new Error("Impossible de supprimer la catégorie système d'archives");
+                }
+
+                const productIds = archivedProducts.map(p => p.id);
+                await tx.update(products)
+                    .set({ categoryId: archiveCat.id })
+                    .where(inArray(products.id, productIds));
+            }
+
+            // Finally, delete the category
+            await tx.delete(productCategories)
+                .where(and(eq(productCategories.id, categoryId), eq(productCategories.shopId, shopId)));
+        });
+    }
+
     // --- Inventory ---
 
     static async restockProduct(shopId: string, productId: string, quantity: number, userId: string) {

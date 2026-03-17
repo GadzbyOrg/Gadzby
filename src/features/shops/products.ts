@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
@@ -83,10 +83,6 @@ export async function createCategory(shopSlug: string, name: string) {
     }
 }
 
-
-
-// Restoring original function signature for createProduct
-
 export async function updateCategory(shopSlug: string, categoryId: string, name: string) {
     const session = await verifySession();
     if (!session) return { error: "Non autorisé" };
@@ -104,6 +100,26 @@ export async function updateCategory(shopSlug: string, categoryId: string, name:
             return { error: error.message };
         }
         return { error: "Erreur lors de la mise à jour de la catégorie" };
+    }
+}
+
+export async function deleteCategory(shopSlug: string, categoryId: string) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    try {
+        const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_PRODUCTS);
+
+        await ShopService.deleteCategory(shop.id, categoryId);
+
+        revalidatePath(`/shops/${shopSlug}/manage/products`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete category:", error);
+         if (error instanceof Error) {
+            return { error: error.message };
+        }
+        return { error: "Erreur lors de la suppression de la catégorie" };
     }
 }
 
@@ -232,7 +248,10 @@ export async function getShopCategories(shopSlug: string) {
         if (!isAuthorized) return { error: "Non autorisé" };
 
         const categoriesList = await db.query.productCategories.findMany({
-            where: eq(productCategories.shopId, shop.id),
+            where: and(
+                eq(productCategories.shopId, shop.id),
+                ne(productCategories.name, "__system_archived")
+            ),
             orderBy: (categories, { asc }) => [asc(categories.name)]
         });
 
