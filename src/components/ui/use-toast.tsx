@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 type ToastProps = {
 	title?: string;
 	description?: string;
-	variant?: "default" | "destructive";
+	variant?: "default" | "destructive" | "success";
 };
 
 type ToastContextType = {
@@ -35,14 +35,20 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 	return (
 		<ToastContext.Provider value={{ toast }}>
 			{children}
-			<div className="fixed bottom-0 right-0 z-100 flex flex-col gap-2 p-4 max-w-105 w-full">
+			<div className="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse gap-2 p-4 pt-[calc(1rem+env(safe-area-inset-top))] sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px] sm:pt-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))] pointer-events-none">
 				{toasts.map((t) => (
 					<div
 						key={t.id}
 						className={cn(
-							"group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
-							t.variant === "destructive"
+							"group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border shadow-lg transition-all",
+							// Padding adjustments for mobile readability
+							"p-4 sm:p-6 sm:pr-8",
+							// Animation properties
+							"animate-in fade-in-0 sm:slide-in-from-bottom-full slide-in-from-top-full duration-300",
+							t.variant === "destructive" || t.title?.toLowerCase().includes("erreur")
 								? "destructive group border-red-900 bg-red-900 text-red-50"
+								: t.variant === "success" || t.title?.toLowerCase().includes("succès")
+								? "success group border-green-900 bg-green-900 text-green-50"
 								: "border-gray-800 bg-dark-900 text-gray-100"
 						)}
 					>

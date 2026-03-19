@@ -11,6 +11,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { getUserFamss,processSale } from "@/features/shops/actions";
 
 import { CartSummary } from "./cart-summary";
@@ -71,6 +72,7 @@ export function ShopManagerView({
 	const [clientFamss, setClientFamss] = useState<FamsData[]>([]);
 	const [cart, setCart] = useState<Record<string, number>>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const { toast } = useToast();
 
 	// Mobile Review State
 	const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -141,14 +143,23 @@ export function ShopManagerView({
 
 		if (!selectedClient) {
 			setError("Veuillez sélectionner un client");
+			if (window.innerWidth < 768) {
+				toast({ title: "Erreur", description: "Veuillez sélectionner un client", variant: "destructive" });
+			}
 			return;
 		}
 		if (cartItemsCount === 0) {
 			setError("Le panier est vide");
+			if (window.innerWidth < 768) {
+				toast({ title: "Erreur", description: "Le panier est vide", variant: "destructive" });
+			}
 			return;
 		}
 		if (paymentSource === "FAMILY" && !selectedFamsId) {
 			setError("Veuillez sélectionner une famille");
+			if (window.innerWidth < 768) {
+				toast({ title: "Erreur", description: "Veuillez sélectionner une famille", variant: "destructive" });
+			}
 			return;
 		}
 
@@ -175,8 +186,14 @@ export function ShopManagerView({
 
 		if (result.error) {
 			setError(result.error);
+			if (window.innerWidth < 768) {
+				toast({ title: "Erreur", description: result.error, variant: "destructive" });
+			}
 		} else {
 			setSuccess("Vente validée !");
+			if (window.innerWidth < 768) {
+				toast({ title: "Succès", description: "Vente validée !", variant: "success" });
+			}
 			setCart({});
 			setSelectedClient(null);
 			setIsReviewOpen(false); // Close mobile modal

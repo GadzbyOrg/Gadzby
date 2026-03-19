@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect,useState } from "react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { logoutAction } from "@/features/auth/actions";
 import {
 	getUserFamss,
@@ -59,6 +60,7 @@ export function SelfServiceView({
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState<string | null>(null);
     const [isReviewOpen, setIsReviewOpen] = useState(false);
+	const { toast } = useToast();
 
 	const [paymentSource, setPaymentSource] = useState<"PERSONAL" | "FAMILY">(
 		"PERSONAL"
@@ -118,6 +120,13 @@ export function SelfServiceView({
 
 		if (paymentSource === "FAMILY" && !selectedFamsId) {
 			setError("Veuillez sélectionner une famille");
+			if (window.innerWidth < 768) {
+				toast({
+					title: "Erreur",
+					description: "Veuillez sélectionner une fam'ss",
+					variant: "destructive",
+				});
+			}
 			setTimeout(() => setError(null), 3000);
 			return;
 		}
@@ -147,8 +156,21 @@ export function SelfServiceView({
 
 			if (result.error) {
 				setError(result.error);
+				if (window.innerWidth < 768) {
+					toast({
+						title: "Erreur",
+						description: result.error,
+						variant: "destructive",
+					});
+				}
 			} else {
 				setSuccess("Achat effectué avec succès !");
+				if (window.innerWidth < 768) {
+					toast({
+						title: "Succès",
+						description: "Achat effectué avec succès !",
+					});
+				}
 				setCart({});
                 setIsReviewOpen(false);
 				router.refresh(); 
@@ -163,6 +185,13 @@ export function SelfServiceView({
 			}
 		} catch {
 			setError("Une erreur inattendue est survenue");
+			if (window.innerWidth < 768) {
+				toast({
+					title: "Erreur",
+					description: "Une erreur inattendue est survenue",
+					variant: "destructive",
+				});
+			}
 		} finally {
 			setIsCheckingOut(false);
 		}
