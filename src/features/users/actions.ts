@@ -157,11 +157,8 @@ export const getUserTransactions = authenticatedAction(
 
 		try {
 			const history = await db.query.transactions.findMany({
-				where: (transactions, { or, eq }) =>
-					or(
-						eq(transactions.issuerId, userId),
-						eq(transactions.targetUserId, userId)
-					),
+				where: (transactions, { eq }) =>
+					eq(transactions.targetUserId, userId),
 				orderBy: [desc(transactions.createdAt)],
 				limit: limit,
 				with: {
@@ -169,12 +166,30 @@ export const getUserTransactions = authenticatedAction(
 						columns: {
 							id: true,
 							username: true,
+							prenom: true,
+							nom: true,
 						},
 					},
 					targetUser: {
 						columns: {
 							id: true,
 							username: true,
+							prenom: true,
+							nom: true,
+						},
+					},
+					receiverUser: {
+						columns: {
+							id: true,
+							username: true,
+							prenom: true,
+							nom: true,
+						},
+					},
+					fams: {
+						columns: {
+							id: true,
+							name: true,
 						},
 					},
 					shop: {
