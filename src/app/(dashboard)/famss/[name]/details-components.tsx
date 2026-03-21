@@ -17,7 +17,7 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	async function handleSelect(user: any) {
 		setLoading(true);
 		setStatus(null);
@@ -279,7 +279,7 @@ export function MembershipRequestsList({
 	requests,
 }: {
 	famsName: string;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	requests: any[];
 }) {
 	const [loadingId, setLoadingId] = useState<string | null>(null);

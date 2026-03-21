@@ -7,7 +7,7 @@ import { TabagnssSelector } from "@/components/tabagnss-selector";
 import { createUserAction } from "@/features/users/actions";
 
 interface CreateUserFormProps {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	roles: any[];
 	onSuccess: () => void;
 }

@@ -104,7 +104,7 @@ export const getAllTransactionsAction = authenticatedAction(
             .limit(limit)
             .offset(offset);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const keys = keysResult.map((k: any) => k.key as string);
 
         if (keys.length === 0) {
@@ -147,11 +147,11 @@ export const exportTransactionsAction = authenticatedAction(
 		// No limit for export
 		const queryOptions = await getTransactionsQuery(search, type, sort, undefined, undefined, start, end);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		const txs = await db.query.transactions.findMany(queryOptions as any);
 
 		// Format for Excel
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		const formattedData = txs.map((t: any) => ({
 			Date: new Date(t.createdAt).toLocaleString("fr-FR"),
 			Type: t.type,

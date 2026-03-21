@@ -35,7 +35,7 @@ export function EventTransactionsTable({
 				eventId,
 			});
 			if (res.transactions) {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				 
 				setTransactions(res.transactions as any[]);
 			}
 			setLoading(false);

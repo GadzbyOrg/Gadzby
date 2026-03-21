@@ -13,10 +13,9 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { Button } from "@/components/ui/button";
+import { UserSearch } from "@/components/user-search";
 import { loginAction } from "@/features/auth/actions";
 import { cn } from "@/lib/utils";
-
-import { UserSearch } from "@/components/user-search";
 
 const numss_list = ["4!", "31-131", "8", "17", "159-97", "49-172", "70-71", "125", "123", "103-143", "139-36-37", "154", "152", "139"]
 
@@ -65,7 +64,7 @@ function SubmitButton() {
 // --- Login Form Component ---
 
 export function LoginForm({ campusName }: { campusName: string }) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const [state, action] = useActionState(loginAction, null as any);
 	const [showPassword, setShowPassword] = useState(false);
 	const [randomNumss, setRandomNumss] = useState("");

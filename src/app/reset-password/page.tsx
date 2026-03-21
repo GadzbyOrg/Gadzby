@@ -65,7 +65,7 @@ function ResetPasswordContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const [state, action] = useActionState(resetPasswordAction, null as any);
     const [showPassword, setShowPassword] = useState(false);
     

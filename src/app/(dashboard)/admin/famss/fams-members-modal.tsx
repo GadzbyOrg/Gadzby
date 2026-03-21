@@ -27,7 +27,7 @@ interface FamsMember {
 }
 
 interface FamsMembersModalProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
 	fams: any;
 	onClose: () => void;
 }
@@ -43,7 +43,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 		if (res.error !== undefined) {
 			setError(res.error);
 		} else {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 			setMembers(res.members as any);
 		}
 		setLoading(false);

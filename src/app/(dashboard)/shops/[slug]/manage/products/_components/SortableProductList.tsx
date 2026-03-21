@@ -7,7 +7,7 @@ import { IconCheck, IconChevronDown, IconChevronRight, IconGripVertical, IconPen
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { updateCategory, updateProductsOrder, deleteCategory } from "@/features/shops/products";
+import { deleteCategory,updateCategory, updateProductsOrder } from "@/features/shops/products";
 
 import DeleteProductButton from "./DeleteProductButton";
 import RestockButton from "./RestockButton";

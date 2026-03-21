@@ -42,7 +42,7 @@ export default async function AdminDashboardPage({
     });
     
     const transactions = result.success ? result.data : [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const totalCount = result.success ? (result as any).totalCount : 0;
 
 	return (

@@ -56,7 +56,7 @@ export default async function MandatDetailsPage({
 
 	// Sort shops by name
 	const shopsData: MandatShopData[] = mandat.mandatShops
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		.map((ms: any) => ({
 			shopName: ms.shop.name,
 			initialStockValue: ms.initialStockValue,

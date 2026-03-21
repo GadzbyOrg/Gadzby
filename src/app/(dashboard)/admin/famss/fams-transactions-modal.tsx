@@ -20,7 +20,7 @@ interface Transaction {
 }
 
 interface FamsTransactionsModalProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     fams: any;
     onClose: () => void;
 }

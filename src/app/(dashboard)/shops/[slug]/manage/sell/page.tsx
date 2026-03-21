@@ -1,11 +1,11 @@
+import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
+import { systemSettings } from "@/db/schema/settings";
 import { checkTeamMemberAccess } from "@/features/shops/actions";
 import { getShopCategories,getShopProducts } from "@/features/shops/products";
-import { systemSettings } from "@/db/schema/settings";
-import { eq } from "drizzle-orm";
 
 import { ShopManagerView } from "../../_components/shop-manager-view";
 

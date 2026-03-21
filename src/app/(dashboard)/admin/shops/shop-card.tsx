@@ -1,11 +1,11 @@
 "use client";
 
-import { IconBuildingStore, IconLoader2,IconUsers, IconTrash } from "@tabler/icons-react";
+import { IconBuildingStore, IconLoader2,IconTrash,IconUsers } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { useToast } from "@/components/ui/use-toast";
-import { toggleShopStatusAction, deleteShopAction } from "@/features/shops/actions";
+import { deleteShopAction,toggleShopStatusAction } from "@/features/shops/actions";
 
 interface ShopCardProps {
 	shop: {

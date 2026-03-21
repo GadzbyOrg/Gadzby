@@ -32,7 +32,7 @@ interface UserEditFormProps {
 		balance: number;
 		isAsleep: boolean;
 	};
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	roles: any[];
 	onSuccess: () => void;
 }

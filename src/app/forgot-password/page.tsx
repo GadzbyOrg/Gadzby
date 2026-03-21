@@ -57,7 +57,7 @@ function SubmitButton() {
 }
 
 export default function ForgotPasswordPage() {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const [state, action] = useActionState(forgotPasswordAction, null as any);
 
 	return (

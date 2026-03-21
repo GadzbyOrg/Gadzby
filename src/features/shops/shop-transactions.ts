@@ -76,7 +76,7 @@ export const getShopTransactions = authenticatedAction(
 		const history = await db.query.transactions.findMany({
 			...baseQuery,
 			where: whereClause,
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 		} as any);
 
 		const totalCountResult = await db
@@ -112,10 +112,10 @@ export const exportShopTransactionsAction = authenticatedAction(
 			where: whereClause,
 			limit: undefined,
 			offset: undefined,
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 		} as any);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		const formattedData = data.map((t: any) => ({
 			Date: new Date(t.createdAt).toLocaleString("fr-FR"),
 			Type: t.type,

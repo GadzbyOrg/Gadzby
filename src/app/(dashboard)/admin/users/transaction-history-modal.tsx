@@ -7,13 +7,13 @@ import { TransactionTable } from "@/components/transactions/transaction-table";
 import { getUserTransactions } from "@/features/users/actions";
 
 interface TransactionHistoryModalProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     user: any; 
     onClose: () => void;
 }
 
 export function TransactionHistoryModal({ user, onClose }: TransactionHistoryModalProps) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");

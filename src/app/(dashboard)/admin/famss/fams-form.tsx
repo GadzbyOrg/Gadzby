@@ -28,7 +28,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
 
 
 interface FamsFormProps {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	fams?: any;
 	onSuccess: () => void;
 }

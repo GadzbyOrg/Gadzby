@@ -12,7 +12,7 @@ export default async function TransactionsPage({
     const limit = 50;
 
 	const result = await getUserTransactionsAction({ page, limit });
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const transactions = (result as any).error === undefined ? (result as any).transactions || (result as any).data : [];
 
 	return (

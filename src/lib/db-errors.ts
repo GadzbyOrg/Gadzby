@@ -5,10 +5,10 @@ export const handleDbError = (error: unknown): string => {
 	console.error("Database operation failed:", error);
 
 	// Helper to find the underlying Postgres error
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	const findPostgresError = (err: unknown): any => {
 		if (!err || typeof err !== "object") return null;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		const errorObj = err as any;
 		if (errorObj.code === "23505") return errorObj;
 		if (errorObj.cause) return findPostgresError(errorObj.cause);

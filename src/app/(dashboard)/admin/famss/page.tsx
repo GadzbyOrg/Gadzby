@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { systemSettings } from "@/db/schema/settings";

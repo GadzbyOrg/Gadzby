@@ -207,7 +207,7 @@ export const getUserFamss = authenticatedAction(
 			with: { family: true },
 		});
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 	return { famss: members.map((m: any) => m.family) };
 });
 

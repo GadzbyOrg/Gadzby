@@ -5,8 +5,8 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ToastProvider } from "@/components/ui/use-toast";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { getShops } from "@/features/shops/actions";
 import { getCampusName } from "@/features/settings/queries";
+import { getShops } from "@/features/shops/actions";
 import { verifySession } from "@/lib/session";
 
 export default async function Layout({

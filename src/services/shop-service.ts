@@ -2,7 +2,7 @@ import { and, eq, inArray, ne } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { productCategories, productRestocks, products, productVariants, shopRoles, shops, shopUsers, transactions, inventoryAudits, inventoryAuditItems, shopExpenses, events, eventRevenues, eventExpenseSplits, eventParticipants } from "@/db/schema";
+import { eventExpenseSplits, eventParticipants,eventRevenues, events, inventoryAuditItems, inventoryAudits, productCategories, productRestocks, products, productVariants, shopExpenses, shopRoles, shops, shopUsers, transactions } from "@/db/schema";
 import { SHOP_PERMISSIONS } from "@/features/shops/permissions";
 
 export class ShopService {

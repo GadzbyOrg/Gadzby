@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { IconLoader2, IconTrash,IconUsers, IconWallet } from "@tabler/icons-react";
+import { useEffect } from "react";
 
 interface Product {
     id: string;

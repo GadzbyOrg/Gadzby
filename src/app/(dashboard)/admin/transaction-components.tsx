@@ -462,7 +462,7 @@ export function CancelGroupButton({
 
 import { TransactionTable } from "@/components/transactions/transaction-table";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function AdminTransactionTable({ transactions, totalCount }: { transactions: any[], totalCount?: number }) {
     const searchParams = useSearchParams();
     const pathname = usePathname();

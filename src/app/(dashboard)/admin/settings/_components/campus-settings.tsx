@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2, IconCheck, IconSchool } from "@tabler/icons-react";
+import { IconCheck, IconLoader2, IconSchool } from "@tabler/icons-react";
 import { useEffect, useState, useTransition } from "react";
 
 import { getCampusNameAction, updateCampusNameAction } from "@/features/settings/actions";

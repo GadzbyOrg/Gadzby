@@ -5,11 +5,11 @@ import { db } from "@/db";
 import { paymentMethods } from "@/db/schema/payment-methods";
 import { verifySession } from "@/lib/session";
 
+import { CampusSettings } from "./_components/campus-settings";
 import { EmailSettings } from "./_components/email-settings";
 import { FamssSettings } from "./_components/famss-settings";
 import { PaymentsSettings } from "./_components/payments-settings";
 import { PennylaneSettings } from "./_components/pennylane-settings";
-import { CampusSettings } from "./_components/campus-settings";
 
 export default async function AdminSettingsPage() {
     const session = await verifySession();

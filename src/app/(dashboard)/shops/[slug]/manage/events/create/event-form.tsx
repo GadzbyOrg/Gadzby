@@ -53,7 +53,7 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 	const [isPending, startTransition] = useTransition();
 
 	const form = useForm<EventFormValues>({
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		 
 		resolver: zodResolver(eventSchema) as any,
 		defaultValues: (initialData
 			? {

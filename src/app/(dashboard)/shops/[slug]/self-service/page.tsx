@@ -1,15 +1,15 @@
+import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { systemSettings } from "@/db/schema/settings";
 import { getShopPublicEvents } from "@/features/events/queries";
 import {
 	getShopBySlug,
 	getShopDetailsForMember,
 } from "@/features/shops/actions";
 import { getShopCategories,getShopProducts } from "@/features/shops/products";
-import { db } from "@/db";
-import { systemSettings } from "@/db/schema/settings";
 import { verifySession } from "@/lib/session";
 
 import { SelfServiceView } from "../_components/self-service-view";

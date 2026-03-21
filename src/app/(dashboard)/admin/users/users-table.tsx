@@ -590,7 +590,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
 						<div className="p-6">
 							<UserEditForm
-								// eslint-disable-next-line @typescript-eslint/no-explicit-any
+								 
 								user={selectedUser as any}
 								roles={roles}
 								onSuccess={() => setSelectedUser(null)}

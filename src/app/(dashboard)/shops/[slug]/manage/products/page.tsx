@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
 import { importProducts } from "@/features/shops/import";
-import { getShopProducts, getShopCategories } from "@/features/shops/products";
+import { getShopCategories,getShopProducts } from "@/features/shops/products";
 
 import { ProductFilters } from "./_components/ProductFilters";
 import { SortableProductList } from "./_components/SortableProductList";
