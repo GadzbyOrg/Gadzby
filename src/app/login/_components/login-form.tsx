@@ -67,11 +67,7 @@ export function LoginForm({ campusName }: { campusName: string }) {
 	 
 	const [state, action] = useActionState(loginAction, null as any);
 	const [showPassword, setShowPassword] = useState(false);
-	const [randomNumss, setRandomNumss] = useState("");
-
-	useEffect(() => {
-		setRandomNumss(numss_list[Math.floor(Math.random() * numss_list.length)]);
-	}, []);
+	const [randomNumss] = useState(() => numss_list[Math.floor(Math.random() * numss_list.length)]);
 
 	return (
 		<div className="flex min-h-screen flex-col justify-center bg-dark-950 px-6 py-12 lg:px-8">

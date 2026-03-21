@@ -17,10 +17,12 @@ export interface UserSearchProps {
     searchAction?: (query: string) => Promise<{ users?: any[]; error?: string }>;
 }
 
+const EMPTY_ARRAY: string[] = [];
+
 export function UserSearch({ 
     onSelect, 
     placeholder = "Ajouter un participant...", 
-    excludeIds = [],
+    excludeIds = EMPTY_ARRAY,
     className,
     inputClassName,
     name,
@@ -36,24 +38,25 @@ export function UserSearch({
 
     // Simple debounce
     useEffect(() => {
+        let active = true;
+
+        if (query.length < 2) {
+            setResults(prev => prev.length === 0 ? prev : []);
+            setIsLoading(false);
+            return;
+        }
+
         const timer = setTimeout(async () => {
             if (preventSearchRef.current) {
                 preventSearchRef.current = false;
-                return;
-            }
-
-            if (query.length < 2) {
-                setResults([]);
+                if (active) setIsLoading(false);
                 return;
             }
             
-            setIsLoading(true);
             try {
-                let res;
-
-                 res = await searchAction(query);
+                 const res = await searchAction(query);
                  
-                if (res?.users) {
+                if (active && res?.users) {
                     const filtered = res.users.filter((u: any) => !excludeIds.includes(u.id));
                     setResults(filtered);
                     setIsOpen(true);
@@ -61,11 +64,16 @@ export function UserSearch({
             } catch (e) {
                 console.error(e);
             } finally {
-                setIsLoading(false);
+                if (active) {
+                    setIsLoading(false);
+                }
             }
         }, 300);
 
-        return () => clearTimeout(timer);
+        return () => {
+            active = false;
+            clearTimeout(timer);
+        };
     }, [query, excludeIds]);
 
     // Click outside to close
@@ -99,14 +107,21 @@ export function UserSearch({
                     name={name}
                     value={query}
                     onChange={(e) => {
-                        setQuery(e.target.value);
-                        if (!isOpen && e.target.value.length >= 2) setIsOpen(true);
+                        const val = e.target.value;
+                        setQuery(val);
+                        if (val.length >= 2) {
+                            setIsLoading(true);
+                        } else {
+                            setIsLoading(false);
+                        }
+                        if (!isOpen && val.length >= 2) setIsOpen(true);
                     }}
                     placeholder={placeholder}
                     className={cn(
                         "w-full bg-dark-900 border border-dark-700 rounded-md py-2 pl-9 pr-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-primary-500 transition-colors",
                         inputClassName
                     )}
+                    suppressHydrationWarning
                 />
                 {isLoading && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
