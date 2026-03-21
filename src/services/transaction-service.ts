@@ -93,6 +93,58 @@ export class TransactionService {
 	}
 
 	/**
+	 * Transfer money from a user to a Fam'ss.
+	 */
+	static async transferUserToFams(
+		senderId: string,
+		famsId: string,
+		amountInCents: number,
+		description?: string
+	) {
+		if (amountInCents <= 0) throw new Error("Montant invalide");
+
+		return await db.transaction(async (tx) => {
+			const sender = await tx.query.users.findFirst({
+				where: eq(users.id, senderId),
+			});
+			const fams = await tx.query.famss.findFirst({
+				where: eq(famss.id, famsId),
+			});
+
+			if (!sender) throw new Error("Utilisateur introuvable");
+			if (!fams) throw new Error("Fam'ss introuvable");
+			if (sender.isAsleep) throw new Error("Votre compte est désactivé");
+			if (sender.isDeleted) throw new Error("Votre compte est supprimé");
+			if (sender.balance < amountInCents) throw new Error("Solde insuffisant");
+
+			// Update balances
+			await tx
+				.update(users)
+				.set({ balance: sql`${users.balance} - ${amountInCents}` })
+				.where(eq(users.id, senderId));
+			
+			await tx
+				.update(famss)
+				.set({ balance: sql`${famss.balance} + ${amountInCents}` })
+				.where(eq(famss.id, famsId));
+
+			// Create Transaction
+			await tx.insert(transactions).values({
+				amount: -amountInCents,
+				type: "TRANSFER",
+				status: "COMPLETED",
+				walletSource: "PERSONAL",
+				issuerId: senderId,
+				targetUserId: senderId,
+				famsId: famsId,
+				description: description || `Virement vers Fam'ss`,
+			});
+
+			return { success: true };
+		});
+	}
+
+	/**
 	 * Top-up a user's balance.
 	 * Usually performed by an admin or authorized role.
 	 */

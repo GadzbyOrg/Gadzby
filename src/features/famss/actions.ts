@@ -30,6 +30,7 @@ import {
 	requestSchema,
 	transferSchema,
 } from "./schema";
+import { TransactionService } from "@/services/transaction-service";
 
 export const createFamsAction = authenticatedAction(
 	createFamsSchema,
@@ -57,6 +58,9 @@ export const createFamsAction = authenticatedAction(
 			console.error("Failed to create fams:", error);
 			return { error: "Erreur lors de la création (Nom déjà pris ?)" };
 		}
+	},
+	{
+		permissions: ["CREATE_FAMSS", "MANAGE_FAMSS"],
 	}
 );
 
@@ -111,45 +115,18 @@ export const transferToFamsAction = authenticatedAction(
 		try {
 			const amountInCents = Math.floor(data.amountCents);
 
-			await db.transaction(async (tx) => {
-				// 1. Check user balance
-				const user = await tx.query.users.findFirst({
-					where: eq(users.id, session.userId),
-				});
-
-				if (!user) throw new Error("User not found");
-				if (user.balance < amountInCents) {
-					throw new Error("Solde insuffisant");
-				}
-
-				// 2. Get Fams
-				const fams = await tx.query.famss.findFirst({
-					where: eq(famss.name, data.famsName),
-				});
-				if (!fams) throw new Error("Fam'ss not found");
-
-				// 3. Update Balances
-				await tx
-					.update(users)
-					.set({ balance: sql`${users.balance} - ${amountInCents}` })
-					.where(eq(users.id, session.userId));
-
-				await tx
-					.update(famss)
-					.set({ balance: sql`${famss.balance} + ${amountInCents}` })
-					.where(eq(famss.id, fams.id));
-
-				// 4. Create Transaction
-				await tx.insert(transactions).values({
-					amount: -amountInCents,
-					type: "TRANSFER",
-					walletSource: "PERSONAL",
-					issuerId: session.userId,
-					targetUserId: session.userId,
-					famsId: fams.id,
-					description: "Virement vers Fam'ss",
-				});
+			const fams = await db.query.famss.findFirst({
+				where: eq(famss.name, data.famsName),
+				columns: { id: true }
 			});
+			if (!fams) throw new Error("Fam'ss not found");
+
+			await TransactionService.transferUserToFams(
+				session.userId,
+				fams.id,
+				amountInCents,
+				"Virement vers Fam'ss"
+			);
 
 			revalidatePath(`/famss/${data.famsName}`);
 			return { success: true };
