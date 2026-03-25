@@ -1,6 +1,7 @@
 import { IconBrandGithub, IconBug, IconCode, IconMail, IconPalette } from "@tabler/icons-react";
 import Link from "next/link";
 import React from "react";
+import packageJson from "../../../package.json";
 
 export function Footer() {
 	return (
@@ -33,7 +34,9 @@ export function Footer() {
 							</p>
 						</div>
 					</div>
-					<p className="ml-0.5 text-xs font-mono text-gray-600">Licence MIT</p>
+					<p className="ml-0.5 text-xs font-mono text-gray-600">
+						Licence MIT • v{packageJson.version}
+					</p>
 				</div>
 
 				<div className="flex items-center gap-4">
