@@ -12,3 +12,5 @@ export * from "./settings";
 export * from "./shops";
 export * from "./transactions";
 export * from "./users";
+export * from "./api-keys";
+export * from "./rate-limits";
