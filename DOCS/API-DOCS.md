@@ -161,3 +161,183 @@ curl -X GET "https://votre-domaine.com/api/v1/users?name=test&promss=219" \
   ]
 }
 ```
+
+---
+
+### 4. Historique des Transactions par Boutique
+
+Permet de récupérer l'historique détaillé des transactions (achats, annulations, etc.) effectuées dans une boutique spécifique.
+
+**Endpoint :** `GET /api/v1/shops/[shopId]/transactions`
+
+**Paramètres de requête (Query Params) :**
+- `userId` (Optionnel) : UUID de l'utilisateur concerné par l'achat.
+- `productId` (Optionnel) : UUID d'un produit spécifique.
+- `categoryId` (Optionnel) : UUID d'une catégorie.
+- `startDate` (Optionnel) : Date de début ISO 8601 (ex: `2026-03-01T00:00:00Z`).
+- `endDate` (Optionnel) : Date de fin ISO 8601.
+- `limit` (Optionnel) : Nombre maximum de résultats (défaut 50, max 200).
+- `offset` (Optionnel) : Pour la pagination (défaut 0).
+
+**Requête d'exemple :**
+```bash
+curl -X GET "https://votre-domaine.com/api/v1/shops/shop-uuid/transactions?limit=10&categoryId=category-uuid" \
+  -H "Authorization: Bearer gadzby_xxx"
+```
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "limit": 10,
+  "offset": 0,
+  "transactions": [
+    {
+      "id": "tx-1234...",
+      "amount": -500,
+      "type": "PURCHASE",
+      "status": "COMPLETED",
+      "createdAt": "2026-03-29T10:00:00.000Z",
+      "targetUser": {
+        "id": "...",
+        "username": "jdoe",
+        "nom": "Doe",
+        "prenom": "John",
+        "bucque": "Zag",
+        "promss": "219"
+      },
+      "product": {
+        "id": "...",
+        "name": "Pinte",
+        "price": 500
+      }
+    }
+  ]
+}
+```
+
+---
+
+### 5. Liste des Boutiques (Shops)
+
+Permet de récupérer la liste des boutiques actives sur Gadzby. Peut être utile pour déterminer le `shopId` des transactions.
+
+**Endpoint :** `GET /api/v1/shops`
+
+**Paramètres de requête (Query Params) :**
+- `name` (Optionnel) : Recherche partielle par nom.
+- `slug` (Optionnel) : Recherche exacte par slug.
+- `limit` (Optionnel) : Nombre maximum de résultats (défaut 50, max 100).
+- `offset` (Optionnel) : Pagination (défaut 0).
+
+**Requête d'exemple :**
+```bash
+curl -X GET "https://votre-domaine.com/api/v1/shops?name=foys" \
+  -H "Authorization: Bearer gadzby_xxx"
+```
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "limit": 50,
+  "offset": 0,
+  "shops": [
+    {
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "name": "Le Foys",
+      "slug": "foyss",
+      "description": "Le Foyer",
+      "isSelfServiceEnabled": true,
+      "createdAt": "2026-03-29T08:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 6. Liste des Produits d'une Boutique
+
+Permet de récupérer le catalogue complet (non-archivé) des produits proposés par une boutique spécifique.
+
+**Endpoint :** `GET /api/v1/shops/[shopId]/products`
+
+**Paramètres de requête (Query Params) :**
+- `categoryId` (Optionnel) : UUID d'une catégorie pour filtrer les produits d'un même type.
+
+**Requête d'exemple :**
+```bash
+curl -X GET "https://votre-domaine.com/api/v1/shops/shop-uuid/products?categoryId=cat-uuid" \
+  -H "Authorization: Bearer gadzby_xxx"
+```
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "products": [
+    {
+      "id": "prod-1234...",
+      "shopId": "shop-uuid",
+      "name": "Pinte de bière",
+      "description": "Bière blonde",
+      "price": 500,
+      "stock": 20,
+      "unit": "unit",
+      "categoryId": "cat-uuid",
+      "isArchived": false,
+      "category": {
+        "id": "cat-uuid",
+        "name": "Boissons"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### 7. Créer une Transaction (Achat) Externe
+
+Permet de passer une commande dans une boutique en débitant le solde de l'utilisateur concerné ou de sa Fam'ss. Cette opération metira automatiquement à jour les stocks des produits achetés et enregistrera la transaction dans l'historique financier. Le nom de la clé API ayant initié la requête apparaîtra comme référence dans l'intitulé de la transaction.
+
+**Endpoint :** `POST /api/v1/shops/[shopId]/purchases`
+
+**Corps de la requête (JSON Payload) :**
+- `targetUserId` (Requis, UUID) : L'utilisateur effectuant l'achat.
+- `items` (Requis, Liste) :
+  - `productId` (Requis, UUID)
+  - `quantity` (Requis, Entier positif)
+  - `variantId` (Optionnel, UUID) : Si une variante (ex: Demi, Pinte) est vendue.
+- `paymentSource` (Optionnel) : `"PERSONAL"` par défaut. Définir sur `"FAMILY"` pour utiliser le solde de la Fam'ss.
+- `famsId` (Requis si `paymentSource` est `"FAMILY"`)
+- `descriptionPrefix` (Optionnel) : Remplace le préfixe généré automatiquement `[API - NomApp] Achat`.
+
+**Requête d'exemple :**
+```bash
+curl -X POST "https://votre-domaine.com/api/v1/shops/shop-uuid/purchases" \
+  -H "Authorization: Bearer gadzby_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "targetUserId": "user-uuid",
+    "items": [
+      { "productId": "prod-uuid", "quantity": 2 }
+    ],
+    "paymentSource": "PERSONAL"
+  }'
+```
+
+**Réponse en cas de succès (201 Created) :**
+```json
+{
+  "success": true,
+}
+```
+
+**Réponse en cas d'échec métier ("Solde insuffisant", etc.) (400 Bad Request) :**
+```json
+{
+  "error": "Solde insuffisant"
+}
+```
