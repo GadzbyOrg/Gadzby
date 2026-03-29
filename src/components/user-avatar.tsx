@@ -16,12 +16,9 @@ export function UserAvatar({ user, className }: UserAvatarProps) {
 	const displayName = user.username || user.name || "?";
 
 	let imageUrl = user.image;
+
 	if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.startsWith("/")) {
-		if (user.id) {
-			imageUrl = `/api/users/${user.id}/avatar?v=${imageUrl}`;
-		} else {
-			imageUrl = null;
-		}
+		imageUrl = `/api/avatars/${imageUrl}`;
 	}
 
 	return (
