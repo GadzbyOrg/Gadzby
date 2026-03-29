@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { rateLimit, validateApiKey } from "@/lib/api-auth";
 
 export async function GET(req: NextRequest) {
-	// Rate Limiting specifically for this endpoint (optional but good practice)
+	// Rate Limiting specifically for this endpoint
 	const ip = req.headers.get("x-forwarded-for") ?? "unknown_ip";
 	const limitRes = await rateLimit(req, ip, 100, 60000); // 100 req per minute per IP
 	if (!limitRes.success) {
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 			id: keyRecord!.id,
 			name: keyRecord!.name,
 			scopes: keyRecord!.scopes,
-            createdAt: keyRecord!.createdAt
+			createdAt: keyRecord!.createdAt
 		},
 	});
 }

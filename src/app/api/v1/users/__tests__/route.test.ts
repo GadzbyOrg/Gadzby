@@ -47,16 +47,22 @@ describe("GET /api/v1/users", () => {
 		expect(json.error).toBe("Too Many Requests");
 	});
 
-	it("should return 400 if no search params are provided", async () => {
+	it("should return users even if no search params are provided", async () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
+
+		const mockUsers = [
+			{ id: "1", nom: "Doe", prenom: "John", username: "jdoe" },
+		];
+		(db.query.users.findMany as any).mockResolvedValue(mockUsers);
 
 		const req = new NextRequest("http://localhost/api/v1/users");
 		const res = await GET(req);
 		const json = await res.json();
 
-		expect(res.status).toBe(400);
-		expect(json.error).toContain("required");
+		expect(res.status).toBe(200);
+		expect(json.success).toBe(true);
+		expect(json.users).toEqual(mockUsers);
 	});
 
 	it("should return users if valid search params are provided", async () => {

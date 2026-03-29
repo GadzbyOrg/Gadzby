@@ -138,7 +138,7 @@ curl -X POST https://votre-domaine.com/api/v1/payments/initiate \
 
 ### 3. Recherche d'Utilisateurs
 
-Permet de rechercher des utilisateurs Gadzby actifs selon leur bucque/nom, nums ou promss. N'expose aucune adresse email ni mot de passe. Il est obligatoire de fournir au moins un paramètre de recherche.
+Permet de rechercher des utilisateurs Gadzby actifs selon leur bucque/nom, nums ou promss. N'expose aucune adresse email ni mot de passe. Si aucun paramètre n'est fourni, retourne les 50 premiers utilisateurs actifs.
 
 **Endpoint :** `GET /api/v1/users`
 
@@ -385,3 +385,56 @@ Liste tous les webhooks rattachés à votre clé API.
 **Endpoint :** `DELETE /api/v1/webhooks/[webhookId]`
 
 Permet de désactiver et supprimer définitivement un abonnement Webhook.
+
+---
+
+### 9. Liste des Fam'ss
+
+Permet de récupérer la liste des Fam'ss (Familles) actives. Utile pour proposer des paiements via le solde familial.
+
+**Endpoint :** `GET /api/v1/famss`
+
+**Paramètres de requête (Query Params) :**
+- `name` (Optionnel) : Recherche partielle par nom de famille.
+- `limit` (Optionnel) : Nombre maximum de résultats (défaut 50, max 100).
+- `offset` (Optionnel) : Pagination (défaut 0).
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "limit": 50,
+  "offset": 0,
+  "famss": [
+    {
+      "id": "fam-uuid",
+      "name": "Les Clunysiens"
+    }
+  ]
+}
+```
+
+---
+
+### 10. Membres d'une Fam'ss
+
+Permet de récupérer tous les utilisateurs appartenant à une Fam'ss spécifique. Idéal pour vérifier si un utilisateur a le droit de débiter le solde de la famille avant d'initier un achat avec `paymentSource: "FAMILY"`.
+
+**Endpoint :** `GET /api/v1/famss/[famsId]/members`
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "members": [
+    {
+      "id": "user-uuid",
+      "username": "jdoe",
+      "nom": "Doe",
+      "prenom": "John",
+      "bucque": "Zag",
+      "promss": "219"
+    }
+  ]
+}
+```

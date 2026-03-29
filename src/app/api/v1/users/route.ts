@@ -44,13 +44,7 @@ export async function GET(req: NextRequest) {
 			conditions.push(eq(users.promss, promss));
 		}
 
-		// Require at least one filter to avoid dumping the whole database
-		if (!name && !nums && !promss) {
-			return NextResponse.json(
-				{ error: "At least one search parameter (name, nums, or promss) is required" },
-				{ status: 400 }
-			);
-		}
+		// No mandatory parameters anymore, simply respect the limit
 
 		const whereCondition = and(...conditions);
 
