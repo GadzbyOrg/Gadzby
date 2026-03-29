@@ -1,10 +1,10 @@
 import crypto from "crypto";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db";
-import { apiKeys, apiRateLimits } from "@/db/schema";
+import { apiIdempotencyKeys, apiKeys, apiRateLimits } from "@/db/schema";
 
 export function generateApiKey() {
 	const rawKey = `gadzby_${crypto.randomBytes(32).toString("hex")}`;
@@ -76,4 +76,79 @@ export async function rateLimit(req: NextRequest, identifier: string | null = nu
         .where(eq(apiRateLimits.id, record.id));
 
     return { success: true };
+}
+
+export async function withIdempotency(
+	req: NextRequest,
+	apiKeyId: string,
+	reqBody: any,
+	handler: () => Promise<NextResponse>
+): Promise<NextResponse> {
+	const idempotencyKey = req.headers.get("Idempotency-Key");
+	if (!idempotencyKey) {
+		return await handler();
+	}
+
+	const reqPath = req.nextUrl.pathname;
+
+	// Check if already executed
+	const [existing] = await db.select().from(apiIdempotencyKeys).where(
+		and(
+			eq(apiIdempotencyKeys.idempotencyKey, idempotencyKey),
+			eq(apiIdempotencyKeys.apiKeyId, apiKeyId)
+		)
+	).limit(1);
+
+	if (existing) {
+		// Prevent idempotency key reuse for completely different payloads
+		if (existing.reqPath !== reqPath || JSON.stringify(existing.reqBody) !== JSON.stringify(reqBody)) {
+			return NextResponse.json({ error: "Idempotency key already used for a different request" }, { status: 400 });
+		}
+
+		if (existing.resStatus === null) {
+			return NextResponse.json({ error: "Request already in progress" }, { status: 409 });
+		}
+
+		return NextResponse.json(existing.resBody, { 
+			status: existing.resStatus, 
+			headers: { "X-Idempotency-Cache": "HIT" } 
+		});
+	}
+
+	// Insert PENDING request lock
+	const [inserted] = await db.insert(apiIdempotencyKeys).values({
+		idempotencyKey,
+		apiKeyId,
+		reqPath,
+		reqBody,
+		resStatus: null,
+		resBody: null,
+	}).returning();
+
+	try {
+        // Execute the actual endpoint logic
+		const response = await handler();
+		const resStatus = response.status;
+		
+		const resClone = response.clone();
+		let resBody = null;
+		try {
+			resBody = await resClone.json();
+		} catch (e) {
+			// Ignore if not JSON
+            resBody = { message: "Non-JSON standard response returned" };
+		}
+
+		await db.update(apiIdempotencyKeys).set({
+			resStatus,
+			resBody
+		}).where(eq(apiIdempotencyKeys.id, inserted.id));
+
+		response.headers.set("X-Idempotency-Cache", "MISS");
+		return response;
+	} catch (error) {
+		// Clean up the lock if handler crashes hard
+		await db.delete(apiIdempotencyKeys).where(eq(apiIdempotencyKeys.id, inserted.id));
+		throw error;
+	}
 }

@@ -7,6 +7,7 @@ import { TransactionService } from "@/services/transaction-service";
 vi.mock("@/lib/api-auth", () => ({
 	validateApiKey: vi.fn(),
 	rateLimit: vi.fn(),
+	withIdempotency: vi.fn(async (req, keyId, body, handler) => await handler())
 }));
 
 vi.mock("@/services/transaction-service", () => ({

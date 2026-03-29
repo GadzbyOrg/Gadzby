@@ -24,6 +24,17 @@ Toutes les requêtes vers l'API doivent inclure l'en-tête HTTP suivant :
 Authorization: Bearer gadzby_votrecletreslongue...
 ```
 
+### Idempotence (Éviter les double-transactions)
+
+Les APIs qui modifient le solde (`POST /api/v1/payments/initiate` et `POST /api/v1/shops/[shopId]/purchases`) supportent les clés d'idempotence. 
+Ceci permet de relancer la même requête de manière sécurisée en cas de perte de connexion de votre côté :
+- Si l'API Gadzby avait déjà traité et validé la requête initiale avec succès, elle vous retournera exactement la même réponse en bloquant le re-débit.
+- Ajoutez le header `Idempotency-Key` contenant un identifiant unique (un UUID est recommandé) pour chaque nouvelle commande unique.
+
+```http
+Idempotency-Key: f47ac10b-58cc-4372-a567-0e02b2c3d479
+```
+
 **Erreurs possibles :**
 - `401 Unauthorized` : La clé API est manquante, invalide ou a été révoquée par un administrateur.
 
@@ -341,3 +352,36 @@ curl -X POST "https://votre-domaine.com/api/v1/shops/shop-uuid/purchases" \
   "error": "Solde insuffisant"
 }
 ```
+
+---
+
+### 8. Webhooks (Abonnements aux Événements)
+
+Les Webhooks vous permettent de recevoir des requêtes HTTP POST en temps réel lorsque des événements importants se produisent sur Gadzby.
+Au lieu de vérifier périodiquement l'état des ventes (Polling), votre serveur est notifié instantanément.
+
+**Événements disponibles :**
+- `shop.purchase.created` : Déclenché lorsqu'un achat est validé dans une boutique via l'API, ou l'interface native. Le payload contient le détail de la transaction, les produits et les montants.
+
+#### S'abonner à un Webhook
+
+**Endpoint :** `POST /api/v1/webhooks`
+
+**Corps de la requête (JSON) :**
+- `url` (Requis, URL HTTPS) : L'adresse de votre serveur qui recevra le Webhook.
+- `events` (Requis, Tableau de Strings) : Les événements auxquels vous vous abonnez (ex: `["shop.purchase.created"]`).
+
+**Réponse en cas de succès (201 Created) :**
+L'API retournera un objet contenant un `secret`. **Conservez-le précieusement : il vous permettra de vérifier la signature des Webhooks reçus (Header `X-Gadzby-Signature` basé sur un HMAC SHA-256 du payload JSON).**
+
+#### Lister vos Webhooks
+
+**Endpoint :** `GET /api/v1/webhooks`
+
+Liste tous les webhooks rattachés à votre clé API.
+
+#### Supprimer un Webhook
+
+**Endpoint :** `DELETE /api/v1/webhooks/[webhookId]`
+
+Permet de désactiver et supprimer définitivement un abonnement Webhook.

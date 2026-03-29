@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { rateLimit, validateApiKey } from "@/lib/api-auth";
+import { rateLimit, validateApiKey, withIdempotency } from "@/lib/api-auth";
 import { TransactionService } from "@/services/transaction-service";
 
 const purchaseItemSchema = z.object({
@@ -34,11 +34,19 @@ export async function POST(
 		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
 	}
 
+	let body;
 	try {
-        const { shopId } = await params;
-		const body = await req.json();
-		
-		const parsed = purchaseSchema.safeParse(body);
+		const text = await req.text();
+		body = text ? JSON.parse(text) : {};
+	} catch {
+		return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+	}
+
+	return withIdempotency(req, keyId, body, async () => {
+		try {
+			const { shopId } = await params;
+			
+			const parsed = purchaseSchema.safeParse(body);
 		if (!parsed.success) {
 			return NextResponse.json(
 				{ error: "Invalid payload", details: parsed.error.issues },
@@ -89,4 +97,5 @@ export async function POST(
 			{ status: 500 }
 		);
 	}
+	});
 }

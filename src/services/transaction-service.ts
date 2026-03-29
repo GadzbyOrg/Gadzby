@@ -9,6 +9,7 @@ import {
 	transactions,
 	users,
 } from "@/db/schema";
+import { WebhookService } from "./webhook-service";
 
 // Infer the transaction type from the db instance
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -342,7 +343,7 @@ export class TransactionService {
 		const productIds = items.map((i) => i.productId);
 		const variantIds = items.filter(i => i.variantId).map(i => i.variantId) as string[];
 
-		return await db.transaction(async (tx) => {
+		const result = await db.transaction(async (tx) => {
 			const dbProducts = await tx.query.products.findMany({
 				where: (products, { inArray, and }) =>
 					and(inArray(products.id, productIds), eq(products.shopId, shopId)),
@@ -508,8 +509,27 @@ export class TransactionService {
 			// 5. Insert Transactions
 			await tx.insert(transactions).values(transactionRecords);
 
-			return { success: true };
+			return { success: true, transactionRecords };
 		});
+		
+		if (result.success && result.transactionRecords) {
+			// Do not await the webhook to complete, treat it as a background job
+			WebhookService.dispatch("shop.purchase.created", {
+				shopId,
+				targetUserId,
+				paymentSource,
+				famsId,
+				transactions: result.transactionRecords.map(t => ({
+					productId: t.productId,
+					variantId: t.productVariantId,
+					quantity: t.quantity,
+					amount: t.amount,
+					description: t.description
+				}))
+			});
+		}
+
+		return { success: true };
 	}
 	/**
 	 * Admin adjustment (positive or negative).

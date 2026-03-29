@@ -13,4 +13,6 @@ export * from "./shops";
 export * from "./transactions";
 export * from "./users";
 export * from "./api-keys";
+export * from "./api-idempotency";
+export * from "./api-webhooks";
 export * from "./rate-limits";

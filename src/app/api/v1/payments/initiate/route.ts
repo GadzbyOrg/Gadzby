@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { rateLimit, validateApiKey } from "@/lib/api-auth";
+import { rateLimit, validateApiKey, withIdempotency } from "@/lib/api-auth";
 import { TransactionService } from "@/services/transaction-service";
 
 const initiatePaymentSchema = z.object({
@@ -26,9 +26,17 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
 	}
 
+	let body;
 	try {
-        const body = await req.json();
-		const parsed = initiatePaymentSchema.safeParse(body);
+		const text = await req.text();
+		body = text ? JSON.parse(text) : {};
+	} catch {
+		return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+	}
+
+	return withIdempotency(req, keyId, body, async () => {
+		try {
+			const parsed = initiatePaymentSchema.safeParse(body);
 
 		if (!parsed.success) {
 			return NextResponse.json(
@@ -58,4 +66,5 @@ export async function POST(req: NextRequest) {
 			{ status: 500 }
 		);
 	}
+	});
 }
