@@ -189,6 +189,5 @@ export const importProducts = authenticatedAction(
             console.error("Import failed:", error);
             return { error: "Erreur lors de l'import" };
         }
-    },
-    { permissions: ["MANAGE_PRODUCTS"] }
+    }
 );
