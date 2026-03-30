@@ -12,7 +12,7 @@ import { famsMembers } from "./famss";
 import { roles } from "./roles";
 import { shopUsers } from "./shops";
 
-export const tbk = pgEnum("tbk", ["ME", "CL", "CH", "KA", "PA", "BO", "LI", "AN"])
+export const tbk = pgEnum("tbk", ["ME", "CL", "CH", "KA", "PA", "BO", "LI", "AN", "AI"])
 
 export const users = pgTable("users", {
 	id: uuid("id").defaultRandom().primaryKey(),
