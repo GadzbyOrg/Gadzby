@@ -10,6 +10,7 @@ import { EmailSettings } from "./_components/email-settings";
 import { FamssSettings } from "./_components/famss-settings";
 import { PaymentsSettings } from "./_components/payments-settings";
 import { PennylaneSettings } from "./_components/pennylane-settings";
+import { ApiKeysSettings } from "./_components/api-keys-settings";
 
 export default async function AdminSettingsPage() {
     const session = await verifySession();
@@ -18,7 +19,12 @@ export default async function AdminSettingsPage() {
         redirect("/");
     }
 
-    const methods = await db.select().from(paymentMethods);
+    const [methods, keys] = await Promise.all([
+        db.select().from(paymentMethods),
+        db.query.apiKeys.findMany({
+            orderBy: (t, { desc }) => [desc(t.createdAt)]
+        })
+    ]);
 
     // Cast to ensure type safety with component
     const secureMethods = methods.map(m => ({
@@ -59,6 +65,12 @@ export default async function AdminSettingsPage() {
 
                 <section>
                     <PaymentsSettings methods={secureMethods} />
+                </section>
+
+                <div className="h-px bg-dark-800" />
+
+                <section>
+                    <ApiKeysSettings apiKeys={keys} />
                 </section>
 
                 <div className="h-px bg-dark-800" />

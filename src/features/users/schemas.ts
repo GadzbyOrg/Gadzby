@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { TABAGNSS_CODES } from "./constants";
 
-export const tbkSchema = z.enum(["ME", "CL", "CH", "KA", "PA", "BO", "LI", "AN"]);
+export const tbkSchema = z.enum(TABAGNSS_CODES);
 export type Tbk = z.infer<typeof tbkSchema>;
 
 export const updateUserSchema = z.object({

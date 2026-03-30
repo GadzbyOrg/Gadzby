@@ -186,7 +186,7 @@ export function UpcomingEventsList({
 												<span className="flex items-center gap-1">
 													<IconMapPin size={14} /> {event.shop.name}
 												</span>
-												<span className="flex items-center gap-1">
+												<span className="flex items-center gap-1" suppressHydrationWarning>
 													<IconCalendar size={14} />
 													{new Date(event.startDate).toLocaleDateString()}
 												</span>
@@ -249,7 +249,7 @@ export function UpcomingEventsList({
 												<span className="flex items-center gap-1">
 													<IconMapPin size={14} /> {event.shop.name}
 												</span>
-												<span className="flex items-center gap-1">
+												<span className="flex items-center gap-1" suppressHydrationWarning>
 													<IconCalendar size={14} />
 													{new Date(event.startDate).toLocaleDateString()}
 												</span>

@@ -71,19 +71,19 @@ export function DashboardShell({
 			{/* --- CONTENU PRINCIPAL --- */}
 			<main className="flex flex-1 flex-col overflow-hidden">
 				{/* HEADER */}
-				<header className="flex h-16 items-center justify-between border-b border-dark-800 bg-dark-950/50 px-6 backdrop-blur-md z-[20]">
+				<header className="flex h-16 items-center justify-between border-b border-dark-800 bg-dark-950/50 px-4 md:px-6 backdrop-blur-md z-[20] gap-2">
 					{/* Logo Mobile (remplace le trigger menu) */}
-					<div className="md:hidden flex items-center gap-2">
-						<Link href="/" className="flex items-center gap-2">
-							<span className="text-lg font-bold text-gray-200">Gadzby</span>
+					<div className="md:hidden flex items-center min-w-0">
+						<Link href="/" className="flex items-center gap-1.5 min-w-0">
+							<span className="text-lg font-bold text-gray-200 shrink-0">Gadzby</span>
 							{campusName && (
-								<span className="text-xl italic font-semibold text-primary-400" style={{ fontFamily: "'Playfair Display', serif" }}>{campusName}</span>
+								<span className="text-lg italic font-semibold text-primary-400 truncate pt-0.5" style={{ fontFamily: "'Playfair Display', serif" }}>{campusName}</span>
 							)}
 						</Link>
 					</div>
 
 					{/* Titre */}
-					<div className="hidden md:flex items-center gap-1">
+					<div className="hidden md:flex items-center gap-1 shrink-0">
 						<h1 className="text-lg font-semibold text-gray-200">Gadzby</h1>
 						{campusName && (
 							<span className="text-xl italic font-semibold text-primary-400" style={{ fontFamily: "'Playfair Display', serif" }}>{campusName}</span>
@@ -91,24 +91,26 @@ export function DashboardShell({
 					</div>
 
 					{/* User Info & Actions */}
-					<div className="flex items-center gap-4">
+					<div className="flex items-center gap-2 md:gap-4 shrink-0">
 						{/* Solde Widget */}
 						<div
 							className={cn(
-								"flex items-center gap-2 rounded-full border bg-dark-900 md:px-4 md:py-1.5 px-2 py-1 text-sm font-medium shadow-sm",
+								"flex items-center gap-2 rounded-full border bg-dark-900 md:px-4 md:py-1.5 px-2.5 py-1 text-sm font-medium shadow-sm shrink-0",
 								user.balance < 0
 									? "border-red-900/50 text-red-400"
 									: "border-green-900/50 text-green-400"
 							)}
 						>
 							<span className="text-gray-400 hidden md:block">Solde:</span>
-							<span className="font-bold tracking-wide">
+							<span className="font-bold tracking-wide whitespace-nowrap">
 								{formatPrice(user.balance)}
 							</span>
 						</div>
 
 						{/* Avatar / Dropdown */}
-						<UserDropdown user={user} />
+						<div className="shrink-0">
+							<UserDropdown user={user} />
+						</div>
 					</div>
 				</header>
 

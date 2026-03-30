@@ -13,29 +13,29 @@ import { importUserRowSchema, type Tbk } from "@/features/users/schemas";
 const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
 
 export class UserService {
-	static async update(
-		userId: string,
-		data: {
-			email: string;
-			phone?: string | null;
-			bucque?: string | null;
-			preferredDashboardPath?: string | null;
-		}
-	) {
+    static async update(
+        userId: string,
+        data: {
+            email: string;
+            phone?: string | null;
+            bucque?: string | null;
+            preferredDashboardPath?: string | null;
+        }
+    ) {
 
-		await db
-			.update(users)
-			.set({
-				phone: data.phone || null,
-				bucque: data.bucque || null,
-				email: data.email.toLowerCase(),
-				preferredDashboardPath: data.preferredDashboardPath || null,
-			})
-			.where(eq(users.id, userId));
-	}
+        await db
+            .update(users)
+            .set({
+                phone: data.phone || null,
+                bucque: data.bucque || null,
+                email: data.email.toLowerCase(),
+                preferredDashboardPath: data.preferredDashboardPath || null,
+            })
+            .where(eq(users.id, userId));
+    }
 
-	static async adminUpdate(
-        targetUserId: string, 
+    static async adminUpdate(
+        targetUserId: string,
         adminUserId: string,
         data: {
             nom: string;
@@ -67,43 +67,43 @@ export class UserService {
             ...rest
         } = data;
 
-		const computedUsername =
-			nums && nums.trim()
-				? `${nums}${promss}`.toLowerCase()
-				: `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
-        
-		const finalUsername =
-			username && username.trim() ? username.trim().toLowerCase() : computedUsername;
+        const computedUsername =
+            nums && nums.trim()
+                ? `${nums}${promss}`.toLowerCase()
+                : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
 
-		await db.transaction(async (tx) => {
-			// 1. Get current balance
-			const currentUser = await tx.query.users.findFirst({
-				where: eq(users.id, targetUserId),
-				columns: { balance: true, isDeleted: true },
-			});
+        const finalUsername =
+            username && username.trim() ? username.trim().toLowerCase() : computedUsername;
 
-			if (!currentUser) throw new Error("Utilisateur non trouvé");
-			if (currentUser.isDeleted)
-				throw new Error("Impossible de modifier un utilisateur supprimé");
-			
+        await db.transaction(async (tx) => {
+            // 1. Get current balance
+            const currentUser = await tx.query.users.findFirst({
+                where: eq(users.id, targetUserId),
+                columns: { balance: true, isDeleted: true },
+            });
+
+            if (!currentUser) throw new Error("Utilisateur non trouvé");
+            if (currentUser.isDeleted)
+                throw new Error("Impossible de modifier un utilisateur supprimé");
+
             const diff = balance - currentUser.balance;
 
-			// 2. If balance changed, log transaction
-			if (diff !== 0) {
-				await tx.insert(transactions).values({
-					amount: diff,
-					type: "ADJUSTMENT",
-					walletSource: "PERSONAL",
-					issuerId: adminUserId,
-					targetUserId: targetUserId,
-					description: "Mouvement exceptionnel (Correction Admin)",
-				});
-			}
+            // 2. If balance changed, log transaction
+            if (diff !== 0) {
+                await tx.insert(transactions).values({
+                    amount: diff,
+                    type: "ADJUSTMENT",
+                    walletSource: "PERSONAL",
+                    issuerId: adminUserId,
+                    targetUserId: targetUserId,
+                    description: "Mouvement exceptionnel (Correction Admin)",
+                });
+            }
 
-			// 3. Update User
-			await tx
-				.update(users)
-				.set({
+            // 3. Update User
+            await tx
+                .update(users)
+                .set({
                     nom,
                     prenom,
                     email: email.toLowerCase(),
@@ -115,20 +115,20 @@ export class UserService {
                     bucque: bucque || null,
                     tabagnss: rest.tabagnss,
                     ...rest
-				})
-				.where(eq(users.id, targetUserId));
+                })
+                .where(eq(users.id, targetUserId));
 
-			// 4. Update Password if provided
-			if (newPassword && newPassword.trim() !== "") {
-				const salt = await bcrypt.genSalt(10);
-				const hash = await bcrypt.hash(newPassword, salt);
-				await tx
-					.update(users)
-					.set({ passwordHash: hash })
-					.where(eq(users.id, targetUserId));
-			}
-		});
-	}
+            // 4. Update Password if provided
+            if (newPassword && newPassword.trim() !== "") {
+                const salt = await bcrypt.genSalt(10);
+                const hash = await bcrypt.hash(newPassword, salt);
+                await tx
+                    .update(users)
+                    .set({ passwordHash: hash })
+                    .where(eq(users.id, targetUserId));
+            }
+        });
+    }
 
     static async create(data: {
         nom: string;
@@ -199,68 +199,68 @@ export class UserService {
 
     static async delete(userId: string) {
         await db.transaction(async (tx) => {
-			const user = await tx.query.users.findFirst({
-				where: eq(users.id, userId),
-				columns: { balance: true, roleId: true, image: true },
-			});
+            const user = await tx.query.users.findFirst({
+                where: eq(users.id, userId),
+                columns: { balance: true, roleId: true, image: true },
+            });
 
-			if (!user) throw new Error("Utilisateur non trouvé");
+            if (!user) throw new Error("Utilisateur non trouvé");
 
-			if (user.balance != 0) {
-				throw new Error(
-					"Impossible de supprimer un utilisateur avec un solde positif."
-				);
-			}
-			
+            if (user.balance != 0) {
+                throw new Error(
+                    "Impossible de supprimer un utilisateur avec un solde positif."
+                );
+            }
+
             // Prevent deleting ADMIN users
-			const role = await tx.query.roles.findFirst({
-				where: eq(roles.id, user.roleId as string),
-				columns: { name: true },
-			});
-			
-			if (role?.name === "ADMIN") {
-				throw new Error(
-					"Impossible de supprimer un utilisateur avec le rôle ADMIN."
-				);
-			}
+            const role = await tx.query.roles.findFirst({
+                where: eq(roles.id, user.roleId as string),
+                columns: { name: true },
+            });
 
-			await tx.delete(shopUsers).where(eq(shopUsers.userId, userId));
-			await tx.delete(famsMembers).where(eq(famsMembers.userId, userId));
-			
-			// Delete avatar file if exists
-			if (user.image) {
-				const filePath = join(UPLOAD_DIR, user.image);
-				if (existsSync(filePath)) {
-					try {
-						await unlink(filePath);
-					} catch (e) {
-						console.error("Failed to delete avatar file:", e);
-					}
-				}
-			}
+            if (role?.name === "ADMIN") {
+                throw new Error(
+                    "Impossible de supprimer un utilisateur avec le rôle ADMIN."
+                );
+            }
 
-			const timestamp = Date.now();
+            await tx.delete(shopUsers).where(eq(shopUsers.userId, userId));
+            await tx.delete(famsMembers).where(eq(famsMembers.userId, userId));
 
-			await tx
-				.update(users)
-				.set({
-					nom: "Utilisateur Supprimé",
-					prenom: ``,
-					username: `deleted_user_${timestamp}`,
-					passwordHash: "DELETED_USER_NO_ACCESS",
-					bucque: "",
-					promss: "",
-					nums: "",
-					roleId: null,
-					isAsleep: true,
-					emailVerified: null,
-					email: `deleted_${timestamp}@gadzby.local`,
-					phone: null,
-					image: null,
-					isDeleted: true,
-				})
-				.where(eq(users.id, userId));
-		});
+            // Delete avatar file if exists
+            if (user.image) {
+                const filePath = join(UPLOAD_DIR, user.image);
+                if (existsSync(filePath)) {
+                    try {
+                        await unlink(filePath);
+                    } catch (e) {
+                        console.error("Failed to delete avatar file:", e);
+                    }
+                }
+            }
+
+            const timestamp = Date.now();
+
+            await tx
+                .update(users)
+                .set({
+                    nom: "Utilisateur Supprimé",
+                    prenom: ``,
+                    username: `deleted_user_${timestamp}`,
+                    passwordHash: "DELETED_USER_NO_ACCESS",
+                    bucque: "",
+                    promss: "",
+                    nums: "",
+                    roleId: null,
+                    isAsleep: true,
+                    emailVerified: null,
+                    email: `deleted_${timestamp}@gadzby.local`,
+                    phone: null,
+                    image: null,
+                    isDeleted: true,
+                })
+                .where(eq(users.id, userId));
+        });
     }
 
     static async toggleStatus(userId: string, isAsleep: boolean) {
@@ -270,7 +270,7 @@ export class UserService {
     static async importBatch(rows: z.infer<typeof importUserRowSchema>[]) {
         let successCount = 0;
         let skippedCount = 0;
-        const failCount = 0; 
+        const failCount = 0;
         const skipped: string[] = [];
         const errors: string[] = [];
 
@@ -282,14 +282,14 @@ export class UserService {
 
         // Prepare chunk data with metadata
         const chunkDataWithMeta = rows.map((item) => {
-             const { promss, nums, email, phone, nom, prenom, username: explicitUsername } = item;
-             let username = explicitUsername;
+            const { promss, nums, email, phone, nom, prenom, username: explicitUsername } = item;
+            let username = explicitUsername;
 
-             if (!username || username.trim() === "") {
-                 username = (nums && nums.trim()) ? `${nums}${promss}`.toLowerCase() : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
-             }
-             return { data: item, username: username!.toLowerCase() };
-         });
+            if (!username || username.trim() === "") {
+                username = (nums && nums.trim()) ? `${nums}${promss}`.toLowerCase() : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
+            }
+            return { data: item, username: username!.toLowerCase() };
+        });
 
         // Verify duplicates within the chunk itself
         const seenUsernames = new Set();
@@ -354,19 +354,19 @@ export class UserService {
         const usersToInsert: (typeof users.$inferInsert)[] = [];
         // Generate passwords/hashes
         const passwordPromises = uniqueChunk.map(async (item) => {
-             if (existingUsernames.has(item.username)) {
-                 return { status: "skipped" as const, reason: `Utilisateur déjà existant: ${item.username}` };
-             }
-             if (item.data.email && existingEmails.has(item.data.email)) {
-                 return { status: "skipped" as const, reason: `Email déjà utilisé: ${item.data.email}` };
-             }
-             if (item.data.phone && existingPhones.has(item.data.phone)) {
-                 return { status: "skipped" as const, reason: `Téléphone déjà utilisé: ${item.data.phone}` };
-             }
+            if (existingUsernames.has(item.username)) {
+                return { status: "skipped" as const, reason: `Utilisateur déjà existant: ${item.username}` };
+            }
+            if (item.data.email && existingEmails.has(item.data.email)) {
+                return { status: "skipped" as const, reason: `Email déjà utilisé: ${item.data.email}` };
+            }
+            if (item.data.phone && existingPhones.has(item.data.phone)) {
+                return { status: "skipped" as const, reason: `Téléphone déjà utilisé: ${item.data.phone}` };
+            }
 
-             const password = Math.random().toString(36).slice(-10);
-             const hash = await bcrypt.hash(password, 10);
-             return { status: "resolved" as const, hash, item };
+            const password = Math.random().toString(36).slice(-10);
+            const hash = await bcrypt.hash(password, 10);
+            return { status: "resolved" as const, hash, item };
         });
 
         const results = await Promise.all(passwordPromises);
@@ -404,33 +404,33 @@ export class UserService {
 
     }
 
-    
+
 
     static async changePassword(userId: string, currentPassword: string, newPassword: string) {
         const user = await db.query.users.findFirst({
-			where: eq(users.id, userId),
-		});
+            where: eq(users.id, userId),
+        });
 
-		if (!user) throw new Error("Utilisateur introuvable");
+        if (!user) throw new Error("Utilisateur introuvable");
 
-		const match = await bcrypt.compare(currentPassword, user.passwordHash);
-		if (!match) {
-			throw new Error("Mot de passe actuel incorrect");
-		}
+        const match = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!match) {
+            throw new Error("Mot de passe actuel incorrect");
+        }
 
-		const salt = await bcrypt.genSalt(10);
-		const hash = await bcrypt.hash(newPassword, salt);
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(newPassword, salt);
 
-		await db
-			.update(users)
-			.set({ passwordHash: hash })
-			.where(eq(users.id, userId));
+        await db
+            .update(users)
+            .set({ passwordHash: hash })
+            .where(eq(users.id, userId));
     }
     static async searchPublic(query: string, currentUserId?: string) {
         if (!query || query.length < 2) return [];
 
         const searchPattern = `%${query}%`;
-        
+
         return await db.query.users.findMany({
             where: (users, { or, and, ilike, ne, eq }) => {
                 const conditions = [

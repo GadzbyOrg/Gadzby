@@ -426,7 +426,7 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 					    {group.data.description || "Opération groupée"}
                     </span>
 				</td>
-				<td className="px-6 py-4 text-gray-400 capitalize">{subtitle}</td>
+				<td className="px-6 py-4 text-gray-400 capitalize" suppressHydrationWarning>{subtitle}</td>
 				<td
 					className={`px-6 py-4 text-right font-semibold ${
 						isPositive ? "text-emerald-500" : "text-gray-200"
@@ -542,7 +542,7 @@ function TransactionRow({
 					<div className="text-xs text-gray-500">{t.description}</div>
 				)}
 			</td>
-			<td className="px-6 py-4 text-gray-400 capitalize">{subtitle}</td>
+			<td className="px-6 py-4 text-gray-400 capitalize" suppressHydrationWarning>{subtitle}</td>
 			<td
 				className={`px-6 py-4 text-right font-semibold ${
 					isPositive ? "text-emerald-500" : "text-gray-200"
@@ -615,7 +615,7 @@ function TransactionMobileCard({
                         </div>
                         {/* Subtitle Row */}
                         <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 min-w-0 mt-0.5">
-                            <span className="shrink-0">{subtitle}</span>
+                            <span className="shrink-0" suppressHydrationWarning>{subtitle}</span>
                              <span className="w-0.5 h-0.5 bg-gray-600 rounded-full shrink-0"></span>
                             <span className="truncate">{typeLabel}</span>
                         </div>
@@ -721,7 +721,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
                             </div>
                             <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 mt-0.5 min-w-0">
                                 <span className="bg-dark-800 px-1.5 rounded text-[10px] font-medium border border-dark-700 whitespace-nowrap shrink-0">{items.length} ops</span>
-                                <span className="truncate">{subtitle}</span>
+                                <span className="truncate" suppressHydrationWarning>{subtitle}</span>
                             </div>
                         </div>
                     </div>
