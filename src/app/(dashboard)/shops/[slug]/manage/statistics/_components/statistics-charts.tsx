@@ -226,13 +226,14 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 	return (
 		<div className="space-y-6">
 			{/* Controls */}
-			<div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-dark-900 p-4 rounded-xl border border-dark-800">
-				<div className="flex bg-dark-800 rounded-lg p-1 overflow-x-auto whitespace-nowrap custom-scrollbar max-w-full">
+			{/* Controls */}
+			<div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-dark-900 p-4 rounded-xl border border-dark-800 w-full overflow-hidden">
+				<div className="flex bg-dark-800 rounded-lg p-1 overflow-x-auto whitespace-nowrap custom-scrollbar w-full sm:w-auto pb-2 sm:pb-1 -mb-1 sm:mb-0">
 					{(["7d", "30d", "90d", "all", "custom"] as Timeframe[]).map((t) => (
 						<button
 							key={t}
 							onClick={() => handleTimeframeChange(t)}
-							className={`px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
+							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
 								timeframe === t
 									? "bg-primary-600 text-white shadow-sm"
 									: "text-gray-400 hover:text-white hover:bg-dark-700"
@@ -248,24 +249,24 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 				</div>
 
 				{timeframe === "custom" && (
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 w-full sm:w-auto">
 						<input
 							type="date"
 							value={customStart}
 							onChange={(e) => handleDateChange("from", e.target.value)}
-							className="bg-dark-800 border-dark-700 text-white rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+							className="flex-1 w-full sm:w-auto min-w-0 bg-dark-800 border-dark-700 text-white rounded-md px-2 sm:px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
 						/>
-						<span className="text-gray-500">-</span>
+						<span className="text-gray-500 shrink-0">-</span>
 						<input
 							type="date"
 							value={customEnd}
 							onChange={(e) => handleDateChange("to", e.target.value)}
-							className="bg-dark-800 border-dark-700 text-white rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+							className="flex-1 w-full sm:w-auto min-w-0 bg-dark-800 border-dark-700 text-white rounded-md px-2 sm:px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
 						/>
 					</div>
 				)}
 
-				<div className="w-[200px]">
+				<div className="w-full sm:w-[200px] shrink-0">
 					<select
 						value={eventIdParam}
 						onChange={(e) => handleEventChange(e.target.value)}

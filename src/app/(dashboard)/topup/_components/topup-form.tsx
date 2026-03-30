@@ -1,6 +1,6 @@
 "use client";
 
-import { IconCheck, IconCreditCard,IconLoader2 } from "@tabler/icons-react";
+import { IconCheck, IconCreditCard, IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 
 import { initiateTopUp } from "@/features/payments/actions";
@@ -238,10 +238,6 @@ export function TopUpForm({
 						{isLoading && <IconLoader2 className="animate-spin" />}
 						{isLoading ? "Redirection..." : "Payer maintenant"}
 					</button>
-
-					<p className="mt-4 text-center text-xs text-gray-600">
-						Paiement sécurisé et chiffré. En continuant, vous acceptez nos CGV.
-					</p>
 				</div>
 			</div>
 		</div>
