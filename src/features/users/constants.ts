@@ -1,3 +1,5 @@
+export const TABAGNSS_CODES = ["ME", "CH", "AN", "BO", "AI", "CL", "PA", "LI", "KA"] as const;
+
 export const TABAGNSS_MAP = {
 	ME: "Siber'ss",
 	CH: "Chalon'ss",
@@ -6,7 +8,7 @@ export const TABAGNSS_MAP = {
 	AI: "KIN",
 	CL: "Clun'ss",
 	PA: "P3",
-	LI: "Birse", 
+	LI: "Birse",
 	KA: "kanak",
 } as const;
 
@@ -18,9 +20,9 @@ export const TABAGNSS_OPTIONS = Object.entries(TABAGNSS_MAP).map(([code, label])
 export const getTabagnssCode = (value: string): string | null => {
 	// Direct match (code)
 	if (value in TABAGNSS_MAP) return value;
-	
+
 	// Reverse match (label)
-	const entry = Object.entries(TABAGNSS_MAP).find(([, label]) => 
+	const entry = Object.entries(TABAGNSS_MAP).find(([, label]) =>
 		label.toLowerCase() === value.toLowerCase()
 	);
 	if (entry) return entry[0];
