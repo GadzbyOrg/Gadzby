@@ -102,14 +102,14 @@ export default async function ShopTransactionsPage({
 
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-			<div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+			<div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-500 mb-4">
 				<Link
 					href={`/shops/${shop.slug}/manage`}
-					className="hover:text-white transition-colors"
+					className="hover:text-white transition-colors whitespace-nowrap shrink-0"
 				>
 					← Retour à la gestion
 				</Link>
-				<span>/</span>
+				<span className="shrink-0">/</span>
 				<span className="text-white font-medium">
 					Historique des transactions
 				</span>
