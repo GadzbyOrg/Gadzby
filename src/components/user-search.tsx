@@ -1,6 +1,5 @@
-
-import { IconLoader2,IconSearch } from '@tabler/icons-react';
-import { useEffect, useRef,useState } from 'react';
+import { IconLoader2, IconSearch } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
 
 import { UserAvatar } from "@/components/user-avatar";
 import { searchUsersPublicAction } from '@/features/users/actions';
@@ -19,9 +18,9 @@ export interface UserSearchProps {
 
 const EMPTY_ARRAY: string[] = [];
 
-export function UserSearch({ 
-    onSelect, 
-    placeholder = "Ajouter un participant...", 
+export function UserSearch({
+    onSelect,
+    placeholder = "Ajouter un participant...",
     excludeIds = EMPTY_ARRAY,
     className,
     inputClassName,
@@ -34,30 +33,50 @@ export function UserSearch({
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const preventSearchRef = useRef(false);
 
-    // Simple debounce
     useEffect(() => {
         let active = true;
 
         if (query.length < 2) {
-            setResults(prev => prev.length === 0 ? prev : []);
+            setResults([]);
             setIsLoading(false);
+            setIsOpen(false);
             return;
         }
 
         const timer = setTimeout(async () => {
-            if (preventSearchRef.current) {
-                preventSearchRef.current = false;
-                if (active) setIsLoading(false);
-                return;
-            }
-            
             try {
-                 const res = await searchAction(query);
-                 
+                const res = await searchAction(query);
                 if (active && res?.users) {
-                    const filtered = res.users.filter((u: any) => !excludeIds.includes(u.id));
+                    const filtered = res.users
+                        .filter((u: any) => !excludeIds.includes(u.id))
+                        .sort((a, b) => {
+                            const queryLower = query.toLowerCase().trim();
+
+                            const aUser = (a.username || "").toLowerCase();
+                            const bUser = (b.username || "").toLowerCase();
+
+                            // 1. Exact match
+                            const aExact = aUser === queryLower;
+                            const bExact = bUser === queryLower;
+                            if (aExact && !bExact) return -1;
+                            if (!aExact && bExact) return 1;
+
+                            const aStarts = aUser.startsWith(queryLower);
+                            const bStarts = bUser.startsWith(queryLower);
+                            if (aStarts && !bStarts) return -1;
+                            if (!aStarts && bStarts) return 1;
+
+                            // 3. Includes
+                            const aIncludes = aUser.includes(queryLower);
+                            const bIncludes = bUser.includes(queryLower);
+                            if (aIncludes && !bIncludes) return -1;
+                            if (!aIncludes && bIncludes) return 1;
+
+                            // 4. Fallback alphabétique
+                            return aUser.localeCompare(bUser);
+                        });
+
                     setResults(filtered);
                     setIsOpen(true);
                 }
@@ -74,25 +93,24 @@ export function UserSearch({
             active = false;
             clearTimeout(timer);
         };
-    }, [query, excludeIds]);
+    }, [query, excludeIds, searchAction]);
 
     // Click outside to close
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [wrapperRef]);
+    }, []);
 
     const handleSelect = (user: any) => {
         onSelect(user);
         if (clearOnSelect) {
             setQuery('');
         } else {
-            preventSearchRef.current = true;
             setQuery(user.username);
         }
         setIsOpen(false);
@@ -161,8 +179,8 @@ export function UserSearch({
                     ))}
                 </div>
             )}
-            
-             {isOpen && query.length >= 2 && results.length === 0 && !isLoading && (
+
+            {isOpen && query.length >= 2 && results.length === 0 && !isLoading && (
                 <div className="absolute z-50 w-full mt-1 bg-dark-800 border border-dark-700 rounded-md shadow-lg p-4 text-center text-sm text-gray-500">
                     Aucun utilisateur trouvé
                 </div>
