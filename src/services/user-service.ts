@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { eq, inArray, or } from "drizzle-orm";
+import { eq, inArray, or, sql } from "drizzle-orm";
 import { existsSync } from "fs";
 import { unlink } from "fs/promises";
 import { join } from "path";
@@ -451,6 +451,11 @@ export class UserService {
 
                 return and(...conditions);
             },
+            orderBy: (users, { asc, desc }) => [
+                desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
+                desc(sql`CASE WHEN ${users.username} ILIKE ${query + '%'} THEN 1 ELSE 0 END`),
+                asc(users.username)
+            ],
             columns: {
                 id: true,
                 username: true,
