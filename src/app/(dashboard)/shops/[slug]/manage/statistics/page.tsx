@@ -101,7 +101,7 @@ export default async function ShopTransactionsPage({
 	const { transactions, shop, totalCount } = result;
 
 	return (
-		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+		<div className="max-w-7xl mx-auto p-2 sm:p-4 lg:p-6 space-y-6 sm:space-y-8 overflow-x-hidden">
 			<div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-500 mb-4">
 				<Link
 					href={`/shops/${shop.slug}/manage`}

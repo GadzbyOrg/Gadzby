@@ -1,10 +1,10 @@
 "use server";
 
-import { and, count, desc, eq, gte, lte, notInArray, sql, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, ne, notInArray, sql, sum } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { products, shops,transactions, users } from "@/db/schema";
+import { productCategories, products, shops, transactions, users } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
 
 import { checkShopPermission } from "./utils";
@@ -46,6 +46,7 @@ export const getMostActiveStaff = authenticatedAction(
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
 			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
+			ne(transactions.issuerId, transactions.targetUserId), // Exclude self-service
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
 			endDate ? lte(transactions.createdAt, endDate) : undefined
 		);
@@ -176,6 +177,55 @@ export const getProductSalesStats = authenticatedAction(
             totalQuantity: Number(s.totalQuantity),
             totalRevenue: Number(s.totalRevenue),
         }));
+
+		return { stats: mappedStats };
+	}
+);
+
+export const getCategorySalesStats = authenticatedAction(
+	analyticsParamsSchema,
+	async ({ shopSlug, startDate, endDate, limit }, { session }) => {
+		const shop = await db.query.shops.findFirst({
+			where: eq(shops.slug, shopSlug),
+		});
+
+		if (!shop) throw new Error("Shop introuvable");
+
+		const isAuthorized = await checkShopPermission(
+			session.userId,
+			session.permissions,
+			shop.id,
+			"VIEW_STATS"
+		);
+
+		if (!isAuthorized) throw new Error("Non autorisé");
+
+		const whereClause = and(
+			eq(transactions.shopId, shop.id),
+			eq(transactions.type, "PURCHASE"),
+			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
+			startDate ? gte(transactions.createdAt, startDate) : undefined,
+			endDate ? lte(transactions.createdAt, endDate) : undefined
+		);
+
+		const stats = await db
+			.select({
+				categoryId: productCategories.id,
+				categoryName: productCategories.name,
+				totalRevenue: sum(sql`ABS(${transactions.amount})`),
+			})
+			.from(transactions)
+			.innerJoin(products, eq(transactions.productId, products.id))
+			.innerJoin(productCategories, eq(products.categoryId, productCategories.id))
+			.where(whereClause)
+			.groupBy(productCategories.id, productCategories.name)
+			.orderBy(desc(sum(sql`ABS(${transactions.amount})`)))
+			.limit(limit);
+
+		const mappedStats = stats.map(s => ({
+			...s,
+			totalRevenue: Number(s.totalRevenue),
+		}));
 
 		return { stats: mappedStats };
 	}
