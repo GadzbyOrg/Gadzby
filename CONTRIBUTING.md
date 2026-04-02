@@ -73,8 +73,8 @@ git remote add upstream https://github.com/LouisChabanon/Gadzby.git
 git remote -v
 # origin    https://github.com/<ton-pseudo>/Gadzby.git (fetch)
 # origin    https://github.com/<ton-pseudo>/Gadzby.git (push)
-# upstream  https://github.com/LouisChabanon/Gadzby.git (fetch)
-# upstream  https://github.com/LouisChabanon/Gadzby.git (push)
+# upstream  https://github.com/GadzbyOrg/Gadzby.git (fetch)
+# upstream  https://github.com/GadzbyOrg/Gadzby.git (push)
 ```
 
 ---
@@ -145,6 +145,13 @@ git push origin feature/ma-super-amelioration
 ---
 
 ## 🔁 Étape 6 — Ouvrir une Pull Request
+
+Avant de créer une PR, assure-toi que ton code compile correctement et que les tests passent :
+
+```bash
+npm run build
+npm run test
+```
 
 1. Rends-toi sur la page GitHub de **ton fork**
 2. GitHub affichera une bannière *"Compare & pull request"* — clique dessus
