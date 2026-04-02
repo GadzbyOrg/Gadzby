@@ -42,33 +42,33 @@ export function TopCustomersCard({ data, loading }: TopCustomersCardProps) {
 					data.map((item, index) => (
 						<div
 							key={item.userId}
-							className="flex items-center justify-between"
+							className="flex items-center gap-4 p-2 -mx-2 rounded-lg hover:bg-dark-800/50 transition-colors group"
 						>
-							<div className="flex items-center gap-3">
-								<span className="text-gray-500 font-mono text-sm w-4">
-									#{index + 1}
-								</span>
-								<UserAvatar
-									user={{
-										id: item.userId,
-										name: item.user.username,
-										image: item.user.image,
-									}}
-									className="h-8 w-8"
-								/>
-								<div className="flex-1 min-w-0">
-									<p className="text-sm font-medium text-white truncate w-full">
-										{item.user.prenom} {item.user.nom}
-									</p>
-									<p className="text-xs text-gray-400">
-										{item.count} achats
-									</p>
+							<div className="flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold w-8 h-6 rounded-md bg-dark-800 text-gray-500">
+								#{index + 1}
+							</div>
+							<UserAvatar
+								user={{
+									id: item.userId,
+									name: item.user.username,
+									image: item.user.image,
+								}}
+								className="h-9 w-9 border-2 border-dark-700 group-hover:border-primary-500/50 transition-colors shrink-0"
+							/>
+							<div className="flex-1 min-w-0">
+								<p className="text-sm font-semibold text-white truncate leading-tight">
+									{item.user.prenom} {item.user.nom}
+								</p>
+								<div className="flex items-center gap-1.5 mt-1">
+									<span className="text-xs font-bold text-gray-400 font-mono italic">{item.count}</span>
+									<span className="text-[10px] uppercase tracking-wider font-bold text-gray-600">achats</span>
 								</div>
 							</div>
-							<div className="text-right">
-								<p className="text-sm font-medium text-green-400">
+							<div className="text-right shrink-0">
+								<p className="text-sm font-bold text-green-400 font-mono leading-none">
 									{formatPrice(item.volume)}
 								</p>
+								<p className="text-[10px] mt-1 uppercase tracking-wider font-bold text-gray-600">dépensés</p>
 							</div>
 						</div>
 					))

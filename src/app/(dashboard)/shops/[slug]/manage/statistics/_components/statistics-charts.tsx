@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname,useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import {
 	Area,
@@ -26,10 +26,10 @@ import {
 } from "@/features/shops/analytics-actions";
 import { formatPrice } from "@/lib/utils";
 
-import { ProductPerformanceCard,ProductStats } from "./product-performance-card";
+import { ProductPerformanceCard, ProductStats } from "./product-performance-card";
 import { StaffActivityCard, StaffStats } from "./staff-activity-card";
 import { StockProjection } from "./stock-projection-card";
-import { CustomerStats,TopCustomersCard } from "./top-customers-card";
+import { CustomerStats, TopCustomersCard } from "./top-customers-card";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";
 
@@ -189,7 +189,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					const validStats = productsResult.stats.filter(
 						(p: any) => p.productId && p.product
 					) as ProductStats[];
-					
+
 					const sorted = [...validStats].sort(
 						(a, b) => b.totalQuantity - a.totalQuantity
 					);
@@ -243,11 +243,10 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						<button
 							key={t}
 							onClick={() => handleTimeframeChange(t)}
-							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
-								timeframe === t
-									? "bg-primary-600 text-white shadow-sm"
-									: "text-gray-400 hover:text-white hover:bg-dark-700"
-							}`}
+							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${timeframe === t
+								? "bg-primary-600 text-white shadow-sm"
+								: "text-gray-400 hover:text-white hover:bg-dark-700"
+								}`}
 						>
 							{t === "7d" && "7 Jours"}
 							{t === "30d" && "30 Jours"}
@@ -319,9 +318,8 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						<div className="bg-dark-900 p-6 rounded-xl border border-dark-800">
 							<p className="text-sm text-gray-400 font-medium">Bénéfice</p>
 							<p
-								className={`text-2xl font-bold mt-2 ${
-									data.summary.profit >= 0 ? "text-blue-400" : "text-orange-400"
-								}`}
+								className={`text-2xl font-bold mt-2 ${data.summary.profit >= 0 ? "text-blue-400" : "text-orange-400"
+									}`}
 							>
 								{data.summary.profit > 0 ? "+" : ""}
 								{formatPrice(data.summary.profit)}
@@ -540,13 +538,16 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 							</div>
 
 							{/* Bottom Info Cards Row */}
-							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
 								<div className="h-[400px]">
 									<StaffActivityCard data={staffStats} loading={loading} />
 								</div>
 								<div className="h-[400px]">
 									<TopCustomersCard data={customerStats} loading={loading} />
 								</div>
+
+							</div>
+							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
 								<div className="h-[400px]">
 									<ProductPerformanceCard
 										data={topProducts}
@@ -564,7 +565,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 									/>
 								</div>
 							</div>
-					</div>
+						</div>
 					)}
 				</>
 			) : null}

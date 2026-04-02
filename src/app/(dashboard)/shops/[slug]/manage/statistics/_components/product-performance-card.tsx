@@ -7,6 +7,7 @@ export interface ProductStats {
 	product: {
 		name: string;
 		stock: number;
+		unit: string;
 	};
 }
 
@@ -46,35 +47,43 @@ export function ProductPerformanceCard({
 					data.map((item, index) => (
 						<div
 							key={item.productId}
-							className="flex items-center justify-between group"
+							className="flex items-center gap-4 p-2 -mx-2 rounded-lg hover:bg-dark-800/50 transition-colors group"
 						>
-							<div className="flex items-center gap-3">
-								<span
-									className={`font-mono text-sm w-6 text-center rounded ${
-										type === "top"
-											? "bg-green-500/10 text-green-400"
-											: "bg-red-500/10 text-red-400"
-									}`}
-								>
-									{index + 1}
-								</span>
-								<div className="flex-1 min-w-0">
-									<p className="text-sm font-medium text-white truncate w-full">
-										{item.product.name}
-									</p>
-									<p className="text-xs text-gray-500">
-										Stock: {item.product.stock}
-									</p>
+							<div
+								className={`flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold w-6 h-6 rounded-md ${
+									type === "top"
+										? "bg-green-500/10 text-green-500 shadow-[inset_0_1px_1px_rgba(34,197,94,0.1)]"
+										: "bg-red-500/10 text-red-500 shadow-[inset_0_1px_1px_rgba(239,68,68,0.1)]"
+								}`}
+							>
+								{index + 1}
+							</div>
+							
+							<div className="flex-1 min-w-0">
+								<p className="text-sm font-semibold text-white truncate leading-tight">
+									{item.product.name}
+								</p>
+								<div className="flex items-center gap-2 mt-1">
+									<span className="text-[10px] uppercase tracking-wider font-bold text-gray-600">Stock</span>
+									<span className={`text-xs font-mono ${
+										item.product.stock <= 5 ? "text-red-400" : "text-gray-400"
+									}`}>
+										{item.product.stock.toFixed(2)}
+										<span className="text-[10px] ml-0.5 opacity-70 uppercase tracking-tighter">{item.product.unit}</span>
+									</span>
 								</div>
 							</div>
-							<div className="text-right">
-								<p className="text-sm font-medium text-white">
-									{item.totalQuantity}{" "}
-									<span className="text-xs text-gray-400">utilisés</span>
-								</p>
-								<p className="text-xs text-gray-500">
-									{formatPrice(item.totalRevenue)}
-								</p>
+
+							<div className="text-right flex flex-col items-end shrink-0">
+								<div className="flex items-center gap-1.5 leading-none">
+									<span className="text-sm font-bold text-white font-mono">{item.totalQuantity}</span>
+									<span className="text-[10px] uppercase tracking-wider font-bold text-gray-600">vendu{item.totalQuantity > 1 ? 's' : ''}</span>
+								</div>
+								<div className="mt-1 px-1.5 py-0.5 rounded bg-primary-500/10 border border-primary-500/20 leading-none">
+									<span className="text-[11px] font-bold text-primary-400 font-mono tracking-tight">
+										{formatPrice(item.totalRevenue)}
+									</span>
+								</div>
 							</div>
 						</div>
 					))
