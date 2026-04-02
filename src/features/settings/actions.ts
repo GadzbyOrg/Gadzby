@@ -360,3 +360,49 @@ export const updateCampusNameAction = authenticatedAction(
     },
     { requireAdmin: true }
 );
+
+// ─── Login Page MOTD ──────────────────────────────────────────────────────────
+
+export const getLoginMotdAction = authenticatedActionNoInput(async () => {
+    try {
+        const setting = await db.query.systemSettings.findFirst({
+            where: eq(systemSettings.key, "login_motd"),
+        });
+
+        const value = setting?.value as { text: string } | null;
+        return { text: value?.text ?? "" };
+    } catch (error) {
+        console.error("Failed to fetch login MOTD:", error);
+        return { error: "Erreur lors de la récupération du message" };
+    }
+}, { requireAdmin: true });
+
+export const updateLoginMotdAction = authenticatedAction(
+    z.object({ text: z.string() }),
+    async (data) => {
+        try {
+            await db.insert(systemSettings)
+                .values({
+                    key: "login_motd",
+                    value: { text: data.text },
+                    description: "Message affiché en bas de la page de connexion (MOTD)",
+                    updatedAt: new Date(),
+                })
+                .onConflictDoUpdate({
+                    target: systemSettings.key,
+                    set: {
+                        value: { text: data.text },
+                        updatedAt: new Date(),
+                    }
+                });
+
+            revalidatePath("/login");
+            revalidatePath("/admin/settings");
+            return { success: "Message de connexion sauvegardé" };
+        } catch (error) {
+            console.error("Failed to update login MOTD:", error);
+            return { error: "Erreur lors de la sauvegarde" };
+        }
+    },
+    { requireAdmin: true }
+);

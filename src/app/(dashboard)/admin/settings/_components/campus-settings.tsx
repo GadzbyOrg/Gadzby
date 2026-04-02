@@ -1,13 +1,19 @@
 "use client";
 
-import { IconCheck, IconLoader2, IconSchool } from "@tabler/icons-react";
+import { IconCheck, IconLoader2, IconMessage, IconSchool } from "@tabler/icons-react";
 import { useEffect, useState, useTransition } from "react";
 
-import { getCampusNameAction, updateCampusNameAction } from "@/features/settings/actions";
+import {
+	getCampusNameAction,
+	getLoginMotdAction,
+	updateCampusNameAction,
+	updateLoginMotdAction,
+} from "@/features/settings/actions";
 import { cn } from "@/lib/utils";
 
 export function CampusSettings() {
 	const [name, setName] = useState("");
+	const [motd, setMotd] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [isPending, startTransition] = useTransition();
 	const [feedback, setFeedback] = useState<{
@@ -16,10 +22,12 @@ export function CampusSettings() {
 	} | null>(null);
 
 	useEffect(() => {
-		getCampusNameAction().then((res: any) => {
-			if ("name" in res) {
-				setName(res.name);
-			}
+		Promise.all([
+			getCampusNameAction(),
+			getLoginMotdAction(),
+		]).then(([nameRes, motdRes]: [any, any]) => {
+			if ("name" in nameRes) setName(nameRes.name);
+			if ("text" in motdRes) setMotd(motdRes.text);
 			setLoading(false);
 		});
 	}, []);
@@ -28,14 +36,24 @@ export function CampusSettings() {
 		e.preventDefault();
 		setFeedback(null);
 		startTransition(async () => {
-			const formData = new FormData();
-			formData.set("name", name);
+			const nameFormData = new FormData();
+			nameFormData.set("name", name);
+			const motdFormData = new FormData();
+			motdFormData.set("text", motd);
+
 			// @ts-ignore
-			const res = await updateCampusNameAction(null, formData);
-			if (res?.success) {
-				setFeedback({ type: "success", message: res.success });
-			} else if (res?.error) {
-				setFeedback({ type: "error", message: res.error });
+			const [nameRes, motdRes] = await Promise.all([
+				// @ts-ignore
+				updateCampusNameAction(null, nameFormData),
+				// @ts-ignore
+				updateLoginMotdAction(null, motdFormData),
+			]);
+
+			const error = nameRes?.error || motdRes?.error;
+			if (error) {
+				setFeedback({ type: "error", message: error });
+			} else {
+				setFeedback({ type: "success", message: "Paramètres sauvegardés avec succès" });
 			}
 		});
 	};
@@ -52,10 +70,10 @@ export function CampusSettings() {
 		<div className="space-y-6">
 			<div>
 				<h2 className="text-xl font-bold text-white mb-1">
-					Nom du campus
+					Page de connexion
 				</h2>
 				<p className="text-gray-400 text-sm">
-					Définissez le nom du campus qui sera affiché dans l&apos;application.
+					Personnalisez le nom du campus et le message affiché sur la page de connexion.
 				</p>
 			</div>
 
@@ -75,7 +93,8 @@ export function CampusSettings() {
 					</div>
 				)}
 
-				<form onSubmit={handleSubmit} className="space-y-4">
+				<form onSubmit={handleSubmit} className="space-y-5">
+					{/* Campus Name */}
 					<div className="space-y-2">
 						<label htmlFor="campus-name" className="text-sm font-medium text-gray-300">
 							Nom du campus
@@ -90,12 +109,38 @@ export function CampusSettings() {
 								value={name}
 								onChange={(e) => {
 									setName(e.target.value);
-									setFeedback(null); // Clear feedback on edit
+									setFeedback(null);
 								}}
 								placeholder="Ex: ESME Campus Paris"
 								disabled={isPending}
 								className={cn(
 									"flex-1 rounded-lg border border-dark-700 bg-dark-900/50 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-60 disabled:cursor-not-allowed",
+								)}
+							/>
+						</div>
+					</div>
+
+					{/* Login MOTD */}
+					<div className="space-y-2 gap">
+						<label htmlFor="login-motd" className="text-sm font-medium text-gray-300">
+							Message de connexion <span className="text-gray-500 font-normal">(Optionnel)</span>
+						</label>
+						<div className="flex items-start gap-3">
+							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-900/30 text-primary-500 mt-1 shrink-0">
+								<IconMessage size={20} />
+							</div>
+							<textarea
+								id="login-motd"
+								rows={2}
+								value={motd}
+								onChange={(e) => {
+									setMotd(e.target.value);
+									setFeedback(null);
+								}}
+								placeholder="Ex: Contacte ton Zifoy'ss pour créer ton compte !"
+								disabled={isPending}
+								className={cn(
+									"flex-1 resize-none rounded-lg border border-dark-700 bg-dark-900/50 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-60 disabled:cursor-not-allowed",
 								)}
 							/>
 						</div>
