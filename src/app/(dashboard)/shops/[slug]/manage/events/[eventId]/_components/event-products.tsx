@@ -4,7 +4,7 @@ import { IconCheck, IconEdit, IconLink, IconUnlink, IconX } from '@tabler/icons-
 import { useState } from 'react';
 
 import { useToast } from "@/components/ui/use-toast";
-import { getAvailableProductsAction,linkProductsToEvent, unlinkProductFromEvent } from '@/features/events/actions';
+import { getAvailableProductsAction, linkProductsToEvent, unlinkProductFromEvent } from '@/features/events/actions';
 import { setEventProductPrice } from '@/features/events/actions/products';
 
 interface Props {
@@ -17,7 +17,7 @@ export function EventProducts({ event }: Props) {
     const [availableProducts, setAvailableProducts] = useState<any[]>([]);
     const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
-    
+
     // State to track editing custom prices
     const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
     const [editPriceValue, setEditPriceValue] = useState<string>('');
@@ -42,10 +42,10 @@ export function EventProducts({ event }: Props) {
                 eventId: event.id,
                 productIds: selectedProducts
             });
-            
+
             if (result?.error) {
-                 toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
-                 return;
+                toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+                return;
             }
 
             toast({ title: 'Succès', description: `${selectedProducts.length} produits liés`, variant: 'default' });
@@ -59,10 +59,10 @@ export function EventProducts({ event }: Props) {
     };
 
     const toggleProduct = (productId: string) => {
-        setSelectedProducts(prev => 
-            prev.includes(productId) 
-            ? prev.filter(id => id !== productId)
-            : [...prev, productId]
+        setSelectedProducts(prev =>
+            prev.includes(productId)
+                ? prev.filter(id => id !== productId)
+                : [...prev, productId]
         );
     };
 
@@ -99,7 +99,7 @@ export function EventProducts({ event }: Props) {
         try {
             // Null means 'remove the override'
             const priceToSave = editPriceValue.trim() === '' ? null : Math.round(parseFloat(editPriceValue) * 100);
-            
+
             const result = await setEventProductPrice({
                 shopId: event.shopId,
                 eventId: event.id,
@@ -108,8 +108,8 @@ export function EventProducts({ event }: Props) {
             });
 
             if (result?.error) {
-                 toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
-                 return;
+                toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+                return;
             }
 
             toast({ title: 'Succès', description: 'Prix mis à jour', variant: 'default' });
@@ -123,7 +123,7 @@ export function EventProducts({ event }: Props) {
     return (
         <div className="flex flex-col gap-4">
             <div className="flex justify-end">
-                <button 
+                <button
                     onClick={handleOpenLink}
                     className="flex items-center gap-2 px-3 py-2 rounded-md bg-dark-700 text-gray-300 hover:bg-dark-600 transition-colors text-sm"
                 >
@@ -153,62 +153,63 @@ export function EventProducts({ event }: Props) {
                             }
 
                             return (
-                            <tr key={p.id} className="hover:bg-dark-800/50">
-                                <td className="px-4 py-3 font-medium text-white">{p.name}</td>
-                                <td className="px-4 py-3">
-                                    {editingPriceId === p.id ? (
-                                        <div className="flex items-center gap-2">
-                                            <input 
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                className="w-20 bg-dark-900 border border-dark-700 rounded p-1 text-sm focus:outline-none focus:border-primary-500"
-                                                value={editPriceValue}
-                                                onChange={(e) => setEditPriceValue(e.target.value)}
-                                                placeholder={(p.price / 100).toFixed(2)}
-                                                autoFocus
-                                            />
-                                            <span className="text-gray-400">€</span>
-                                            <button onClick={() => saveEditingPrice(p.id)} className="text-green-500 hover:text-green-400 p-1 rounded hover:bg-dark-700 transition-colors" title="Valider">
-                                                <IconCheck size={18} />
-                                            </button>
-                                            <button onClick={cancelEditingPrice} className="text-gray-500 hover:text-gray-400 p-1 rounded hover:bg-dark-700 transition-colors" title="Annuler">
-                                                <IconX size={18} />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2 group">
-                                            {p.eventPrice != null ? (
-                                                <span className="text-primary-400 font-medium" title="Prix Spécifique">{(p.eventPrice / 100).toFixed(2)} €</span>
-                                            ) : marginPriceDisplay ? (
-                                                 <span className="text-yellow-400" title={`Prix de base: ${basePriceDisplay}`}>
-                                                     {marginPriceDisplay}
-                                                 </span>
-                                            ) : (
-                                                <span>{basePriceDisplay}</span>
-                                            )}
-                                            <button 
-                                                onClick={() => startEditingPrice(p.id, p.eventPrice, p.price)}
-                                                className="text-gray-500 hover:text-gray-300 p-1 rounded hover:bg-dark-700 transition-colors opacity-50 group-hover:opacity-100"
-                                                title="Modifier le prix de l'événement"
-                                            >
-                                                <IconEdit size={16} />
-                                            </button>
-                                        </div>
-                                    )}
-                                </td>
-                                <td className="px-4 py-3">{p.stock} {p.unit}</td>
-                                <td className="px-4 py-3 text-right">
-                                    <button 
-                                        onClick={() => handleUnlink(p.id)} 
-                                        className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/10 transition-colors"
-                                        title="Délier"
-                                    >
-                                        <IconUnlink size={16} />
-                                    </button>
-                                </td>
-                            </tr>
-                        )})}
+                                <tr key={p.id} className="hover:bg-dark-800/50">
+                                    <td className="px-4 py-3 font-medium text-white">{p.name}</td>
+                                    <td className="px-4 py-3">
+                                        {editingPriceId === p.id ? (
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    className="w-20 bg-dark-900 border border-dark-700 rounded p-1 text-sm focus:outline-none focus:border-primary-500"
+                                                    value={editPriceValue}
+                                                    onChange={(e) => setEditPriceValue(e.target.value)}
+                                                    placeholder={(p.price / 100).toFixed(2)}
+                                                    autoFocus
+                                                />
+                                                <span className="text-gray-400">€</span>
+                                                <button onClick={() => saveEditingPrice(p.id)} className="text-green-500 hover:text-green-400 p-1 rounded hover:bg-dark-700 transition-colors" title="Valider">
+                                                    <IconCheck size={18} />
+                                                </button>
+                                                <button onClick={cancelEditingPrice} className="text-gray-500 hover:text-gray-400 p-1 rounded hover:bg-dark-700 transition-colors" title="Annuler">
+                                                    <IconX size={18} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 group">
+                                                {p.eventPrice != null ? (
+                                                    <span className="text-primary-400 font-medium" title="Prix Spécifique">{(p.eventPrice / 100).toFixed(2)} €</span>
+                                                ) : marginPriceDisplay ? (
+                                                    <span className="text-yellow-400" title={`Prix de base: ${basePriceDisplay}`}>
+                                                        {marginPriceDisplay}
+                                                    </span>
+                                                ) : (
+                                                    <span>{basePriceDisplay}</span>
+                                                )}
+                                                <button
+                                                    onClick={() => startEditingPrice(p.id, p.eventPrice, p.price)}
+                                                    className="text-gray-500 hover:text-gray-300 p-1 rounded hover:bg-dark-700 transition-colors opacity-50 group-hover:opacity-100"
+                                                    title="Modifier le prix de l'événement"
+                                                >
+                                                    <IconEdit size={16} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3">{p.stock.toFixed(2)} {p.unit}</td>
+                                    <td className="px-4 py-3 text-right">
+                                        <button
+                                            onClick={() => handleUnlink(p.id)}
+                                            className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/10 transition-colors"
+                                            title="Délier"
+                                        >
+                                            <IconUnlink size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         {event.products.length === 0 && (
                             <tr>
                                 <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
@@ -225,14 +226,14 @@ export function EventProducts({ event }: Props) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-dark-800 border border-dark-700 rounded-lg shadow-xl w-full max-w-lg p-6 flex flex-col gap-4 max-h-[80vh]">
                         <h3 className="text-lg font-bold text-white">Lier des produits</h3>
-                        
+
                         <div className="flex flex-col gap-2 overflow-y-auto min-h-[200px] border border-dark-700 rounded bg-dark-900 p-2">
                             {availableProducts.length === 0 ? (
                                 <p className="text-gray-500 text-sm text-center py-4">Aucun produit disponible</p>
                             ) : (
                                 availableProducts.map(p => (
                                     <label key={p.id} className="flex items-center gap-3 p-2 hover:bg-dark-800 rounded cursor-pointer">
-                                        <input 
+                                        <input
                                             type="checkbox"
                                             className="w-4 h-4 rounded border-gray-600 bg-dark-800 text-primary-600 focus:ring-primary-500 checkbox"
                                             checked={selectedProducts.includes(p.id)}
@@ -240,25 +241,25 @@ export function EventProducts({ event }: Props) {
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium text-gray-200">{p.name}</span>
-                                            <span className="text-xs text-gray-500">{(p.price / 100).toFixed(2)}€ • Qty: {p.stock}</span>
+                                            <span className="text-xs text-gray-500">{(p.price / 100).toFixed(2)}€ • Qty: {p.stock.toFixed(2)} {p.unit}</span>
                                         </div>
                                     </label>
                                 ))
                             )}
                         </div>
-                        
+
                         <div className="text-sm text-gray-400">
                             {selectedProducts.length} produit(s) sélectionné(s)
                         </div>
 
                         <div className="flex justify-end gap-3 mt-2">
-                            <button 
+                            <button
                                 onClick={() => setLinkOpen(false)}
                                 className="px-4 py-2 rounded-md bg-dark-700 text-gray-300 hover:bg-dark-600 transition-colors text-sm"
                             >
                                 Annuler
                             </button>
-                            <button 
+                            <button
                                 onClick={handleLink}
                                 disabled={selectedProducts.length === 0 || loading}
                                 className="px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors text-sm font-medium disabled:opacity-50"

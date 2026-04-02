@@ -7,27 +7,27 @@ import { IconCheck, IconChevronDown, IconChevronRight, IconGripVertical, IconPen
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { deleteCategory,updateCategory, updateProductsOrder } from "@/features/shops/products";
+import { deleteCategory, updateCategory, updateProductsOrder } from "@/features/shops/products";
 
 import DeleteProductButton from "./DeleteProductButton";
 import RestockButton from "./RestockButton";
 
 interface Product {
-	id: string;
-	name: string;
-	price: number;
-	stock: number;
-	unit: string;
-	category?: {
+    id: string;
+    name: string;
+    price: number;
+    stock: number;
+    unit: string;
+    category?: {
         id: string;
-		name: string | null;
-	} | null;
+        name: string | null;
+    } | null;
 }
 
 interface SortableProductListProps {
-	products: Product[];
+    products: Product[];
     categories?: { id: string; name: string }[];
-	shopSlug: string;
+    shopSlug: string;
     disableReorder?: boolean;
 }
 
@@ -41,19 +41,19 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
         isDragging,
     } = useSortable({ id: product.id, disabled });
 
-	const style = {
-		transform: CSS.Transform.toString(transform),
-		transition,
-		zIndex: isDragging ? 10 : 1,
-		opacity: isDragging ? 0.5 : 1,
-	};
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 10 : 1,
+        opacity: isDragging ? 0.5 : 1,
+    };
 
-	return (
-		<div
-			ref={setNodeRef}
-			style={style}
-			className="bg-dark-900 border border-dark-800 rounded-lg p-4 flex items-center gap-4 mb-2 group"
-		>
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className="bg-dark-900 border border-dark-800 rounded-lg p-4 flex items-center gap-4 mb-2 group"
+        >
             {!disabled && (
                 <button
                     {...attributes}
@@ -64,27 +64,25 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                 </button>
             )}
 
-			<div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0">
                 {/* Desktop View */}
                 <div className="hidden sm:grid sm:grid-cols-[3fr_1fr_1fr_auto] gap-4 items-center">
                     <div className="font-medium text-white truncate">{product.name}</div>
-                    
+
                     <div className="text-sm text-gray-300">
                         {(product.price / 100).toFixed(2)} € {product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : ""}
                     </div>
 
                     <div className="flex items-center gap-2">
                         <span
-                            className={`flex items-center gap-1.5 ${
-                                product.stock <= 5 ? "text-red-400" : "text-green-400"
-                            }`}
+                            className={`flex items-center gap-1.5 ${product.stock <= 5 ? "text-red-400" : "text-green-400"
+                                }`}
                         >
                             <span
-                                className={`w-1.5 h-1.5 rounded-full ${
-                                    product.stock <= 5 ? "bg-red-400" : "bg-green-400"
-                                }`}
+                                className={`w-1.5 h-1.5 rounded-full ${product.stock <= 5 ? "bg-red-400" : "bg-green-400"
+                                    }`}
                             ></span>
-                            {product.stock} {product.unit === "liter" ? "L" : product.unit === "kg" ? "Kg" : ""}
+                            {product.stock.toFixed(2)} {product.unit === "liter" ? "L" : product.unit === "kg" ? "Kg" : ""}
                         </span>
                     </div>
 
@@ -116,25 +114,24 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                             <div className="font-bold text-white text-lg truncate leading-tight">{product.name}</div>
                         </div>
                         <div className="text-right shrink-0">
-                             <div className="text-primary-400 font-bold text-lg leading-tight">{(product.price / 100).toFixed(2)}€</div>
-                             <div className="text-xs text-gray-500 font-medium">{product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : "/ Unité"}</div>
+                            <div className="text-primary-400 font-bold text-lg leading-tight">{(product.price / 100).toFixed(2)}€</div>
+                            <div className="text-xs text-gray-500 font-medium">{product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : "/ Unité"}</div>
                         </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3 items-center bg-dark-800/30 p-2 rounded-lg border border-dark-800/50">
                         <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stock Actuel</div>
                         <div
-                            className={`flex items-center justify-end gap-2 font-mono font-bold text-lg ${
-                                product.stock <= 5 ? "text-red-400" : "text-emerald-400"
-                            }`}
+                            className={`flex items-center justify-end gap-2 font-mono font-bold text-lg ${product.stock <= 5 ? "text-red-400" : "text-emerald-400"
+                                }`}
                         >
                             {product.stock <= 5 && (
-								<span className="relative flex h-2.5 w-2.5">
-									<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-									<span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-								</span>
-							)}
-                            {product.stock} <span className="text-sm text-gray-500 font-normal">{product.unit === "liter" ? "L" : product.unit === "kg" ? "Kg" : ""}</span>
+                                <span className="relative flex h-2.5 w-2.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                </span>
+                            )}
+                            {product.stock.toFixed(2)} <span className="text-sm text-gray-500 font-normal">{product.unit === "liter" ? "L" : product.unit === "kg" ? "Kg" : ""}</span>
                         </div>
                     </div>
 
@@ -172,27 +169,27 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                     </div>
                 </div>
             </div>
-		</div>
-	);
+        </div>
+    );
 }
 
-function CategoryGroup({ 
-    categoryName, 
+function CategoryGroup({
+    categoryName,
     categoryId,
-    products: initialProducts, 
-    shopSlug, 
-    disableReorder 
-}: { 
-    categoryName: string; 
+    products: initialProducts,
+    shopSlug,
+    disableReorder
+}: {
+    categoryName: string;
     categoryId?: string;
-    products: Product[]; 
-    shopSlug: string; 
-    disableReorder?: boolean; 
+    products: Product[];
+    shopSlug: string;
+    disableReorder?: boolean;
 }) {
     const [products, setProducts] = useState(initialProducts);
     const [isPending, setIsPending] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    
+
     const [isEditing, setIsEditing] = useState(false);
     const [editedName, setEditedName] = useState(categoryName);
     const [isSaving, setIsSaving] = useState(false);
@@ -202,7 +199,7 @@ function CategoryGroup({
     useEffect(() => {
         setProducts(initialProducts);
     }, [initialProducts]);
-    
+
     // Reset edited name if categoryName changes (e.g. after successful save)
     useEffect(() => {
         setEditedName(categoryName);
@@ -211,7 +208,7 @@ function CategoryGroup({
     const handleDeleteCategory = async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!categoryId) return;
-        
+
         if (products.length > 0) {
             setError("Impossible de supprimer une catégorie qui contient des produits");
             return;
@@ -237,7 +234,7 @@ function CategoryGroup({
     const handleSaveCategory = async (e: React.FormEvent) => {
         e.preventDefault();
         e.stopPropagation(); // Prevent accordion toggle
-        
+
         if (!categoryId || !editedName.trim() || editedName === categoryName) {
             setIsEditing(false);
             setError(null);
@@ -278,7 +275,7 @@ function CategoryGroup({
 
         if (over && active.id !== over.id) {
             setIsPending(true);
-            
+
             const oldIndex = products.findIndex((item) => item.id === active.id);
             const newIndex = products.findIndex((item) => item.id === over.id);
 
@@ -289,24 +286,24 @@ function CategoryGroup({
             try {
                 await updateProductsOrder(shopSlug, newOrder.map(p => p.id));
             } catch (error) {
-                    console.error("Failed to update order", error);
+                console.error("Failed to update order", error);
             } finally {
-                    setIsPending(false);
+                setIsPending(false);
             }
         }
     };
 
     return (
         <div className={`mb-8 ${isPending ? "opacity-70 pointer-events-none" : ""}`}>
-            <div 
+            <div
                 className="flex items-center gap-2 px-1 w-full text-left mb-4"
             >
                 <button onClick={() => setIsCollapsed(!isCollapsed)} className="hover:opacity-80 transition-opacity">
                     {isCollapsed ? <IconChevronRight size={20} className="text-gray-400" /> : <IconChevronDown size={20} className="text-gray-400" />}
                 </button>
-                
+
                 <div className="flex-1 flex items-center gap-2">
-                    
+
                     {isEditing ? (
                         <div className="flex-1">
                             <form onSubmit={handleSaveCategory} className="flex items-center gap-2">
@@ -321,16 +318,16 @@ function CategoryGroup({
                                     autoFocus
                                     onClick={(e) => e.stopPropagation()}
                                 />
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     disabled={isSaving}
                                     className="p-1 bg-primary-600/20 text-primary-400 rounded hover:bg-primary-600/30 disabled:opacity-50"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <IconCheck size={18} />
                                 </button>
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setIsEditing(false);
@@ -350,9 +347,9 @@ function CategoryGroup({
                         <h3 className="text-xl font-bold text-white flex items-center gap-2 cursor-pointer group" onClick={() => setIsCollapsed(!isCollapsed)}>
                             <span className="group-hover:opacity-80 transition-opacity">{categoryName}</span>
                             <span className="text-sm font-normal text-gray-500">({products.length})</span>
-                            
+
                             {categoryId && (
-                                <button 
+                                <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setIsEditing(true);
@@ -364,7 +361,7 @@ function CategoryGroup({
                                 </button>
                             )}
                             {categoryId && products.length === 0 && (
-                                <button 
+                                <button
                                     onClick={handleDeleteCategory}
                                     disabled={isDeleting}
                                     className="p-1 text-dark-400 hover:text-red-500 transition-colors disabled:opacity-50"
@@ -377,12 +374,12 @@ function CategoryGroup({
                     )}
                 </div>
             </div>
-            
+
             {error && !isEditing && (
                 <div className="text-red-400 text-sm mb-4 px-8">{error}</div>
             )}
 
-            
+
             {!isCollapsed && (
                 <>
                     <DndContext
@@ -423,14 +420,14 @@ export function SortableProductList({ products, categories = [], shopSlug, disab
         acc[catName].push(product);
         return acc;
     }, {} as Record<string, Product[]>);
-    
+
     // Add empty categories
     categories.forEach(category => {
         if (!groupedProducts[category.name]) {
             groupedProducts[category.name] = [];
         }
     });
-    
+
     const sortedKeys = Object.keys(groupedProducts).sort((a, b) => {
         if (a === "Uncategorized") return 1;
         if (b === "Uncategorized") return -1;
@@ -443,22 +440,22 @@ export function SortableProductList({ products, categories = [], shopSlug, disab
                 const categoryProducts = groupedProducts[catName];
                 // Try to find the category ID from the first product that has this category name
                 // Alternatively, find it from the categories prop that includes empty categories
-                const categoryId = categoryProducts[0]?.category?.name === catName 
-                    ? categoryProducts[0]?.category?.id 
+                const categoryId = categoryProducts[0]?.category?.name === catName
+                    ? categoryProducts[0]?.category?.id
                     : categories.find(c => c.name === catName)?.id;
 
                 return (
-                    <CategoryGroup 
-                        key={catName} 
+                    <CategoryGroup
+                        key={catName}
                         categoryName={catName === "Uncategorized" ? "Sans catégorie" : catName}
-                        categoryId={categoryId} 
-                        products={categoryProducts} 
+                        categoryId={categoryId}
+                        products={categoryProducts}
                         shopSlug={shopSlug}
                         disableReorder={disableReorder}
                     />
                 );
             })}
-            
+
             {products.length === 0 && (
                 <div className="text-center py-12 text-gray-500 bg-dark-900 border border-dark-800 rounded-xl">
                     Aucun produit trouvé. Créez-en un nouveau !

@@ -1,11 +1,11 @@
 "use client";
 
-import { IconAlertTriangle,IconCheck } from "@tabler/icons-react"; // Removed IconPackage
+import { IconAlertTriangle, IconCheck } from "@tabler/icons-react"; // Removed IconPackage
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useToast } from "@/components/ui/use-toast";
-import { completeInventoryAudit,updateAuditItem } from "@/features/shops/inventory";
+import { completeInventoryAudit, updateAuditItem } from "@/features/shops/inventory";
 
 type AuditItem = {
     id: string;
@@ -46,10 +46,10 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
         // Optimistic update
         setItems(prev => prev.map(item => {
             if (item.id === itemId) {
-                return { 
-                    ...item, 
-                    actualStock: val, 
-                    difference: val - item.systemStock 
+                return {
+                    ...item,
+                    actualStock: val,
+                    difference: val - item.systemStock
                 };
             }
             return item;
@@ -66,11 +66,11 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                 variant: "destructive",
             });
         } finally {
-             setUpdatingItems(prev => {
+            setUpdatingItems(prev => {
                 const newSet = { ...prev };
                 delete newSet[itemId];
                 return newSet;
-             });
+            });
         }
     }
 
@@ -125,13 +125,11 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
     return (
         <div className="space-y-6">
             {/* Stats Summary */}
-            <div className={`p-6 rounded-2xl border ${
-                hasIssues ? 'bg-red-500/5 border-red-500/10' : 'bg-green-500/5 border-green-500/10'
-            }`}>
+            <div className={`p-6 rounded-2xl border ${hasIssues ? 'bg-red-500/5 border-red-500/10' : 'bg-green-500/5 border-green-500/10'
+                }`}>
                 <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${
-                        hasIssues ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
-                    }`}>
+                    <div className={`p-3 rounded-xl ${hasIssues ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
+                        }`}>
                         {hasIssues ? <IconAlertTriangle size={24} /> : <IconCheck size={24} />}
                     </div>
                     <div>
@@ -149,10 +147,10 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
 
             {/* Table */}
             {/* Items List */}
-			<div className="space-y-8">
+            <div className="space-y-8">
                 {groupedItems.map((group) => (
                     <div key={group.name} className="space-y-4">
-                         <h3 className="text-xl font-bold text-white px-1">
+                        <h3 className="text-xl font-bold text-white px-1">
                             {group.name} <span className="text-gray-500 text-sm font-normal">({group.items.length})</span>
                         </h3>
 
@@ -175,13 +173,12 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                 </div>
                                             </div>
                                             <div
-                                                className={`text-sm font-mono font-medium ${
-                                                    item.difference === 0
-                                                        ? "text-gray-500"
-                                                        : item.difference > 0
+                                                className={`text-sm font-mono font-medium ${item.difference === 0
+                                                    ? "text-gray-500"
+                                                    : item.difference > 0
                                                         ? "text-green-400"
                                                         : "text-red-400"
-                                                }`}
+                                                    }`}
                                             >
                                                 {item.difference > 0 ? "+" : ""}
                                                 {parseFloat(item.difference.toFixed(2))}
@@ -194,7 +191,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                     Système
                                                 </div>
                                                 <div className="text-gray-300 font-mono text-lg">
-                                                    {item.systemStock} {item.product.unit || "u"}
+                                                    {item.systemStock.toFixed(2)} {item.product.unit || "u"}
                                                 </div>
                                             </div>
 
@@ -204,7 +201,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                 </div>
                                                 {isReadOnly ? (
                                                     <div className="text-white font-mono text-lg bg-dark-950/50 p-3 rounded-lg border border-dark-800/50">
-                                                        {item.actualStock}
+                                                        {item.actualStock.toFixed(2)}
                                                     </div>
                                                 ) : (
                                                     <div className="relative">
@@ -212,11 +209,10 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                             type="number"
                                                             inputMode="decimal"
                                                             step="0.01"
-                                                            className={`w-full bg-dark-950 border ${
-                                                                item.difference !== 0
-                                                                    ? "border-yellow-500/30 focus:border-yellow-500"
-                                                                    : "border-dark-700 focus:border-primary-500"
-                                                            } rounded-lg px-3 py-3 text-right text-white font-mono text-lg focus:ring-1 focus:ring-primary-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                            className={`w-full bg-dark-950 border ${item.difference !== 0
+                                                                ? "border-yellow-500/30 focus:border-yellow-500"
+                                                                : "border-dark-700 focus:border-primary-500"
+                                                                } rounded-lg px-3 py-3 text-right text-white font-mono text-lg focus:ring-1 focus:ring-primary-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                                             value={item.actualStock}
                                                             onChange={(e) =>
                                                                 handleStockChange(item.id, e.target.value)
@@ -278,11 +274,10 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                                 <input
                                                                     type="number"
                                                                     step="0.01"
-                                                                    className={`w-full bg-dark-950 border ${
-                                                                        item.difference !== 0
-                                                                            ? "border-yellow-500/30 focus:border-yellow-500"
-                                                                            : "border-dark-700 focus:border-primary-500"
-                                                                    } rounded-lg px-3 py-2 text-right text-white font-mono focus:ring-1 focus:ring-primary-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                                    className={`w-full bg-dark-950 border ${item.difference !== 0
+                                                                        ? "border-yellow-500/30 focus:border-yellow-500"
+                                                                        : "border-dark-700 focus:border-primary-500"
+                                                                        } rounded-lg px-3 py-2 text-right text-white font-mono focus:ring-1 focus:ring-primary-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                                                     value={item.actualStock}
                                                                     onChange={(e) =>
                                                                         handleStockChange(item.id, e.target.value)
@@ -298,13 +293,12 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <span
-                                                            className={`font-mono font-medium ${
-                                                                item.difference === 0
-                                                                    ? "text-gray-500"
-                                                                    : item.difference > 0
+                                                            className={`font-mono font-medium ${item.difference === 0
+                                                                ? "text-gray-500"
+                                                                : item.difference > 0
                                                                     ? "text-green-400"
                                                                     : "text-red-400"
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {item.difference > 0 ? "+" : ""}
                                                             {parseFloat(item.difference.toFixed(2))}
@@ -319,7 +313,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                         </div>
                     </div>
                 ))}
-			</div>
+            </div>
 
             {/* Actions */}
             {!isReadOnly && (
