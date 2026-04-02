@@ -236,18 +236,21 @@ export const importUsersBatchAction = authenticatedAction(
 		const { rows: rawRows } = data;
 
         // server-side mapping to match what ExcelImportModal used to do
-        const mappedRows = rawRows.map((row: Record<string, string | number | boolean | null | undefined>) => ({
-            nom: row["Nom"] || row["nom"],
-            prenom: row["Prenom"] || row["Prénom"] || row["prenom"],
-            email: row["Email"] || row["email"],
-            phone: row["Phone"] || row["phone"] || row["téléphone"],
-            bucque: row["Bucque"] || row["bucque"] || "",
-            promss: String(row["Promss"] || row["promss"] || ""),
-            nums: String(row["Nums"] || row["nums"] || ""),
-            tabagnss: row["Tabagn'ss"] || row["Tabagnss"] || row["tabagnss"] || "Chalon'ss",
-            username: row["Username"] || row["username"] || "",
-            balance: row["Balance"] || row["balance"] || 0,
-        }));
+        const mappedRows = rawRows.map((row: Record<string, any>) => {
+            const s = (v: any) => (typeof v === "string" ? v.trim() : v);
+            return {
+                nom: s(row["Nom"] || row["nom"]),
+                prenom: s(row["Prenom"] || row["Prénom"] || row["prenom"]),
+                email: s(row["Email"] || row["email"]),
+                phone: s(row["Phone"] || row["phone"] || row["téléphone"]),
+                bucque: s(row["Bucque"] || row["bucque"] || ""),
+                promss: String(s(row["Promss"] || row["promss"] || "")),
+                nums: String(s(row["Nums"] || row["nums"] || "")),
+                tabagnss: s(row["Tabagn'ss"] || row["Tabagnss"] || row["tabagnss"] || "Chalon'ss"),
+                username: s(row["Username"] || row["username"] || ""),
+                balance: row["Balance"] || row["balance"] || 0,
+            };
+        });
 
         // Validate mapped rows against the strict schema
         const parseResult = z.array(importUserRowSchema).safeParse(mappedRows);
