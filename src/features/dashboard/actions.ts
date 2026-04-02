@@ -108,7 +108,7 @@ export async function getUserExpensesByShop() {
 		.leftJoin(shops, eq(transactions.shopId, shops.id))
 		.where(
 			and(
-				eq(transactions.issuerId, session.userId),
+				eq(transactions.targetUserId, session.userId),
 				eq(transactions.type, "PURCHASE")
 			)
 		)
