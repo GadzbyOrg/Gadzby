@@ -1,10 +1,12 @@
 "use client";
 
-import { usePathname,useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import {
 	Area,
 	AreaChart,
+	Bar,
+	BarChart,
 	CartesianGrid,
 	Legend,
 	ResponsiveContainer,
@@ -17,16 +19,17 @@ import { getShopEvents } from "@/features/events/actions";
 import { getShopStats } from "@/features/shops/actions";
 import {
 	getBestCustomers,
+	getCategorySalesStats,
 	getMostActiveStaff,
 	getProductSalesStats,
 	getStockProjections,
 } from "@/features/shops/analytics-actions";
 import { formatPrice } from "@/lib/utils";
 
-import { ProductPerformanceCard,ProductStats } from "./product-performance-card";
+import { ProductPerformanceCard, ProductStats } from "./product-performance-card";
 import { StaffActivityCard, StaffStats } from "./staff-activity-card";
 import { StockProjection } from "./stock-projection-card";
-import { CustomerStats,TopCustomersCard } from "./top-customers-card";
+import { CustomerStats, TopCustomersCard } from "./top-customers-card";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";
 
@@ -65,6 +68,8 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 	const [topProducts, setTopProducts] = useState<ProductStats[]>([]);
 	const [flopProducts, setFlopProducts] = useState<ProductStats[]>([]);
 	const [projections, setProjections] = useState<StockProjection[]>([]);
+	const [categoryStats, setCategoryStats] = useState<{ categoryId: string; categoryName: string; totalRevenue: number }[]>([]);
+	const [isChartsExpanded, setIsChartsExpanded] = useState(false);
 
 	const updateParams = (newParams: Record<string, string | null>) => {
 		const params = new URLSearchParams(searchParams);
@@ -135,6 +140,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					customerResult,
 					productsResult,
 					projectionsResult,
+					categoriesResult,
 				] = await Promise.all([
 					getShopStats({
 						shopSlug: slug,
@@ -151,6 +157,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						limit: 100,
 					}), // Get more to find flops
 					getStockProjections({ shopSlug: slug }),
+					getCategorySalesStats({ shopSlug: slug, startDate, endDate, limit: 12 }),
 				]);
 
 				if ("error" in statsResult) console.error(statsResult.error);
@@ -182,7 +189,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					const validStats = productsResult.stats.filter(
 						(p: any) => p.productId && p.product
 					) as ProductStats[];
-					
+
 					const sorted = [...validStats].sort(
 						(a, b) => b.totalQuantity - a.totalQuantity
 					);
@@ -197,6 +204,9 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 				if ("error" in projectionsResult)
 					console.error(projectionsResult.error);
 				else setProjections(projectionsResult.projections);
+
+				if ("error" in categoriesResult) console.error(categoriesResult.error);
+				else setCategoryStats(categoriesResult.stats);
 			} catch (error) {
 				console.error(error);
 			} finally {
@@ -233,11 +243,10 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						<button
 							key={t}
 							onClick={() => handleTimeframeChange(t)}
-							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
-								timeframe === t
-									? "bg-primary-600 text-white shadow-sm"
-									: "text-gray-400 hover:text-white hover:bg-dark-700"
-							}`}
+							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${timeframe === t
+								? "bg-primary-600 text-white shadow-sm"
+								: "text-gray-400 hover:text-white hover:bg-dark-700"
+								}`}
 						>
 							{t === "7d" && "7 Jours"}
 							{t === "30d" && "30 Jours"}
@@ -309,9 +318,8 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						<div className="bg-dark-900 p-6 rounded-xl border border-dark-800">
 							<p className="text-sm text-gray-400 font-medium">Bénéfice</p>
 							<p
-								className={`text-2xl font-bold mt-2 ${
-									data.summary.profit >= 0 ? "text-blue-400" : "text-orange-400"
-								}`}
+								className={`text-2xl font-bold mt-2 ${data.summary.profit >= 0 ? "text-blue-400" : "text-orange-400"
+									}`}
 							>
 								{data.summary.profit > 0 ? "+" : ""}
 								{formatPrice(data.summary.profit)}
@@ -325,140 +333,222 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					)} 
 					*/}
 
-					{/* Main Analytics Grid */}
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-						{/* Left Column: Staff & Customers */}
-						<div className="space-y-6">
-							<div className="h-[400px]">
-								<StaffActivityCard data={staffStats} loading={loading} />
-							</div>
-							<div className="h-[400px]">
-								<TopCustomersCard data={customerStats} loading={loading} />
-							</div>
-						</div>
+					<div className="flex justify-center w-full py-2">
+						<button
+							onClick={() => setIsChartsExpanded(!isChartsExpanded)}
+							className="flex items-center gap-2 px-5 py-2.5 bg-dark-800 hover:bg-dark-700 text-gray-300 hover:text-white rounded-full text-sm font-medium transition-all shadow-sm border border-dark-700 select-none"
+						>
+							{isChartsExpanded ? (
+								<>
+									<span>Masquer les graphiques et détails</span>
+									<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+								</>
+							) : (
+								<>
+									<span>Afficher les graphiques et détails (Produits, Staff, Revenus)</span>
+									<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+								</>
+							)}
+						</button>
+					</div>
 
-						{/* Right Column: Products & Global Chart */}
-						<div className="space-y-6">
-							<div className="bg-dark-900 p-6 rounded-xl border border-dark-800">
-								<h3 className="text-lg font-medium text-white mb-6">
-									Évolution financière
-								</h3>
-								<div className="h-[320px] w-full overflow-x-auto custom-scrollbar">
-									<div className="min-w-[600px] h-full">
-										<ResponsiveContainer width="100%" height="100%">
-											<AreaChart
-												data={data.chartData}
-												margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-											>
-												<defs>
-													<linearGradient
-														id="colorRevenue"
-														x1="0"
-														y1="0"
-														x2="0"
-														y2="1"
-													>
-														<stop
-															offset="5%"
-															stopColor="#4ade80"
-															stopOpacity={0.3}
-														/>
-														<stop
-															offset="95%"
-															stopColor="#4ade80"
-															stopOpacity={0}
-														/>
-													</linearGradient>
-													<linearGradient
-														id="colorExpenses"
-														x1="0"
-														y1="0"
-														x2="0"
-														y2="1"
-													>
-														<stop
-															offset="5%"
-															stopColor="#f87171"
-															stopOpacity={0.3}
-														/>
-														<stop
-															offset="95%"
-															stopColor="#f87171"
-															stopOpacity={0}
-														/>
-													</linearGradient>
-												</defs>
-												<XAxis
-													dataKey="date"
-													stroke="#6b7280"
-													fontSize={12}
-													tickFormatter={(value) =>
-														new Date(value).toLocaleDateString("fr-FR", {
-															day: "2-digit",
-															month: "2-digit",
-														})
-													}
-												/>
-												<YAxis
-													stroke="#6b7280"
-													fontSize={12}
-													tickFormatter={(value) => `${value / 100}€`}
-												/>
-												<CartesianGrid
-													strokeDasharray="3 3"
-													stroke="#374151"
-													vertical={false}
-												/>
-												<Tooltip
-													contentStyle={{
-														backgroundColor: "#111827",
-														borderColor: "#374151",
-														borderRadius: "0.5rem",
-													}}
-													formatter={(value?: number) => [
-														`${((value || 0) / 100).toFixed(2)}€`,
-														"",
-													]}
-													labelStyle={{
-														color: "#9ca3af",
-														marginBottom: "0.25rem",
-													}}
-													labelFormatter={(label) =>
-														new Date(label).toLocaleDateString("fr-FR", {
-															weekday: "long",
-															year: "numeric",
-															month: "long",
-															day: "numeric",
-														})
-													}
-												/>
-												<Legend />
-												<Area
-													type="monotone"
-													dataKey="revenue"
-													name="Revenus"
-													stroke="#4ade80"
-													fillOpacity={1}
-													fill="url(#colorRevenue)"
-													strokeWidth={2}
-												/>
-												<Area
-													type="monotone"
-													dataKey="expenses"
-													name="Dépenses"
-													stroke="#f87171"
-													fillOpacity={1}
-													fill="url(#colorExpenses)"
-													strokeWidth={2}
-												/>
-											</AreaChart>
-										</ResponsiveContainer>
+					{isChartsExpanded && (
+						<div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300 ease-in-out">
+							{/* Top Charts Row */}
+							<div className="grid grid-cols-1 gap-6">
+								{/* Evolution financière */}
+								<div className="bg-dark-900 p-6 rounded-xl border border-dark-800 flex flex-col w-full">
+									<h3 className="text-lg font-medium text-white mb-6">
+										Évolution financière
+									</h3>
+									<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
+										<div className="min-w-[600px] h-full">
+											<ResponsiveContainer width="100%" height="100%">
+												<AreaChart
+													data={data.chartData}
+													margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+												>
+													<defs>
+														<linearGradient
+															id="colorRevenue"
+															x1="0"
+															y1="0"
+															x2="0"
+															y2="1"
+														>
+															<stop
+																offset="5%"
+																stopColor="#4ade80"
+																stopOpacity={0.3}
+															/>
+															<stop
+																offset="95%"
+																stopColor="#4ade80"
+																stopOpacity={0}
+															/>
+														</linearGradient>
+														<linearGradient
+															id="colorExpenses"
+															x1="0"
+															y1="0"
+															x2="0"
+															y2="1"
+														>
+															<stop
+																offset="5%"
+																stopColor="#f87171"
+																stopOpacity={0.3}
+															/>
+															<stop
+																offset="95%"
+																stopColor="#f87171"
+																stopOpacity={0}
+															/>
+														</linearGradient>
+													</defs>
+													<XAxis
+														dataKey="date"
+														stroke="#6b7280"
+														fontSize={12}
+														tickFormatter={(value) =>
+															new Date(value).toLocaleDateString("fr-FR", {
+																day: "2-digit",
+																month: "2-digit",
+															})
+														}
+													/>
+													<YAxis
+														stroke="#6b7280"
+														fontSize={12}
+														tickFormatter={(value) => `${value / 100}€`}
+													/>
+													<CartesianGrid
+														strokeDasharray="3 3"
+														stroke="#374151"
+														vertical={false}
+													/>
+													<Tooltip
+														contentStyle={{
+															backgroundColor: "#111827",
+															borderColor: "#374151",
+															borderRadius: "0.5rem",
+														}}
+														formatter={(value?: number) => [
+															`${((value || 0) / 100).toFixed(2)}€`,
+															"",
+														]}
+														labelStyle={{
+															color: "#9ca3af",
+															marginBottom: "0.25rem",
+														}}
+														labelFormatter={(label) =>
+															new Date(label).toLocaleDateString("fr-FR", {
+																weekday: "long",
+																year: "numeric",
+																month: "long",
+																day: "numeric",
+															})
+														}
+													/>
+													<Legend />
+													<Area
+														type="monotone"
+														dataKey="revenue"
+														name="Revenus"
+														stroke="#4ade80"
+														fillOpacity={1}
+														fill="url(#colorRevenue)"
+														strokeWidth={2}
+													/>
+													<Area
+														type="monotone"
+														dataKey="expenses"
+														name="Dépenses"
+														stroke="#f87171"
+														fillOpacity={1}
+														fill="url(#colorExpenses)"
+														strokeWidth={2}
+													/>
+												</AreaChart>
+											</ResponsiveContainer>
+										</div>
 									</div>
+								</div>
+
+								{/* Category Stats */}
+								<div className="bg-dark-900 p-6 rounded-xl border border-dark-800 flex flex-col w-full">
+									<h3 className="text-lg font-medium text-white mb-4">
+										Revenus par catégorie
+									</h3>
+									{categoryStats.length === 0 ? (
+										<p className="text-gray-500 text-sm">Aucune donnée de catégorie</p>
+									) : (
+										<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
+											<div className="min-w-[300px] h-full">
+												<ResponsiveContainer width="100%" height="100%">
+													<BarChart
+														data={categoryStats}
+														margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+													>
+														<XAxis
+															dataKey="categoryName"
+															stroke="#6b7280"
+															fontSize={12}
+															tick={{ fill: "#9ca3af" }}
+														/>
+														<YAxis
+															stroke="#6b7280"
+															fontSize={12}
+															tickFormatter={(value) => `${(value / 100).toFixed(0)}€`}
+															tick={{ fill: "#9ca3af" }}
+														/>
+														<CartesianGrid
+															strokeDasharray="3 3"
+															stroke="#374151"
+															vertical={false}
+														/>
+														<Tooltip
+															contentStyle={{
+																backgroundColor: "#111827",
+																borderColor: "#374151",
+																borderRadius: "0.5rem",
+															}}
+															formatter={(value?: number) => [
+																`${((value || 0) / 100).toFixed(2)}€`,
+																"Revenus",
+															]}
+															labelStyle={{
+																color: "#9ca3af",
+																marginBottom: "0.25rem",
+															}}
+														/>
+														<Bar
+															dataKey="totalRevenue"
+															name="Revenus"
+															fill="#818cf8"
+															radius={[4, 4, 0, 0]}
+															maxBarSize={60}
+														/>
+													</BarChart>
+												</ResponsiveContainer>
+											</div>
+										</div>
+									)}
 								</div>
 							</div>
 
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-								<div className="h-[300px]">
+							{/* Bottom Info Cards Row */}
+							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+								<div className="h-[400px]">
+									<StaffActivityCard data={staffStats} loading={loading} />
+								</div>
+								<div className="h-[400px]">
+									<TopCustomersCard data={customerStats} loading={loading} />
+								</div>
+
+							</div>
+							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+								<div className="h-[400px]">
 									<ProductPerformanceCard
 										data={topProducts}
 										loading={loading}
@@ -466,7 +556,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 										type="top"
 									/>
 								</div>
-								<div className="h-[300px]">
+								<div className="h-[400px]">
 									<ProductPerformanceCard
 										data={flopProducts}
 										loading={loading}
@@ -476,7 +566,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 								</div>
 							</div>
 						</div>
-					</div>
+					)}
 				</>
 			) : null}
 		</div>

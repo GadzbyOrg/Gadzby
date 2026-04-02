@@ -63,7 +63,7 @@ function SubmitButton() {
 
 // --- Login Form Component ---
 
-export function LoginForm({ campusName }: { campusName: string }) {
+export function LoginForm({ campusName, motd }: { campusName: string; motd?: string | null }) {
 	 
 	const [state, action] = useActionState(loginAction, null as any);
 	const [showPassword, setShowPassword] = useState(false);
@@ -189,13 +189,17 @@ export function LoginForm({ campusName }: { campusName: string }) {
 
 				{/* Footer Text */}
 				<p className="mt-10 text-center text-sm text-gray-500">
-					Pas encore de compte ?{" "}
-					<a
-						href="#"
-						className="font-semibold leading-6 text-primary-400 hover:text-primary-300 transition-colors"
-					>
-						Contacte ton Zifoy&apos;ss
-					</a>
+					{motd ?? (
+						<>
+							Pas encore de compte ?{" "}
+							<a
+								href="#"
+								className="font-semibold leading-6 text-primary-400 hover:text-primary-300 transition-colors"
+							>
+								Contacte ton Zifoy&apos;ss
+							</a>
+						</>
+					)}
 				</p>
 			</div>
 		</div>

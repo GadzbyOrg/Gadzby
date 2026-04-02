@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @theme {
   /* --- PALETTE PRIMARY (Amber/Beer) --- */
@@ -78,5 +78,11 @@
   /* Hide spinner in Firefox */
   .no-spinner {
     -moz-appearance: textfield;
+  }
+
+  /* Recharts dark theme overrides */
+  .recharts-tooltip-cursor {
+    fill: var(--color-dark-800);
+    opacity: 0.5;
   }
 }

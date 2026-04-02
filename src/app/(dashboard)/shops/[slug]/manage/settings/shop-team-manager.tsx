@@ -8,19 +8,21 @@ import {
 	updateShopMemberRole,
 } from "@/features/shops/actions";
 
-import { UserSearch } from "../events/[eventId]/_components/user-search";
+
+//TODO: Use standard User search instead (/components/user-search)
+import { UserSearch } from "@/components/user-search";
 
 interface ShopMember {
 	role: string;
-    shopRoleId?: string | null;
-    shopRole?: { name: string } | null;
+	shopRoleId?: string | null;
+	shopRole?: { name: string } | null;
 	user: {
 		id: string;
 		username: string;
 		nom: string | null;
 		prenom: string | null;
 		image: string | null;
-        bucque: string;
+		bucque: string;
 	};
 }
 
@@ -28,21 +30,21 @@ interface ShopTeamManagerProps {
 	slug: string;
 	members: ShopMember[];
 	currentUserId: string;
-    availableRoles: { id: string; name: string }[];
+	availableRoles: { id: string; name: string }[];
 }
 
 export function ShopTeamManager({
 	slug,
 	members,
 	currentUserId,
-    availableRoles,
+	availableRoles,
 }: ShopTeamManagerProps) {
 	const [selectedUser, setSelectedUser] = useState<any | null>(null);
-    // Default to first 'Membre' like role or just the first one
-    const defaultRole = availableRoles.find(r => r.name === "Membre" || r.name === "MEMBRE")?.id || availableRoles[0]?.id || "";
+	// Default to first 'Membre' like role or just the first one
+	const defaultRole = availableRoles.find(r => r.name === "Membre" || r.name === "MEMBRE")?.id || availableRoles[0]?.id || "";
 	const [selectedRoleId, setSelectedRoleId] = useState<string>(defaultRole);
-	
-    const [isLoading, setIsLoading] = useState(false);
+
+	const [isLoading, setIsLoading] = useState(false);
 	const [message, setMessage] = useState<{
 		text: string;
 		type: "success" | "error";
@@ -87,16 +89,13 @@ export function ShopTeamManager({
 		setIsLoading(false);
 	};
 
-    // Helper to get role ID for current members (legacy or new)
-    const getMemberRoleId = (member: ShopMember) => {
-       if (member.shopRoleId) return member.shopRoleId;
-       // Fallback for legacy: try to find a matching role name?
-       // OR if we migrated, they SHOULD have shopRoleId.
-       // If not migrated yet, we might have issues displaying.
-       // Let's assume migration is run or we fallback to matching name.
-       const match = availableRoles.find(r => r.name.toUpperCase() === member.role.toUpperCase());
-       return match ? match.id : "";
-    };
+	// Helper to get role ID for current members (legacy or new)
+	const getMemberRoleId = (member: ShopMember) => {
+		if (member.shopRoleId) return member.shopRoleId;
+
+		const match = availableRoles.find(r => r.name.toUpperCase() === member.role.toUpperCase());
+		return match ? match.id : "";
+	};
 
 	return (
 		<div className="rounded-2xl bg-dark-900 border border-dark-800 p-6 space-y-8">
@@ -135,12 +134,12 @@ export function ShopTeamManager({
 									disabled={isLoading || member.user.id === currentUserId}
 									className="bg-dark-950 border border-dark-700 rounded-lg px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-primary-500"
 								>
-                                    <option value="" disabled>Inconnu</option>
+									<option value="" disabled>Inconnu</option>
 									{availableRoles.map(role => (
-                                        <option key={role.id} value={role.id}>
-                                            {role.name}
-                                        </option>
-                                    ))}
+										<option key={role.id} value={role.id}>
+											{role.name}
+										</option>
+									))}
 								</select>
 
 								<button
@@ -231,11 +230,11 @@ export function ShopTeamManager({
 								onChange={(e) => setSelectedRoleId(e.target.value)}
 								className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
 							>
-                                {availableRoles.map(role => (
-                                    <option key={role.id} value={role.id}>
-                                        {role.name}
-                                    </option>
-                                ))}
+								{availableRoles.map(role => (
+									<option key={role.id} value={role.id}>
+										{role.name}
+									</option>
+								))}
 							</select>
 						</div>
 						<button
@@ -249,11 +248,10 @@ export function ShopTeamManager({
 
 					{message && (
 						<div
-							className={`p-3 rounded-lg text-sm ${
-								message.type === "success"
-									? "bg-green-500/10 text-green-500"
-									: "bg-red-500/10 text-red-500"
-							}`}
+							className={`p-3 rounded-lg text-sm ${message.type === "success"
+								? "bg-green-500/10 text-green-500"
+								: "bg-red-500/10 text-red-500"
+								}`}
 						>
 							{message.text}
 						</div>

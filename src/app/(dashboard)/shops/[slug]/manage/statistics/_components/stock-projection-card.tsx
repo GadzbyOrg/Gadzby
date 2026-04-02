@@ -36,30 +36,35 @@ export function StockProjectionsCard({ data, loading }: StockProjectionsCardProp
 				{data.map((item) => (
 					<div
 						key={item.productId}
-						className="bg-dark-950/50 p-3 rounded-lg border border-orange-900/50 flex flex-col justify-between"
+						className="bg-dark-950/50 p-4 rounded-xl border border-orange-900/50 hover:border-orange-500/50 transition-all flex flex-col justify-between group shadow-sm hover:shadow-orange-500/5"
 					>
-                        <div className="mb-2">
-                            <p className="text-sm font-medium text-white truncate">
+                        <div className="mb-3">
+                            <p className="text-sm font-bold text-white truncate group-hover:text-orange-400 transition-colors">
                                 {item.name}
                             </p>
-                            <p className="text-xs text-gray-400">
-                                Stock actuel: {item.currentStock}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-600">Stock actuel</span>
+                                <span className="text-xs font-mono text-gray-400 font-bold">
+                                    {item.currentStock.toFixed(2)}
+                                </span>
+                            </div>
                         </div>
 						
-                        <div>
-                            <div className="flex justify-between items-end">
+                        <div className="pt-3 border-t border-dark-800/50">
+                            <div className="flex justify-between items-center">
                                 <div>
-                                    <p className="text-xs text-gray-500">Vitesse</p>
-                                    <p className="text-xs text-gray-300">
-                                        ~{item.dailyVelocity.toFixed(1)} / jour
+                                    <p className="text-[10px] uppercase tracking-wider font-bold text-gray-600 mb-0.5">Vitesse</p>
+                                    <p className="text-xs font-mono font-bold text-gray-300">
+                                        ~{item.dailyVelocity.toFixed(2)} <span className="text-[9px] opacity-70 uppercase">/j</span>
                                     </p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-xs text-gray-500">Rupture dans</p>
-                                    <p className={`text-sm font-bold ${item.daysRemaining < 7 ? 'text-red-500' : 'text-orange-400'}`}>
-                                        {item.daysRemaining} jours
-                                    </p>
+                                    <p className="text-[10px] uppercase tracking-wider font-bold text-gray-600 mb-0.5 text-right">Épuisé dans</p>
+                                    <div className={`inline-block px-2 py-1 rounded font-bold text-xs font-mono ${
+                                        item.daysRemaining < 7 ? "bg-red-500/20 text-red-400 border border-red-500/30" : "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                                    }`}>
+                                        {item.daysRemaining} j
+                                    </div>
                                 </div>
                             </div>
                         </div>
