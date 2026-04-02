@@ -470,4 +470,50 @@ export class UserService {
             limit: 10,
         });
     }
+
+    static async searchWithBalance(query: string, currentUserId?: string) {
+        if (!query || query.length < 2) return [];
+
+        const searchPattern = `%${query}%`;
+
+        return await db.query.users.findMany({
+            where: (users, { or, and, ilike, ne, eq }) => {
+                const conditions = [
+                    eq(users.isDeleted, false),
+                    eq(users.isAsleep, false),
+                    or(
+                        ilike(users.username, searchPattern),
+                        ilike(users.nom, searchPattern),
+                        ilike(users.prenom, searchPattern),
+                        ilike(users.email, searchPattern),
+                        ilike(users.bucque, searchPattern)
+                    )
+                ];
+
+                if (currentUserId) {
+                    conditions.push(ne(users.id, currentUserId));
+                }
+
+                return and(...conditions);
+            },
+            orderBy: (users, { asc, desc }) => [
+                desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
+                desc(sql`CASE WHEN ${users.username} ILIKE ${query + '%'} THEN 1 ELSE 0 END`),
+                asc(users.username)
+            ],
+            columns: {
+                id: true,
+                username: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                image: true,
+                bucque: true,
+                promss: true,
+                tabagnss: true,
+                balance: true,
+            },
+            limit: 10,
+        });
+    }
 }
