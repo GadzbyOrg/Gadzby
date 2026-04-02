@@ -1,6 +1,6 @@
 "use server";
 
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
@@ -24,7 +24,7 @@ export async function getUserStats() {
 	// 2. Get Expenses for Current Month
 	const now = new Date();
 	const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-	const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+	const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
 	const currentMonthExpenses = await db
 		.select({
@@ -33,16 +33,15 @@ export async function getUserStats() {
 		.from(transactions)
 		.where(
 			and(
-				eq(transactions.issuerId, session.userId),
+				eq(transactions.targetUserId, session.userId),
 				eq(transactions.type, "PURCHASE"),
 				gte(transactions.createdAt, startOfMonth),
-				lte(transactions.createdAt, endOfMonth)
+				lt(transactions.createdAt, startOfNextMonth)
 			)
 		);
 
 	// 3. Get Expenses for Last Month
 	const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-	const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
 	const lastMonthExpenses = await db
 		.select({
@@ -51,10 +50,10 @@ export async function getUserStats() {
 		.from(transactions)
 		.where(
 			and(
-				eq(transactions.issuerId, session.userId),
+				eq(transactions.targetUserId, session.userId),
 				eq(transactions.type, "PURCHASE"),
 				gte(transactions.createdAt, startOfLastMonth),
-				lte(transactions.createdAt, endOfLastMonth)
+				lt(transactions.createdAt, startOfMonth)
 			)
 		);
 
