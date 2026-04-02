@@ -37,7 +37,7 @@ export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;
 export const createUserSchema = z.object({
 	nom: z.string().trim().min(1, "Le nom est requis"),
 	prenom: z.string().trim().min(1, "Le prénom est requis"),
-	email: z.email("Email invalide").trim().toLowerCase(),
+	email: z.string().trim().email("Email invalide").toLowerCase(),
 	phone: z.string().trim().optional().or(z.literal("")),
 	bucque: z.string().trim().optional().or(z.literal("")),
 	promss: z.string().trim().min(1, "La prom'ss est requise").toUpperCase(),
