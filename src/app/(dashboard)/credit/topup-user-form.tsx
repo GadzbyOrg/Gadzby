@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
-
-import { ClientSearch } from "@/components/dashboard/client-search";
+import { UserSearch } from "@/components/user-search";
 import { topUpUserAction } from "@/features/transactions/actions";
 
 function SubmitButton() {
@@ -43,9 +42,11 @@ export function TopUpUserForm() {
 					Rechercher un utilisateur
 				</label>
 				<div className="relative">
-					<ClientSearch
-						onSelectClient={setSelectedUser}
-						selectedClient={selectedUser}
+					<UserSearch
+						onSelect={setSelectedUser}
+						placeholder="Rechercher un utilisateur (nom, bucque, num'ss)..."
+						clearOnSelect={false}
+						className="max-w-none"
 					/>
 				</div>
 			</div>

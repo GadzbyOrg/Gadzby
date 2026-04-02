@@ -7,10 +7,10 @@ import { productCategories, products, productVariants, shops, shopUsers } from "
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
 
 import { SHOP_PERMISSIONS } from "./permissions";
-import { 
-    getShopBySlugSchema, 
-    getUserFamssSchema,
-    searchUsersSchema,
+import {
+	getShopBySlugSchema,
+	getUserFamssSchema,
+	searchUsersSchema,
 } from "./schemas";
 
 // --- Queries / Getters ---
@@ -80,7 +80,7 @@ export const getShops = authenticatedActionNoInput(async ({ session }) => {
 				role:
 					membership?.shopRole?.name ||
 					(session.permissions.includes("ADMIN_ACCESS") ||
-					session.permissions.includes("MANAGE_SHOPS")
+						session.permissions.includes("MANAGE_SHOPS")
 						? "ADMIN"
 						: undefined),
 			});
@@ -91,23 +91,23 @@ export const getShops = authenticatedActionNoInput(async ({ session }) => {
 });
 
 export const getAdminShops = authenticatedActionNoInput(async ({ session }) => {
-    if (
-        !session.permissions.includes("ADMIN_ACCESS") &&
-        !session.permissions.includes("MANAGE_SHOPS")
-    ) {
-        return { error: "Non autorisé" };
-    }
+	if (
+		!session.permissions.includes("ADMIN_ACCESS") &&
+		!session.permissions.includes("MANAGE_SHOPS")
+	) {
+		return { error: "Non autorisé" };
+	}
 
-    const allShops = await db.query.shops.findMany({
-        orderBy: (shops, { asc }) => [asc(shops.name)],
-        with: {
-            members: {
-                columns: { userId: true }
-            }
-        }
-    });
+	const allShops = await db.query.shops.findMany({
+		orderBy: (shops, { asc }) => [asc(shops.name)],
+		with: {
+			members: {
+				columns: { userId: true }
+			}
+		}
+	});
 
-    return { shops: allShops };
+	return { shops: allShops };
 });
 
 export const getShopBySlug = authenticatedAction(
@@ -207,65 +207,65 @@ export const getUserFamss = authenticatedAction(
 			with: { family: true },
 		});
 
-		 
-	return { famss: members.map((m: any) => m.family) };
-});
+
+		return { famss: members.map((m: any) => m.family) };
+	});
 
 export async function getSelfServiceProducts(shopSlug: string) {
-    // Public/Self-service
-    // logic moved from products.ts, imports updated (db, shops, products, eq, etc.)
-    const shop = await db.query.shops.findFirst({
-        where: eq(shops.slug, shopSlug), 
-        columns: { id: true, isSelfServiceEnabled: true }
-    });
+	// Public/Self-service
+	// logic moved from products.ts, imports updated (db, shops, products, eq, etc.)
+	const shop = await db.query.shops.findFirst({
+		where: eq(shops.slug, shopSlug),
+		columns: { id: true, isSelfServiceEnabled: true }
+	});
 
-    if (!shop || !shop.isSelfServiceEnabled) return { error: "Self-service non disponible" };
+	if (!shop || !shop.isSelfServiceEnabled) return { error: "Self-service non disponible" };
 
-    try {
-        const productsList = await db.query.products.findMany({
-            where: and(
-                eq(products.shopId, shop.id),
-                eq(products.isArchived, false),
-                eq(products.allowSelfService, true)
-            ),
-            with: {
-                category: true,
-                variants: {
-                    where: eq(productVariants.isArchived, false),
-                    orderBy: (variants, { asc }) => [asc(variants.quantity)]
-                },
-                event: true
-            },
-            orderBy: [asc(products.displayOrder), asc(products.name)]
-        });
+	try {
+		const productsList = await db.query.products.findMany({
+			where: and(
+				eq(products.shopId, shop.id),
+				eq(products.isArchived, false),
+				eq(products.allowSelfService, true)
+			),
+			with: {
+				category: true,
+				variants: {
+					where: eq(productVariants.isArchived, false),
+					orderBy: (variants, { asc }) => [asc(variants.quantity)]
+				},
+				event: true
+			},
+			orderBy: [asc(products.displayOrder), asc(products.name)]
+		});
 
-        const categoriesList = await db.query.productCategories.findMany({
-            where: eq(productCategories.shopId, shop.id),
-            orderBy: (categories, { asc }) => [asc(categories.name)]
-        });
+		const categoriesList = await db.query.productCategories.findMany({
+			where: eq(productCategories.shopId, shop.id),
+			orderBy: (categories, { asc }) => [asc(categories.name)]
+		});
 
-        // Sort products in-memory to match management view: Category Name -> Display Order -> Name
-        productsList.sort((a, b) => {
-            // 1. Category Name
-            const catA = a.category?.name || "zzzzzz"; // Put uncategorized last (or first depending on preference, usually last)
-            const catB = b.category?.name || "zzzzzz";
-            
-            if (catA !== catB) return catA.localeCompare(catB);
-            
-            // 2. Display Order
-            if (a.displayOrder !== b.displayOrder) {
-                // Handle null/undefined displayOrder if necessary, though schema implies it might be set. 
-                // Assuming 0 or generic number if null, but usually it's an int.
-                return (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
-            }
+		// Sort products in-memory to match management view: Category Name -> Display Order -> Name
+		productsList.sort((a, b) => {
+			// 1. Category Name
+			const catA = a.category?.name || "zzzzzz"; // Put uncategorized last (or first depending on preference, usually last)
+			const catB = b.category?.name || "zzzzzz";
 
-            // 3. Name
-            return a.name.localeCompare(b.name);
-        });
+			if (catA !== catB) return catA.localeCompare(catB);
 
-        return { products: productsList, categories: categoriesList };
-    } catch (error) {
-        console.error("Failed to fetch self service products:", error);
-        return { error: "Erreur de chargement" };
-    }
+			// 2. Display Order
+			if (a.displayOrder !== b.displayOrder) {
+				// Handle null/undefined displayOrder if necessary, though schema implies it might be set. 
+				// Assuming 0 or generic number if null, but usually it's an int.
+				return (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+			}
+
+			// 3. Name
+			return a.name.localeCompare(b.name);
+		});
+
+		return { products: productsList, categories: categoriesList };
+	} catch (error) {
+		console.error("Failed to fetch self service products:", error);
+		return { error: "Erreur de chargement" };
+	}
 }
