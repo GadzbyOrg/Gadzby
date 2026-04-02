@@ -2,9 +2,10 @@
 
 import { IconShoppingCart } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
-import { ClientSearch } from "@/components/dashboard/client-search";
+import { UserSearch } from "@/components/user-search";
+import { UserAvatar } from "@/components/user-avatar";
 import {
 	Dialog,
 	DialogContent,
@@ -12,7 +13,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { getUserFamss,processSale } from "@/features/shops/actions";
+import { getUserFamss, processSale } from "@/features/shops/actions";
 
 import { CartSummary } from "./cart-summary";
 import { ProductGrid } from "./product-grid";
@@ -101,7 +102,7 @@ export function ShopManagerView({
 	}, [selectedClient, famssEnabled]);
 
 	const handleAddToCart = (product: ProductData, delta: number, variantId?: string) => {
-        const key = variantId ? `${product.id}:${variantId}` : product.id;
+		const key = variantId ? `${product.id}:${variantId}` : product.id;
 		setCart((prev) => {
 			const current = prev[key] || 0;
 			const next = Math.max(0, current + delta);
@@ -121,13 +122,13 @@ export function ShopManagerView({
 	};
 
 	const cartTotal = Object.entries(cart).reduce((total, [key, qty]) => {
-        if (key.includes(':')) {
-            const [productId, variantId] = key.split(':');
-            const product = products.find(p => p.id === productId);
-            const variant = product?.variants?.find((v: ProductVariant) => v.id === variantId);
-            const price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
-            return total + (price * qty);
-        }
+		if (key.includes(':')) {
+			const [productId, variantId] = key.split(':');
+			const product = products.find(p => p.id === productId);
+			const variant = product?.variants?.find((v: ProductVariant) => v.id === variantId);
+			const price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
+			return total + (price * qty);
+		}
 		const product = products.find((p) => p.id === key);
 		return total + (product ? product.price * qty : 0);
 	}, 0);
@@ -166,14 +167,14 @@ export function ShopManagerView({
 		setIsSubmitting(true);
 
 		const items = Object.entries(cart).map(([key, quantity]) => {
-            if (key.includes(':')) {
-                const [productId, variantId] = key.split(':');
-                return { productId, quantity, variantId };
-            }
-            return {
-			    productId: key,
-			    quantity,
-            };
+			if (key.includes(':')) {
+				const [productId, variantId] = key.split(':');
+				return { productId, quantity, variantId };
+			}
+			return {
+				productId: key,
+				quantity,
+			};
 		});
 
 		const result = await processSale({
@@ -213,10 +214,58 @@ export function ShopManagerView({
 				<h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider hidden md:block">
 					Client
 				</h2>
-				<ClientSearch
-					selectedClient={selectedClient}
-					onSelectClient={setSelectedClient}
-				/>
+				{selectedClient ? (
+					<div className="rounded-xl border border-dark-700 bg-dark-800 p-4">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-4">
+								<UserAvatar
+									user={{
+										id: selectedClient.id,
+										name: selectedClient.username,
+										username: selectedClient.username,
+										image: null,
+									}}
+									className="h-12 w-12"
+								/>
+								<div>
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-white text-lg">
+											{selectedClient.username}
+										</span>
+										<span className="text-xs text-gray-400">
+											({selectedClient.bucque})
+										</span>
+									</div>
+									<div className="text-sm text-gray-400">
+										{selectedClient.prenom} {selectedClient.nom}
+									</div>
+								</div>
+							</div>
+							<button
+								onClick={() => setSelectedClient(null)}
+								className="p-2 text-gray-400 hover:text-white"
+								type="button"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12" /></svg>
+							</button>
+						</div>
+						<div className="mt-4 flex items-center justify-between rounded-lg bg-dark-900 p-3">
+							<span className="text-gray-400">Solde actuel</span>
+							<span
+								className={`text-xl font-mono font-bold ${selectedClient.balance < 0 ? "text-red-400" : "text-green-400"
+									}`}
+							>
+								{(selectedClient.balance / 100).toFixed(2)} €
+							</span>
+						</div>
+					</div>
+				) : (
+					<UserSearch
+						onSelect={setSelectedClient}
+						placeholder="Rechercher un client (nom, bucque, num'ss)..."
+						className="max-w-none"
+					/>
+				)}
 			</div>
 
 			{/* Desktop Layout: Split Grid */}
