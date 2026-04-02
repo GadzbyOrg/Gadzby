@@ -44,7 +44,7 @@ export async function getUsers(
 	sort: string | null = null,
 	order: "asc" | "desc" | null = null,
 	role: string | null = null,
-    promss: string | null = null
+	promss: string | null = null
 ) {
 	const session = await verifySession();
 	if (
@@ -60,59 +60,59 @@ export async function getUsers(
 	const offset = (page - 1) * limit;
 
 	try {
-        const conditions = [eq(users.isDeleted, false)];
+		const conditions = [eq(users.isDeleted, false)];
 
-        if (search) {
-            conditions.push(
-                or(
-                    ilike(users.username, `%${search}%`),
-                    ilike(users.nom, `%${search}%`),
-                    ilike(users.prenom, `%${search}%`),
-                    ilike(users.email, `%${search}%`),
-                    ilike(users.bucque, `%${search}%`)
-                )!
-            );
-        }
+		if (search) {
+			conditions.push(
+				or(
+					ilike(users.username, `%${search}%`),
+					ilike(users.nom, `%${search}%`),
+					ilike(users.prenom, `%${search}%`),
+					ilike(users.email, `%${search}%`),
+					ilike(users.bucque, `%${search}%`)
+				)!
+			);
+		}
 
-        if (role) {
-            const isUuid =
-                /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-                    role
-                );
-            if (isUuid) {
-                conditions.push(eq(users.roleId, role));
-            }
-        }
+		if (role) {
+			const isUuid =
+				/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+					role
+				);
+			if (isUuid) {
+				conditions.push(eq(users.roleId, role));
+			}
+		}
 
-        if (promss) {
-            conditions.push(eq(users.promss, promss));
-        }
+		if (promss) {
+			conditions.push(eq(users.promss, promss));
+		}
 
-        const whereCondition = and(...conditions);
+		const whereCondition = and(...conditions);
 
 		const [allUsers, countResult] = await Promise.all([
-            db.query.users.findMany({
-                where: whereCondition,
-                orderBy: (t, { asc, desc }) => {
-                    if (sort) {
-                        const sortKey = sort === "role" ? "roleId" : sort;
-                        const column = t[sortKey as keyof typeof t];
-                        if (column) {
-                            return (order === "desc") ? [desc(column)] : [asc(column)];
-                        }
-                    }
-                    return [desc(t.username)];
-                },
-                limit: limit,
-                offset: offset,
-                with: {
-                    role: true,
-                },
-            }),
-            db.select({ count: count() }).from(users).where(whereCondition)
-        ]);
+			db.query.users.findMany({
+				where: whereCondition,
+				orderBy: (t, { asc, desc }) => {
+					if (sort) {
+						const sortKey = sort === "role" ? "roleId" : sort;
+						const column = t[sortKey as keyof typeof t];
+						if (column) {
+							return (order === "desc") ? [desc(column)] : [asc(column)];
+						}
+					}
+					return [desc(t.username)];
+				},
+				limit: limit,
+				offset: offset,
+				with: {
+					role: true,
+				},
+			}),
+			db.select({ count: count() }).from(users).where(whereCondition)
+		]);
 
-        const totalCount = countResult[0]?.count || 0;
+		const totalCount = countResult[0]?.count || 0;
 
 		return { users: allUsers, totalCount };
 	} catch (error) {
@@ -129,7 +129,7 @@ export const getPromssListAction = authenticatedAction(
 			.from(users)
 			.where(sql`${users.promss} != '' AND ${users.promss} IS NOT NULL`)
 			.orderBy(desc(users.promss));
-		
+
 		return { promss: result.map((r) => r.promss).filter(Boolean) as string[] };
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
@@ -139,7 +139,7 @@ export const adminUpdateUserAction = authenticatedAction(
 	adminUpdateUserSchema,
 	async (data, { session }) => {
 		try {
-            await UserService.adminUpdate(data.userId, session.userId, data);
+			await UserService.adminUpdate(data.userId, session.userId, data);
 
 			revalidatePath("/admin/users");
 			return { success: "Utilisateur mis à jour avec succès" };
@@ -218,7 +218,7 @@ export const createUserAction = authenticatedAction(
 	createUserSchema,
 	async (data) => {
 		try {
-            await UserService.create(data);
+			await UserService.create(data);
 
 			revalidatePath("/admin/users");
 			return { success: "Utilisateur créé avec succès" };
@@ -235,36 +235,36 @@ export const importUsersBatchAction = authenticatedAction(
 	async (data) => {
 		const { rows: rawRows } = data;
 
-        // server-side mapping to match what ExcelImportModal used to do
-        const mappedRows = rawRows.map((row: Record<string, any>) => {
-            const s = (v: any) => (typeof v === "string" ? v.trim() : v);
-            return {
-                nom: s(row["Nom"] || row["nom"]),
-                prenom: s(row["Prenom"] || row["Prénom"] || row["prenom"]),
-                email: s(row["Email"] || row["email"]),
-                phone: s(row["Phone"] || row["phone"] || row["téléphone"]),
-                bucque: s(row["Bucque"] || row["bucque"] || ""),
-                promss: String(s(row["Promss"] || row["promss"] || "")),
-                nums: String(s(row["Nums"] || row["nums"] || "")),
-                tabagnss: s(row["Tabagn'ss"] || row["Tabagnss"] || row["tabagnss"] || "Chalon'ss"),
-                username: s(row["Username"] || row["username"] || ""),
-                balance: row["Balance"] || row["balance"] || 0,
-            };
-        });
+		// server-side mapping to match what ExcelImportModal used to do
+		const mappedRows = rawRows.map((row: Record<string, any>) => {
+			const s = (v: any) => (typeof v === "string" ? v.trim() : v);
+			return {
+				nom: s(row["Nom"] || row["nom"]),
+				prenom: s(row["Prenom"] || row["Prénom"] || row["prenom"]),
+				email: s(row["Email"] || row["email"]),
+				phone: s(row["Phone"] || row["phone"] || row["téléphone"]),
+				bucque: s(row["Bucque"] || row["bucque"] || ""),
+				promss: String(s(row["Promss"] || row["promss"] || "")),
+				nums: String(s(row["Nums"] || row["nums"] || "")),
+				tabagnss: s(row["Tabagn'ss"] || row["Tabagnss"] || row["tabagnss"] || "Chalon'ss"),
+				username: s(row["Username"] || row["username"] || ""),
+				balance: row["Balance"] || row["balance"] || 0,
+			};
+		});
 
-        // Validate mapped rows against the strict schema
-        const parseResult = z.array(importUserRowSchema).safeParse(mappedRows);
-        
-        if (!parseResult.success) {
-             const errorMsg = parseResult.error.issues.map((e: z.ZodIssue) => `${e.path.join(".")}: ${e.message}`).join(", ");
-             return { error: `Erreur de validation: ${errorMsg}` };
-        }
+		// Validate mapped rows against the strict schema
+		const parseResult = z.array(importUserRowSchema).safeParse(mappedRows);
 
-        const rows = parseResult.data;
+		if (!parseResult.success) {
+			const errorMsg = parseResult.error.issues.map((e: z.ZodIssue) => `${e.path.join(".")}: ${e.message}`).join(", ");
+			return { error: `Erreur de validation: ${errorMsg}` };
+		}
+
+		const rows = parseResult.data;
 
 		try {
-            const result = await UserService.importBatch(rows);
-            const { successCount, skippedCount, failCount, skipped, errors } = result;
+			const result = await UserService.importBatch(rows);
+			const { successCount, skippedCount, failCount, skipped, errors } = result;
 
 			revalidatePath("/admin/users");
 
@@ -292,13 +292,13 @@ export const hardDeleteUserAction = authenticatedAction(
 	adminDeleteUserSchema,
 	async (data) => {
 		const { userId } = data;
-        try {
-            await UserService.delete(userId);
-            revalidatePath("/admin/users");
-		    return { success: "Utilisateur supprimé avec succès" };
-        } catch(error) {
-            return { error: error instanceof Error ? error.message : "Erreur lors de la suppression" };
-        }
+		try {
+			await UserService.delete(userId);
+			revalidatePath("/admin/users");
+			return { success: "Utilisateur supprimé avec succès" };
+		} catch (error) {
+			return { error: error instanceof Error ? error.message : "Erreur lors de la suppression" };
+		}
 	}
 );
 
@@ -307,7 +307,7 @@ export const toggleUserStatusAction = authenticatedAction(
 	async (data) => {
 		const { userId, isAsleep } = data;
 		try {
-            await UserService.toggleStatus(userId, isAsleep);
+			await UserService.toggleStatus(userId, isAsleep);
 
 			revalidatePath("/admin/users");
 			return {
@@ -324,7 +324,18 @@ export const toggleUserStatusAction = authenticatedAction(
 export async function searchUsersPublicAction(query: string) {
 	const session = await verifySession();
 	try {
-        const users = await UserService.searchPublic(query, session?.userId);
+		const users = await UserService.searchPublic(query, session?.userId);
+		return { users };
+	} catch (error) {
+		console.error("Failed to search users:", error);
+		return { error: "Erreur lors de la recherche" };
+	}
+}
+
+export async function searchUsersWithBalanceAction(query: string) {
+	const session = await verifySession();
+	try {
+		const users = await UserService.searchWithBalance(query, session?.userId);
 		return { users };
 	} catch (error) {
 		console.error("Failed to search users:", error);
@@ -337,13 +348,13 @@ export const changeSelfPasswordAction = authenticatedAction(
 	async (data, { session }) => {
 		const { currentPassword, newPassword } = data;
 
-        try {
-            await UserService.changePassword(session.userId, currentPassword, newPassword);
-		    return { success: "Mot de passe modifié avec succès" };
+		try {
+			await UserService.changePassword(session.userId, currentPassword, newPassword);
+			return { success: "Mot de passe modifié avec succès" };
 
-        } catch (error) {
-            return { error: error instanceof Error ? error.message : "Erreur lors du changement de mot de passe" };
-        }
+		} catch (error) {
+			return { error: error instanceof Error ? error.message : "Erreur lors du changement de mot de passe" };
+		}
 	}
 );
 
@@ -351,9 +362,9 @@ export const updateUserPreferencesAction = authenticatedAction(
 	z.object({ preferredDashboardPath: z.string() }),
 	async ({ preferredDashboardPath }, { session }) => {
 		try {
-            await db.update(users)
-                .set({ preferredDashboardPath })
-                .where(eq(users.id, session.userId));
+			await db.update(users)
+				.set({ preferredDashboardPath })
+				.where(eq(users.id, session.userId));
 
 			revalidatePath("/settings");
 			return { success: "Préférences mises à jour" };

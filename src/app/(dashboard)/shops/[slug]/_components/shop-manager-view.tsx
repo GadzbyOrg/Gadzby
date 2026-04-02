@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { UserSearch } from "@/components/user-search";
 import { UserAvatar } from "@/components/user-avatar";
+import { searchUsersWithBalanceAction } from "@/features/users/actions";
 import {
 	Dialog,
 	DialogContent,
@@ -261,6 +262,7 @@ export function ShopManagerView({
 					</div>
 				) : (
 					<UserSearch
+						searchAction={searchUsersWithBalanceAction}
 						onSelect={setSelectedClient}
 						placeholder="Rechercher un client (nom, bucque, num'ss)..."
 						className="max-w-none"
