@@ -180,6 +180,45 @@ export const removeMemberAction = authenticatedAction(
 	}
 );
 
+export const leaveFamsAction = authenticatedAction(
+	memberActionSchema,
+	async (data, { session }) => {
+		try {
+			const fams = await db.query.famss.findFirst({
+				where: eq(famss.name, data.famsName),
+			});
+			if (!fams) return { error: "Fam'ss introuvable" };
+
+			// Check if user is admin
+			const membership = await db.query.famsMembers.findFirst({
+				where: and(
+					eq(famsMembers.famsId, fams.id),
+					eq(famsMembers.userId, session.userId),
+				),
+			});
+			if (!membership) return { error: "Vous n'êtes pas membre de cette Fam'ss" };
+
+			if (membership.isAdmin)
+				return { error: "Vous ne pouvez pas quitter une Fam'ss dont vous êtes admin" };
+
+			await db
+				.delete(famsMembers)
+				.where(
+					and(
+						eq(famsMembers.famsId, fams.id),
+						eq(famsMembers.userId, session.userId)
+					)
+				);
+
+			revalidatePath(`/famss/${data.famsName}`);
+			return { success: true };
+		} catch (error) {
+			console.error("Failed to leave fams:", error);
+			return { error: "Erreur lors de la sortie" };
+		}
+	}
+);
+
 export const promoteMemberAction = authenticatedAction(
 	memberActionSchema,
 	async (data, { session }) => {

@@ -17,7 +17,7 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
-	 
+
 	async function handleSelect(user: any) {
 		setLoading(true);
 		setStatus(null);
@@ -45,15 +45,14 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
 					className="w-full max-w-none"
 					clearOnSelect={true}
 				/>
-				
+
 				{(status || loading) && (
 					<div className="flex items-center gap-2">
 						{loading && <span className="text-xs text-gray-400">Ajout en cours...</span>}
 						{status && (
 							<span
-								className={`text-xs ${
-									status.type === "error" ? "text-red-500" : "text-green-500"
-								}`}
+								className={`text-xs ${status.type === "error" ? "text-red-500" : "text-green-500"
+									}`}
 							>
 								{status.msg}
 							</span>
@@ -131,9 +130,8 @@ export function TransferForm({ famsName }: { famsName: string }) {
 
 				{status && (
 					<div
-						className={`text-sm text-center ${
-							status.type === "error" ? "text-red-500" : "text-green-500"
-						}`}
+						className={`text-sm text-center ${status.type === "error" ? "text-red-500" : "text-green-500"
+							}`}
 					>
 						{status.msg}
 					</div>
@@ -148,11 +146,13 @@ import { IconCheck, IconStar, IconTrash, IconX } from "@tabler/icons-react";
 import {
 	acceptRequestAction,
 	cancelRequestAction,
+	leaveFamsAction,
 	promoteMemberAction,
 	rejectRequestAction,
 	removeMemberAction,
 	requestToJoinFamsAction,
 } from "@/features/famss/actions";
+import { UserAvatar } from "@/components/user-avatar";
 
 export function RemoveMemberButton({
 	famsName,
@@ -279,7 +279,7 @@ export function MembershipRequestsList({
 	requests,
 }: {
 	famsName: string;
-	 
+
 	requests: any[];
 }) {
 	const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -322,9 +322,7 @@ export function MembershipRequestsList({
 						className="flex justify-between items-center text-sm p-3 bg-dark-950/50 rounded-lg border border-dark-800"
 					>
 						<div className="flex items-center gap-3">
-							<div className="w-8 h-8 rounded-full bg-dark-800 flex items-center justify-center text-xs font-bold text-gray-500">
-								{req.user.username.slice(0, 2).toUpperCase()}
-							</div>
+							<UserAvatar user={req.user} className="w-8 h-8" />
 							<div>
 								<div className="text-gray-200 font-medium">
 									{req.user.username}
@@ -356,5 +354,38 @@ export function MembershipRequestsList({
 				))}
 			</div>
 		</div>
+	);
+}
+
+export function LeaveFamsButton({
+	famsName,
+	userId,
+}: {
+	famsName: string;
+	userId: string;
+}) {
+	const [loading, setLoading] = useState(false);
+	const router = useRouter();
+
+	async function handleLeave() {
+		if (!confirm("Voulez-vous vraiment quitter cette Fam'ss ?")) return;
+		setLoading(true);
+		const res = await leaveFamsAction({ famsName, userId });
+		if (res?.error) {
+			alert(res.error);
+			setLoading(false);
+		} else {
+			router.push("/famss");
+		}
+	}
+
+	return (
+		<button
+			onClick={handleLeave}
+			disabled={loading}
+			className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
+		>
+			{loading ? "Départ en cours..." : "Quitter la Fam'ss"}
+		</button>
 	);
 }
