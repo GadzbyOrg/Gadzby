@@ -10,10 +10,10 @@ import { TransactionService } from "@/services/transaction-service";
 
 import { getTransactionsQuery } from "../transactions/queries"; // Import from sibling feature
 import { SHOP_PERM } from "./permissions";
-import { 
-    getShopTransactionsSchema, 
-    processSaleSchema, 
-    processSelfServicePurchaseSchema 
+import {
+	getShopTransactionsSchema,
+	processSaleSchema,
+	processSelfServicePurchaseSchema
 } from "./schemas";
 import { getShopOrThrow } from "./utils";
 
@@ -56,7 +56,7 @@ export const getShopTransactions = authenticatedAction(
 		} = params;
 
 
-        const shop = await getShopOrThrow(slug, session.userId, session.permissions, SHOP_PERM.VIEW_STATS);
+		const shop = await getShopOrThrow(slug, session.userId, session.permissions, SHOP_PERM.VIEW_STATS);
 
 		const offset = (page - 1) * limit;
 
@@ -76,7 +76,7 @@ export const getShopTransactions = authenticatedAction(
 		const history = await db.query.transactions.findMany({
 			...baseQuery,
 			where: whereClause,
-			 
+
 		} as any);
 
 		const totalCountResult = await db
@@ -112,10 +112,10 @@ export const exportShopTransactionsAction = authenticatedAction(
 			where: whereClause,
 			limit: undefined,
 			offset: undefined,
-			 
+
 		} as any);
 
-		 
+
 		const formattedData = data.map((t: any) => ({
 			Date: new Date(t.createdAt).toLocaleString("fr-FR"),
 			Type: t.type,
@@ -125,6 +125,7 @@ export const exportShopTransactionsAction = authenticatedAction(
 				? `${t.targetUser.nom} ${t.targetUser.prenom} (${t.targetUser.username})`
 				: "",
 			Auteur: t.issuer ? `${t.issuer.nom} ${t.issuer.prenom}` : "",
+			Categorie: t.product?.category?.name || "",
 			Produit: t.product?.name || "",
 			"Fam'ss": t.fams?.name || "",
 		}));
@@ -136,15 +137,15 @@ export const exportShopTransactionsAction = authenticatedAction(
 export const processSelfServicePurchase = authenticatedAction(
 	processSelfServicePurchaseSchema,
 	async ({ shopSlug, items, paymentSource, famsId }, { session }) => {
-        
-        
+
+
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, shopSlug),
-        // include products for verification? original did logic with products separately.
+			// include products for verification? original did logic with products separately.
 		});
 
 		if (!shop) throw new Error("Shop introuvable");
-        
+
 		if (!shop.isSelfServiceEnabled)
 			throw new Error("Self-service désactivé pour ce shop");
 
