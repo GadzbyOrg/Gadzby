@@ -1,10 +1,10 @@
-import { and, asc, desc, eq, gte, ilike, lte,or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
 
 import { transactions } from "@/db/schema";
 
 export async function getTransactionsQuery(
-    search = "", 
-    type = "ALL", 
+    search = "",
+    type = "ALL",
     sort = "DATE_DESC",
     limit?: number,
     offset?: number,
@@ -50,18 +50,22 @@ export async function getTransactionsQuery(
     if (sort === "AMOUNT_DESC") orderByClause = [desc(transactions.amount)];
     if (sort === "AMOUNT_ASC") orderByClause = [asc(transactions.amount)];
 
-    	return {
-		where: and(...whereConditions),
-		orderBy: orderByClause,
-		with: {
-			shop: true,
-			fams: true,
-			product: true,
-			issuer: true,
-			receiverUser: true,
-			targetUser: true,
-		},
-		limit: limit,
-		offset: offset,
-	};
+    return {
+        where: and(...whereConditions),
+        orderBy: orderByClause,
+        with: {
+            shop: true,
+            fams: true,
+            product: {
+                with: {
+                    category: true,
+                }
+            },
+            issuer: true,
+            receiverUser: true,
+            targetUser: true,
+        },
+        limit: limit,
+        offset: offset,
+    };
 }
