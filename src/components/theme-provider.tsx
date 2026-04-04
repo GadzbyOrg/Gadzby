@@ -2,10 +2,14 @@
 
 import { useEffect } from "react";
 
+import { THEMES } from "./theme-picker";
+
+const VALID_KEYS = new Set(THEMES.map((t) => t.key).filter(Boolean));
+
 export function ThemeProvider() {
   useEffect(() => {
     const theme = localStorage.getItem("gadzby-theme");
-    if (theme) {
+    if (theme && VALID_KEYS.has(theme)) {
       document.documentElement.setAttribute("data-theme", theme);
     }
   }, []);
