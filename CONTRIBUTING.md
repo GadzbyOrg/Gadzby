@@ -229,7 +229,7 @@ Gadzby a d'ailleurs été développé en grande partie avec [Google Antigravity]
 
 N'hésite pas à ouvrir une [Issue](https://github.com/LouisChabanon/Gadzby/issues) pour poser tes questions. Il n'y a pas de question bête.
 
-Tu peux aussi me contacter directement sur le serveur Discord : [https://discord.gg/xSNnDqVp2z](https://discord.gg/xSNnDqVp2z)
+Tu peux aussi me contacter directement (+33 7 68 64 65 81)
 
 ---
 
