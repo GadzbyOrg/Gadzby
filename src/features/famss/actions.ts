@@ -99,7 +99,7 @@ export const addMemberAction = authenticatedAction(
 				isAdmin: false,
 			});
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to add member:", error);
@@ -128,7 +128,7 @@ export const transferToFamsAction = authenticatedAction(
 				"Virement vers Fam'ss"
 			);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error: unknown) {
 			console.error("Failed to transfer:", error);
@@ -171,11 +171,50 @@ export const removeMemberAction = authenticatedAction(
 					)
 				);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to remove member:", error);
 			return { error: "Erreur lors de la suppression" };
+		}
+	}
+);
+
+export const leaveFamsAction = authenticatedAction(
+	memberActionSchema,
+	async (data, { session }) => {
+		try {
+			const fams = await db.query.famss.findFirst({
+				where: eq(famss.name, data.famsName),
+			});
+			if (!fams) return { error: "Fam'ss introuvable" };
+
+			// Check if user is admin
+			const membership = await db.query.famsMembers.findFirst({
+				where: and(
+					eq(famsMembers.famsId, fams.id),
+					eq(famsMembers.userId, session.userId),
+				),
+			});
+			if (!membership) return { error: "Vous n'êtes pas membre de cette Fam'ss" };
+
+			if (membership.isAdmin)
+				return { error: "Vous ne pouvez pas quitter une Fam'ss dont vous êtes admin" };
+
+			await db
+				.delete(famsMembers)
+				.where(
+					and(
+						eq(famsMembers.famsId, fams.id),
+						eq(famsMembers.userId, session.userId)
+					)
+				);
+
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
+			return { success: true };
+		} catch (error) {
+			console.error("Failed to leave fams:", error);
+			return { error: "Erreur lors de la sortie" };
 		}
 	}
 );
@@ -209,7 +248,7 @@ export const promoteMemberAction = authenticatedAction(
 					)
 				);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to promote member:", error);
@@ -326,7 +365,7 @@ export const acceptRequestAction = authenticatedAction(
 					);
 			});
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to accept request:", error);
@@ -364,7 +403,7 @@ export const rejectRequestAction = authenticatedAction(
 					)
 				);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to reject request:", error);
