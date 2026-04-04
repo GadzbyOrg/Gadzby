@@ -192,7 +192,7 @@ Tu ne sais pas par où commencer ? Voici quelques idées de contributions access
 
 ---
 
-## 🤖 Utiliser un LLM (Gemini, ChatGPT…) pour contribuer
+## 🤖 Utiliser un LLM (Gemini, ChatGPT, Claude…) pour contribuer
 
 Les outils d'IA générative sont très utiles, surtout quand on débute. Voici comment les utiliser de manière responsable dans le cadre de Gadzby.
 
@@ -210,7 +210,9 @@ Les outils d'IA générative sont très utiles, surtout quand on débute. Voici 
 
 En cas de doute sur un passage généré automatiquement, dis-le dans ta PR — c'est apprécié d'être honnête et ça permet une meilleure review.
 
-Gadzby a d'ailleurs été développé en grande partie avec **Google Antigravity** (un éditeur de texte avec Gemini intégré). Ça m'as permis d'aller vite et loins tout seul mais ça laisse quelques cicatrices dans le code :
+Si tu utilises un assistant en ligne de commande comme [Claude Code](https://claude.ai/code), le fichier `CLAUDE.md` à la racine du projet lui fournit automatiquement le contexte de l'architecture et des conventions de Gadzby.
+
+Gadzby a d'ailleurs été développé en grande partie avec [Google Antigravity](https://antigravity.google/) (un éditeur de texte avec Gemini intégré). Ça m'as permis d'aller vite et loins tout seul mais ça laisse quelques cicatrices dans le code :
 
 | Problème hérité | Ce que tu peux faire |
 |---|---|
