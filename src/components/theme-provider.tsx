@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 import { THEMES } from "./theme-picker";
 
-const VALID_KEYS = new Set(THEMES.map((t) => t.key).filter(Boolean));
+const VALID_KEYS = new Set<string>(THEMES.map((t) => t.key).filter(Boolean));
 
 export function ThemeProvider() {
   useEffect(() => {

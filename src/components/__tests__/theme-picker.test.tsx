@@ -11,6 +11,7 @@ describe("ThemePicker", () => {
 
   it("renders all 6 theme buttons", () => {
     render(<ThemePicker />);
+    // toBeInTheDocument() requires jest-dom setup
     expect(screen.getByText("Ambre")).toBeTruthy();
     expect(screen.getByText("Ocean")).toBeTruthy();
     expect(screen.getByText("Forest")).toBeTruthy();
