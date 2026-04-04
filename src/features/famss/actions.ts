@@ -99,7 +99,7 @@ export const addMemberAction = authenticatedAction(
 				isAdmin: false,
 			});
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to add member:", error);
@@ -128,7 +128,7 @@ export const transferToFamsAction = authenticatedAction(
 				"Virement vers Fam'ss"
 			);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error: unknown) {
 			console.error("Failed to transfer:", error);
@@ -171,7 +171,7 @@ export const removeMemberAction = authenticatedAction(
 					)
 				);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to remove member:", error);
@@ -210,7 +210,7 @@ export const leaveFamsAction = authenticatedAction(
 					)
 				);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to leave fams:", error);
@@ -248,7 +248,7 @@ export const promoteMemberAction = authenticatedAction(
 					)
 				);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to promote member:", error);
@@ -365,7 +365,7 @@ export const acceptRequestAction = authenticatedAction(
 					);
 			});
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to accept request:", error);
@@ -403,7 +403,7 @@ export const rejectRequestAction = authenticatedAction(
 					)
 				);
 
-			revalidatePath(`/famss/${data.famsName}`);
+			revalidatePath(`/famss/${encodeURIComponent(data.famsName)}`);
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to reject request:", error);
