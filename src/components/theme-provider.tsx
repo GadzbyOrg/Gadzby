@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { THEMES } from "./theme-picker";
+import { THEMES } from "./themes";
 
 const VALID_KEYS = new Set<string>(THEMES.map((t) => t.key).filter(Boolean));
 

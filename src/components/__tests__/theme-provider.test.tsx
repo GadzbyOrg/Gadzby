@@ -19,4 +19,10 @@ describe("ThemeProvider", () => {
     render(<ThemeProvider />);
     expect(document.documentElement.getAttribute("data-theme")).toBeNull();
   });
+
+  it("ignores an unrecognised theme key in localStorage", () => {
+    localStorage.setItem("gadzby-theme", "hacked-theme");
+    render(<ThemeProvider />);
+    expect(document.documentElement.getAttribute("data-theme")).toBeNull();
+  });
 });
