@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 import { AvatarUpload } from "@/components/avatar-upload";
+import { ThemePicker } from "@/components/theme-picker";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { verifySession } from "@/lib/session";
@@ -48,8 +49,17 @@ export default async function SettingsPage() {
 				<SettingsForm user={user} />
 			</div>
 
+			<div className="mt-8 rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm">
+				<h2 className="text-xl font-semibold text-white mb-6 pb-4 border-b border-dark-800">
+					Apparence
+				</h2>
+				<ThemePicker />
+			</div>
+
             <div className="mt-8 rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm">
-                <h2 className="text-xl font-semibold text-white mb-6 pb-4 border-b border-dark-800">Sécurité</h2>
+                <h2 className="text-xl font-semibold text-white mb-6 pb-4 border-b border-dark-800">
+                  Sécurité
+                </h2>
                 <ChangePasswordForm />
             </div>
 		</div>
