@@ -116,7 +116,7 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 								// Member View
 								return (
 									<Link
-										href={`/famss/${fams.name}`}
+										href={`/famss/${encodeURIComponent(fams.name)}`}
 										key={fams.id}
 										className="block group focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:outline-offset-2 rounded-xl"
 										aria-label={`${fams.name} — ${membership.isAdmin ? "Admin" : "Membre"} — Solde : ${(fams.balance / 100).toFixed(2)} €`}

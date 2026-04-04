@@ -1,12 +1,14 @@
-import { desc,eq } from "drizzle-orm";
-import { notFound,redirect } from "next/navigation";
+import { desc, eq } from "drizzle-orm";
+import { notFound, redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { famss, transactions } from "@/db/schema";
 import { systemSettings } from "@/db/schema/settings";
+import { FamsTransactionTable } from "./fams-transaction-table";
 import { verifySession } from "@/lib/session";
+import { UserAvatar } from "@/components/user-avatar";
 
-import { AddMemberForm, MembershipRequestsList,PromoteMemberButton, RemoveMemberButton, TransferForm } from "./details-components";
+import { AddMemberForm, LeaveFamsButton, MembershipRequestsList, PromoteMemberButton, RemoveMemberButton, TransferForm } from "./details-components";
 
 export default async function FamsDetailsPage({ params }: { params: Promise<{ name: string }> }) {
     // ... existing code ...
@@ -24,25 +26,25 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
     if (!famssEnabled) redirect("/famss");
 
     const resolvedParams = await params;
-    
+
     // Decode name as it might be URL encoded
     const famsName = decodeURIComponent(resolvedParams.name);
 
-	const fams = await db.query.famss.findFirst({
-		where: eq(famss.name, famsName),
-		with: {
-			members: {
-				with: {
-					user: true,
-				},
-			},
-			requests: {
-				with: {
-					user: true,
-				},
-			},
-		},
-	});
+    const fams = await db.query.famss.findFirst({
+        where: eq(famss.name, famsName),
+        with: {
+            members: {
+                with: {
+                    user: true,
+                },
+            },
+            requests: {
+                with: {
+                    user: true,
+                },
+            },
+        },
+    });
 
     if (!fams) notFound();
 
@@ -63,7 +65,13 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
         where: eq(transactions.famsId, fams.id),
         orderBy: [desc(transactions.createdAt)],
         with: {
-            issuer: true,
+            targetUser: {
+                columns: {
+                    username: true,
+                    prenom: true,
+                    nom: true,
+                }
+            }
         },
         limit: 50 // Limit to last 50
     });
@@ -73,8 +81,8 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-dark-800 pb-6">
                 <div>
-                     <h1 className="text-4xl font-bold text-white mb-2">{fams.name}</h1>
-                     <div className="flex gap-3">
+                    <h1 className="text-4xl font-bold text-white mb-2">{fams.name}</h1>
+                    <div className="flex gap-3">
                         <span className="text-gray-400 text-sm bg-dark-900 px-2 py-1 rounded border border-dark-800">
                             {fams.members.length} membre{fams.members.length > 1 ? 's' : ''}
                         </span>
@@ -83,13 +91,18 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
                                 Admin
                             </span>
                         )}
-                     </div>
-                </div>
-                <div className="text-right bg-dark-900 p-4 rounded-xl border border-dark-800 min-w-[200px]">
-                    <div className="text-3xl font-mono font-bold text-white">
-                        {(fams.balance / 100).toFixed(2)} €
                     </div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mt-1">Solde Fam&apos;ss</div>
+                </div>
+                <div className="flex items-center gap-4">
+                    {!membership.isAdmin && (
+                        <LeaveFamsButton famsName={fams.name} userId={session.userId} />
+                    )}
+                    <div className="text-right bg-dark-900 p-4 rounded-xl border border-dark-800 min-w-[200px]">
+                        <div className="text-3xl font-mono font-bold text-white">
+                            {(fams.balance / 100).toFixed(2)} €
+                        </div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mt-1">Solde Fam&apos;ss</div>
+                    </div>
                 </div>
             </div>
 
@@ -106,15 +119,13 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-lg font-bold text-white">Membres</h3>
                         </div>
-                        
+
                         <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                             {fams.members.map(m => (
                                 <div key={m.userId} className="flex justify-between items-center text-sm p-2 hover:bg-dark-800 rounded transition-colors group">
                                     <div className="flex items-center gap-2">
-                                         <div className="w-8 h-8 rounded-full bg-dark-950 flex items-center justify-center text-xs font-bold text-gray-500 group-hover:text-primary-400 border border-dark-800 group-hover:border-primary-500/30 transition-colors">
-                                            {m.user.username.slice(0, 2).toUpperCase()}
-                                         </div>
-                                         <span className="text-gray-200 group-hover:text-white transition-colors">{m.user.username}</span>
+                                        <UserAvatar user={m.user} className="w-6 h-6" />
+                                        <span className="text-gray-200 group-hover:text-white transition-colors">{m.user.username}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
                                         {m.isAdmin && <span className="text-[10px] uppercase font-bold tracking-wider text-primary-400 bg-primary-500/10 px-1.5 py-0.5 rounded">Admin</span>}
@@ -139,60 +150,7 @@ export default async function FamsDetailsPage({ params }: { params: Promise<{ na
 
                 {/* Right Column: History */}
                 <div className="lg:col-span-2">
-                    <div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden shadow-sm">
-                        <div className="p-6 border-b border-dark-800 flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-white">Historique des transactions</h3>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-dark-950 text-gray-400 font-medium text-xs uppercase tracking-wider">
-                                    <tr>
-                                        <th className="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4">Description</th>
-                                        <th className="px-6 py-4">Auteur</th>
-                                        <th className="px-6 py-4 text-right">Montant</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-dark-800">
-                                    {famsTransactions.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                                                Aucune transaction récente
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        famsTransactions.map(tx => {
-                                            const isPersonalSource = tx.walletSource === 'PERSONAL';
-                                            const displayAmount = isPersonalSource ? -tx.amount : tx.amount;
-                                            const isPositive = displayAmount > 0;
-
-                                            // Check for cancellation
-                                            const isCancelled = tx.status === "CANCELLED";
-                                            const displayDescription = tx.description || tx.type;
-                                            const finalDescription = isCancelled ? `${displayDescription} (Annulé)` : displayDescription;
-
-                                            return (
-                                                <tr key={tx.id} className={`hover:bg-dark-800/50 transition-colors group ${isCancelled ? 'opacity-50 grayscale' : ''}`}>
-                                                    <td className="px-6 py-4 text-gray-500 group-hover:text-gray-400 whitespace-nowrap">
-                                                        {new Date(tx.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                                                    </td>
-                                                    <td className={`px-6 py-4 text-gray-300 group-hover:text-white font-medium ${isCancelled ? 'line-through' : ''}`}>
-                                                        {finalDescription}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-gray-400">
-                                                        {tx.issuer.username}
-                                                    </td>
-                                                    <td className={`px-6 py-4 text-right font-mono font-bold ${isPositive ? 'text-green-500' : 'text-red-500'} ${isCancelled ? 'line-through decoration-current' : ''}`}>
-                                                        {isPositive ? '+' : ''}{(displayAmount / 100).toFixed(2)} €
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <FamsTransactionTable transactions={famsTransactions} />
                 </div>
             </div>
         </div>
