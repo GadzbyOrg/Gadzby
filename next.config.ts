@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
 			bodySizeLimit: "50mb",
 		}
 	},
+	images: {
+		dangerouslyAllowSVG: true,
+	},
 };
 
 export default withSentryConfig(nextConfig, {
