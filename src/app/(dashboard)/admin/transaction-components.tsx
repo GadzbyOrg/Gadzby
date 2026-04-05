@@ -46,26 +46,24 @@ function DateRangeFilter() {
     };
 
     return (
-        <div className="flex items-center gap-2 w-full">
+        <div className="flex items-center gap-2 flex-1">
             <div className="relative flex-1">
-                <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                <input 
+                <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3.5 h-3.5 pointer-events-none" />
+                <input
                     type="date"
-                    className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
+                    className="h-10 w-full rounded-lg border border-dark-700 bg-dark-950 pl-9 pr-3 text-sm text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-600 focus-visible:border-primary-600 [color-scheme:dark]"
                     value={searchParams.get("startDate") || ""}
                     onChange={(e) => handleDateChange("startDate", e.target.value)}
-                    placeholder="Date début"
                 />
             </div>
-            <span className="text-gray-500 shrink-0">-</span>
+            <span className="text-gray-600 text-xs shrink-0">→</span>
             <div className="relative flex-1">
-                 <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                <input 
+                <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3.5 h-3.5 pointer-events-none" />
+                <input
                     type="date"
-                    className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
+                    className="h-10 w-full rounded-lg border border-dark-700 bg-dark-950 pl-9 pr-3 text-sm text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-600 focus-visible:border-primary-600 [color-scheme:dark]"
                     value={searchParams.get("endDate") || ""}
                     onChange={(e) => handleDateChange("endDate", e.target.value)}
-                    placeholder="Date fin"
                 />
             </div>
         </div>
@@ -76,6 +74,7 @@ export function TransactionToolbar() {
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
 	const { replace } = useRouter();
+	const [filtersOpen, setFiltersOpen] = useState(false);
 
 	const handleSearch = useDebouncedCallback((term: string) => {
 		const params = new URLSearchParams(searchParams);
@@ -84,7 +83,7 @@ export function TransactionToolbar() {
 		} else {
 			params.delete("search");
 		}
-		params.set("page", "1"); // Reset page on search
+		params.set("page", "1");
 		replace(`${pathname}?${params.toString()}`);
 	}, 300);
 
@@ -105,62 +104,82 @@ export function TransactionToolbar() {
 		replace(`${pathname}?${params.toString()}`);
 	};
 
-	return (
-		<div className="flex flex-col gap-3 mb-6">
-            <div className="flex flex-col md:flex-row gap-3">
-                <div className="relative flex-1">
-                    <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
-                    <input
-                        type="text"
-                        placeholder="Rechercher (description, montant)..."
-                        className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-10 pr-4 py-2 rounded-lg focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-sm"
-                        defaultValue={searchParams.get("search")?.toString()}
-                        onChange={(e) => handleSearch(e.target.value)}
-                    />
-                </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                    <div className="flex-1 md:flex-none">
-                        <Select
-                            defaultValue={searchParams.get("type")?.toString() || "ALL"}
-                            onValueChange={handleTypeFilter}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ALL">Tous les types</SelectItem>
-                                <SelectItem value="PURCHASE">Achats</SelectItem>
-                                <SelectItem value="TOPUP">Rechargement</SelectItem>
-                                <SelectItem value="TRANSFER">Virements</SelectItem>
-                                <SelectItem value="REFUND">Remboursements</SelectItem>
-                                <SelectItem value="DEPOSIT">Pénalité</SelectItem>
-                                <SelectItem value="ADJUSTMENT">Ajustements</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+	const activeFilterCount = [
+		searchParams.get("type") && searchParams.get("type") !== "ALL",
+		searchParams.get("sort") && searchParams.get("sort") !== "DATE_DESC",
+		searchParams.get("startDate"),
+		searchParams.get("endDate"),
+	].filter(Boolean).length;
 
-                    <div className="flex-1 md:flex-none">
-                        <Select
-                            defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
-                            onValueChange={handleSort}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="DATE_DESC">Date (Réc.)</SelectItem>
-                                <SelectItem value="DATE_ASC">Date (Anc.)</SelectItem>
-                                <SelectItem value="AMOUNT_DESC">Montant (Décr.)</SelectItem>
-                                <SelectItem value="AMOUNT_ASC">Montant (Crois.)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-            </div>
-            {/* New Row for Date Filter */}
-            <div className="flex items-center gap-2 w-full">
-                 <DateRangeFilter />
-            </div>
+	return (
+		<div className="flex flex-col gap-2 mb-6">
+			{/* Row 1: Search + mobile filter toggle */}
+			<div className="flex gap-2">
+				<div className="relative flex-1">
+					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3.5 h-3.5 pointer-events-none" />
+					<input
+						type="text"
+						placeholder="Rechercher..."
+						className="h-10 w-full rounded-lg border border-dark-700 bg-dark-950 pl-9 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-600 focus-visible:border-primary-600"
+						defaultValue={searchParams.get("search")?.toString()}
+						onChange={(e) => handleSearch(e.target.value)}
+					/>
+				</div>
+				<button
+					type="button"
+					onClick={() => setFiltersOpen((o) => !o)}
+					className="md:hidden relative h-10 px-3 rounded-lg border border-dark-700 bg-dark-950 text-gray-400 hover:text-white hover:border-dark-600 transition-colors shrink-0"
+				>
+					<IconFilter size={16} />
+					{activeFilterCount > 0 && (
+						<span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center">
+							{activeFilterCount}
+						</span>
+					)}
+				</button>
+			</div>
+
+			{/* Row 2: Filters — always visible on desktop, collapsible on mobile */}
+			<div className={`flex-col gap-2 md:flex ${filtersOpen ? "flex" : "hidden"}`}>
+				<div className="flex gap-2">
+					<div className="flex-1 md:w-44">
+						<Select
+							defaultValue={searchParams.get("type")?.toString() || "ALL"}
+							onValueChange={handleTypeFilter}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="ALL">Tous les types</SelectItem>
+								<SelectItem value="PURCHASE">Achats</SelectItem>
+								<SelectItem value="TOPUP">Rechargements</SelectItem>
+								<SelectItem value="TRANSFER">Virements</SelectItem>
+								<SelectItem value="REFUND">Remboursements</SelectItem>
+								<SelectItem value="DEPOSIT">Pénalités</SelectItem>
+								<SelectItem value="ADJUSTMENT">Ajustements</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="flex-1 md:w-44">
+						<Select
+							defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
+							onValueChange={handleSort}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="DATE_DESC">Date (récent)</SelectItem>
+								<SelectItem value="DATE_ASC">Date (ancien)</SelectItem>
+								<SelectItem value="AMOUNT_DESC">Montant (décr.)</SelectItem>
+								<SelectItem value="AMOUNT_ASC">Montant (crois.)</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+				</div>
+				<DateRangeFilter />
+			</div>
 		</div>
 	);
 }
