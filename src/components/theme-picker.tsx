@@ -33,24 +33,24 @@ export function ThemePicker() {
           className={cn(
             "flex flex-col items-center gap-2 rounded-xl border p-3 transition-all cursor-pointer",
             activeKey === theme.key
-              ? "border-primary-500 bg-primary-500/10"
-              : "border-dark-800 hover:border-dark-700"
+              ? "border-accent-500 bg-accent-500/10"
+              : "border-border hover:border-border"
           )}
         >
-          {/* Mini preview: sidebar strip + page bg + accent dot */}
-          <div className="flex h-10 w-full overflow-hidden rounded-md">
-            <div className="w-1/3 shrink-0" style={{ backgroundColor: theme.sidebar }} />
-            <div
-              className="flex flex-1 items-end justify-center pb-1"
-              style={{ backgroundColor: theme.bg }}
-            >
-              <div
-                className="h-3 w-3 rounded-full"
-                style={{ backgroundColor: theme.accent }}
-              />
+          {/* Mini preview */}
+          <div className="flex h-12 w-full overflow-hidden rounded-lg" style={{ backgroundColor: theme.darkBg }}>
+            {/* Sidebar strip */}
+            <div className="w-1/4 shrink-0" style={{ backgroundColor: theme.darkSidebar }} />
+            {/* Content area */}
+            <div className="flex flex-1 flex-col gap-1 p-1.5">
+              {/* Accent bar */}
+              <div className="h-1 w-full rounded-full" style={{ backgroundColor: theme.accent }} />
+              {/* Fake card rows */}
+              <div className="h-1 w-3/4 rounded-full opacity-30" style={{ backgroundColor: theme.accent }} />
+              <div className="h-1 w-1/2 rounded-full opacity-20" style={{ backgroundColor: theme.accent }} />
             </div>
           </div>
-          <span className="text-xs font-medium text-gray-400">{theme.name}</span>
+          <span className="text-xs font-medium text-fg-muted">{theme.name}</span>
         </button>
       ))}
     </div>
