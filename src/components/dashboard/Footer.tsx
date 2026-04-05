@@ -1,10 +1,14 @@
-import { IconBrandGithub, IconBug, IconCode, IconMail, IconPalette } from "@tabler/icons-react";
+"use client";
+
+import { IconBrandGithub, IconBrandWhatsapp, IconBug, IconCode, IconMail, IconPalette } from "@tabler/icons-react";
 import Link from "next/link";
 import Script from "next/script";
-import React from "react";
+import React, { useState } from "react";
 import packageJson from "../../../package.json";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function Footer() {
+	const [contactOpen, setContactOpen] = useState(false);
 	return (
 		<footer className="w-full border-t border-dark-800 bg-dark-950 py-6 mt-auto">
 			<div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 md:flex-row md:px-8">
@@ -50,19 +54,52 @@ export function Footer() {
 						<IconBrandGithub size={16} />
 						<span>GitHub</span>
 					</Link>
-					<Link
-						href="mailto:louis.chabanon@gadz.org"
-						className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
-					>
-						<IconMail size={16} />
-						<span>Contact</span>
-					</Link>
+					<Dialog open={contactOpen} onOpenChange={setContactOpen}>
+						<DialogTrigger asChild>
+							<button className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400">
+								<IconMail size={16} />
+								<span>Contact</span>
+							</button>
+						</DialogTrigger>
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>Comment entrer en contact ?</DialogTitle>
+								<DialogDescription>
+									Choisissez votre méthode préférée pour nous joindre.
+								</DialogDescription>
+							</DialogHeader>
+							<div className="flex flex-col gap-3 mt-4">
+								<Link
+									href="mailto:louis.chabanon@gmail.com"
+									className="flex items-center gap-3 rounded-xl border border-dark-800 bg-dark-950 p-4 transition-colors hover:border-primary-500 hover:bg-dark-900 group"
+								>
+									<IconMail className="text-gray-400 group-hover:text-primary-500 transition-colors" size={24} />
+									<div className="flex flex-col">
+										<span className="font-semibold text-white">Email</span>
+										<span className="text-sm text-gray-400">louis.chabanon@gmail.com</span>
+									</div>
+								</Link>
+								<Link
+									href="https://wa.me/33768646581"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center gap-3 rounded-xl border border-dark-800 bg-dark-950 p-4 transition-colors hover:border-green-500 hover:bg-dark-900 group"
+								>
+									<IconBrandWhatsapp className="text-gray-400 group-hover:text-green-500 transition-colors" size={24} />
+									<div className="flex flex-col">
+										<span className="font-semibold text-white">WhatsApp</span>
+										<span className="text-sm text-gray-400">Envoyer un message WhatsApp</span>
+									</div>
+								</Link>
+							</div>
+						</DialogContent>
+					</Dialog>
 					<button
 						data-tally-open="GxD49k"
-						className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
+						className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 !px-3 !py-1.5 !text-xs !font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
 					>
 						<IconBug size={16} />
-						<span>Signaler un bug</span>
+						<span className="!text-xs !font-medium">Signaler un bug</span>
 					</button>
 				</div>
 				<Script id="tally-iframe-resizer-config">
