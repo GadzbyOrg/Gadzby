@@ -1,0 +1,5 @@
+Laetitia Lepage - Pour le logo
+Aurélien Desnues - Pour l'aide à l'hébergement
+Théo le Guilloux-Renaud & IRESAM - Pour l'hébergement des versions tests 
+Les ingénieurs de Google DeepMind - Pour avoir développé Gemini
+La communauté open source - Pour avoir développé le code source ayant permis d'entrainer Gemini
