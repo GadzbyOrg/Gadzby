@@ -12,6 +12,7 @@ import {
 	togglePaymentMethod,
 	updatePaymentMethodConfig,
 } from "@/features/payments/admin";
+import { ErrorDialog } from "@/components/ui/dialog";
 
 interface PaymentMethod {
 	id: string;
@@ -26,6 +27,7 @@ interface PaymentMethod {
 export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	// Local state for form
 	const [fees, setFees] = useState(method.fees);
@@ -55,7 +57,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 				isEnabled: !method.isEnabled,
 			});
 		} catch {
-			alert("Erreur lors de la mise à jour");
+			setErrorMsg("Erreur lors de la mise à jour");
 		} finally {
 			setIsLoading(false);
 		}
@@ -80,7 +82,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 			});
 			setIsEditing(false);
 		} catch {
-			alert("Erreur lors de la sauvegarde");
+			setErrorMsg("Erreur lors de la sauvegarde");
 		} finally {
 			setIsLoading(false);
 		}
@@ -109,6 +111,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 
 	return (
 		<div className="rounded-xl border border-dark-800 bg-dark-900 text-gray-100 shadow-md flex flex-col justify-between h-full">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 			<div className="p-6 flex flex-col gap-4 max-h-[800px] overflow-y-auto custom-scrollbar">
 				{/* Header */}
 				<div className="flex items-start justify-between">

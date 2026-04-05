@@ -115,3 +115,24 @@ export const DialogDescription = React.forwardRef<
   />
 ))
 DialogDescription.displayName = "DialogDescription"
+
+export const ErrorDialog = ({ message, onClose }: { message: string | null; onClose: () => void }) => {
+    return (
+        <Dialog open={!!message} onOpenChange={(o) => !o && onClose()}>
+            <DialogContent className="max-w-sm">
+                <DialogHeader>
+                    <DialogTitle>Erreur</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-gray-300">{message}</p>
+                <DialogFooter>
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-dark-800 hover:bg-dark-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                        OK
+                    </button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};

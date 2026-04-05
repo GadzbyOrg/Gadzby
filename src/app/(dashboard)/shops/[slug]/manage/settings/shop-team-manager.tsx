@@ -7,6 +7,7 @@ import {
 	removeShopMember,
 	updateShopMemberRole,
 } from "@/features/shops/actions";
+import { ErrorDialog } from "@/components/ui/dialog";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 //TODO: Use standard User search instead (/components/user-search)
@@ -49,6 +50,7 @@ export function ShopTeamManager({
 		text: string;
 		type: "success" | "error";
 	} | null>(null);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const handleAddMember = async () => {
 		if (!selectedUser) return;
@@ -72,7 +74,7 @@ export function ShopTeamManager({
 		setIsLoading(true);
 		const res = await removeShopMember(slug, userId);
 		if (res.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		}
 		setIsLoading(false);
 	};
@@ -84,7 +86,7 @@ export function ShopTeamManager({
 		setIsLoading(true);
 		const res = await updateShopMemberRole(slug, userId, newRoleId);
 		if (res.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		}
 		setIsLoading(false);
 	};
@@ -99,6 +101,7 @@ export function ShopTeamManager({
 
 	return (
 		<div className="rounded-2xl bg-dark-900 border border-dark-800 p-6 space-y-8">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 			{/* List Members */}
 			<div className="space-y-4">
 				<h3 className="text-lg font-medium text-white mb-4">

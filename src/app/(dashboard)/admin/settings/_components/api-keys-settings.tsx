@@ -4,6 +4,7 @@ import { IconKey, IconLoader2, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useState, useTransition } from "react";
 
 import { createApiKeyAction, revokeApiKeyAction } from "@/features/api-keys/actions";
+import { ErrorDialog } from "@/components/ui/dialog";
 
 type ApiKeyListProps = {
 	apiKeys: {
@@ -18,6 +19,7 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 	const [isPending, startTransition] = useTransition();
 	const [newKeyName, setNewKeyName] = useState("");
 	const [newRawKey, setNewRawKey] = useState<string | null>(null);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const handleCreate = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -29,7 +31,7 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 		startTransition(async () => {
 			const res = await createApiKeyAction(formData);
 			if (res.error) {
-				alert(res.error);
+				setErrorMsg(res.error);
 			} else if (res.success) {
 				setNewRawKey(res.rawKey!);
 				setNewKeyName("");
@@ -43,13 +45,14 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 		startTransition(async () => {
 			const res = await revokeApiKeyAction({ id });
 			if (res.error) {
-				alert(res.error);
+				setErrorMsg(res.error);
 			}
 		});
 	};
 
 	return (
 		<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 			<div className="mb-6 flex items-center gap-3">
 				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-500/10 text-pink-500">
 					<IconKey size={20} />

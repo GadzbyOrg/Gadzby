@@ -22,6 +22,7 @@ import { useTransition } from "react";
 
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { PromssSelector } from "@/components/promss-selector";
+import { ErrorDialog } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { importUsersBatchAction } from "@/features/users/actions";
 import { toggleUserStatusAction } from "@/features/users/actions";
@@ -236,6 +237,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [viewHistoryUser, setViewHistoryUser] = useState<User | null>(null);
 	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const [isPending, startTransition] = useTransition();
 
@@ -309,7 +311,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 				userId,
 				isAsleep: !currentStatus,
 			});
-			if (res.error) alert(res.error);
+			if (res.error) setErrorMsg(res.error);
 		});
 	};
 
@@ -320,6 +322,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
 	return (
 		<div className="space-y-4">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 			{/* Toolbar */}
 			<div className="flex flex-col md:flex-row items-center gap-4 bg-dark-900 border border-dark-800 p-3 rounded-xl">
 				<div className="relative w-full md:flex-1 md:max-w-sm">

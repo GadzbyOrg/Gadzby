@@ -9,6 +9,7 @@ import {
 import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { TabagnssSelector } from "@/components/tabagnss-selector";
+import { ErrorDialog } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
 	adminUpdateUserAction,
@@ -57,6 +58,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 	const [balanceDisplay, setBalanceDisplay] = useState(
 		(user.balance / 100).toFixed(2)
 	);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (state?.success) {
@@ -74,7 +76,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 				const res = await hardDeleteUserAction({ userId: user.id });
 				if (res.error) {
 					console.error("Error deleting user:", res.error);
-					alert(`Erreur lors de la suppression : ${res.error}`);
+					setErrorMsg(`Erreur lors de la suppression : ${res.error}`);
 				} else {
 					onSuccess();
 				}
@@ -83,6 +85,8 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 	};
 
 	return (
+		<>
+		<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 		<form action={formAction} className="space-y-6">
 			<input type="hidden" name="userId" value={user.id} />
 
@@ -359,5 +363,6 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 				</button>
 			</div>
 		</form>
+		</>
 	);
 }

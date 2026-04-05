@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { initiateTopUp } from "@/features/payments/actions";
 import { cn } from "@/lib/utils";
+import { ErrorDialog } from "@/components/ui/dialog";
 
 type PaymentMethod = {
 	id: string;
@@ -28,6 +29,7 @@ export function TopUpForm({
 	);
 	const [phoneNumber, setPhoneNumber] = useState<string>("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const selectedMethodData = methods.find((m) => m.slug === selectedMethod);
 
@@ -54,7 +56,7 @@ export function TopUpForm({
 		e.preventDefault();
 		if (!selectedMethod || amount <= 0) return;
 		if (showPhoneInput && !phoneNumber) {
-			alert("Veuillez entrer votre numéro de téléphone pour Lydia.");
+			setErrorMsg("Veuillez entrer votre numéro de téléphone pour Lydia.");
 			return;
 		}
 
@@ -66,7 +68,7 @@ export function TopUpForm({
 		});
 
 		if (res.error !== undefined) {
-			alert(res.error || "Une erreur est survenue lors de l'initialisation du paiement.");
+			setErrorMsg(res.error || "Une erreur est survenue lors de l'initialisation du paiement.");
 			setIsLoading(false);
 			return;
 		}
@@ -85,6 +87,7 @@ export function TopUpForm({
 
 	return (
 		<div className="grid gap-8 lg:grid-cols-2">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 			{/* LEFT: Selection */}
 			<div className="space-y-8">
 				{/* Amount Selection */}

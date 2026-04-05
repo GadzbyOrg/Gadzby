@@ -2,14 +2,16 @@
 
 import { IconDownload, IconLoader2 } from "@tabler/icons-react";
 import { useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import * as XLSX from "xlsx";
 
 import { exportShopTransactionsAction } from "@/features/shops/actions";
+import { ErrorDialog } from "@/components/ui/dialog";
 
 export function ShopExportButton({ slug }: { slug: string }) {
 	const searchParams = useSearchParams();
 	const [isExporting, startExport] = useTransition();
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const handleExport = () => {
 		startExport(async () => {
@@ -53,7 +55,7 @@ export function ShopExportButton({ slug }: { slug: string }) {
 			});
 
 			if (res.error) {
-				alert(res.error);
+				setErrorMsg(res.error);
 				return;
 			}
 
@@ -70,17 +72,20 @@ export function ShopExportButton({ slug }: { slug: string }) {
 	};
 
 	return (
-		<button
-			onClick={handleExport}
-			disabled={isExporting}
-			className="flex items-center gap-2 px-3 py-2 bg-dark-800 hover:bg-dark-700 text-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-		>
-			{isExporting ? (
-				<IconLoader2 className="w-4 h-4 animate-spin" />
-			) : (
-				<IconDownload className="w-4 h-4" />
-			)}
-			Export Excel
-		</button>
+		<>
+			<button
+				onClick={handleExport}
+				disabled={isExporting}
+				className="flex items-center gap-2 px-3 py-2 bg-dark-800 hover:bg-dark-700 text-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+			>
+				{isExporting ? (
+					<IconLoader2 className="w-4 h-4 animate-spin" />
+				) : (
+					<IconDownload className="w-4 h-4" />
+				)}
+				Export Excel
+			</button>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }
