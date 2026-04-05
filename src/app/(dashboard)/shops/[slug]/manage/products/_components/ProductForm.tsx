@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation"; // Correct import for App Router
 import { useState } from "react";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createCategory,createProduct, updateProduct } from "@/features/shops/products";
 
 type Category = {
@@ -215,18 +216,16 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         <label htmlFor="unit" className="block text-sm font-medium text-gray-300 mb-1">
                             Unité
                         </label>
-                        <select
-                            name="unit"
-                            id="unit"
-                            required
-                            value={unit}
-                            onChange={(e) => setUnit(e.target.value)}
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                        >
-                            <option value="unit">Unités</option>
-                            <option value="liter">Litres</option>
-                            <option value="kg">Kilos</option>
-                        </select>
+                        <Select name="unit" value={unit} onValueChange={setUnit} required>
+                            <SelectTrigger id="unit">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="unit">Unités</SelectItem>
+                                <SelectItem value="liter">Litres</SelectItem>
+                                <SelectItem value="kg">Kilos</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 
@@ -257,18 +256,16 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         Catégorie
                     </label>
                     <div className="flex gap-2">
-                        <select
-                            name="categoryId"
-                            id="categoryId"
-                            required
-                            defaultValue={product?.categoryId}
-                            className="flex-1 bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                        >
-                            <option value="" disabled>Choisir une catégorie</option>
-                            {localCategories.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                        </select>
+                        <Select name="categoryId" defaultValue={product?.categoryId} required>
+                            <SelectTrigger id="categoryId" className="flex-1">
+                                <SelectValue placeholder="Choisir une catégorie" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {localCategories.map(cat => (
+                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         <button 
                             type="button"
                             onClick={() => setShowNewCatInput(!showNewCatInput)}

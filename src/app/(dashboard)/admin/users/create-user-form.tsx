@@ -4,6 +4,7 @@ import { IconAlertTriangle,IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useActionState, useEffect } from "react";
 
 import { TabagnssSelector } from "@/components/tabagnss-selector";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createUserAction } from "@/features/users/actions";
 
 interface CreateUserFormProps {
@@ -185,21 +186,18 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							>
 								Rôle
 							</label>
-							<select
-								name="roleId"
-								id="roleId"
-								defaultValue="USER"
-								className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
-							>
-								<option value="" disabled>
-									Sélectionner un rôle
-								</option>
+							<Select name="roleId" required>
+							<SelectTrigger id="roleId">
+								<SelectValue placeholder="Sélectionner un rôle" />
+							</SelectTrigger>
+							<SelectContent>
 								{roles.map((role) => (
-									<option key={role.id} value={role.id}>
+									<SelectItem key={role.id} value={role.id}>
 										{role.name}
-									</option>
+									</SelectItem>
 								))}
-							</select>
+							</SelectContent>
+						</Select>
 						</div>
 						<div className="space-y-2">
 							<label

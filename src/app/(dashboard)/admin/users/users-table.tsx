@@ -22,6 +22,7 @@ import { useTransition } from "react";
 
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { PromssSelector } from "@/components/promss-selector";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { importUsersBatchAction } from "@/features/users/actions";
 import { toggleUserStatusAction } from "@/features/users/actions";
 
@@ -257,7 +258,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
     const handlePromssChange = (promss: string) => {
         const params = new URLSearchParams(searchParams);
-        if (promss) {
+        if (promss && promss !== "all") {
             params.set("promss", promss);
         } else {
             params.delete("promss");
@@ -287,7 +288,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
 	const handleRoleFilter = (role: string) => {
 		const params = new URLSearchParams(searchParams);
-		if (role) params.set("role", role);
+		if (role && role !== "all") params.set("role", role);
 		else params.delete("role");
 		params.set("page", "1"); // Reset page
 		router.replace(`${pathname}?${params.toString()}`);
@@ -314,8 +315,8 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
 	const currentSort = searchParams.get("sort");
 	const currentOrder = searchParams.get("order");
-	const currentRole = searchParams.get("role") || "";
-    const currentPromss = searchParams.get("promss") || "";
+	const currentRole = searchParams.get("role") || "all";
+    const currentPromss = searchParams.get("promss") || "all";
 
 	return (
 		<div className="space-y-4">
@@ -339,18 +340,19 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
                         onChange={handlePromssChange}
                     />
 
-					<select
-						value={currentRole}
-						onChange={(e) => handleRoleFilter(e.target.value)}
-						className="w-full sm:w-auto bg-dark-950 border border-dark-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
-					>
-						<option value="">Tous les rôles</option>
-						{roles.map((role) => (
-							<option key={role.id} value={role.id}>
-								{role.name}
-							</option>
-						))}
-					</select>
+					<Select value={currentRole} onValueChange={handleRoleFilter}>
+						<SelectTrigger className="w-full sm:w-auto">
+							<SelectValue placeholder="Tous les rôles" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Tous les rôles</SelectItem>
+							{roles.map((role) => (
+								<SelectItem key={role.id} value={role.id}>
+									{role.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 
 				<div className="w-full md:w-auto flex gap-2 md:ml-auto">

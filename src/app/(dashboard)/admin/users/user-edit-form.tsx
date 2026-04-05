@@ -9,6 +9,7 @@ import {
 import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { TabagnssSelector } from "@/components/tabagnss-selector";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
 	adminUpdateUserAction,
 	hardDeleteUserAction,
@@ -235,21 +236,18 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							>
 								Rôle
 							</label>
-							<select
-								name="roleId"
-								id="roleId"
-								defaultValue={user.roleId || ""}
-								className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
-							>
-								<option value="" disabled>
-									Sélectionner un rôle
-								</option>
+							<Select name="roleId" defaultValue={user.roleId || ""}>
+							<SelectTrigger id="roleId">
+								<SelectValue placeholder="Sélectionner un rôle" />
+							</SelectTrigger>
+							<SelectContent>
 								{roles.map((role) => (
-									<option key={role.id} value={role.id}>
+									<SelectItem key={role.id} value={role.id}>
 										{role.name}
-									</option>
+									</SelectItem>
 								))}
-							</select>
+							</SelectContent>
+						</Select>
 						</div>
 						<div className="space-y-2">
 							<label

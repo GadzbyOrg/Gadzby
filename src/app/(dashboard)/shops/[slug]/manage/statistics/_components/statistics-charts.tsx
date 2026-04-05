@@ -25,6 +25,7 @@ import {
 	getStockProjections,
 } from "@/features/shops/analytics-actions";
 import { formatPrice } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { ProductPerformanceCard, ProductStats } from "./product-performance-card";
 import { StaffActivityCard, StaffStats } from "./staff-activity-card";
@@ -276,18 +277,19 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 				)}
 
 				<div className="w-full sm:w-[200px] shrink-0">
-					<select
-						value={eventIdParam}
-						onChange={(e) => handleEventChange(e.target.value)}
-						className="w-full bg-dark-800 border border-dark-700 text-white text-sm rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 appearance-none cursor-pointer"
-					>
-						<option value="all">Tous les événements</option>
-						{events.map((e) => (
-							<option key={e.id} value={e.id}>
-								{e.name}
-							</option>
-						))}
-					</select>
+					<Select value={eventIdParam} onValueChange={handleEventChange}>
+						<SelectTrigger>
+							<SelectValue placeholder="Tous les événements" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Tous les événements</SelectItem>
+							{events.map((e) => (
+								<SelectItem key={e.id} value={e.id}>
+									{e.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 			</div>
 

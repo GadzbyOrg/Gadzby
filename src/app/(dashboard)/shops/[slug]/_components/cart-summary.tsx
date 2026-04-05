@@ -2,6 +2,7 @@
 
 import { IconLoader2, IconTrash,IconUsers, IconWallet } from "@tabler/icons-react";
 import { useEffect } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Product {
     id: string;
@@ -199,17 +200,18 @@ export function CartSummary({
                     )}
 
                     {paymentSource === "FAMILY" && clientFamss.length > 0 && (
-                        <select
-                            value={selectedFamsId}
-                            onChange={(e) => setSelectedFamsId(e.target.value)}
-                            className="w-full bg-dark-950 border border-dark-700 text-white text-sm rounded-lg px-3 py-2"
-                        >
-                            {clientFamss.map((f: any) => (
-                                <option key={f.id} value={f.id}>
-                                    {f.name} ({(f.balance / 100).toFixed(2)}€)
-                                </option>
-                            ))}
-                        </select>
+                        <Select value={selectedFamsId} onValueChange={setSelectedFamsId}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {clientFamss.map((f: any) => (
+                                    <SelectItem key={f.id} value={f.id}>
+                                        {f.name} ({(f.balance / 100).toFixed(2)}€)
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     )}
 
                     {selectedClient && (

@@ -4,6 +4,7 @@ import { IconLink, IconLoader2,IconUnlink } from '@tabler/icons-react';
 import { useState, useTransition } from 'react';
 
 import { useToast } from "@/components/ui/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { deleteExpenseSplit,getAvailableExpensesAction, linkExpenseToEvent, splitExpense, unlinkExpenseFromEvent } from '@/features/events/actions';
 
 interface Props {
@@ -207,23 +208,26 @@ export function EventExpenses({ event }: Props) {
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-medium text-gray-300">Choisir une dépense</label>
-                                <select
-                                    className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+                                <Select
                                     value={selectedExpenseId}
-                                    onChange={(e) => {
-                                        setSelectedExpenseId(e.target.value);
+                                    onValueChange={(value) => {
+                                        setSelectedExpenseId(value);
                                         // Reset to FULL by default when changing selection
                                         setLinkMode('FULL');
                                         setSplitAmount('');
                                     }}
                                 >
-                                    <option value="">Sélectionner...</option>
-                                    {availableExpenses.map(e => (
-                                        <option key={e.id} value={e.id}>
-                                            {e.description} - {(e.amount / 100).toFixed(2)}€ ({new Date(e.date).toLocaleDateString()})
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Sélectionner..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableExpenses.map(e => (
+                                            <SelectItem key={e.id} value={e.id}>
+                                                {e.description} - {(e.amount / 100).toFixed(2)}€ ({new Date(e.date).toLocaleDateString()})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             {selectedExpenseId && selectedExpense && (

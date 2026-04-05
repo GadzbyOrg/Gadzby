@@ -9,6 +9,7 @@ import {
 import { IconLayoutDashboard } from "@tabler/icons-react";
 import {useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { updateUserAction } from "@/features/users/actions";
 import { cn } from "@/lib/utils";
@@ -32,11 +33,9 @@ function PreferredPathSelector({ defaultValue }: { defaultValue: string | null }
 
     return (
         <div className="flex flex-col gap-3">
-            <select
-                className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-3 pr-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+            <Select
                 value={mode === "custom" ? "custom" : selectValue}
-                onChange={(e) => {
-                    const val = e.target.value;
+                onValueChange={(val) => {
                     if (val === "custom") {
                         setMode("custom");
                         setSelectValue("custom");
@@ -46,13 +45,18 @@ function PreferredPathSelector({ defaultValue }: { defaultValue: string | null }
                     }
                 }}
             >
-                {predefinedPaths.map((p) => (
-                    <option key={p.value} value={p.value}>
-                        {p.label}
-                    </option>
-                ))}
-                <option value="custom">Autre (Lien personnalisé)</option>
-            </select>
+                <SelectTrigger>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {predefinedPaths.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>
+                            {p.label}
+                        </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Autre (Lien personnalisé)</SelectItem>
+                </SelectContent>
+            </Select>
 
             {mode === "custom" && (
                 <div className="relative">

@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function DateRangeFilter() {
     const searchParams = useSearchParams();
@@ -118,39 +119,41 @@ export function TransactionToolbar() {
                     />
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
-                    <div className="relative flex-1 md:flex-none">
-                        <select
-                            className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
-                            onChange={(e) => handleTypeFilter(e.target.value)}
+                    <div className="flex-1 md:flex-none">
+                        <Select
                             defaultValue={searchParams.get("type")?.toString() || "ALL"}
+                            onValueChange={handleTypeFilter}
                         >
-                            <option value="ALL">Tous les types</option>
-                            <option value="PURCHASE">Achats</option>
-                            <option value="TOPUP">Rechargement</option>
-                            <option value="TRANSFER">Virements</option>
-                            <option value="REFUND">Remboursements</option>
-                            <option value="DEPOSIT">Pénalité</option>
-                            <option value="ADJUSTMENT">Ajustements</option>
-                        </select>
-                        <IconFilter className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">Tous les types</SelectItem>
+                                <SelectItem value="PURCHASE">Achats</SelectItem>
+                                <SelectItem value="TOPUP">Rechargement</SelectItem>
+                                <SelectItem value="TRANSFER">Virements</SelectItem>
+                                <SelectItem value="REFUND">Remboursements</SelectItem>
+                                <SelectItem value="DEPOSIT">Pénalité</SelectItem>
+                                <SelectItem value="ADJUSTMENT">Ajustements</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    <div className="relative flex-1 md:flex-none">
-                        <select
-                            className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
-                            onChange={(e) => handleSort(e.target.value)}
+                    <div className="flex-1 md:flex-none">
+                        <Select
                             defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
+                            onValueChange={handleSort}
                         >
-                            <option value="DATE_DESC">Date (Réc.)</option>
-                            <option value="DATE_ASC">Date (Anc.)</option>
-                            <option value="AMOUNT_DESC">Montant (Décr.)</option>
-                            <option value="AMOUNT_ASC">Montant (Crois.)</option>
-                        </select>
-                        {searchParams.get("sort")?.includes("ASC") ? (
-                            <IconSortAscending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                        ) : (
-                            <IconSortDescending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                        )}
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="DATE_DESC">Date (Réc.)</SelectItem>
+                                <SelectItem value="DATE_ASC">Date (Anc.)</SelectItem>
+                                <SelectItem value="AMOUNT_DESC">Montant (Décr.)</SelectItem>
+                                <SelectItem value="AMOUNT_ASC">Montant (Crois.)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>

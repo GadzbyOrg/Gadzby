@@ -8,7 +8,7 @@ import {
 	updateShopMemberRole,
 } from "@/features/shops/actions";
 
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 //TODO: Use standard User search instead (/components/user-search)
 import { UserSearch } from "@/components/user-search";
 
@@ -126,21 +126,22 @@ export function ShopTeamManager({
 							</div>
 
 							<div className="flex items-center gap-4">
-								<select
+								<Select
 									value={getMemberRoleId(member)}
-									onChange={(e) =>
-										handleUpdateRole(member.user.id, e.target.value)
-									}
+									onValueChange={(value) => handleUpdateRole(member.user.id, value)}
 									disabled={isLoading || member.user.id === currentUserId}
-									className="bg-dark-950 border border-dark-700 rounded-lg px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-primary-500"
 								>
-									<option value="" disabled>Inconnu</option>
-									{availableRoles.map(role => (
-										<option key={role.id} value={role.id}>
-											{role.name}
-										</option>
-									))}
-								</select>
+									<SelectTrigger className="w-36">
+										<SelectValue placeholder="Inconnu" />
+									</SelectTrigger>
+									<SelectContent>
+										{availableRoles.map(role => (
+											<SelectItem key={role.id} value={role.id}>
+												{role.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 
 								<button
 									onClick={() => handleRemoveMember(member.user.id)}
@@ -225,17 +226,18 @@ export function ShopTeamManager({
 
 					<div className="flex gap-4">
 						<div className="flex-1">
-							<select
-								value={selectedRoleId}
-								onChange={(e) => setSelectedRoleId(e.target.value)}
-								className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
-							>
-								{availableRoles.map(role => (
-									<option key={role.id} value={role.id}>
-										{role.name}
-									</option>
-								))}
-							</select>
+							<Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+								<SelectTrigger>
+									<SelectValue placeholder="Choisir un rôle" />
+								</SelectTrigger>
+								<SelectContent>
+									{availableRoles.map(role => (
+										<SelectItem key={role.id} value={role.id}>
+											{role.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 						<button
 							onClick={handleAddMember}

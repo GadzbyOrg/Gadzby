@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { UserSearch } from "@/components/user-search";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { topUpUserAction } from "@/features/transactions/actions";
 
 function SubmitButton() {
@@ -77,15 +78,17 @@ export function TopUpUserForm() {
 						<label className="block text-sm font-medium text-gray-200">
 							Moyen de paiement
 						</label>
-						<select
-							name="paymentMethod"
-							className="mt-1 block w-full rounded-lg border-dark-700 bg-dark-950 text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2.5"
-						>
-							<option value="CASH">Espèces</option>
-							<option value="CARD">Carte Bancaire (TPE)</option>
-							<option value="CHECK">Chèque</option>
-							<option value="TRANSFER">Virement</option>
-						</select>
+						<Select name="paymentMethod" defaultValue="CASH">
+							<SelectTrigger className="mt-1">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="CASH">Espèces</SelectItem>
+								<SelectItem value="CARD">Carte Bancaire (TPE)</SelectItem>
+								<SelectItem value="CHECK">Chèque</SelectItem>
+								<SelectItem value="TRANSFER">Virement</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 
 					{state.error && (

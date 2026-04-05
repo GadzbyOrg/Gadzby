@@ -8,6 +8,8 @@ import {
 import { usePathname,useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 export function ShopTransactionToolbar() {
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
@@ -43,22 +45,21 @@ export function ShopTransactionToolbar() {
 				/>
 			</div>
 			<div className="flex gap-2">
-				<div className="relative">
-					<select
-						className="bg-dark-800 border-dark-700 text-gray-200 pl-4 pr-10 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
-						onChange={(e) => handleSort(e.target.value)}
+				<div>
+					<Select
 						defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
+						onValueChange={handleSort}
 					>
-						<option value="DATE_DESC">Date (Récent)</option>
-						<option value="DATE_ASC">Date (Ancien)</option>
-						<option value="AMOUNT_DESC">Montant (Décroissant)</option>
-						<option value="AMOUNT_ASC">Montant (Croissant)</option>
-					</select>
-					{searchParams.get("sort")?.includes("ASC") ? (
-						<IconSortAscending className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-					) : (
-						<IconSortDescending className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-					)}
+						<SelectTrigger>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="DATE_DESC">Date (Récent)</SelectItem>
+							<SelectItem value="DATE_ASC">Date (Ancien)</SelectItem>
+							<SelectItem value="AMOUNT_DESC">Montant (Décroissant)</SelectItem>
+							<SelectItem value="AMOUNT_ASC">Montant (Croissant)</SelectItem>
+						</SelectContent>
+					</Select>
 				</div>
 			</div>
 		</div>
