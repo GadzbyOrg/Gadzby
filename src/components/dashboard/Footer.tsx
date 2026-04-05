@@ -1,5 +1,6 @@
 import { IconBrandGithub, IconBug, IconCode, IconMail, IconPalette } from "@tabler/icons-react";
 import Link from "next/link";
+import Script from "next/script";
 import React from "react";
 import packageJson from "../../../package.json";
 
@@ -56,16 +57,18 @@ export function Footer() {
 						<IconMail size={16} />
 						<span>Contact</span>
 					</Link>
-					<Link
-						href="https://forms.gle/ngwX9tdf2aaa2quw5"
-						target="_blank"
-						rel="noopener noreferrer"
+					<button
+						data-tally-open="GxD49k"
 						className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
 					>
 						<IconBug size={16} />
 						<span>Signaler un bug</span>
-					</Link>
+					</button>
 				</div>
+				<Script id="tally-iframe-resizer-config">
+					{`window.iFrameResize = { warningTimeout: 0 };`}
+				</Script>
+				<Script src="https://tally.so/widgets/embed.js" />
 			</div>
 		</footer>
 	);
