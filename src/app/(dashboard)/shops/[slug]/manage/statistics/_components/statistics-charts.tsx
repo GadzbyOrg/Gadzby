@@ -433,8 +433,8 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 															borderColor: "#374151",
 															borderRadius: "0.5rem",
 														}}
-														formatter={(value?: number) => [
-															`${((value || 0) / 100).toFixed(2)}€`,
+														formatter={(value) => [
+															`${((Number(value) || 0) / 100).toFixed(2)}€`,
 															"",
 														]}
 														labelStyle={{
@@ -513,8 +513,8 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 																borderColor: "#374151",
 																borderRadius: "0.5rem",
 															}}
-															formatter={(value?: number) => [
-																`${((value || 0) / 100).toFixed(2)}€`,
+															formatter={(value) => [
+																`${((Number(value) || 0) / 100).toFixed(2)}€`,
 																"Revenus",
 															]}
 															labelStyle={{
