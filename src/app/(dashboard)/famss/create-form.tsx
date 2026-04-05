@@ -39,15 +39,15 @@ export function CreateFamForm() {
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-end bg-dark-900 p-4 rounded-lg border border-dark-800"
+			className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-end bg-surface-900 p-4 rounded-lg border border-border"
 		>
 			<div className="flex flex-col gap-2 flex-1">
-				<label htmlFor={inputId} className="text-sm font-medium text-gray-400">
+				<label htmlFor={inputId} className="text-sm font-medium text-fg-muted">
 					Créer une nouvelle Fam&apos;ss
 				</label>
 				<input
 					id={inputId}
-					className="border border-dark-700 rounded px-3 py-2.5 sm:py-2 bg-dark-950 text-white focus:border-primary-500 outline-none transition-colors w-full"
+					className="border border-border rounded px-3 py-2.5 sm:py-2 bg-surface-950 text-fg focus:border-accent-500 outline-none transition-colors w-full"
 					placeholder="Nom de la Fam'ss..."
 					value={name}
 					onChange={(e) => setName(e.target.value)}
@@ -56,7 +56,7 @@ export function CreateFamForm() {
 			</div>
 			<button
 				disabled={loading}
-				className="w-full sm:w-auto bg-primary-600 text-white px-4 py-2.5 sm:py-2 rounded font-medium hover:bg-primary-500 disabled:opacity-50 transition-colors cursor-pointer"
+				className="w-full sm:w-auto bg-accent-600 text-fg px-4 py-2.5 sm:py-2 rounded font-medium hover:bg-accent-500 disabled:opacity-50 transition-colors cursor-pointer"
 			>
 				{loading ? "..." : "Créer"}
 			</button>

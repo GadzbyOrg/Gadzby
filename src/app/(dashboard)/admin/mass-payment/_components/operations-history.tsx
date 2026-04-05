@@ -4,7 +4,7 @@ import { IconAlertTriangle, IconBan, IconCheck, IconLoader2, IconRefresh } from 
 import { useEffect, useState } from "react";
 
 import { useToast } from "@/components/ui/use-toast";
-import { cancelMassOperationAction,getMassOperationsHistoryAction } from "@/features/transactions/mass-payment-actions";
+import { cancelMassOperationAction, getMassOperationsHistoryAction } from "@/features/transactions/mass-payment-actions";
 
 export function OperationsHistoryView() {
     const { toast } = useToast();
@@ -32,7 +32,7 @@ export function OperationsHistoryView() {
 
     const handleCancel = async (groupId: string) => {
         if (!confirm("Voulez-vous vraiment ANNULER cette opération ? Toutes les transactions seront inversées.")) return;
-        
+
         setProcessingId(groupId);
         try {
             const res = await cancelMassOperationAction({ groupId });
@@ -40,33 +40,33 @@ export function OperationsHistoryView() {
                 toast({ title: "Succès", description: res.success });
                 loadHistory(); // Reload
             } else {
-                 toast({ variant: "destructive", title: "Erreur", description: res?.error || "Impossible d'annuler" });
+                toast({ variant: "destructive", title: "Erreur", description: res?.error || "Impossible d'annuler" });
             }
         } catch (e) {
-             console.error(e);
-             toast({ variant: "destructive", title: "Erreur", description: "Erreur inconnue" });
+            console.error(e);
+            toast({ variant: "destructive", title: "Erreur", description: "Erreur inconnue" });
         } finally {
             setProcessingId(null);
         }
     };
 
     if (isLoading) {
-        return <div className="p-12 flex justify-center"><IconLoader2 className="animate-spin text-primary-500" size={32} /></div>;
+        return <div className="p-12 flex justify-center"><IconLoader2 className="animate-spin text-accent-500" size={32} /></div>;
     }
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center bg-dark-900 p-4 rounded-xl border border-dark-800">
-                <h2 className="text-lg font-bold text-white">Dernières opérations</h2>
-                <button onClick={loadHistory} className="p-2 hover:bg-dark-800 rounded-lg text-gray-400 hover:text-white transition-colors">
+            <div className="flex justify-between items-center bg-surface-900 p-4 rounded-xl border border-border">
+                <h2 className="text-lg font-bold text-fg">Dernières opérations</h2>
+                <button onClick={loadHistory} className="p-2 hover:bg-elevated rounded-lg text-fg-muted hover:text-fg transition-colors">
                     <IconRefresh size={20} />
                 </button>
             </div>
 
             {/* Desktop Table */}
-            <div className="hidden sm:block bg-dark-900 border border-dark-800 rounded-xl overflow-hidden overflow-x-auto">
-                <table className="w-full text-left text-sm text-gray-400 min-w-[800px]">
-                    <thead className="bg-dark-800 text-xs uppercase text-gray-300">
+            <div className="hidden sm:block bg-surface-900 border border-border rounded-xl overflow-hidden overflow-x-auto">
+                <table className="w-full text-left text-sm text-fg-muted min-w-[800px]">
+                    <thead className="bg-elevated text-xs uppercase text-fg">
                         <tr>
                             <th className="px-6 py-4">Date</th>
                             <th className="px-6 py-4">Description</th>
@@ -76,19 +76,19 @@ export function OperationsHistoryView() {
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-dark-800">
+                    <tbody className="divide-y divide-border">
                         {history.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500 italic">
+                                <td colSpan={6} className="px-6 py-12 text-center text-fg-subtle italic">
                                     Aucune opération trouvée
                                 </td>
                             </tr>
                         ) : (
                             history.map((op) => {
                                 return (
-                                    <tr key={op.groupId} className={`hover:bg-dark-800/50 transition-colors ${op.status === 'CANCELLED' ? 'opacity-50 grayscale' : ''}`}>
-                                        <td className="px-6 py-4 text-white">
-                                             {new Intl.DateTimeFormat("fr-FR", {
+                                    <tr key={op.groupId} className={`hover:bg-elevated/50 transition-colors ${op.status === 'CANCELLED' ? 'opacity-50 grayscale' : ''}`}>
+                                        <td className="px-6 py-4 text-fg">
+                                            {new Intl.DateTimeFormat("fr-FR", {
                                                 day: "2-digit",
                                                 month: "short",
                                                 year: "numeric",
@@ -102,10 +102,10 @@ export function OperationsHistoryView() {
                                         <td className="px-6 py-4 text-center font-mono">
                                             {op.count}
                                         </td>
-                                        <td className="px-6 py-4 text-right font-mono font-medium text-white">
-                                            {((Math.abs(op.totalAmount || 0)/100).toFixed(2))} €
+                                        <td className="px-6 py-4 text-right font-mono font-medium text-fg">
+                                            {((Math.abs(op.totalAmount || 0) / 100).toFixed(2))} €
                                         </td>
-                                         <td className="px-6 py-4 text-center">
+                                        <td className="px-6 py-4 text-center">
                                             {op.status === 'CANCELLED' ? (
                                                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/10 text-red-500 text-xs font-bold border border-red-500/20">
                                                     <IconBan size={12} /> ANNULÉ
@@ -118,7 +118,7 @@ export function OperationsHistoryView() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             {op.status !== 'CANCELLED' && (
-                                                <button 
+                                                <button
                                                     onClick={() => handleCancel(op.groupId)}
                                                     disabled={!!processingId}
                                                     className="text-red-400 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded transition-all text-xs font-medium border border-red-500/30 hover:border-red-400 flex items-center gap-2 ml-auto"
@@ -138,32 +138,32 @@ export function OperationsHistoryView() {
 
             {/* Mobile Cards */}
             <div className="sm:hidden space-y-4">
-                 {history.length === 0 ? (
-                    <div className="bg-dark-900 border border-dark-800 rounded-xl p-8 text-center text-gray-500 italic">
+                {history.length === 0 ? (
+                    <div className="bg-surface-900 border border-border rounded-xl p-8 text-center text-fg-subtle italic">
                         Aucune opération trouvée
                     </div>
                 ) : (
                     history.map((op) => (
-                        <div key={op.groupId} className={`bg-dark-900 border border-dark-800 rounded-xl p-5 flex flex-col ${op.status === 'CANCELLED' ? 'opacity-50 grayscale' : ''}`}>
+                        <div key={op.groupId} className={`bg-surface-900 border border-border rounded-xl p-5 flex flex-col ${op.status === 'CANCELLED' ? 'opacity-50 grayscale' : ''}`}>
                             <div className="flex justify-between items-center mb-3">
-                                <div className="text-xs font-medium text-gray-500 flex items-center gap-2">
-                                     <span className="text-gray-400">
+                                <div className="text-xs font-medium text-fg-subtle flex items-center gap-2">
+                                    <span className="text-fg-muted">
                                         {new Intl.DateTimeFormat("fr-FR", {
                                             day: "2-digit",
                                             month: "short",
                                             year: "numeric",
                                         }).format(new Date(op.date))}
-                                     </span>
-                                     <span className="w-1 h-1 rounded-full bg-dark-700"></span>
-                                     <span>
+                                    </span>
+                                    <span className="w-1 h-1 rounded-full bg-elevated"></span>
+                                    <span>
                                         {new Intl.DateTimeFormat("fr-FR", {
                                             hour: "2-digit",
                                             minute: "2-digit",
                                         }).format(new Date(op.date))}
-                                     </span>
+                                    </span>
                                 </div>
                                 <div>
-                                     {op.status === 'CANCELLED' ? (
+                                    {op.status === 'CANCELLED' ? (
                                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold border border-red-500/20 uppercase tracking-wider">
                                             <IconBan size={10} stroke={2.5} /> Annulé
                                         </span>
@@ -174,24 +174,24 @@ export function OperationsHistoryView() {
                                     )}
                                 </div>
                             </div>
-                            
-                            <h3 className="text-lg font-bold text-white mb-4 leading-snug">
+
+                            <h3 className="text-lg font-bold text-fg mb-4 leading-snug">
                                 {op.description}
                             </h3>
 
                             <div className="grid grid-cols-2 gap-3 mb-4">
-                                <div className="bg-dark-950/50 rounded-lg p-3 border border-dark-800/50">
-                                    <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Utilisateurs</div>
-                                    <div className="text-lg font-medium text-gray-300">{op.count}</div>
+                                <div className="bg-surface-950/50 rounded-lg p-3 border border-border/50">
+                                    <div className="text-[10px] uppercase tracking-wider text-fg-subtle font-bold mb-1">Utilisateurs</div>
+                                    <div className="text-lg font-medium text-fg">{op.count}</div>
                                 </div>
-                                <div className="bg-dark-950/50 rounded-lg p-3 border border-dark-800/50">
-                                    <div className="text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1">Montant Total</div>
-                                    <div className="text-lg font-mono font-bold text-white tracking-tight">{((Math.abs(op.totalAmount || 0)/100).toFixed(2))} €</div>
+                                <div className="bg-surface-950/50 rounded-lg p-3 border border-border/50">
+                                    <div className="text-[10px] uppercase tracking-wider text-fg-subtle font-bold mb-1">Montant Total</div>
+                                    <div className="text-lg font-mono font-bold text-fg tracking-tight">{((Math.abs(op.totalAmount || 0) / 100).toFixed(2))} €</div>
                                 </div>
                             </div>
 
-                             {op.status !== 'CANCELLED' && (
-                                <button 
+                            {op.status !== 'CANCELLED' && (
+                                <button
                                     onClick={() => handleCancel(op.groupId)}
                                     disabled={!!processingId}
                                     className="w-full py-3 rounded-xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-500 hover:text-red-400 transition-all text-sm font-semibold flex items-center justify-center gap-2"

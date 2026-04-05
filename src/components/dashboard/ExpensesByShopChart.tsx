@@ -84,7 +84,7 @@ function CenterLabel({
 export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 	if (data.length === 0) {
 		return (
-			<div className="flex h-full flex-col items-center justify-center gap-2 text-gray-500">
+			<div className="flex h-full flex-col items-center justify-center gap-2 text-fg-subtle">
 				<svg
 					width="40"
 					height="40"

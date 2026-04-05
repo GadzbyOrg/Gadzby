@@ -1,4 +1,3 @@
-import "@mantine/core/styles.css";
 import "./globals.css";
 
 import type { Metadata, Viewport } from "next";
@@ -32,7 +31,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<html lang="fr">
+		<html lang="fr" data-mode="dark">
 			<head>
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
 				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

@@ -29,7 +29,7 @@ function InputLabel({
 	return (
 		<label
 			htmlFor={htmlFor}
-			className="block text-sm font-medium leading-6 text-gray-300"
+			className="block text-sm font-medium leading-6 text-fg"
 		>
 			{children}
 		</label>
@@ -44,9 +44,9 @@ function SubmitButton() {
 			type="submit"
 			disabled={pending}
 			className={cn(
-				"flex w-full justify-center rounded-lg bg-primary-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm transition-all",
-				"hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
-				"disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-600"
+				"flex w-full justify-center rounded-lg bg-accent-600 px-3 py-2.5 text-sm font-semibold leading-6 text-fg shadow-sm transition-all",
+				"hover:bg-accent-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600",
+				"disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-accent-600"
 			)}
 		>
 			{pending ? (
@@ -64,13 +64,13 @@ function SubmitButton() {
 // --- Login Form Component ---
 
 export function LoginForm({ campusName, motd }: { campusName: string; motd?: string | null }) {
-	 
+
 	const [state, action] = useActionState(loginAction, null as any);
 	const [showPassword, setShowPassword] = useState(false);
 	const [randomNumss] = useState(() => numss_list[Math.floor(Math.random() * numss_list.length)]);
 
 	return (
-		<div className="flex min-h-screen flex-col justify-center bg-dark-950 px-6 py-12 lg:px-8">
+		<div className="flex min-h-screen flex-col justify-center bg-surface-950 px-6 py-12 lg:px-8">
 			{/* En-tête avec Logo */}
 			<div className="sm:mx-auto sm:w-full sm:max-w-sm">
 				<div className="mx-auto flex h-24 w-24 items-center justify-center">
@@ -82,25 +82,25 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 						className="h-full w-full object-contain"
 					/>
 				</div>
-				<h2 className="mt-6 text-center text-3xl font-bold leading-9 tracking-tight text-white">
+				<h2 className="mt-6 text-center text-3xl font-bold leading-9 tracking-tight text-fg">
 					Gadzby{" "}
 					{campusName && (
 						<span
-							className="text-primary-400 font-semibold italic"
+							className="text-accent-400 font-semibold italic"
 							style={{ fontFamily: "'Playfair Display', serif" }}
 						>
 							{campusName}
 						</span>
 					)}
 				</h2>
-				<p className="mt-2 text-center text-sm text-gray-500">
+				<p className="mt-2 text-center text-sm text-fg-subtle">
 					Gestion centralisée des boquettes
 				</p>
 			</div>
 
 			<div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
 				{/* Carte de Connexion */}
-				<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-8 shadow-2xl backdrop-blur-sm">
+				<div className="rounded-xl border border-border bg-surface-900/50 p-8 shadow-2xl backdrop-blur-sm">
 					<form action={action} className="space-y-6">
 						{/* Affichage des Erreurs */}
 						{state?.error && (
@@ -129,11 +129,11 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 							<div className="relative mt-2">
 								<UserSearch
 									placeholder={`${randomNumss} ou Rechercher...`}
-									onSelect={() => {}} // No need to set external state since we use the input's name
-                                    name="username"
-                                    clearOnSelect={false}
-                                    className="max-w-none"
-                                    inputClassName="bg-dark-950 border-0 ring-1 ring-inset ring-dark-700 focus:ring-2 focus:ring-inset focus:ring-primary-600 rounded-md py-2.5 pl-10 h-[46px]" // Styling to match original input
+									onSelect={() => { }} // No need to set external state since we use the input's name
+									name="username"
+									clearOnSelect={false}
+									className="max-w-none"
+									inputClassName="bg-surface-950 border-0 ring-1 ring-inset ring-border focus:ring-2 focus:ring-inset focus:ring-accent-600 rounded-md py-2.5 pl-10 h-[46px]" // Styling to match original input
 								/>
 							</div>
 						</div>
@@ -145,7 +145,7 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 								<div className="text-sm">
 									<a
 										href="/forgot-password"
-										className="font-semibold text-primary-400 hover:text-primary-300"
+										className="font-semibold text-accent-400 hover:text-accent-300"
 									>
 										Mot de passe oublié ?
 									</a>
@@ -154,7 +154,7 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 							<div className="relative mt-2">
 								<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 									<IconLock
-										className="h-5 w-5 text-gray-500"
+										className="h-5 w-5 text-fg-subtle"
 										aria-hidden="true"
 									/>
 								</div>
@@ -164,12 +164,12 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 									type={showPassword ? "text" : "password"}
 									required
 									placeholder="••••••••"
-									className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 pr-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 transition-all"
+									className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 pr-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6 transition-all"
 								/>
 								<button
 									type="button"
 									onClick={() => setShowPassword(!showPassword)}
-									className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-300"
+									className="absolute inset-y-0 right-0 flex items-center pr-3 text-fg-subtle hover:text-fg"
 								>
 									{showPassword ? (
 										<IconEyeOff size={18} />
@@ -188,13 +188,13 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 				</div>
 
 				{/* Footer Text */}
-				<p className="mt-10 text-center text-sm text-gray-500">
+				<p className="mt-10 text-center text-sm text-fg-subtle">
 					{motd ?? (
 						<>
 							Pas encore de compte ?{" "}
 							<a
 								href="#"
-								className="font-semibold leading-6 text-primary-400 hover:text-primary-300 transition-colors"
+								className="font-semibold leading-6 text-accent-400 hover:text-accent-300 transition-colors"
 							>
 								Contacte ton Zifoy&apos;ss
 							</a>

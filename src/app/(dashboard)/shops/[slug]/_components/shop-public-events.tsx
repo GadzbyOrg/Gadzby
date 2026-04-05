@@ -86,30 +86,30 @@ export function ShopPublicEvents({ events }: Props) {
 	if (events.length === 0) return null;
 
 	return (
-		<div className="mb-8 p-6 bg-dark-900 border border-dark-800 rounded-2xl">
-			<h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-				<IconCalendarPlus className="text-primary-500" />
+		<div className="mb-8 p-6 bg-surface-900 border border-border rounded-2xl">
+			<h2 className="text-xl font-bold text-fg mb-4 flex items-center gap-2">
+				<IconCalendarPlus className="text-accent-500" />
 				Événements à venir
 			</h2>
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				{events.map((event) => (
 					<div
 						key={event.id}
-						className="flex flex-col gap-3 p-4 rounded-xl bg-dark-800 border border-dark-700"
+						className="flex flex-col gap-3 p-4 rounded-xl bg-elevated border border-border"
 					>
 						<div>
 							<div className="flex justify-between items-start">
-								<h3 className="font-bold text-white">{event.name}</h3>
+								<h3 className="font-bold text-fg">{event.name}</h3>
 								{event.isJoined && (
 									<span className="px-2 py-0.5 rounded text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500/30 flex items-center gap-1">
 										<IconCheck size={12} /> Inscrit
 									</span>
 								)}
 							</div>
-							<p className="text-sm text-gray-400 mt-1 line-clamp-2">
+							<p className="text-sm text-fg-muted mt-1 line-clamp-2">
 								{event.description}
 							</p>
-							<div className="text-xs text-gray-500 mt-2">
+							<div className="text-xs text-fg-subtle mt-2">
 								{new Date(event.startDate).toLocaleDateString()} •{" "}
 								{event.type === "SHARED_COST" ? "Coûts Partagés" : "Commercial"}
 							</div>
@@ -133,7 +133,7 @@ export function ShopPublicEvents({ events }: Props) {
 								<button
 									onClick={() => handleJoin(event.id)}
 									disabled={isPending}
-									className="w-full py-2 rounded-lg bg-primary-600 text-white text-sm font-bold hover:bg-primary-500 transition-colors flex items-center justify-center gap-2"
+									className="w-full py-2 rounded-lg bg-accent-600 text-fg text-sm font-bold hover:bg-accent-500 transition-colors flex items-center justify-center gap-2"
 								>
 									{isPending ? (
 										<IconLoader2 className="animate-spin" size={16} />

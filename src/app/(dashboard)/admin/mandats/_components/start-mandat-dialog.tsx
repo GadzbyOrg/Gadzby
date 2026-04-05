@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2,IconPlayerPlay } from "@tabler/icons-react";
+import { IconLoader2, IconPlayerPlay } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { confirmStartGlobalMandatAction,getPreStartMandatDetailsAction } from "@/features/admin/actions/mandats";
+import { confirmStartGlobalMandatAction, getPreStartMandatDetailsAction } from "@/features/admin/actions/mandats";
 import { formatPrice } from "@/lib/utils";
 
 interface PreStartShop {
@@ -82,7 +82,7 @@ export function StartMandatDialog() {
                     Commencer un mandat
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl bg-dark-900 border-dark-800">
+            <DialogContent className="max-w-3xl bg-surface-900 border-border">
                 <DialogHeader>
                     <DialogTitle>Démarrer un nouveau mandat</DialogTitle>
                     <DialogDescription>
@@ -93,14 +93,14 @@ export function StartMandatDialog() {
 
                 {loading ? (
                     <div className="flex justify-center py-8">
-                        <IconLoader2 className="animate-spin text-primary-500" size={32} />
+                        <IconLoader2 className="animate-spin text-accent-500" size={32} />
                     </div>
                 ) : (
                     <div className="space-y-4 py-4">
-                        <div className="max-h-[50vh] overflow-y-auto rounded-md border border-dark-800">
+                        <div className="max-h-[50vh] overflow-y-auto rounded-md border border-border">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="border-dark-800 hover:bg-transparent">
+                                    <TableRow className="border-border hover:bg-transparent">
                                         <TableHead>Magasin</TableHead>
                                         <TableHead className="text-right">Valeur Stock (Calculée)</TableHead>
                                         <TableHead className="text-right w-[150px]">Ajustement (€)</TableHead>
@@ -108,9 +108,9 @@ export function StartMandatDialog() {
                                 </TableHeader>
                                 <TableBody>
                                     {shopsData.map((shop) => (
-                                        <TableRow key={shop.shopId} className="border-dark-800 hover:bg-dark-800/50">
-                                            <TableCell className="font-medium text-gray-200">{shop.shopName}</TableCell>
-                                            <TableCell className="text-right text-gray-400">
+                                        <TableRow key={shop.shopId} className="border-border hover:bg-elevated/50">
+                                            <TableCell className="font-medium text-fg">{shop.shopName}</TableCell>
+                                            <TableCell className="text-right text-fg-muted">
                                                 {formatPrice(shop.initialStockValue)}
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -128,9 +128,9 @@ export function StartMandatDialog() {
                             </Table>
                         </div>
 
-                        <div className="flex justify-end items-center gap-4 p-4 bg-dark-800/50 rounded-lg">
-                            <span className="text-gray-400">Total Stock Initial :</span>
-                            <span className="text-xl font-bold text-white">{formatPrice(totalStock)}</span>
+                        <div className="flex justify-end items-center gap-4 p-4 bg-elevated/50 rounded-lg">
+                            <span className="text-fg-muted">Total Stock Initial :</span>
+                            <span className="text-xl font-bold text-fg">{formatPrice(totalStock)}</span>
                         </div>
                     </div>
                 )}

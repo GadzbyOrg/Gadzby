@@ -13,10 +13,10 @@ export default async function ShopsPage() {
 		<div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
 			<header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight text-white">
+					<h1 className="text-3xl font-bold tracking-tight text-fg">
 						Boquettes
 					</h1>
-					<p className="text-gray-400 mt-1">Liste des boquettes</p>
+					<p className="text-fg-muted mt-1">Liste des boquettes</p>
 				</div>
 			</header>
 
@@ -28,9 +28,9 @@ export default async function ShopsPage() {
 							href={`/shops/${shop.slug}/self-service`}
 							className="group block"
 						>
-							<div className="h-full rounded-2xl bg-dark-900 border border-dark-800 p-6 transition-all duration-300 hover:border-primary-500/50 hover:shadow-lg hover:shadow-primary-900/10 hover:-translate-y-1">
+							<div className="h-full rounded-2xl bg-surface-900 border border-border p-6 transition-all duration-300 hover:border-accent-500/50 hover:shadow-lg hover:shadow-accent-900/10 hover:-translate-y-1">
 								<div className="flex items-start justify-between mb-4">
-									<div className="h-12 w-12 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-500 group-hover:bg-primary-500 group-hover:text-white transition-colors duration-300">
+									<div className="h-12 w-12 rounded-xl bg-accent-500/10 flex items-center justify-center text-accent-500 group-hover:bg-accent-500 group-hover:text-fg transition-colors duration-300">
 										{/* Icon placeholder (e.g. ShoppingBag) */}
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
@@ -55,14 +55,14 @@ export default async function ShopsPage() {
 									)}
 								</div>
 
-								<h3 className="text-xl font-bold text-white mb-2 group-hover:text-primary-400 transition-colors">
+								<h3 className="text-xl font-bold text-fg mb-2 group-hover:text-accent-400 transition-colors">
 									{shop.name}
 								</h3>
-								<p className="text-sm text-gray-400 line-clamp-3">
+								<p className="text-sm text-fg-muted line-clamp-3">
 									{shop.description ||
 										"Aucune description disponible pour ce shop."}
 								</p>
-								<div className="mt-4 flex items-center text-sm font-medium text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
+								<div className="mt-4 flex items-center text-sm font-medium text-accent-400 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0 duration-300">
 									Voir le shop <span className="ml-1">→</span>
 								</div>
 							</div>
@@ -70,11 +70,11 @@ export default async function ShopsPage() {
 					))}
 				</div>
 			) : (
-				<div className="text-center py-20 rounded-2xl bg-dark-900 border border-dark-800 border-dashed">
-					<h3 className="mt-2 text-sm font-semibold text-white">
+				<div className="text-center py-20 rounded-2xl bg-surface-900 border border-border border-dashed">
+					<h3 className="mt-2 text-sm font-semibold text-fg">
 						Aucune boquette disponible
 					</h3>
-					<p className="mt-1 text-sm text-gray-400">
+					<p className="mt-1 text-sm text-fg-muted">
 						Il n&apos;y a pas encore de boquettes ouvertes pour le moment.
 					</p>
 				</div>

@@ -61,7 +61,7 @@ export function CampusSettings() {
 	if (loading) {
 		return (
 			<div className="flex h-24 items-center justify-center">
-				<IconLoader2 className="animate-spin text-primary-500" size={28} />
+				<IconLoader2 className="animate-spin text-accent-500" size={28} />
 			</div>
 		);
 	}
@@ -69,15 +69,15 @@ export function CampusSettings() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="text-xl font-bold text-white mb-1">
+				<h2 className="text-xl font-bold text-fg mb-1">
 					Page de connexion
 				</h2>
-				<p className="text-gray-400 text-sm">
+				<p className="text-fg-muted text-sm">
 					Personnalisez le nom du campus et le message affiché sur la page de connexion.
 				</p>
 			</div>
 
-			<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm space-y-5">
+			<div className="rounded-xl border border-border bg-surface-900/50 p-6 shadow-xl backdrop-blur-sm space-y-5">
 				{/* Feedback banner */}
 				{feedback && (
 					<div
@@ -96,11 +96,11 @@ export function CampusSettings() {
 				<form onSubmit={handleSubmit} className="space-y-5">
 					{/* Campus Name */}
 					<div className="space-y-2">
-						<label htmlFor="campus-name" className="text-sm font-medium text-gray-300">
+						<label htmlFor="campus-name" className="text-sm font-medium text-fg">
 							Nom du campus
 						</label>
 						<div className="flex items-center gap-3">
-							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-900/30 text-primary-500">
+							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-900/30 text-accent-500">
 								<IconSchool size={20} />
 							</div>
 							<input
@@ -114,7 +114,7 @@ export function CampusSettings() {
 								placeholder="Ex: ESME Campus Paris"
 								disabled={isPending}
 								className={cn(
-									"flex-1 rounded-lg border border-dark-700 bg-dark-900/50 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-60 disabled:cursor-not-allowed",
+									"flex-1 rounded-lg border border-border bg-surface-900/50 px-4 py-2 text-fg placeholder-fg-subtle focus:border-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-600 disabled:opacity-60 disabled:cursor-not-allowed",
 								)}
 							/>
 						</div>
@@ -122,11 +122,11 @@ export function CampusSettings() {
 
 					{/* Login MOTD */}
 					<div className="space-y-2 gap">
-						<label htmlFor="login-motd" className="text-sm font-medium text-gray-300">
-							Message de connexion <span className="text-gray-500 font-normal">(Optionnel)</span>
+						<label htmlFor="login-motd" className="text-sm font-medium text-fg">
+							Message de connexion <span className="text-fg-subtle font-normal">(Optionnel)</span>
 						</label>
 						<div className="flex items-start gap-3">
-							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-900/30 text-primary-500 mt-1 shrink-0">
+							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-900/30 text-accent-500 mt-1 shrink-0">
 								<IconMessage size={20} />
 							</div>
 							<textarea
@@ -140,7 +140,7 @@ export function CampusSettings() {
 								placeholder="Ex: Contacte ton Zifoy'ss pour créer ton compte !"
 								disabled={isPending}
 								className={cn(
-									"flex-1 resize-none rounded-lg border border-dark-700 bg-dark-900/50 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600 disabled:opacity-60 disabled:cursor-not-allowed",
+									"flex-1 resize-none rounded-lg border border-border bg-surface-900/50 px-4 py-2 text-fg placeholder-fg-subtle focus:border-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-600 disabled:opacity-60 disabled:cursor-not-allowed",
 								)}
 							/>
 						</div>
@@ -151,7 +151,7 @@ export function CampusSettings() {
 							type="submit"
 							disabled={isPending || !name.trim()}
 							className={cn(
-								"inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 focus:ring-offset-dark-900 disabled:opacity-60 disabled:cursor-not-allowed",
+								"inline-flex items-center gap-2 rounded-lg bg-accent-600 px-4 py-2 text-sm font-medium text-fg shadow-sm transition-colors hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-accent-600 focus:ring-offset-2 focus:ring-offset-surface-900 disabled:opacity-60 disabled:cursor-not-allowed",
 							)}
 						>
 							{isPending ? (

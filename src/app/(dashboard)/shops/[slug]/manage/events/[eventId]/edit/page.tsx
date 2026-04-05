@@ -18,7 +18,7 @@ export default async function EditEventPage({
 
 	return (
 		<div className="flex flex-col gap-6 p-4 md:p-8">
-			<h2 className="text-2xl font-bold text-white">Modifier: {event.name}</h2>
+			<h2 className="text-2xl font-bold text-fg">Modifier: {event.name}</h2>
 			<EventForm shopId={shop.id} slug={slug} initialData={event} />
 		</div>
 	);

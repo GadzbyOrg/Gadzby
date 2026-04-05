@@ -35,7 +35,7 @@ export function EventTransactionsTable({
 				eventId,
 			});
 			if (res.transactions) {
-				 
+
 				setTransactions(res.transactions as any[]);
 			}
 			setLoading(false);
@@ -49,26 +49,26 @@ export function EventTransactionsTable({
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
-				<h3 className="text-lg font-medium text-white">
+				<h3 className="text-lg font-medium text-fg">
 					Transactions de l'événement
 				</h3>
 				<button
 					onClick={fetchTransactions}
-					className="p-2 text-gray-400 hover:text-white hover:bg-dark-800 rounded-md transition-colors"
+					className="p-2 text-fg-muted hover:text-fg hover:bg-elevated rounded-md transition-colors"
 				>
 					<IconRefresh size={16} />
 				</button>
 			</div>
 
-            <TransactionTable 
-                transactions={transactions} 
-                loading={loading} 
-                pagination={{
-                    page,
-                    setPage,
-                    hasMore: true
-                }}
-            />
+			<TransactionTable
+				transactions={transactions}
+				loading={loading}
+				pagination={{
+					page,
+					setPage,
+					hasMore: true
+				}}
+			/>
 		</div>
 	);
 }

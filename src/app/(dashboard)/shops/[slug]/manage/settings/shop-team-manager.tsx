@@ -98,28 +98,28 @@ export function ShopTeamManager({
 	};
 
 	return (
-		<div className="rounded-2xl bg-dark-900 border border-dark-800 p-6 space-y-8">
+		<div className="rounded-2xl bg-surface-900 border border-border p-6 space-y-8">
 			{/* List Members */}
 			<div className="space-y-4">
-				<h3 className="text-lg font-medium text-white mb-4">
+				<h3 className="text-lg font-medium text-fg mb-4">
 					Équipe actuelle ({members.length})
 				</h3>
 				<div className="space-y-3">
 					{members.map((member) => (
 						<div
 							key={member.user.id}
-							className="flex items-center justify-between p-3 bg-dark-800 rounded-xl border border-dark-700"
+							className="flex items-center justify-between p-3 bg-elevated rounded-xl border border-border"
 						>
 							<div className="flex items-center gap-3">
-								<div className="h-10 w-10 rounded-full bg-primary-900/50 flex items-center justify-center text-primary-200 font-bold border border-primary-500/30">
+								<div className="h-10 w-10 rounded-full bg-accent-900/50 flex items-center justify-center text-accent-200 font-bold border border-accent-500/30">
 									{member.user.prenom?.[0] ||
 										member.user.username[0].toUpperCase()}
 								</div>
 								<div>
-									<div className="font-medium text-white">
+									<div className="font-medium text-fg">
 										{member.user.prenom} {member.user.nom}
 									</div>
-									<div className="text-xs text-gray-500">
+									<div className="text-xs text-fg-subtle">
 										@{member.user.username}
 									</div>
 								</div>
@@ -132,7 +132,7 @@ export function ShopTeamManager({
 										handleUpdateRole(member.user.id, e.target.value)
 									}
 									disabled={isLoading || member.user.id === currentUserId}
-									className="bg-dark-950 border border-dark-700 rounded-lg px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-primary-500"
+									className="bg-surface-950 border border-border rounded-lg px-2 py-1 text-sm text-fg focus:outline-none focus:border-accent-500"
 								>
 									<option value="" disabled>Inconnu</option>
 									{availableRoles.map(role => (
@@ -145,7 +145,7 @@ export function ShopTeamManager({
 								<button
 									onClick={() => handleRemoveMember(member.user.id)}
 									disabled={isLoading || member.user.id === currentUserId}
-									className="text-gray-500 hover:text-red-400 disabled:opacity-30 transition-colors p-1"
+									className="text-fg-subtle hover:text-red-400 disabled:opacity-30 transition-colors p-1"
 									title="Retirer de l'équipe"
 								>
 									<svg
@@ -170,11 +170,11 @@ export function ShopTeamManager({
 				</div>
 			</div>
 
-			<div className="border-t border-dark-800 my-6"></div>
+			<div className="border-t border-border my-6"></div>
 
 			{/* Add Member */}
 			<div className="space-y-4">
-				<h3 className="text-lg font-medium text-white">Ajouter un membre</h3>
+				<h3 className="text-lg font-medium text-fg">Ajouter un membre</h3>
 
 				<div className="flex flex-col gap-4">
 					{!selectedUser ? (
@@ -186,24 +186,24 @@ export function ShopTeamManager({
 							/>
 						</div>
 					) : (
-						<div className="flex items-center justify-between bg-dark-800 border border-dark-700 rounded-xl p-3">
+						<div className="flex items-center justify-between bg-elevated border border-border rounded-xl p-3">
 							<div className="flex items-center gap-3">
-								<div className="h-10 w-10 rounded-full bg-primary-900/50 flex items-center justify-center text-primary-200 font-bold border border-primary-500/30">
+								<div className="h-10 w-10 rounded-full bg-accent-900/50 flex items-center justify-center text-accent-200 font-bold border border-accent-500/30">
 									{selectedUser.prenom?.[0] ||
 										selectedUser.username[0].toUpperCase()}
 								</div>
 								<div>
-									<div className="font-medium text-white">
+									<div className="font-medium text-fg">
 										{selectedUser.prenom} {selectedUser.nom}
 									</div>
-									<div className="text-xs text-gray-500">
+									<div className="text-xs text-fg-subtle">
 										@{selectedUser.username} • {selectedUser.bucque}
 									</div>
 								</div>
 							</div>
 							<button
 								onClick={() => setSelectedUser(null)}
-								className="text-gray-400 hover:text-white transition-colors"
+								className="text-fg-muted hover:text-fg transition-colors"
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -228,7 +228,7 @@ export function ShopTeamManager({
 							<select
 								value={selectedRoleId}
 								onChange={(e) => setSelectedRoleId(e.target.value)}
-								className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
+								className="w-full bg-surface-950 border border-border rounded-xl px-4 py-3 text-fg focus:outline-none focus:border-accent-500 transition-all appearance-none cursor-pointer"
 							>
 								{availableRoles.map(role => (
 									<option key={role.id} value={role.id}>
@@ -240,7 +240,7 @@ export function ShopTeamManager({
 						<button
 							onClick={handleAddMember}
 							disabled={!selectedUser || isLoading || !selectedRoleId}
-							className="bg-primary-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+							className="bg-accent-600 text-fg px-6 py-3 rounded-xl font-bold hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 						>
 							{isLoading ? "..." : "Ajouter"}
 						</button>

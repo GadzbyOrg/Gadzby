@@ -20,12 +20,12 @@ import { cn } from "@/lib/utils";
 import { ExportButton } from "./export-button";
 
 interface MandatShopData {
-    shopName: string;
-    initialStockValue: number;
-    finalStockValue: number | null;
-    sales: number | null;
-    expenses: number | null;
-    benefice: number | null;
+	shopName: string;
+	initialStockValue: number;
+	finalStockValue: number | null;
+	sales: number | null;
+	expenses: number | null;
+	benefice: number | null;
 }
 
 export default async function MandatDetailsPage({
@@ -56,7 +56,7 @@ export default async function MandatDetailsPage({
 
 	// Sort shops by name
 	const shopsData: MandatShopData[] = mandat.mandatShops
-		 
+
 		.map((ms: any) => ({
 			shopName: ms.shop.name,
 			initialStockValue: ms.initialStockValue,
@@ -71,10 +71,10 @@ export default async function MandatDetailsPage({
 		<div className="space-y-8 p-8">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight text-white">
+					<h1 className="text-3xl font-bold tracking-tight text-fg">
 						Détails du Mandat
 					</h1>
-					<p className="text-gray-400">
+					<p className="text-fg-muted">
 						Période du {formatDate(mandat.startTime)} au{" "}
 						{formatDate(mandat.endTime)}
 					</p>
@@ -83,33 +83,33 @@ export default async function MandatDetailsPage({
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-				<Card className="border-dark-800 bg-dark-900">
+				<Card className="border-border bg-surface-900">
 					<CardHeader className="pb-2">
-						<CardTitle className="text-sm font-medium text-gray-400">
+						<CardTitle className="text-sm font-medium text-fg-muted">
 							Stock Initial Global
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold text-white">
+						<div className="text-2xl font-bold text-fg">
 							{formatPrice(mandat.initialStockValue)}
 						</div>
 					</CardContent>
 				</Card>
-				<Card className="border-dark-800 bg-dark-900">
+				<Card className="border-border bg-surface-900">
 					<CardHeader className="pb-2">
-						<CardTitle className="text-sm font-medium text-gray-400">
+						<CardTitle className="text-sm font-medium text-fg-muted">
 							Stock Final Global
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold text-white">
+						<div className="text-2xl font-bold text-fg">
 							{formatPrice(mandat.finalStockValue || 0)}
 						</div>
 					</CardContent>
 				</Card>
-				<Card className="border-dark-800 bg-dark-900">
+				<Card className="border-border bg-surface-900">
 					<CardHeader className="pb-2">
-						<CardTitle className="text-sm font-medium text-gray-400">
+						<CardTitle className="text-sm font-medium text-fg-muted">
 							Bénéfice Global
 						</CardTitle>
 					</CardHeader>
@@ -126,9 +126,9 @@ export default async function MandatDetailsPage({
 						</div>
 					</CardContent>
 				</Card>
-				<Card className="border-dark-800 bg-dark-900">
+				<Card className="border-border bg-surface-900">
 					<CardHeader className="pb-2">
-						<CardTitle className="text-sm font-medium text-gray-400">
+						<CardTitle className="text-sm font-medium text-fg-muted">
 							Statut
 						</CardTitle>
 					</CardHeader>
@@ -139,8 +139,8 @@ export default async function MandatDetailsPage({
 								mandat.status === "ACTIVE"
 									? "bg-green-500/20 text-green-500"
 									: mandat.status === "COMPLETED"
-									? "bg-blue-500/20 text-blue-500"
-									: "bg-gray-500/20 text-gray-500"
+										? "bg-blue-500/20 text-blue-500"
+										: "bg-fg-subtle/20 text-fg-subtle"
 							)}
 						>
 							{mandat.status === "ACTIVE" ? "En cours" : "Terminé"}
@@ -149,14 +149,14 @@ export default async function MandatDetailsPage({
 				</Card>
 			</div>
 
-			<Card className="border-dark-800 bg-dark-900">
+			<Card className="border-border bg-surface-900">
 				<CardHeader>
 					<CardTitle>Détail par Magasin</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<Table>
 						<TableHeader>
-							<TableRow className="border-dark-800 hover:bg-transparent">
+							<TableRow className="border-border hover:bg-transparent">
 								<TableHead>Magasin</TableHead>
 								<TableHead className="text-right">Stock Initial</TableHead>
 								<TableHead className="text-right">Ventes</TableHead>
@@ -169,12 +169,12 @@ export default async function MandatDetailsPage({
 							{shopsData.map((shop: MandatShopData, i: number) => (
 								<TableRow
 									key={i}
-									className="border-dark-800 hover:bg-dark-800/50"
+									className="border-border hover:bg-elevated/50"
 								>
-									<TableCell className="font-medium text-gray-200">
+									<TableCell className="font-medium text-fg">
 										{shop.shopName}
 									</TableCell>
-									<TableCell className="text-right text-gray-400">
+									<TableCell className="text-right text-fg-muted">
 										{formatPrice(shop.initialStockValue)}
 									</TableCell>
 									<TableCell className="text-right text-green-400">
@@ -183,7 +183,7 @@ export default async function MandatDetailsPage({
 									<TableCell className="text-right text-red-400">
 										{shop.expenses ? formatPrice(shop.expenses) : "-"}
 									</TableCell>
-									<TableCell className="text-right text-gray-400">
+									<TableCell className="text-right text-fg-muted">
 										{shop.finalStockValue
 											? formatPrice(shop.finalStockValue)
 											: "-"}

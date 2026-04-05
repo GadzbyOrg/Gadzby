@@ -20,7 +20,7 @@ interface ExpensesOverTimeChartProps {
 export function ExpensesOverTimeChart({ data }: ExpensesOverTimeChartProps) {
 	if (data.length === 0) {
 		return (
-			<div className="flex h-full items-center justify-center text-gray-500">
+			<div className="flex h-full items-center justify-center text-fg-subtle">
 				Aucune donnée disponible
 			</div>
 		);

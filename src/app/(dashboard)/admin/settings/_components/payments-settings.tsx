@@ -16,8 +16,8 @@ export function PaymentsSettings({ methods }: { methods: PaymentMethod[] }) {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="text-xl font-bold text-white mb-1">Moyens de paiement</h2>
-				<p className="text-gray-400 text-sm">
+				<h2 className="text-xl font-bold text-fg mb-1">Moyens de paiement</h2>
+				<p className="text-fg-muted text-sm">
 					Gérez les intégrations et les frais des services de paiement.
 				</p>
 			</div>

@@ -45,7 +45,7 @@ export default function StartAuditButton({ shopSlug }: { shopSlug: string }) {
         <button
             onClick={handleStart}
             disabled={isPending}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-500 text-fg rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
         >
             <IconPlus size={16} />
             {isPending ? "Création..." : "Nouvel inventaire"}

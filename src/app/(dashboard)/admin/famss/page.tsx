@@ -50,12 +50,12 @@ export default async function AdminFamssPage({
 
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-			<header className="flex items-center justify-between border-b border-dark-800 pb-6">
+			<header className="flex items-center justify-between border-b border-border pb-6">
 				<div>
-					<h1 className="text-3xl font-bold text-white tracking-tight mb-2">
+					<h1 className="text-3xl font-bold text-fg tracking-tight mb-2">
 						Gestion des Fam&apos;ss
 					</h1>
-					<p className="text-gray-400">
+					<p className="text-fg-muted">
 						Gérez les comptes partagées : création, modification et
 						comptabilité.
 					</p>

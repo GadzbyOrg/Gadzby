@@ -32,7 +32,7 @@ interface UserEditFormProps {
 		balance: number;
 		isAsleep: boolean;
 	};
-	 
+
 	roles: any[];
 	onSuccess: () => void;
 }
@@ -103,8 +103,8 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 			{/* Main Fields */}
 			<div className="space-y-4">
 				<div className="space-y-2">
-					<label htmlFor="username" className="text-sm font-medium text-gray-300">
-						Nom d&apos;utilisateur <span className="text-gray-500 text-xs font-normal">(Laisser vide pour auto-générer)</span>
+					<label htmlFor="username" className="text-sm font-medium text-fg">
+						Nom d&apos;utilisateur <span className="text-fg-subtle text-xs font-normal">(Laisser vide pour auto-générer)</span>
 					</label>
 					<input
 						type="text"
@@ -112,14 +112,14 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 						id="username"
 						defaultValue={user.username}
 						placeholder="Ex: 2Me215"
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 					/>
 				</div>
 				<div className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
 						<label
 							htmlFor="prenom"
-							className="text-sm font-medium text-gray-300"
+							className="text-sm font-medium text-fg"
 						>
 							Prénom
 						</label>
@@ -129,11 +129,11 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							name="prenom"
 							id="prenom"
 							defaultValue={user.prenom}
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 						/>
 					</div>
 					<div className="space-y-2">
-						<label htmlFor="nom" className="text-sm font-medium text-gray-300">
+						<label htmlFor="nom" className="text-sm font-medium text-fg">
 							Nom
 						</label>
 						<input
@@ -142,13 +142,13 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							name="nom"
 							id="nom"
 							defaultValue={user.nom}
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 						/>
 					</div>
 				</div>
 
 				<div className="space-y-2">
-					<label htmlFor="email" className="text-sm font-medium text-gray-300">
+					<label htmlFor="email" className="text-sm font-medium text-fg">
 						Email
 					</label>
 					<input
@@ -157,27 +157,27 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 						name="email"
 						id="email"
 						defaultValue={user.email}
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 					/>
 				</div>
 				<div className="space-y-2">
-					<label htmlFor="phone" className="text-sm font-medium text-gray-300">
-						Téléphone <span className="text-gray-500 text-xs font-normal">(Optionnel)</span>
+					<label htmlFor="phone" className="text-sm font-medium text-fg">
+						Téléphone <span className="text-fg-subtle text-xs font-normal">(Optionnel)</span>
 					</label>
-						<input
-							type="tel"
-							name="phone"
-							id="phone"
-							defaultValue={user.phone || ""}
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
-						/>
+					<input
+						type="tel"
+						name="phone"
+						id="phone"
+						defaultValue={user.phone || ""}
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
+					/>
 				</div>
 
 				<div className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
 						<label
 							htmlFor="bucque"
-							className="text-sm font-medium text-gray-300"
+							className="text-sm font-medium text-fg"
 						>
 							Bucque
 						</label>
@@ -186,13 +186,13 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							name="bucque"
 							id="bucque"
 							defaultValue={user.bucque || ""}
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 						/>
 					</div>
 					<div className="space-y-2">
 						<label
 							htmlFor="promss"
-							className="text-sm font-medium text-gray-300"
+							className="text-sm font-medium text-fg"
 						>
 							Prom'ss
 						</label>
@@ -202,13 +202,13 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							name="promss"
 							id="promss"
 							defaultValue={user.promss}
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 						/>
 					</div>
 				</div>
 
 				<div className="space-y-2">
-					<label htmlFor="nums" className="text-sm font-medium text-gray-300">
+					<label htmlFor="nums" className="text-sm font-medium text-fg">
 						Nums
 					</label>
 					<input
@@ -216,14 +216,14 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 						name="nums"
 						id="nums"
 						defaultValue={user.nums || ""}
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 					/>
 				</div>
 
 				<TabagnssSelector defaultValue={user.tabagnss} required />
 
-				<div className="pt-4 border-t border-dark-800 mt-4">
-					<h3 className="text-white text-sm font-semibold mb-4">
+				<div className="pt-4 border-t border-border mt-4">
+					<h3 className="text-fg text-sm font-semibold mb-4">
 						Zone Sensible
 					</h3>
 
@@ -231,7 +231,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 						<div className="space-y-2">
 							<label
 								htmlFor="roleId"
-								className="text-sm font-medium text-primary-300"
+								className="text-sm font-medium text-accent-300"
 							>
 								Rôle
 							</label>
@@ -239,7 +239,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 								name="roleId"
 								id="roleId"
 								defaultValue={user.roleId || ""}
-								className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+								className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 							>
 								<option value="" disabled>
 									Sélectionner un rôle
@@ -254,7 +254,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 						<div className="space-y-2">
 							<label
 								htmlFor="balance"
-								className="text-sm font-medium text-primary-300"
+								className="text-sm font-medium text-accent-300"
 							>
 								Solde (€)
 							</label>
@@ -265,23 +265,23 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 								step="0.01"
 								value={balanceDisplay}
 								onChange={(e) => setBalanceDisplay(e.target.value)}
-								className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all font-mono"
+								className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all font-mono"
 							/>
 						</div>
 
 						<div className="col-span-2 space-y-2 pt-2">
-							<label className="flex items-center gap-3 p-3 rounded-lg border border-dark-800 bg-dark-900 cursor-pointer hover:bg-dark-800/50 transition-colors">
+							<label className="flex items-center gap-3 p-3 rounded-lg border border-border bg-surface-900 cursor-pointer hover:bg-elevated/50 transition-colors">
 								<input
 									type="checkbox"
 									name="isAsleep"
 									defaultChecked={user.isAsleep}
-									className="w-4 h-4 rounded border-gray-600 text-primary-600 focus:ring-primary-600 bg-dark-950"
+									className="w-4 h-4 rounded border-fg-subtle text-accent-600 focus:ring-accent-600 bg-surface-950"
 								/>
 								<div>
-									<span className="text-sm font-medium text-white block">
+									<span className="text-sm font-medium text-fg block">
 										Compte inactif
 									</span>
-									<span className="text-xs text-gray-500 block">
+									<span className="text-xs text-fg-subtle block">
 										Empêche la connexion de cet utilisateur.
 									</span>
 								</div>
@@ -290,12 +290,12 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 					</div>
 				</div>
 
-				<div className="pt-4 border-t border-dark-800 mt-4">
-					<h3 className="text-white text-sm font-semibold mb-4">Sécurité</h3>
+				<div className="pt-4 border-t border-border mt-4">
+					<h3 className="text-fg text-sm font-semibold mb-4">Sécurité</h3>
 					<div className="space-y-2">
 						<label
 							htmlFor="newPassword"
-							className="text-sm font-medium text-gray-300"
+							className="text-sm font-medium text-fg"
 						>
 							Nouveau mot de passe (laisser vide pour ne pas changer)
 						</label>
@@ -304,7 +304,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							name="newPassword"
 							id="newPassword"
 							placeholder="••••••••"
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent transition-all"
 						/>
 					</div>
 				</div>
@@ -330,7 +330,7 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 								type="button" // Important: prevents form submission
 								onClick={handleUserDeleteClick}
 								disabled={isDeleting || isUpdatePending}
-								className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg font-medium transition-all shadow-lg shadow-red-900/20 flex items-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+								className="px-4 py-2 bg-red-600 hover:bg-red-700 text-fg text-sm rounded-lg font-medium transition-all shadow-lg shadow-red-900/20 flex items-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								{isDeleting ? (
 									<IconLoader2 className="w-4 h-4 animate-spin" />
@@ -344,11 +344,11 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 				</div>
 			</div>
 
-			<div className="pt-4 flex justify-end gap-3 border-t border-dark-800">
+			<div className="pt-4 flex justify-end gap-3 border-t border-border">
 				<button
 					type="submit"
 					disabled={isUpdatePending || isDeleting}
-					className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary-900/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+					className="px-6 py-2.5 bg-accent-600 hover:bg-accent-700 text-fg rounded-lg font-medium transition-all shadow-lg shadow-accent-900/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					{isUpdatePending ? (
 						<>

@@ -9,7 +9,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { redirect, usePathname } from "next/navigation";
-import { useMemo,useState } from "react";
+import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -74,15 +74,15 @@ const getNavStructure = (): NavGroup[] => [
 			{ label: "Shops", url: "/admin/shops", permission: "MANAGE_SHOPS" },
 			{ label: "Fam'ss", url: "/admin/famss", permission: "MANAGE_FAMSS" },
 			{
-                label: "Prélèvement de masse",
-                url: "/admin/mass-payment",
-                permission: "ADMIN_ACCESS",
-            },
-            {
-                label: "Mandats",
-                url: "/admin/mandats",
-                permission: "ADMIN_ACCESS",
-            },
+				label: "Prélèvement de masse",
+				url: "/admin/mass-payment",
+				permission: "ADMIN_ACCESS",
+			},
+			{
+				label: "Mandats",
+				url: "/admin/mandats",
+				permission: "ADMIN_ACCESS",
+			},
 			{
 				label: "Paramètres",
 				url: "/admin/settings",
@@ -224,7 +224,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 	const [prevPath, setPrevPath] = useState(pathname);
 	if (pathname !== prevPath) {
 		setPrevPath(pathname);
-		
+
 		const group = availableGroups.find((g) =>
 			g.links.some((l) => {
 				if ("type" in l && l.type === "dropdown") {
@@ -255,15 +255,15 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 		availableGroups.find((g) => g.main === activeMain) || availableGroups[0];
 
 	return (
-		<nav className="flex h-screen md:h-screen supports-[height:100dvh]:h-[100dvh] w-[85vw] max-w-[300px] md:w-[300px] border-r border-dark-800 bg-dark-900 text-gray-300">
+		<nav className="flex h-screen md:h-screen supports-[height:100dvh]:h-[100dvh] w-[85vw] max-w-[300px] md:w-[300px] border-r border-border bg-surface-900 text-fg">
 			{/* --- COLONNE 1 : ICONES (80px) --- */}
-			<div className="flex w-[80px] flex-col items-center border-r border-dark-800 bg-dark-950 py-6">
+			<div className="flex w-[80px] flex-col items-center border-r border-border bg-surface-950 py-6">
 				{/* Logo */}
 				<div className="mb-8 flex h-10 w-10 items-center justify-center cursor-pointer">
 					<Image
 						src="/Gadzby_logo.svg"
 						alt="Gadzby Logo"
-						onClick={() => redirect("/") && setActiveMain("Général") }
+						onClick={() => redirect("/") && setActiveMain("Général")}
 						width={40}
 						height={40}
 						className="h-full w-full object-contain"
@@ -281,19 +281,19 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 								className={cn(
 									"group relative flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-200",
 									isActive
-										? "bg-primary-700/20 text-primary-500"
-										: "text-gray-500 hover:bg-dark-800 hover:text-gray-300"
+										? "bg-accent-700/20 text-accent-500"
+										: "text-fg-subtle hover:bg-elevated hover:text-fg"
 								)}
 							>
 								<group.icon size={22} stroke={1.5} />
 
 								{/* Indicateur actif */}
 								{isActive && (
-									<div className="absolute right-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-l-full bg-primary-600" />
+									<div className="absolute right-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-l-full bg-accent-600" />
 								)}
 
 								{/* Tooltip CSS-only */}
-								<span className="absolute left-14 z-50 rounded bg-dark-800 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100 border border-dark-700 whitespace-nowrap">
+								<span className="absolute left-14 z-50 rounded bg-elevated px-2 py-1 text-xs font-medium text-fg opacity-0 shadow-xl transition-opacity group-hover:opacity-100 border border-border whitespace-nowrap">
 									{group.main}
 								</span>
 							</button>
@@ -303,8 +303,8 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 			</div>
 
 			{/* --- COLONNE 2 : LIENS (220px) --- */}
-			<div className="flex flex-1 flex-col bg-dark-900 px-4 py-6 overflow-y-auto">
-				<h2 className="mb-6 px-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+			<div className="flex flex-1 flex-col bg-surface-900 px-4 py-6 overflow-y-auto">
+				<h2 className="mb-6 px-4 text-xs font-bold uppercase tracking-wider text-fg-subtle">
 					{activeMain}
 				</h2>
 
@@ -314,7 +314,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 							return (
 								<div
 									key={`sep-${index}`}
-									className="my-2 border-t border-dark-800"
+									className="my-2 border-t border-border"
 								/>
 							);
 						}
@@ -333,8 +333,8 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 										className={cn(
 											"flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
 											isChildActive || isOpen
-												? "text-gray-200 bg-dark-800/50"
-												: "text-gray-400 hover:bg-dark-800 hover:text-gray-100"
+												? "text-fg bg-elevated/50"
+												: "text-fg-muted hover:bg-elevated hover:text-fg"
 										)}
 									>
 										<span>{item.label}</span>
@@ -348,7 +348,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 									</button>
 
 									{isOpen && (
-										<div className="ml-4 mt-1 flex flex-col gap-1 border-l border-dark-800 pl-2">
+										<div className="ml-4 mt-1 flex flex-col gap-1 border-l border-border pl-2">
 											{item.items.map((subItem) => {
 												const isSubActive =
 													pathname === subItem.url ||
@@ -361,8 +361,8 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 														className={cn(
 															"rounded-lg px-3 py-2 text-sm transition-colors",
 															isSubActive
-																? "text-primary-400 font-medium"
-																: "text-gray-500 hover:text-gray-300"
+																? "text-accent-400 font-medium"
+																: "text-fg-subtle hover:text-fg"
 														)}
 													>
 														{subItem.label}
@@ -388,13 +388,13 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 								className={cn(
 									"flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
 									isActive
-										? "bg-white text-dark-950 shadow-md" // Style "Carte blanche" active
-										: "text-gray-400 hover:bg-dark-800 hover:text-gray-100"
+										? "bg-white text-surface-950 shadow-md" // Style "Carte blanche" active
+										: "text-fg-muted hover:bg-elevated hover:text-fg"
 								)}
 							>
 								{link.label}
 								{isActive && (
-									<IconChevronRight size={14} className="text-primary-600" />
+									<IconChevronRight size={14} className="text-accent-600" />
 								)}
 							</Link>
 						);

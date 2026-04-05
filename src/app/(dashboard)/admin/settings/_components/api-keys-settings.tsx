@@ -49,14 +49,14 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 	};
 
 	return (
-		<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6">
+		<div className="rounded-xl border border-border bg-surface-900/50 p-6">
 			<div className="mb-6 flex items-center gap-3">
 				<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-500/10 text-pink-500">
 					<IconKey size={20} />
 				</div>
 				<div>
-					<h3 className="text-lg font-medium text-white">Clés API</h3>
-					<p className="text-sm text-gray-400">
+					<h3 className="text-lg font-medium text-fg">Clés API</h3>
+					<p className="text-sm text-fg-muted">
 						Gérez les clés d'accès pour les applications tierces.
 					</p>
 				</div>
@@ -71,12 +71,12 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 						value={newKeyName}
 						onChange={(e) => setNewKeyName(e.target.value)}
 						disabled={isPending}
-						className="block flex-1 rounded-md border-0 bg-dark-950 p-2 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+						className="block flex-1 rounded-md border-0 bg-surface-950 p-2 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
 					/>
 					<button
 						type="submit"
 						disabled={isPending || !newKeyName.trim()}
-						className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black shadow-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+						className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black shadow-sm hover:bg-fg disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{isPending ? <IconLoader2 className="animate-spin" size={16} /> : <IconPlus size={16} />}
 						Générer
@@ -88,45 +88,45 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 						<p className="text-sm font-medium text-yellow-500 mb-2">
 							Clé générée ! Copiez-la immédiatement, elle ne sera plus affichée.
 						</p>
-						<code className="block rounded bg-dark-950 p-3 text-sm text-white select-all">
+						<code className="block rounded bg-surface-950 p-3 text-sm text-fg select-all">
 							{newRawKey}
 						</code>
 					</div>
 				)}
 
 				{/* List */}
-				<div className="overflow-hidden rounded-lg border border-dark-800 bg-dark-950">
-					<table className="min-w-full divide-y divide-dark-800">
+				<div className="overflow-hidden rounded-lg border border-border bg-surface-950">
+					<table className="min-w-full divide-y divide-border">
 						<thead>
 							<tr>
-								<th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+								<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">
 									Nom
 								</th>
-								<th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+								<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">
 									Création
 								</th>
-								<th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+								<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">
 									Statut
 								</th>
-								<th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
+								<th className="px-4 py-3 text-right text-xs font-medium text-fg-muted uppercase tracking-wider">
 									Actions
 								</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-dark-800 bg-dark-900">
+						<tbody className="divide-y divide-border bg-surface-900">
 							{apiKeys.length === 0 && (
 								<tr>
-									<td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-400">
+									<td colSpan={4} className="px-4 py-6 text-center text-sm text-fg-muted">
 										Aucune clé API
 									</td>
 								</tr>
 							)}
 							{apiKeys.map((key) => (
 								<tr key={key.id}>
-									<td className="px-4 py-3 text-sm text-white font-medium">
+									<td className="px-4 py-3 text-sm text-fg font-medium">
 										{key.name}
 									</td>
-									<td className="px-4 py-3 text-sm text-gray-400">
+									<td className="px-4 py-3 text-sm text-fg-muted">
 										{new Date(key.createdAt).toLocaleDateString()}
 									</td>
 									<td className="px-4 py-3 text-sm">

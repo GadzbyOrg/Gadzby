@@ -79,31 +79,31 @@ export function ShopPermissionsManager({
 	};
 
 	return (
-		<div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden shadow-sm">
+		<div className="bg-surface-900 border border-border rounded-xl overflow-hidden shadow-sm">
 			<div className="overflow-x-auto">
 				<table className="w-full text-left text-sm">
 					<thead>
-						<tr className="bg-dark-950 border-b border-dark-800">
-							<th className="py-4 px-6 font-medium text-gray-400">
+						<tr className="bg-surface-950 border-b border-border">
+							<th className="py-4 px-6 font-medium text-fg-muted">
 								Fonctionnalité
 							</th>
-							<th className="py-4 px-6 font-medium text-primary-400 text-center w-32">
+							<th className="py-4 px-6 font-medium text-accent-400 text-center w-32">
 								VP
 							</th>
-							<th className="py-4 px-6 font-medium text-gray-400 text-center w-32">
+							<th className="py-4 px-6 font-medium text-fg-muted text-center w-32">
 								Membre
 							</th>
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-dark-800">
+					<tbody className="divide-y divide-border">
 						{(
 							Object.keys(FEATURE_LABELS) as Array<keyof typeof FEATURE_LABELS>
 						).map((feature) => (
 							<tr
 								key={feature}
-								className="hover:bg-dark-800/30 transition-colors"
+								className="hover:bg-elevated/30 transition-colors"
 							>
-								<td className="py-4 px-6 font-medium text-gray-200">
+								<td className="py-4 px-6 font-medium text-fg">
 									{FEATURE_LABELS[feature]}
 								</td>
 								<td className="py-4 px-6 text-center">
@@ -153,8 +153,8 @@ function Switch({
 			onClick={onChange}
 			disabled={disabled}
 			className={`
-                relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2
-                ${checked ? "bg-primary-600" : "bg-dark-700"}
+                relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-600 focus:ring-offset-2
+                ${checked ? "bg-accent-600" : "bg-elevated"}
                 ${disabled ? "opacity-50 cursor-not-allowed" : ""}
             `}
 		>

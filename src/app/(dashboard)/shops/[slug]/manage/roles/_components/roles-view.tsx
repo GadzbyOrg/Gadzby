@@ -83,7 +83,7 @@ export function RolesView({ shopSlug, initialRoles }: RolesViewProps) {
 			<div className="flex justify-end">
 				<Button
 					onClick={handleCreate}
-					className="bg-primary-600 hover:bg-primary-500 text-white"
+					className="bg-accent-600 hover:bg-accent-500 text-fg"
 				>
 					<IconPlus size={18} className="mr-2" />
 					Créer un rôle
@@ -94,12 +94,12 @@ export function RolesView({ shopSlug, initialRoles }: RolesViewProps) {
 				{roles.map((role) => (
 					<div
 						key={role.id}
-						className="bg-dark-900 border border-dark-800 rounded-xl p-5 space-y-4 hover:border-dark-700 transition-colors"
+						className="bg-surface-900 border border-border rounded-xl p-5 space-y-4 hover:border-border transition-colors"
 					>
 						<div className="flex justify-between items-start">
 							<div>
-								<h3 className="font-bold text-white text-lg">{role.name}</h3>
-								<p className="text-xs text-gray-500 mt-1">
+								<h3 className="font-bold text-fg text-lg">{role.name}</h3>
+								<p className="text-xs text-fg-subtle mt-1">
 									{role.users?.length || 0} membre
 									{(role.users?.length || 0) > 1 ? "s" : ""}
 								</p>
@@ -107,14 +107,14 @@ export function RolesView({ shopSlug, initialRoles }: RolesViewProps) {
 							<div className="flex gap-2">
 								<button
 									onClick={() => handleEdit(role)}
-									className="p-2 text-gray-400 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+									className="p-2 text-fg-muted hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 								>
 									<IconPencil size={18} />
 								</button>
 								{role.name !== "Grip'ss" && (
 									<button
 										onClick={() => handleDelete(role.id)}
-										className="p-2 text-gray-400 hover:text-red-400 hover:bg-dark-800 rounded-lg transition-colors"
+										className="p-2 text-fg-muted hover:text-red-400 hover:bg-elevated rounded-lg transition-colors"
 									>
 										<IconTrash size={18} />
 									</button>
@@ -126,13 +126,13 @@ export function RolesView({ shopSlug, initialRoles }: RolesViewProps) {
 							{role.permissions.map((perm) => (
 								<div
 									key={perm}
-									className="inline-block px-2 py-1 rounded bg-dark-800 text-xs text-gray-300 mr-2 mb-2"
+									className="inline-block px-2 py-1 rounded bg-elevated text-xs text-fg mr-2 mb-2"
 								>
 									{PERMISSION_LABELS[perm] || perm}
 								</div>
 							))}
 							{role.permissions.length === 0 && (
-								<span className="text-xs text-gray-600 italic">
+								<span className="text-xs text-fg-subtle italic">
 									Aucune permission
 								</span>
 							)}
@@ -229,7 +229,7 @@ function RoleModal({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="bg-dark-900 border-dark-800 text-white max-w-lg">
+			<DialogContent className="bg-surface-900 border-border text-fg max-w-lg">
 				<DialogHeader>
 					<DialogTitle>
 						{role ? "Modifier le rôle" : "Créer un rôle"}
@@ -243,7 +243,7 @@ function RoleModal({
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							placeholder="Ex: Vendeur"
-							className="bg-dark-950 border-dark-700"
+							className="bg-surface-950 border-border"
 							required
 						/>
 					</div>
@@ -254,7 +254,7 @@ function RoleModal({
 							{SHOP_PERMISSIONS.map((perm) => (
 								<div
 									key={perm}
-									className="flex items-center justify-between p-2 rounded-lg bg-dark-800/50 hover:bg-dark-800 transition-colors"
+									className="flex items-center justify-between p-2 rounded-lg bg-elevated/50 hover:bg-elevated transition-colors"
 								>
 									<label
 										htmlFor={perm}
@@ -284,7 +284,7 @@ function RoleModal({
 						</Button>
 						<Button
 							type="submit"
-							className="bg-primary-600 hover:bg-primary-500 text-white"
+							className="bg-accent-600 hover:bg-accent-500 text-fg"
 							disabled={isLoading}
 						>
 							{isLoading ? "Enregistrement..." : "Enregistrer"}
@@ -314,8 +314,8 @@ function Switch({
 			onClick={onChange}
 			disabled={disabled}
 			className={`
-                relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2
-                ${checked ? "bg-primary-600" : "bg-dark-700"}
+                relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-600 focus:ring-offset-2
+                ${checked ? "bg-accent-600" : "bg-elevated"}
                 ${disabled ? "opacity-50 cursor-not-allowed" : ""}
             `}
 		>

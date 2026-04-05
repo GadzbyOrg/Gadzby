@@ -16,9 +16,9 @@ export default async function SettingsPage() {
 
 	const user = await db.query.users.findFirst({
 		where: eq(users.id, session.userId),
-        with: {
-            role: true
-        }
+		with: {
+			role: true
+		}
 	});
 
 	if (!user) redirect("/login");
@@ -26,21 +26,21 @@ export default async function SettingsPage() {
 	return (
 		<div className="mx-auto max-w-2xl px-4 py-8">
 			<div className="mb-8">
-				<h1 className="text-2xl font-bold text-white">Mon Profil</h1>
-				<p className="mt-2 text-gray-400">
+				<h1 className="text-2xl font-bold text-fg">Mon Profil</h1>
+				<p className="mt-2 text-fg-muted">
 					Gérez vos informations personnelles
 				</p>
 			</div>
 
-			<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm">
-				<div className="mb-8 flex items-center gap-4 border-b border-dark-800 pb-8">
+			<div className="rounded-xl border border-border bg-surface-900/50 p-6 shadow-xl backdrop-blur-sm">
+				<div className="mb-8 flex items-center gap-4 border-b border-border pb-8">
 					<AvatarUpload user={user} />
 					<div>
-						<h2 className="text-xl font-semibold text-white">
+						<h2 className="text-xl font-semibold text-fg">
 							{user.prenom} {user.nom}
 						</h2>
-						<p className="text-sm text-gray-400">@{user.username}</p>
-						<div className="mt-2 text-xs font-medium text-primary-400 border border-primary-900/50 bg-primary-900/20 px-2 py-1 rounded-md w-fit">
+						<p className="text-sm text-fg-muted">@{user.username}</p>
+						<div className="mt-2 text-xs font-medium text-accent-400 border border-accent-900/50 bg-accent-900/20 px-2 py-1 rounded-md w-fit">
 							{user.role?.name || "Membre"}
 						</div>
 					</div>
@@ -49,19 +49,19 @@ export default async function SettingsPage() {
 				<SettingsForm user={user} />
 			</div>
 
-			<div className="mt-8 rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm">
-				<h2 className="text-xl font-semibold text-white mb-6 pb-4 border-b border-dark-800">
+			<div className="mt-8 rounded-xl border border-border bg-surface-900/50 p-6 shadow-xl backdrop-blur-sm">
+				<h2 className="text-xl font-semibold text-fg mb-6 pb-4 border-b border-border">
 					Apparence
 				</h2>
 				<ThemePicker />
 			</div>
 
-            <div className="mt-8 rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm">
-                <h2 className="text-xl font-semibold text-white mb-6 pb-4 border-b border-dark-800">
-                  Sécurité
-                </h2>
-                <ChangePasswordForm />
-            </div>
+			<div className="mt-8 rounded-xl border border-border bg-surface-900/50 p-6 shadow-xl backdrop-blur-sm">
+				<h2 className="text-xl font-semibold text-fg mb-6 pb-4 border-b border-border">
+					Sécurité
+				</h2>
+				<ChangePasswordForm />
+			</div>
 		</div>
 	);
 }

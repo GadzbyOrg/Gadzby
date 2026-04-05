@@ -212,11 +212,11 @@ export function ShopManagerView({
 		<div className="flex flex-col gap-6 pb-40 md:pb-0">
 			{/* Client Search - Always Top */}
 			<div className="space-y-2">
-				<h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider hidden md:block">
+				<h2 className="text-sm font-semibold text-fg-muted uppercase tracking-wider hidden md:block">
 					Client
 				</h2>
 				{selectedClient ? (
-					<div className="rounded-xl border border-dark-700 bg-dark-800 p-4">
+					<div className="rounded-xl border border-border bg-elevated p-4">
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-4">
 								<UserAvatar
@@ -230,28 +230,28 @@ export function ShopManagerView({
 								/>
 								<div>
 									<div className="flex items-center gap-2">
-										<span className="font-semibold text-white text-lg">
+										<span className="font-semibold text-fg text-lg">
 											{selectedClient.username}
 										</span>
-										<span className="text-xs text-gray-400">
+										<span className="text-xs text-fg-muted">
 											({selectedClient.bucque})
 										</span>
 									</div>
-									<div className="text-sm text-gray-400">
+									<div className="text-sm text-fg-muted">
 										{selectedClient.prenom} {selectedClient.nom}
 									</div>
 								</div>
 							</div>
 							<button
 								onClick={() => setSelectedClient(null)}
-								className="p-2 text-gray-400 hover:text-white"
+								className="p-2 text-fg-muted hover:text-fg"
 								type="button"
 							>
 								<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M18 6 6 18M6 6l12 12" /></svg>
 							</button>
 						</div>
-						<div className="mt-4 flex items-center justify-between rounded-lg bg-dark-900 p-3">
-							<span className="text-gray-400">Solde actuel</span>
+						<div className="mt-4 flex items-center justify-between rounded-lg bg-surface-900 p-3">
+							<span className="text-fg-muted">Solde actuel</span>
 							<span
 								className={`text-xl font-mono font-bold ${selectedClient.balance < 0 ? "text-red-400" : "text-green-400"
 									}`}
@@ -274,7 +274,7 @@ export function ShopManagerView({
 			<div className="hidden md:grid md:grid-cols-2 gap-6 items-start">
 				{/* Left: Product List (Desktop) */}
 				<div className="space-y-2">
-					<h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+					<h2 className="text-sm font-semibold text-fg-muted uppercase tracking-wider">
 						Produits
 					</h2>
 					<ProductGrid
@@ -287,7 +287,7 @@ export function ShopManagerView({
 
 				{/* Right: Cart Summary (Desktop) */}
 				<div className="space-y-2 sticky top-6">
-					<h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+					<h2 className="text-sm font-semibold text-fg-muted uppercase tracking-wider">
 						Récapitulatif
 					</h2>
 					<CartSummary
@@ -324,7 +324,7 @@ export function ShopManagerView({
 			</div>
 
 			{/* Mobile Sticky Footer */}
-			<div className="md:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 bg-dark-950/95 backdrop-blur-md border-t border-dark-800 z-40 transition-transform duration-300 flex flex-col shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.5)]">
+			<div className="md:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 bg-surface-950/95 backdrop-blur-md border-t border-border z-40 transition-transform duration-300 flex flex-col shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.5)]">
 				{/* Cart Preview */}
 				{cartItemsCount > 0 && (
 					<div className="flex flex-wrap gap-2 p-3 pb-0 max-h-32 overflow-y-auto custom-scrollbar items-center content-start">
@@ -334,12 +334,12 @@ export function ShopManagerView({
 							return (
 								<div
 									key={productId}
-									className="flex-shrink-0 flex items-center gap-2 bg-dark-800 border border-dark-700 rounded-full pl-1 pr-3 py-1 text-xs"
+									className="flex-shrink-0 flex items-center gap-2 bg-elevated border border-border rounded-full pl-1 pr-3 py-1 text-xs"
 								>
-									<div className="flex items-center justify-center bg-primary-500/10 text-primary-400 font-bold rounded-full h-5 w-5 border border-primary-500/20">
+									<div className="flex items-center justify-center bg-accent-500/10 text-accent-400 font-bold rounded-full h-5 w-5 border border-accent-500/20">
 										{qty}
 									</div>
-									<span className="text-gray-200 font-medium max-w-[100px] truncate">
+									<span className="text-fg font-medium max-w-[100px] truncate">
 										{product.name}
 									</span>
 								</div>
@@ -350,10 +350,10 @@ export function ShopManagerView({
 
 				<div className="max-w-7xl mx-auto flex items-center justify-between gap-3 p-3">
 					<div className="flex flex-col">
-						<span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+						<span className="text-xs text-fg-muted font-medium uppercase tracking-wider">
 							Total
 						</span>
-						<span className="text-xl font-bold font-mono text-white">
+						<span className="text-xl font-bold font-mono text-fg">
 							{(cartTotal / 100).toFixed(2)}€
 						</span>
 					</div>
@@ -361,7 +361,7 @@ export function ShopManagerView({
 					<button
 						onClick={() => setIsReviewOpen(true)}
 						disabled={cartItemsCount === 0}
-						className="flex-1 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:bg-dark-800 disabled:text-gray-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+						className="flex-1 bg-accent-600 hover:bg-accent-500 disabled:opacity-50 disabled:bg-elevated disabled:text-fg-subtle text-fg font-bold py-3 px-6 rounded-xl shadow-lg shadow-accent-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
 					>
 						<IconShoppingCart className="w-5 h-5" />
 						<span>
@@ -373,10 +373,10 @@ export function ShopManagerView({
 
 			{/* Mobile Review Drawer/Modal */}
 			<Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-				<DialogContent className="max-h-[85vh] overflow-y-auto bg-dark-900 border-dark-800 p-0 rounded-t-2xl sm:rounded-lg gap-0">
-					<div className="p-4 border-b border-dark-800 bg-dark-950/50 sticky top-0 z-10 backdrop-blur-sm">
+				<DialogContent className="max-h-[85vh] overflow-y-auto bg-surface-900 border-border p-0 rounded-t-2xl sm:rounded-lg gap-0">
+					<div className="p-4 border-b border-border bg-surface-950/50 sticky top-0 z-10 backdrop-blur-sm">
 						<DialogHeader>
-							<DialogTitle className="text-left text-white">
+							<DialogTitle className="text-left text-fg">
 								Validation
 							</DialogTitle>
 						</DialogHeader>

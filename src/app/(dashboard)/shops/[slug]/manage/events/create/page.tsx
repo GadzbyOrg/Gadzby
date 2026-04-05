@@ -14,7 +14,7 @@ export default async function CreateEventPage({
 
 	return (
 		<div className="flex flex-col gap-6 p-4 md:p-8">
-			<h2 className="text-2xl font-bold text-white">
+			<h2 className="text-2xl font-bold text-fg">
 				Créer un nouvel événement
 			</h2>
 			<EventForm shopId={shop.id} slug={slug} />

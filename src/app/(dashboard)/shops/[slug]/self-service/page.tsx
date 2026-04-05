@@ -9,7 +9,7 @@ import {
 	getShopBySlug,
 	getShopDetailsForMember,
 } from "@/features/shops/actions";
-import { getShopCategories,getShopProducts } from "@/features/shops/products";
+import { getShopCategories, getShopProducts } from "@/features/shops/products";
 import { verifySession } from "@/lib/session";
 
 import { SelfServiceView } from "../_components/self-service-view";
@@ -58,13 +58,13 @@ export default async function ShopSelfServicePage({
 	const isEnabled = shop.isSelfServiceEnabled;
 
 	interface VariantData { price: number | null; quantity: number | null; id?: string }
-	interface ProductData { 
+	interface ProductData {
 		id?: string;
 		name?: string;
-		price: number | null; 
-		variants?: VariantData[]; 
-		event?: { status: string; customMargin?: number | null; } | null; 
-		eventPrice?: number | null; 
+		price: number | null;
+		variants?: VariantData[];
+		event?: { status: string; customMargin?: number | null; } | null;
+		eventPrice?: number | null;
 		allowSelfService?: boolean | null;
 		isArchived?: boolean | null;
 	}
@@ -86,40 +86,40 @@ export default async function ShopSelfServicePage({
 			isClosedForUser = true;
 		} else {
 			products = res.products.map((p: ProductData) => {
-                let effectivePrice = p.price || 0;
-                const variants = p.variants ? p.variants.map((v: VariantData) => ({ ...v })) : [];
+				let effectivePrice = p.price || 0;
+				const variants = p.variants ? p.variants.map((v: VariantData) => ({ ...v })) : [];
 
-                if (p.event && p.event.status === "OPEN") {
-                    const customMargin = p.event.customMargin || 0;
-                    
-                    if (p.eventPrice != null) {
-                        effectivePrice = p.eventPrice;
-                    } else if (customMargin > 0) {
-                        effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
-                    }
-                    
-                    variants.forEach((variant: VariantData) => {
-                        let vPrice = variant.price;
-                        if (vPrice !== null && vPrice !== undefined) {
-                            if (customMargin > 0 && p.eventPrice == null) {
-                                vPrice = Math.round(vPrice * (1 + customMargin / 100));
-                            }
-                        } else {
-                            vPrice = Math.round(effectivePrice * (variant.quantity || 1));
-                        }
-                        variant.price = vPrice;
-                    });
-                }
+				if (p.event && p.event.status === "OPEN") {
+					const customMargin = p.event.customMargin || 0;
 
-                return {
-                    ...p,
-                    price: effectivePrice,
-                    variants,
-                    image: null,
-                    allowSelfService: true,
-                    isArchived: false,
-                };
-            });
+					if (p.eventPrice != null) {
+						effectivePrice = p.eventPrice;
+					} else if (customMargin > 0) {
+						effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
+					}
+
+					variants.forEach((variant: VariantData) => {
+						let vPrice = variant.price;
+						if (vPrice !== null && vPrice !== undefined) {
+							if (customMargin > 0 && p.eventPrice == null) {
+								vPrice = Math.round(vPrice * (1 + customMargin / 100));
+							}
+						} else {
+							vPrice = Math.round(effectivePrice * (variant.quantity || 1));
+						}
+						variant.price = vPrice;
+					});
+				}
+
+				return {
+					...p,
+					price: effectivePrice,
+					variants,
+					image: null,
+					allowSelfService: true,
+					isArchived: false,
+				};
+			});
 			categories = res.categories;
 		}
 	} else {
@@ -131,40 +131,40 @@ export default async function ShopSelfServicePage({
 			]);
 
 			products = ("products" in pRes ? pRes.products || [] : []).map((p: ProductData) => {
-                let effectivePrice = p.price || 0;
-                const variants = p.variants ? p.variants.map((v: VariantData) => ({ ...v })) : [];
+				let effectivePrice = p.price || 0;
+				const variants = p.variants ? p.variants.map((v: VariantData) => ({ ...v })) : [];
 
-                if (p.event && p.event.status === "OPEN") {
-                    const customMargin = p.event.customMargin || 0;
-                    
-                    if (p.eventPrice != null) {
-                        effectivePrice = p.eventPrice;
-                    } else if (customMargin > 0) {
-                        effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
-                    }
-                    
-                    variants.forEach((variant: VariantData) => {
-                        let vPrice = variant.price;
-                        if (vPrice !== null && vPrice !== undefined) {
-                            if (customMargin > 0 && p.eventPrice == null) {
-                                vPrice = Math.round(vPrice * (1 + customMargin / 100));
-                            }
-                        } else {
-                            vPrice = Math.round(effectivePrice * (variant.quantity || 1));
-                        }
-                        variant.price = vPrice;
-                    });
-                }
+				if (p.event && p.event.status === "OPEN") {
+					const customMargin = p.event.customMargin || 0;
 
-                return {
-                    ...p,
-                    price: effectivePrice,
-                    variants,
-                    image: null,
-                    allowSelfService: p.allowSelfService ?? false,
-                    isArchived: p.isArchived ?? false,
-                };
-            });
+					if (p.eventPrice != null) {
+						effectivePrice = p.eventPrice;
+					} else if (customMargin > 0) {
+						effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
+					}
+
+					variants.forEach((variant: VariantData) => {
+						let vPrice = variant.price;
+						if (vPrice !== null && vPrice !== undefined) {
+							if (customMargin > 0 && p.eventPrice == null) {
+								vPrice = Math.round(vPrice * (1 + customMargin / 100));
+							}
+						} else {
+							vPrice = Math.round(effectivePrice * (variant.quantity || 1));
+						}
+						variant.price = vPrice;
+					});
+				}
+
+				return {
+					...p,
+					price: effectivePrice,
+					variants,
+					image: null,
+					allowSelfService: p.allowSelfService ?? false,
+					isArchived: p.isArchived ?? false,
+				};
+			});
 			categories = "categories" in cRes ? cRes.categories || [] : [];
 		} else {
 			isClosedForUser = true;
@@ -174,26 +174,26 @@ export default async function ShopSelfServicePage({
 	if (isClosedForUser) {
 		return (
 			<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[50vh] text-center space-y-4">
-				<div className="flex items-center gap-4 text-sm text-gray-500 mb-8 w-full justify-start">
-					<Link href={`/shops`} className="hover:text-white transition-colors">
+				<div className="flex items-center gap-4 text-sm text-fg-subtle mb-8 w-full justify-start">
+					<Link href={`/shops`} className="hover:text-fg transition-colors">
 						← Retour aux boquettes
 					</Link>
 				</div>
 
-				<div className="bg-dark-900 border border-dark-800 rounded-3xl p-12 max-w-lg w-full">
-					<div className="w-16 h-16 bg-dark-800 rounded-full flex items-center justify-center mx-auto mb-6">
+				<div className="bg-surface-900 border border-border rounded-3xl p-12 max-w-lg w-full">
+					<div className="w-16 h-16 bg-elevated rounded-full flex items-center justify-center mx-auto mb-6">
 						<span className="text-3xl">🔒</span>
 					</div>
-					<h2 className="text-2xl font-bold text-white mb-2">
+					<h2 className="text-2xl font-bold text-fg mb-2">
 						Self-Service Fermé
 					</h2>
-					<p className="text-gray-400">
+					<p className="text-fg-muted">
 						Le self-service de la boquette {shop.name} est actuellement fermé ou
 						indisponible.
 					</p>
 					<Link
 						href="/shops"
-						className="inline-block mt-8 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-colors"
+						className="inline-block mt-8 px-6 py-3 bg-accent-600 hover:bg-accent-500 text-fg rounded-xl font-medium transition-colors"
 					>
 						Explorer les autres boquettes
 					</Link>
@@ -204,21 +204,21 @@ export default async function ShopSelfServicePage({
 
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-			<div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+			<div className="flex items-center justify-between text-sm text-fg-subtle mb-2">
 				<div className="flex items-center gap-4">
-					<Link href={`/shops`} className="hover:text-white transition-colors">
+					<Link href={`/shops`} className="hover:text-fg transition-colors">
 						← Retour aux boquettes
 					</Link>
 					<span>/</span>
-					<span className="text-white font-medium">{shop.name}</span>
+					<span className="text-fg font-medium">{shop.name}</span>
 				</div>
 			</div>
 
-			<header className="border-b border-dark-800 pb-6 mb-6">
-				<h1 className="text-3xl font-bold text-white tracking-tight">
+			<header className="border-b border-border pb-6 mb-6">
+				<h1 className="text-3xl font-bold text-fg tracking-tight">
 					{shop.name}
 				</h1>
-				<p className="text-gray-400">
+				<p className="text-fg-muted">
 					Commander des produits de {shop.name} en self-service.
 				</p>
 			</header>

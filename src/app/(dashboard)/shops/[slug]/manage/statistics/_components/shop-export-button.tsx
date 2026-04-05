@@ -73,7 +73,7 @@ export function ShopExportButton({ slug }: { slug: string }) {
 		<button
 			onClick={handleExport}
 			disabled={isExporting}
-			className="flex items-center gap-2 px-3 py-2 bg-dark-800 hover:bg-dark-700 text-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+			className="flex items-center gap-2 px-3 py-2 bg-elevated hover:bg-elevated text-fg rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
 		>
 			{isExporting ? (
 				<IconLoader2 className="w-4 h-4 animate-spin" />

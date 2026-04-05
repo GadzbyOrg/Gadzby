@@ -27,13 +27,13 @@ export function Pagination({ totalPages }: { totalPages: number }) {
 			<button
 				onClick={() => handlePageChange(currentPage - 1)}
 				disabled={currentPage <= 1}
-				className="p-2 rounded-md border border-dark-700 bg-dark-800 text-gray-400 hover:text-white hover:bg-dark-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				className="p-2 rounded-md border border-border bg-elevated text-fg-muted hover:text-fg hover:bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 			>
 				<IconChevronLeft size={20} />
 			</button>
 
-			<div className="flex items-center gap-1 text-sm font-medium text-gray-300">
-				<span className="px-3 py-2 bg-dark-800 border border-dark-700 rounded-md">
+			<div className="flex items-center gap-1 text-sm font-medium text-fg">
+				<span className="px-3 py-2 bg-elevated border border-border rounded-md">
 					Page {currentPage} sur {totalPages}
 				</span>
 			</div>
@@ -41,7 +41,7 @@ export function Pagination({ totalPages }: { totalPages: number }) {
 			<button
 				onClick={() => handlePageChange(currentPage + 1)}
 				disabled={currentPage >= totalPages}
-				className="p-2 rounded-md border border-dark-700 bg-dark-800 text-gray-400 hover:text-white hover:bg-dark-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				className="p-2 rounded-md border border-border bg-elevated text-fg-muted hover:text-fg hover:bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 			>
 				<IconChevronRight size={20} />
 			</button>

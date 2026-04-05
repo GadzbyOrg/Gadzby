@@ -12,7 +12,7 @@ import {
 } from "@tabler/icons-react";
 // ... existing imports
 import { IconCalendar } from "@tabler/icons-react";
-import { usePathname,useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -29,46 +29,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 function DateRangeFilter() {
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const { replace } = useRouter();
+	const searchParams = useSearchParams();
+	const pathname = usePathname();
+	const { replace } = useRouter();
 
-    const handleDateChange = (key: "startDate" | "endDate", value: string) => {
-        const params = new URLSearchParams(searchParams);
-        if (value) {
-            params.set(key, value);
-        } else {
-            params.delete(key);
-        }
-        params.set("page", "1");
-        replace(`${pathname}?${params.toString()}`);
-    };
+	const handleDateChange = (key: "startDate" | "endDate", value: string) => {
+		const params = new URLSearchParams(searchParams);
+		if (value) {
+			params.set(key, value);
+		} else {
+			params.delete(key);
+		}
+		params.set("page", "1");
+		replace(`${pathname}?${params.toString()}`);
+	};
 
-    return (
-        <div className="flex items-center gap-2 w-full">
-            <div className="relative flex-1">
-                <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                <input 
-                    type="date"
-                    className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
-                    value={searchParams.get("startDate") || ""}
-                    onChange={(e) => handleDateChange("startDate", e.target.value)}
-                    placeholder="Date début"
-                />
-            </div>
-            <span className="text-gray-500 shrink-0">-</span>
-            <div className="relative flex-1">
-                 <IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                <input 
-                    type="date"
-                    className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
-                    value={searchParams.get("endDate") || ""}
-                    onChange={(e) => handleDateChange("endDate", e.target.value)}
-                    placeholder="Date fin"
-                />
-            </div>
-        </div>
-    );
+	return (
+		<div className="flex items-center gap-2 w-full">
+			<div className="relative flex-1">
+				<IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
+				<input
+					type="date"
+					className="w-full bg-surface-950 border-border text-fg pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-accent-500"
+					value={searchParams.get("startDate") || ""}
+					onChange={(e) => handleDateChange("startDate", e.target.value)}
+					placeholder="Date début"
+				/>
+			</div>
+			<span className="text-fg-subtle shrink-0">-</span>
+			<div className="relative flex-1">
+				<IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
+				<input
+					type="date"
+					className="w-full bg-surface-950 border-border text-fg pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-accent-500"
+					value={searchParams.get("endDate") || ""}
+					onChange={(e) => handleDateChange("endDate", e.target.value)}
+					placeholder="Date fin"
+				/>
+			</div>
+		</div>
+	);
 }
 
 export function TransactionToolbar() {
@@ -106,58 +106,58 @@ export function TransactionToolbar() {
 
 	return (
 		<div className="flex flex-col gap-3 mb-6">
-            <div className="flex flex-col md:flex-row gap-3">
-                <div className="relative flex-1">
-                    <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
-                    <input
-                        type="text"
-                        placeholder="Rechercher (description, montant)..."
-                        className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-10 pr-4 py-2 rounded-lg focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-sm"
-                        defaultValue={searchParams.get("search")?.toString()}
-                        onChange={(e) => handleSearch(e.target.value)}
-                    />
-                </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                    <div className="relative flex-1 md:flex-none">
-                        <select
-                            className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
-                            onChange={(e) => handleTypeFilter(e.target.value)}
-                            defaultValue={searchParams.get("type")?.toString() || "ALL"}
-                        >
-                            <option value="ALL">Tous les types</option>
-                            <option value="PURCHASE">Achats</option>
-                            <option value="TOPUP">Rechargement</option>
-                            <option value="TRANSFER">Virements</option>
-                            <option value="REFUND">Remboursements</option>
-                            <option value="DEPOSIT">Pénalité</option>
-                            <option value="ADJUSTMENT">Ajustements</option>
-                        </select>
-                        <IconFilter className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                    </div>
+			<div className="flex flex-col md:flex-row gap-3">
+				<div className="relative flex-1">
+					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4" />
+					<input
+						type="text"
+						placeholder="Rechercher (description, montant)..."
+						className="w-full bg-surface-950 border-border text-fg pl-10 pr-4 py-2 rounded-lg focus:ring-1 focus:ring-accent-500 focus:border-accent-500 text-sm"
+						defaultValue={searchParams.get("search")?.toString()}
+						onChange={(e) => handleSearch(e.target.value)}
+					/>
+				</div>
+				<div className="flex gap-2 w-full md:w-auto">
+					<div className="relative flex-1 md:flex-none">
+						<select
+							className="w-full bg-surface-950 border-border text-fg pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-accent-500 cursor-pointer"
+							onChange={(e) => handleTypeFilter(e.target.value)}
+							defaultValue={searchParams.get("type")?.toString() || "ALL"}
+						>
+							<option value="ALL">Tous les types</option>
+							<option value="PURCHASE">Achats</option>
+							<option value="TOPUP">Rechargement</option>
+							<option value="TRANSFER">Virements</option>
+							<option value="REFUND">Remboursements</option>
+							<option value="DEPOSIT">Pénalité</option>
+							<option value="ADJUSTMENT">Ajustements</option>
+						</select>
+						<IconFilter className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
+					</div>
 
-                    <div className="relative flex-1 md:flex-none">
-                        <select
-                            className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
-                            onChange={(e) => handleSort(e.target.value)}
-                            defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
-                        >
-                            <option value="DATE_DESC">Date (Réc.)</option>
-                            <option value="DATE_ASC">Date (Anc.)</option>
-                            <option value="AMOUNT_DESC">Montant (Décr.)</option>
-                            <option value="AMOUNT_ASC">Montant (Crois.)</option>
-                        </select>
-                        {searchParams.get("sort")?.includes("ASC") ? (
-                            <IconSortAscending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                        ) : (
-                            <IconSortDescending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 pointer-events-none" />
-                        )}
-                    </div>
-                </div>
-            </div>
-            {/* New Row for Date Filter */}
-            <div className="flex items-center gap-2 w-full">
-                 <DateRangeFilter />
-            </div>
+					<div className="relative flex-1 md:flex-none">
+						<select
+							className="w-full bg-surface-950 border-border text-fg pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-accent-500 cursor-pointer"
+							onChange={(e) => handleSort(e.target.value)}
+							defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
+						>
+							<option value="DATE_DESC">Date (Réc.)</option>
+							<option value="DATE_ASC">Date (Anc.)</option>
+							<option value="AMOUNT_DESC">Montant (Décr.)</option>
+							<option value="AMOUNT_ASC">Montant (Crois.)</option>
+						</select>
+						{searchParams.get("sort")?.includes("ASC") ? (
+							<IconSortAscending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
+						) : (
+							<IconSortDescending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
+						)}
+					</div>
+				</div>
+			</div>
+			{/* New Row for Date Filter */}
+			<div className="flex items-center gap-2 w-full">
+				<DateRangeFilter />
+			</div>
 		</div>
 	);
 }
@@ -178,8 +178,8 @@ export function ExportButton() {
 			const search = searchParams.get("search") || "";
 			const type = searchParams.get("type") || "ALL";
 			const sort = searchParams.get("sort") || "DATE_DESC";
-            const startDate = searchParams.get("startDate") || undefined;
-            const endDate = searchParams.get("endDate") || undefined;
+			const startDate = searchParams.get("startDate") || undefined;
+			const endDate = searchParams.get("endDate") || undefined;
 
 			const res = await exportTransactionsAction({ search, type, sort, startDate, endDate });
 
@@ -204,7 +204,7 @@ export function ExportButton() {
 		<button
 			onClick={handleExport}
 			disabled={isExporting}
-			className="flex items-center gap-2 px-3 py-2 bg-dark-800 hover:bg-dark-700 text-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+			className="flex items-center gap-2 px-3 py-2 bg-surface-950 hover:bg-surface-900 text-fg rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
 		>
 			{isExporting ? (
 				<IconLoader2 className="w-4 h-4 animate-spin" />
@@ -291,7 +291,7 @@ export function TransactionActions({
 						setMenuOpen(!menuOpen);
 					}}
 					disabled={isCancelling || isUpdating}
-					className="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-dark-800 rounded-md transition-colors"
+					className="p-1.5 text-fg-muted hover:text-fg hover:bg-elevated rounded-md transition-colors"
 				>
 					{isCancelling || isUpdating ? (
 						<IconLoader2 className="w-4 h-4 animate-spin" />
@@ -309,7 +309,7 @@ export function TransactionActions({
 								setMenuOpen(false);
 							}}
 						/>
-						<div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-dark-900 border border-dark-700 shadow-xl z-20 overflow-hidden ring-1 ring-black ring-opacity-5 focus:outline-none">
+						<div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-surface-900 border border-border shadow-xl z-20 overflow-hidden ring-1 ring-black ring-opacity-5 focus:outline-none">
 							<div className="py-1">
 								{canEdit && (
 									<button
@@ -319,9 +319,9 @@ export function TransactionActions({
 											setEditQuantity(quantity || 0);
 											setEditDialogOpen(true);
 										}}
-										className="flex w-full items-center px-4 py-2 text-sm text-gray-300 hover:bg-dark-800 hover:text-white"
+										className="flex w-full items-center px-4 py-2 text-sm text-fg hover:bg-elevated hover:text-fg"
 									>
-										<IconPencil className="mr-3 h-4 w-4 text-gray-500" />
+										<IconPencil className="mr-3 h-4 w-4 text-fg-subtle" />
 										Modifier quantité
 									</button>
 								)}
@@ -344,7 +344,7 @@ export function TransactionActions({
 			</div>
 
 			<Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-				<DialogContent className="bg-dark-900 border-dark-800 text-gray-200">
+				<DialogContent className="bg-surface-900 border-border text-fg">
 					<DialogHeader>
 						<DialogTitle>Modifier la quantité</DialogTitle>
 						<DialogDescription>
@@ -366,7 +366,7 @@ export function TransactionActions({
 								type="number"
 								value={editQuantity}
 								onChange={(e) => setEditQuantity(parseInt(e.target.value) || 0)}
-								className="col-span-3 bg-dark-800 border-dark-700 text-gray-200"
+								className="col-span-3 bg-elevated border-border text-fg"
 								min={0}
 								max={(quantity || 1) - 1}
 							/>
@@ -377,14 +377,14 @@ export function TransactionActions({
 							variant="ghost"
 							onClick={() => setEditDialogOpen(false)}
 							disabled={isUpdating}
-							className="hover:bg-dark-800 text-gray-400 hover:text-gray-200"
+							className="hover:bg-elevated text-fg-muted hover:text-fg"
 						>
 							Annuler
 						</Button>
 						<Button
 							onClick={handleUpdate}
 							disabled={isUpdating}
-							className="bg-primary-600 hover:bg-primary-500 text-white"
+							className="bg-accent-600 hover:bg-accent-500 text-fg"
 						>
 							{isUpdating ? (
 								<>
@@ -413,7 +413,7 @@ export function CancelGroupButton({
 
 	if (isCancelled)
 		return (
-			<span className="text-xs text-gray-500 italic bg-dark-800 px-2 py-1 rounded">
+			<span className="text-xs text-fg-subtle italic bg-elevated px-2 py-1 rounded">
 				Groupe annulé
 			</span>
 		);
@@ -462,30 +462,30 @@ export function CancelGroupButton({
 
 import { TransactionTable } from "@/components/transactions/transaction-table";
 
- 
+
 export function AdminTransactionTable({ transactions, totalCount }: { transactions: any[], totalCount?: number }) {
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const { replace } = useRouter();
+	const searchParams = useSearchParams();
+	const pathname = usePathname();
+	const { replace } = useRouter();
 
-    const page = Number(searchParams.get("page")) || 1;
+	const page = Number(searchParams.get("page")) || 1;
 
-    const setPage = (p: number | ((prev: number) => number)) => {
-        const newPage = typeof p === "function" ? p(page) : p;
-        const params = new URLSearchParams(searchParams);
-        params.set("page", newPage.toString());
-        replace(`${pathname}?${params.toString()}`);
-    };
+	const setPage = (p: number | ((prev: number) => number)) => {
+		const newPage = typeof p === "function" ? p(page) : p;
+		const params = new URLSearchParams(searchParams);
+		params.set("page", newPage.toString());
+		replace(`${pathname}?${params.toString()}`);
+	};
 
-    return (
-        <TransactionTable 
-            transactions={transactions} 
-            isAdmin={true}
-            pagination={{
-                page,
-                setPage,
-                total: totalCount
-            }}
-        />
-    );
+	return (
+		<TransactionTable
+			transactions={transactions}
+			isAdmin={true}
+			pagination={{
+				page,
+				setPage,
+				total: totalCount
+			}}
+		/>
+	);
 }

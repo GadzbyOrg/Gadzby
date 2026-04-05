@@ -1,10 +1,10 @@
 'use client';
 
-import { IconLink, IconLoader2,IconUnlink } from '@tabler/icons-react';
+import { IconLink, IconLoader2, IconUnlink } from '@tabler/icons-react';
 import { useState, useTransition } from 'react';
 
 import { useToast } from "@/components/ui/use-toast";
-import { deleteExpenseSplit,getAvailableExpensesAction, linkExpenseToEvent, splitExpense, unlinkExpenseFromEvent } from '@/features/events/actions';
+import { deleteExpenseSplit, getAvailableExpensesAction, linkExpenseToEvent, splitExpense, unlinkExpenseFromEvent } from '@/features/events/actions';
 
 interface Props {
     event: any;
@@ -16,7 +16,7 @@ export function EventExpenses({ event }: Props) {
     const [availableExpenses, setAvailableExpenses] = useState<any[]>([]);
     const [selectedExpenseId, setSelectedExpenseId] = useState<string>('');
     const [isPending, startTransition] = useTransition();
-    
+
     // Linking Form State
     const [linkMode, setLinkMode] = useState<'FULL' | 'SPLIT'>('FULL');
     const [splitAmount, setSplitAmount] = useState<string>('');
@@ -24,8 +24,8 @@ export function EventExpenses({ event }: Props) {
     const handleOpenLink = async () => {
         const result = await getAvailableExpensesAction({ shopId: event.shopId });
         if (result?.error) {
-             toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
-             return;
+            toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
+            return;
         }
         setAvailableExpenses(result.data || []);
         setLinkOpen(true);
@@ -36,7 +36,7 @@ export function EventExpenses({ event }: Props) {
 
     const handleLink = () => {
         if (!selectedExpenseId) return;
-        
+
         startTransition(async () => {
             try {
                 let result;
@@ -47,19 +47,19 @@ export function EventExpenses({ event }: Props) {
                         expenseId: selectedExpenseId
                     });
                 } else {
-                     const amount = Math.round(parseFloat(splitAmount) * 100);
-                     if (isNaN(amount) || amount <= 0) {
-                         toast({ title: 'Erreur', description: 'Montant invalide', variant: 'destructive' });
-                         return;
-                     }
-                     result = await splitExpense({
+                    const amount = Math.round(parseFloat(splitAmount) * 100);
+                    if (isNaN(amount) || amount <= 0) {
+                        toast({ title: 'Erreur', description: 'Montant invalide', variant: 'destructive' });
+                        return;
+                    }
+                    result = await splitExpense({
                         shopId: event.shopId,
                         eventId: event.id,
                         expenseId: selectedExpenseId,
                         amount
-                     });
+                    });
                 }
-                
+
                 if (result?.error) {
                     toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
                     return;
@@ -75,33 +75,33 @@ export function EventExpenses({ event }: Props) {
     };
 
     const handleUnlink = (id: string, type: 'DIRECT' | 'SPLIT') => {
-         if (!confirm('Délier cette dépense ?')) return;
-         
-         startTransition(async () => {
-             try {
-                 let result;
-                 if (type === 'DIRECT') {
-                     result = await unlinkExpenseFromEvent({
+        if (!confirm('Délier cette dépense ?')) return;
+
+        startTransition(async () => {
+            try {
+                let result;
+                if (type === 'DIRECT') {
+                    result = await unlinkExpenseFromEvent({
                         shopId: event.shopId,
                         eventId: event.id,
                         expenseId: id
-                     });
-                 } else {
-                     result = await deleteExpenseSplit({
+                    });
+                } else {
+                    result = await deleteExpenseSplit({
                         shopId: event.shopId,
                         eventId: event.id,
                         splitId: id
-                     });
-                 }
-                 if (result?.error) {
+                    });
+                }
+                if (result?.error) {
                     toast({ title: 'Erreur', description: result.error, variant: 'destructive' });
                     return;
-                 }
-                 toast({ title: 'Succès', description: 'Dépense déliée', variant: 'default' });
-             } catch (error) {
-                 toast({ title: 'Erreur', description: 'Impossible de délier', variant: 'destructive' });
-             }
-         });
+                }
+                toast({ title: 'Succès', description: 'Dépense déliée', variant: 'default' });
+            } catch (error) {
+                toast({ title: 'Erreur', description: 'Impossible de délier', variant: 'destructive' });
+            }
+        });
     };
 
     // Merge lists
@@ -128,28 +128,28 @@ export function EventExpenses({ event }: Props) {
     }));
 
     // Sort by date (newest first)
-    const allExpenses = [...directExpenses, ...splitExpenses].sort((a, b) => 
+    const allExpenses = [...directExpenses, ...splitExpenses].sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
     );
-    
+
     // Find selected expense details for form
     const selectedExpense = availableExpenses.find(e => e.id === selectedExpenseId);
 
     return (
         <div className="flex flex-col gap-4">
-             <div className="flex justify-end">
-                <button 
+            <div className="flex justify-end">
+                <button
                     onClick={handleOpenLink}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md bg-dark-700 text-gray-300 hover:bg-dark-600 transition-colors text-sm"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md bg-elevated text-fg hover:bg-elevated transition-colors text-sm"
                 >
                     <IconLink size={16} />
                     Lier une dépense existante
                 </button>
             </div>
 
-            <div className="border border-dark-700 rounded-lg overflow-hidden">
-                <table className="w-full text-sm text-left text-gray-400">
-                    <thead className="bg-dark-800 text-gray-200 uppercase text-xs">
+            <div className="border border-border rounded-lg overflow-hidden">
+                <table className="w-full text-sm text-left text-fg-muted">
+                    <thead className="bg-elevated text-fg uppercase text-xs">
                         <tr>
                             <th className="px-4 py-3">Date</th>
                             <th className="px-4 py-3">Description</th>
@@ -160,9 +160,9 @@ export function EventExpenses({ event }: Props) {
                             <th className="px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-dark-700 bg-dark-900">
+                    <tbody className="divide-y divide-border bg-surface-900">
                         {allExpenses.map((e) => (
-                            <tr key={e.id} className="hover:bg-dark-800/50">
+                            <tr key={e.id} className="hover:bg-elevated/50">
                                 <td className="px-4 py-3">{new Date(e.date).toLocaleDateString()}</td>
                                 <td className="px-4 py-3">{e.description}</td>
                                 <td className="px-4 py-3">
@@ -172,12 +172,12 @@ export function EventExpenses({ event }: Props) {
                                         <span className="px-2 py-0.5 rounded text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20">Partiel</span>
                                     )}
                                 </td>
-                                <td className="px-4 py-3 font-medium text-white">{(e.amount / 100).toFixed(2)} €</td>
-                                <td className="px-4 py-3 text-gray-500">{(e.totalAmount / 100).toFixed(2)} €</td>
+                                <td className="px-4 py-3 font-medium text-fg">{(e.amount / 100).toFixed(2)} €</td>
+                                <td className="px-4 py-3 text-fg-subtle">{(e.totalAmount / 100).toFixed(2)} €</td>
                                 <td className="px-4 py-3">{e.issuer?.username || 'Inconnu'}</td>
                                 <td className="px-4 py-3 text-right">
-                                    <button 
-                                        onClick={() => handleUnlink(e.unlinkId, e.type)} 
+                                    <button
+                                        onClick={() => handleUnlink(e.unlinkId, e.type)}
                                         disabled={isPending}
                                         className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/10 transition-colors disabled:opacity-50"
                                         title="Délier"
@@ -188,8 +188,8 @@ export function EventExpenses({ event }: Props) {
                             </tr>
                         ))}
                         {allExpenses.length === 0 && (
-                             <tr>
-                                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                            <tr>
+                                <td colSpan={7} className="px-4 py-8 text-center text-fg-subtle">
                                     Aucune dépense liée
                                 </td>
                             </tr>
@@ -201,14 +201,14 @@ export function EventExpenses({ event }: Props) {
             {/* Modal */}
             {linkOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                     <div className="bg-dark-800 border border-dark-700 rounded-lg shadow-xl w-full max-w-md p-6 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
-                        <h3 className="text-lg font-bold text-white">Lier une dépense</h3>
-                        
+                    <div className="bg-elevated border border-border rounded-lg shadow-xl w-full max-w-md p-6 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+                        <h3 className="text-lg font-bold text-fg">Lier une dépense</h3>
+
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium text-gray-300">Choisir une dépense</label>
+                                <label className="text-sm font-medium text-fg">Choisir une dépense</label>
                                 <select
-                                    className="bg-dark-900 border border-dark-700 rounded-md p-2 text-white focus:outline-none focus:border-primary-500"
+                                    className="bg-surface-900 border border-border rounded-md p-2 text-fg focus:outline-none focus:border-accent-500"
                                     value={selectedExpenseId}
                                     onChange={(e) => {
                                         setSelectedExpenseId(e.target.value);
@@ -227,25 +227,23 @@ export function EventExpenses({ event }: Props) {
                             </div>
 
                             {selectedExpenseId && selectedExpense && (
-                                <div className="p-3 bg-dark-900 rounded-lg border border-dark-700 flex flex-col gap-3">
+                                <div className="p-3 bg-surface-900 rounded-lg border border-border flex flex-col gap-3">
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => setLinkMode('FULL')}
-                                            className={`flex-1 py-1.5 px-3 rounded text-sm font-medium transition-colors border ${
-                                                linkMode === 'FULL' 
-                                                ? 'bg-primary-600 border-primary-500 text-white' 
-                                                : 'bg-dark-800 border-dark-600 text-gray-400 hover:bg-dark-700'
-                                            }`}
+                                            className={`flex-1 py-1.5 px-3 rounded text-sm font-medium transition-colors border ${linkMode === 'FULL'
+                                                ? 'bg-accent-600 border-accent-500 text-fg'
+                                                : 'bg-elevated border-border text-fg-muted hover:bg-elevated'
+                                                }`}
                                         >
                                             Complet ({(selectedExpense.amount / 100).toFixed(2)}€)
                                         </button>
                                         <button
                                             onClick={() => setLinkMode('SPLIT')}
-                                            className={`flex-1 py-1.5 px-3 rounded text-sm font-medium transition-colors border ${
-                                                linkMode === 'SPLIT'
-                                                ? 'bg-purple-600 border-purple-500 text-white'
-                                                : 'bg-dark-800 border-dark-600 text-gray-400 hover:bg-dark-700'
-                                            }`}
+                                            className={`flex-1 py-1.5 px-3 rounded text-sm font-medium transition-colors border ${linkMode === 'SPLIT'
+                                                ? 'bg-purple-600 border-purple-500 text-fg'
+                                                : 'bg-elevated border-border text-fg-muted hover:bg-elevated'
+                                                }`}
                                         >
                                             Partiel / Divisé
                                         </button>
@@ -253,17 +251,17 @@ export function EventExpenses({ event }: Props) {
 
                                     {linkMode === 'SPLIT' && (
                                         <div>
-                                            <label className="text-xs font-medium text-gray-400 mb-1 block">Montant à attribuer (€)</label>
+                                            <label className="text-xs font-medium text-fg-muted mb-1 block">Montant à attribuer (€)</label>
                                             <input
                                                 type="number"
                                                 min="0"
                                                 step="0.01"
-                                                className="w-full bg-dark-800 border border-dark-600 rounded px-2 py-1.5 text-white focus:outline-none focus:border-purple-500"
+                                                className="w-full bg-elevated border border-border rounded px-2 py-1.5 text-fg focus:outline-none focus:border-purple-500"
                                                 value={splitAmount}
                                                 onChange={e => setSplitAmount(e.target.value)}
                                                 placeholder="0.00"
                                             />
-                                            <p className="text-xs text-gray-500 mt-1">
+                                            <p className="text-xs text-fg-subtle mt-1">
                                                 Attribuer une partie de la dépense à cet événement.
                                             </p>
                                         </div>
@@ -272,17 +270,17 @@ export function EventExpenses({ event }: Props) {
                             )}
                         </div>
 
-                         <div className="flex justify-end gap-3 mt-2">
-                            <button 
+                        <div className="flex justify-end gap-3 mt-2">
+                            <button
                                 onClick={() => setLinkOpen(false)}
-                                className="px-4 py-2 rounded-md bg-dark-700 text-gray-300 hover:bg-dark-600 transition-colors text-sm"
+                                className="px-4 py-2 rounded-md bg-elevated text-fg hover:bg-elevated transition-colors text-sm"
                             >
                                 Annuler
                             </button>
-                            <button 
+                            <button
                                 onClick={handleLink}
                                 disabled={!selectedExpenseId || isPending || (linkMode === 'SPLIT' && !splitAmount)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors text-sm font-medium disabled:opacity-50"
+                                className="flex items-center gap-2 px-4 py-2 rounded-md bg-accent-600 text-fg hover:bg-accent-700 transition-colors text-sm font-medium disabled:opacity-50"
                             >
                                 {isPending ? <IconLoader2 size={16} className="animate-spin" /> : linkMode === 'FULL' ? 'Lier la dépense' : 'Attribuer le montant'}
                             </button>

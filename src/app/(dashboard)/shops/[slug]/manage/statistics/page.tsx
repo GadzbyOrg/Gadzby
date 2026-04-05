@@ -102,24 +102,24 @@ export default async function ShopTransactionsPage({
 
 	return (
 		<div className="max-w-7xl mx-auto p-2 sm:p-4 lg:p-6 space-y-6 sm:space-y-8 overflow-x-hidden">
-			<div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-500 mb-4">
+			<div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-fg-subtle mb-4">
 				<Link
 					href={`/shops/${shop.slug}/manage`}
-					className="hover:text-white transition-colors whitespace-nowrap shrink-0"
+					className="hover:text-fg transition-colors whitespace-nowrap shrink-0"
 				>
 					← Retour à la gestion
 				</Link>
 				<span className="shrink-0">/</span>
-				<span className="text-white font-medium">
+				<span className="text-fg font-medium">
 					Historique des transactions
 				</span>
 			</div>
 
 			<header>
-				<h1 className="text-3xl font-bold text-white tracking-tight mb-2">
+				<h1 className="text-3xl font-bold text-fg tracking-tight mb-2">
 					Statistiques & Transactions
 				</h1>
-				<p className="text-gray-400">
+				<p className="text-fg-muted">
 					Aperçu des performances et historique des mouvements de stock.
 				</p>
 			</header>
@@ -128,15 +128,15 @@ export default async function ShopTransactionsPage({
 
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">
-					<h2 className="text-xl font-bold text-white">Historique</h2>
+					<h2 className="text-xl font-bold text-fg">Historique</h2>
 					<ShopExportButton slug={slug} />
 				</div>
 
 				<ShopTransactionToolbar />
 
-				<div className="rounded-2xl bg-dark-900 border border-dark-800 overflow-hidden">
-					<div className="p-6 border-b border-dark-800">
-						<h2 className="text-lg font-semibold text-white">
+				<div className="rounded-2xl bg-surface-900 border border-border overflow-hidden">
+					<div className="p-6 border-b border-border">
+						<h2 className="text-lg font-semibold text-fg">
 							Liste des opérations
 						</h2>
 					</div>
