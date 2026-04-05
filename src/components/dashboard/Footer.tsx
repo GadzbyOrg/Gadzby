@@ -44,21 +44,21 @@ export function Footer() {
 					</p>
 				</div>
 
-				<div className="flex items-center gap-4">
+				<div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
 					<Link
 						href="https://github.com/GadzbyOrg/Gadzby"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
+						className="flex shrink-0 whitespace-nowrap items-center gap-2 rounded-full border border-dark-800 bg-dark-900 !p-2.5 sm:!px-3 sm:!py-1.5 !text-xs !font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
 					>
 						<IconBrandGithub size={16} />
-						<span>GitHub</span>
+						<span className="!text-xs !font-medium hidden sm:inline">GitHub</span>
 					</Link>
 					<Dialog open={contactOpen} onOpenChange={setContactOpen}>
 						<DialogTrigger asChild>
-							<button className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400">
+							<button className="flex shrink-0 whitespace-nowrap items-center gap-2 rounded-full border border-dark-800 bg-dark-900 !p-2.5 sm:!px-3 sm:!py-1.5 !text-xs !font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400">
 								<IconMail size={16} />
-								<span>Contact</span>
+								<span className="!text-xs !font-medium hidden sm:inline">Contact</span>
 							</button>
 						</DialogTrigger>
 						<DialogContent>
@@ -96,10 +96,10 @@ export function Footer() {
 					</Dialog>
 					<button
 						data-tally-open="GxD49k"
-						className="flex items-center gap-2 rounded-full border border-dark-800 bg-dark-900 !px-3 !py-1.5 !text-xs !font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
+						className="flex shrink-0 whitespace-nowrap items-center gap-2 rounded-full border border-dark-800 bg-dark-900 !p-2.5 sm:!px-3 sm:!py-1.5 !text-xs !font-medium text-gray-400 transition-colors hover:border-primary-700/50 hover:text-primary-400"
 					>
 						<IconBug size={16} />
-						<span className="!text-xs !font-medium">Signaler un bug</span>
+						<span className="!text-xs !font-medium hidden sm:inline">Signaler bug</span>
 					</button>
 				</div>
 				<Script id="tally-iframe-resizer-config">
