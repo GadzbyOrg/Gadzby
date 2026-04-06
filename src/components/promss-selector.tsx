@@ -1,5 +1,6 @@
 "use client";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PromssSelectorProps {
     promssList: string[];
@@ -11,25 +12,26 @@ interface PromssSelectorProps {
 
 export function PromssSelector({
     promssList,
-    selectedPromss = "",
+    selectedPromss,
     onChange,
     placeholder = "Promo",
     className
 }: PromssSelectorProps) {
     return (
         <div className={`flex gap-2 ${className}`}>
-            <select
-                className="bg-surface-950 border border-border rounded-lg px-3 py-2 text-sm text-fg focus:outline-none focus:ring-1 focus:ring-accent-500 min-w-[100px]"
-                value={selectedPromss}
-                onChange={(e) => onChange(e.target.value)}
-            >
-                <option value="">{placeholder}</option>
-                {promssList.map((p) => (
-                    <option key={p} value={p}>
-                        {p}
-                    </option>
-                ))}
-            </select>
+            <Select value={selectedPromss || "all"} onValueChange={onChange}>
+                <SelectTrigger className="min-w-[100px]">
+                    <SelectValue placeholder={placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">{placeholder}</SelectItem>
+                    {promssList.map((p) => (
+                        <SelectItem key={p} value={p}>
+                            {p}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
         </div>
     );
 }

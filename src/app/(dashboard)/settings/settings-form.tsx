@@ -7,75 +7,79 @@ import {
 	IconPhone,
 } from "@tabler/icons-react";
 import { IconLayoutDashboard } from "@tabler/icons-react";
-import { useState } from "react";
+import {useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { updateUserAction } from "@/features/users/actions";
 import { cn } from "@/lib/utils";
 
 function PreferredPathSelector({ defaultValue }: { defaultValue: string | null }) {
-	const predefinedPaths = [
-		{ label: "Tableau de bord (Par défaut)", value: "/" },
-	];
+    const predefinedPaths = [
+        { label: "Tableau de bord (Par défaut)", value: "/" },
+    ];
 
-	const initialMode = predefinedPaths.some(p => p.value === defaultValue) || !defaultValue
-		? "select"
-		: "custom";
+    const initialMode = predefinedPaths.some(p => p.value === defaultValue) || !defaultValue 
+        ? "select" 
+        : "custom";
 
-	const [mode, setMode] = useState<"select" | "custom">(initialMode);
-	const [customValue, setCustomValue] = useState(defaultValue || "");
-	const [selectValue, setSelectValue] = useState(
-		predefinedPaths.some(p => p.value === defaultValue) || !defaultValue
-			? defaultValue || "/"
-			: "custom"
-	);
+    const [mode, setMode] = useState<"select" | "custom">(initialMode);
+    const [customValue, setCustomValue] = useState(defaultValue || "");
+    const [selectValue, setSelectValue] = useState(
+        predefinedPaths.some(p => p.value === defaultValue) || !defaultValue
+            ? defaultValue || "/"
+            : "custom"
+    );
 
-	return (
-		<div className="flex flex-col gap-3">
-			<select
-				className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-3 pr-10 text-fg shadow-sm ring-1 ring-inset ring-border focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
-				value={mode === "custom" ? "custom" : selectValue}
-				onChange={(e) => {
-					const val = e.target.value;
-					if (val === "custom") {
-						setMode("custom");
-						setSelectValue("custom");
-					} else {
-						setMode("select");
-						setSelectValue(val);
-					}
-				}}
-			>
-				{predefinedPaths.map((p) => (
-					<option key={p.value} value={p.value}>
-						{p.label}
-					</option>
-				))}
-				<option value="custom">Autre (Lien personnalisé)</option>
-			</select>
+    return (
+        <div className="flex flex-col gap-3">
+            <Select
+                value={mode === "custom" ? "custom" : selectValue}
+                onValueChange={(val) => {
+                    if (val === "custom") {
+                        setMode("custom");
+                        setSelectValue("custom");
+                    } else {
+                        setMode("select");
+                        setSelectValue(val);
+                    }
+                }}
+            >
+                <SelectTrigger>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {predefinedPaths.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>
+                            {p.label}
+                        </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Autre (Lien personnalisé)</SelectItem>
+                </SelectContent>
+            </Select>
 
-			{mode === "custom" && (
-				<div className="relative">
-					<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-						<IconLayoutDashboard className="h-5 w-5 text-fg-subtle" />
-					</div>
-					<input
-						type="text"
-						value={customValue}
-						onChange={(e) => setCustomValue(e.target.value)}
-						placeholder="/exemple/chemin"
-						className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
-					/>
-				</div>
-			)}
-
-			<input
-				type="hidden"
-				name="preferredDashboardPath"
-				value={mode === "custom" ? customValue : selectValue}
-			/>
-		</div>
-	);
+            {mode === "custom" && (
+                <div className="relative">
+                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <IconLayoutDashboard className="h-5 w-5 text-fg-subtle" />
+                    </div>
+                    <input
+                        type="text"
+                        value={customValue}
+                        onChange={(e) => setCustomValue(e.target.value)}
+                        placeholder="/exemple/chemin"
+                        className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
+                    />
+                </div>
+            )}
+            
+            <input 
+                type="hidden" 
+                name="preferredDashboardPath" 
+                value={mode === "custom" ? customValue : selectValue} 
+            />
+        </div>
+    );
 }
 
 function SubmitButton() {
@@ -86,7 +90,7 @@ function SubmitButton() {
 			type="submit"
 			disabled={pending}
 			className={cn(
-				"flex w-full justify-center rounded-lg bg-accent-600 px-3 py-2.5 text-sm font-semibold leading-6 text-fg shadow-sm transition-all",
+				"flex w-full justify-center rounded-lg bg-accent-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm transition-all",
 				"hover:bg-accent-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600",
 				"disabled:opacity-50 disabled:cursor-not-allowed"
 			)}
@@ -113,7 +117,7 @@ function InputLabel({
 	return (
 		<label
 			htmlFor={htmlFor}
-			className="block text-sm font-medium leading-6 text-fg"
+			className="block text-sm font-medium leading-6 text-fg-muted"
 		>
 			{children}
 		</label>
@@ -151,7 +155,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="email"
 							id="email"
 							defaultValue={user.email}
-							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -166,7 +170,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="phone"
 							id="phone"
 							defaultValue={user.phone}
-							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -182,20 +186,20 @@ export function SettingsForm({ user }: { user: any }) {
 							name="bucque"
 							id="bucque"
 							defaultValue={user.bucque}
-							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
 
 				<div className="sm:col-span-2">
-					<InputLabel htmlFor="preferredDashboardPath">Page de démarrage</InputLabel>
-					<div className="mt-2">
-						<PreferredPathSelector
-							key={user.preferredDashboardPath || 'default'}
-							defaultValue={user.preferredDashboardPath}
-						/>
-					</div>
-				</div>
+                    <InputLabel htmlFor="preferredDashboardPath">Page de démarrage</InputLabel>
+                    <div className="mt-2">
+                        <PreferredPathSelector 
+                            key={user.preferredDashboardPath || 'default'} 
+                            defaultValue={user.preferredDashboardPath} 
+                        />
+                    </div>
+                </div>
 			</div>
 
 			<div className="mt-8">

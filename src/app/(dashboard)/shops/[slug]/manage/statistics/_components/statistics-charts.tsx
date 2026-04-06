@@ -25,11 +25,13 @@ import {
 	getStockProjections,
 } from "@/features/shops/analytics-actions";
 import { formatPrice } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { ProductPerformanceCard, ProductStats } from "./product-performance-card";
 import { StaffActivityCard, StaffStats } from "./staff-activity-card";
 import { StockProjection } from "./stock-projection-card";
 import { CustomerStats, TopCustomersCard } from "./top-customers-card";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";
 
@@ -41,7 +43,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const pathname = usePathname();
-	const [, startTransition] = useTransition();
+	const [isPending, startTransition] = useTransition();
 
 	const timeframe = (searchParams.get("timeframe") as Timeframe) || "30d";
 	const customStart = searchParams.get("from") || "";
@@ -67,7 +69,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 	const [customerStats, setCustomerStats] = useState<CustomerStats[]>([]);
 	const [topProducts, setTopProducts] = useState<ProductStats[]>([]);
 	const [flopProducts, setFlopProducts] = useState<ProductStats[]>([]);
-	const [, setProjections] = useState<StockProjection[]>([]);
+	const [projections, setProjections] = useState<StockProjection[]>([]);
 	const [categoryStats, setCategoryStats] = useState<{ categoryId: string; categoryName: string; totalRevenue: number }[]>([]);
 	const [isChartsExpanded, setIsChartsExpanded] = useState(false);
 
@@ -244,8 +246,8 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 							key={t}
 							onClick={() => handleTimeframeChange(t)}
 							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${timeframe === t
-								? "bg-accent-600 text-fg shadow-sm"
-								: "text-fg-muted hover:text-fg hover:bg-elevated"
+								? "bg-accent-600 text-white shadow-sm"
+								: "text-fg-muted hover:text-white hover:bg-elevated"
 								}`}
 						>
 							{t === "7d" && "7 Jours"}
@@ -258,36 +260,29 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 				</div>
 
 				{timeframe === "custom" && (
-					<div className="flex items-center gap-2 w-full sm:w-auto">
-						<input
-							type="date"
-							value={customStart}
-							onChange={(e) => handleDateChange("from", e.target.value)}
-							className="flex-1 w-full sm:w-auto min-w-0 bg-elevated border-border text-fg rounded-md px-2 sm:px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
-						/>
-						<span className="text-fg-subtle shrink-0">-</span>
-						<input
-							type="date"
-							value={customEnd}
-							onChange={(e) => handleDateChange("to", e.target.value)}
-							className="flex-1 w-full sm:w-auto min-w-0 bg-elevated border-border text-fg rounded-md px-2 sm:px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
+					<div className="flex items-center gap-2 w-full sm:w-[260px]">
+						<DateRangePicker
+							startValue={customStart}
+							endValue={customEnd}
+							onChange={(range) => updateParams({ from: range.start || null, to: range.end || null })}
 						/>
 					</div>
 				)}
 
 				<div className="w-full sm:w-[200px] shrink-0">
-					<select
-						value={eventIdParam}
-						onChange={(e) => handleEventChange(e.target.value)}
-						className="w-full bg-elevated border border-border text-fg text-sm rounded-md px-3 py-2 focus:ring-accent-500 focus:border-accent-500 appearance-none cursor-pointer"
-					>
-						<option value="all">Tous les événements</option>
-						{events.map((e) => (
-							<option key={e.id} value={e.id}>
-								{e.name}
-							</option>
-						))}
-					</select>
+					<Select value={eventIdParam} onValueChange={handleEventChange}>
+						<SelectTrigger>
+							<SelectValue placeholder="Tous les événements" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Tous les événements</SelectItem>
+							{events.map((e) => (
+								<SelectItem key={e.id} value={e.id}>
+									{e.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 			</div>
 
@@ -336,7 +331,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					<div className="flex justify-center w-full py-2">
 						<button
 							onClick={() => setIsChartsExpanded(!isChartsExpanded)}
-							className="flex items-center gap-2 px-5 py-2.5 bg-elevated hover:bg-elevated text-fg hover:text-fg rounded-full text-sm font-medium transition-all shadow-sm border border-border select-none"
+							className="flex items-center gap-2 px-5 py-2.5 bg-elevated hover:bg-elevated text-fg-muted hover:text-white rounded-full text-sm font-medium transition-all shadow-sm border border-border select-none"
 						>
 							{isChartsExpanded ? (
 								<>
@@ -358,7 +353,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 							<div className="grid grid-cols-1 gap-6">
 								{/* Evolution financière */}
 								<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
-									<h3 className="text-lg font-medium text-fg mb-6">
+									<h3 className="text-lg font-medium text-white mb-6">
 										Évolution financière
 									</h3>
 									<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
@@ -477,7 +472,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 
 								{/* Category Stats */}
 								<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
-									<h3 className="text-lg font-medium text-fg mb-4">
+									<h3 className="text-lg font-medium text-white mb-4">
 										Revenus par catégorie
 									</h3>
 									{categoryStats.length === 0 ? (
@@ -525,7 +520,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 														<Bar
 															dataKey="totalRevenue"
 															name="Revenus"
-															fill="var(--color-chart-primary)"
+															fill="#818cf8"
 															radius={[4, 4, 0, 0]}
 															maxBarSize={60}
 														/>

@@ -153,6 +153,7 @@ import {
 	requestToJoinFamsAction,
 } from "@/features/famss/actions";
 import { UserAvatar } from "@/components/user-avatar";
+import { ErrorDialog } from "@/components/ui/dialog";
 
 export function RemoveMemberButton({
 	famsName,
@@ -162,6 +163,7 @@ export function RemoveMemberButton({
 	userId: string;
 }) {
 	const [loading, setLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const router = useRouter();
 
 	async function handleRemove() {
@@ -169,7 +171,7 @@ export function RemoveMemberButton({
 		setLoading(true);
 		const res = await removeMemberAction({ famsName, userId });
 		if (res?.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		} else {
 			router.refresh();
 		}
@@ -177,14 +179,17 @@ export function RemoveMemberButton({
 	}
 
 	return (
-		<button
-			onClick={handleRemove}
-			disabled={loading}
-			className="text-fg-subtle hover:text-red-500 transition-colors p-1"
-			title="Retirer le membre"
-		>
-			<IconTrash size={16} />
-		</button>
+		<>
+			<button
+				onClick={handleRemove}
+				disabled={loading}
+				className="text-fg-subtle hover:text-red-500 transition-colors p-1"
+				title="Retirer le membre"
+			>
+				<IconTrash size={16} />
+			</button>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }
 
@@ -196,6 +201,7 @@ export function PromoteMemberButton({
 	userId: string;
 }) {
 	const [loading, setLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const router = useRouter();
 
 	async function handlePromote() {
@@ -203,7 +209,7 @@ export function PromoteMemberButton({
 		setLoading(true);
 		const res = await promoteMemberAction({ famsName, userId });
 		if (res?.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		} else {
 			router.refresh();
 		}
@@ -211,26 +217,30 @@ export function PromoteMemberButton({
 	}
 
 	return (
-		<button
-			onClick={handlePromote}
-			disabled={loading}
-			className="text-fg-subtle hover:text-yellow-500 transition-colors p-1"
-			title="Promouvoir Admin"
-		>
-			<IconStar size={16} />
-		</button>
+		<>
+			<button
+				onClick={handlePromote}
+				disabled={loading}
+				className="text-fg-subtle hover:text-yellow-500 transition-colors p-1"
+				title="Promouvoir Admin"
+			>
+				<IconStar size={16} />
+			</button>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }
 
 export function JoinFamsButton({ famsName }: { famsName: string }) {
 	const [loading, setLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const router = useRouter();
 
 	async function handleJoin() {
 		setLoading(true);
 		const res = await requestToJoinFamsAction({ famsName });
 		if (res?.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		} else {
 			router.refresh();
 		}
@@ -238,25 +248,29 @@ export function JoinFamsButton({ famsName }: { famsName: string }) {
 	}
 
 	return (
-		<button
-			onClick={handleJoin}
-			disabled={loading}
-			className="w-full mt-4 bg-accent-600/20 hover:bg-accent-600/30 text-accent-400 border border-accent-600/50 rounded-lg py-2 text-sm font-medium transition-colors"
-		>
-			{loading ? "..." : "Rejoindre"}
-		</button>
+		<>
+			<button
+				onClick={handleJoin}
+				disabled={loading}
+				className="w-full mt-4 bg-accent-600/20 hover:bg-accent-600/30 text-accent-400 border border-accent-600/50 rounded-lg py-2 text-sm font-medium transition-colors"
+			>
+				{loading ? "..." : "Rejoindre"}
+			</button>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }
 
 export function CancelRequestButton({ famsName }: { famsName: string }) {
 	const [loading, setLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const router = useRouter();
 
 	async function handleCancel() {
 		setLoading(true);
 		const res = await cancelRequestAction({ famsName });
 		if (res?.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		} else {
 			router.refresh();
 		}
@@ -264,13 +278,16 @@ export function CancelRequestButton({ famsName }: { famsName: string }) {
 	}
 
 	return (
-		<button
-			onClick={handleCancel}
-			disabled={loading}
-			className="w-full mt-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg py-2 text-sm font-medium transition-colors"
-		>
-			{loading ? "..." : "Annuler la demande"}
-		</button>
+		<>
+			<button
+				onClick={handleCancel}
+				disabled={loading}
+				className="w-full mt-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg py-2 text-sm font-medium transition-colors"
+			>
+				{loading ? "..." : "Annuler la demande"}
+			</button>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }
 
@@ -283,6 +300,7 @@ export function MembershipRequestsList({
 	requests: any[];
 }) {
 	const [loadingId, setLoadingId] = useState<string | null>(null);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const router = useRouter();
 
 	if (requests.length === 0) return null;
@@ -290,7 +308,7 @@ export function MembershipRequestsList({
 	async function handleAccept(userId: string) {
 		setLoadingId(userId);
 		const res = await acceptRequestAction({ famsName, userId });
-		if (res?.error) alert(res.error);
+		if (res?.error) setErrorMsg(res.error);
 		else router.refresh();
 		setLoadingId(null);
 	}
@@ -299,13 +317,14 @@ export function MembershipRequestsList({
 		if (!confirm("Refuser cette demande ?")) return;
 		setLoadingId(userId);
 		const res = await rejectRequestAction({ famsName, userId });
-		if (res?.error) alert(res.error);
+		if (res?.error) setErrorMsg(res.error);
 		else router.refresh();
 		setLoadingId(null);
 	}
 
 	return (
 		<div className="bg-surface-900 border border-border p-6 rounded-xl space-y-4 mb-6">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 			<div className="flex justify-between items-center mb-2">
 				<h3 className="text-lg font-bold text-fg flex items-center gap-2">
 					Demandes d'adhésion
@@ -365,6 +384,7 @@ export function LeaveFamsButton({
 	userId: string;
 }) {
 	const [loading, setLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const router = useRouter();
 
 	async function handleLeave() {
@@ -372,7 +392,7 @@ export function LeaveFamsButton({
 		setLoading(true);
 		const res = await leaveFamsAction({ famsName, userId });
 		if (res?.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 			setLoading(false);
 		} else {
 			router.push("/famss");
@@ -380,12 +400,15 @@ export function LeaveFamsButton({
 	}
 
 	return (
-		<button
-			onClick={handleLeave}
-			disabled={loading}
-			className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
-		>
-			{loading ? "Départ en cours..." : "Quitter la Fam'ss"}
-		</button>
+		<>
+			<button
+				onClick={handleLeave}
+				disabled={loading}
+				className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
+			>
+				{loading ? "Départ en cours..." : "Quitter la Fam'ss"}
+			</button>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }

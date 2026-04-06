@@ -10,6 +10,7 @@ import {
 } from "@/features/shops/expenses";
 import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
 
+import { DatePicker } from "@/components/ui/date-picker";
 import { PennylaneImportModal } from "./_components/pennylane-import-modal";
 
 export default async function ShopExpensesPage({
@@ -142,12 +143,9 @@ export default async function ShopExpensesPage({
 								<label className="text-sm font-medium text-fg">
 									Date
 								</label>
-								<input
+								<DatePicker
 									name="date"
-									type="date"
-									required
 									defaultValue={new Date().toISOString().split("T")[0]}
-									className="w-full rounded-lg bg-elevated border border-border px-4 py-2 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500/50"
 								/>
 							</div>
 

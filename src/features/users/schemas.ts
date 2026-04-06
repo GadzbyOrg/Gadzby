@@ -47,7 +47,7 @@ export const createUserSchema = z.object({
 		.string()
 		.trim()
 		.min(6, "Le mot de passe doit faire au moins 6 caractères"),
-	roleId: z.uuid(),
+	roleId: z.uuid("Le rôle est requis"),
 	balance: z
 		.preprocess((v) => (v ? Math.round(Number(v) * 100) : 0), z.number().int())
 		.default(0),

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { UserSearch } from "@/components/user-search";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { topUpUserAction } from "@/features/transactions/actions";
 
 function SubmitButton() {
@@ -11,7 +12,7 @@ function SubmitButton() {
 		<button
 			type="submit"
 			disabled={pending}
-			className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-fg bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+			className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
 		>
 			{pending ? "Traitement..." : "Créditer le compte"}
 		</button>
@@ -67,7 +68,7 @@ export function TopUpUserForm() {
 								step="0.01"
 								min="0.01"
 								required
-								className="block w-full rounded-lg border-border bg-surface-950 pl-7 pr-12 text-fg placeholder-fg-subtle focus:border-accent-500 focus:ring-accent-500 sm:text-sm py-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+								className="block w-full rounded-lg border-border bg-surface-950 pl-7 pr-12 text-white placeholder-gray-500 focus:border-accent-500 focus:ring-accent-500 sm:text-sm py-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 								placeholder="0.00"
 							/>
 						</div>
@@ -77,15 +78,17 @@ export function TopUpUserForm() {
 						<label className="block text-sm font-medium text-fg">
 							Moyen de paiement
 						</label>
-						<select
-							name="paymentMethod"
-							className="mt-1 block w-full rounded-lg border-border bg-surface-950 text-fg shadow-sm focus:border-accent-500 focus:ring-accent-500 sm:text-sm py-2.5"
-						>
-							<option value="CASH">Espèces</option>
-							<option value="CARD">Carte Bancaire (TPE)</option>
-							<option value="CHECK">Chèque</option>
-							<option value="TRANSFER">Virement</option>
-						</select>
+						<Select name="paymentMethod" defaultValue="CASH">
+							<SelectTrigger className="mt-1">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="CASH">Espèces</SelectItem>
+								<SelectItem value="CARD">Carte Bancaire (TPE)</SelectItem>
+								<SelectItem value="CHECK">Chèque</SelectItem>
+								<SelectItem value="TRANSFER">Virement</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 
 					{state.error && (

@@ -4,8 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ShoppingBag, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+
+import { DatePicker } from "@/components/ui/date-picker";
 
 import { useToast } from "@/components/ui/use-toast";
 import { createEvent, updateEvent } from "@/features/events/actions";
@@ -26,7 +28,18 @@ const eventSchema = z.object({
 		(val) => (val === "" || val == null ? undefined : Number(val)),
 		z.number().min(0).optional()
 	),
-});
+}).refine(
+	(data) => {
+		if (data.startDate && data.endDate) {
+			return new Date(data.endDate) >= new Date(data.startDate);
+		}
+		return true;
+	},
+	{
+		message: "La date de fin doit être postérieure à la date de début",
+		path: ["endDate"],
+	}
+);
 
 type EventFormValues = z.infer<typeof eventSchema>;
 
@@ -249,10 +262,15 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 								<label className="text-sm font-medium text-fg">
 									Date de début
 								</label>
-								<input
-									type="date"
-									className="bg-surface-900 border border-border rounded-md p-2 text-fg focus:outline-none focus:border-accent-500"
-									{...form.register("startDate")}
+								<Controller
+									control={form.control}
+									name="startDate"
+									render={({ field }) => (
+										<DatePicker
+											value={field.value}
+											onChange={field.onChange}
+										/>
+									)}
 								/>
 								{form.formState.errors.startDate && (
 									<span className="text-red-400 text-xs">
@@ -264,11 +282,21 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 								<label className="text-sm font-medium text-fg">
 									Date de fin (Optionnel)
 								</label>
-								<input
-									type="date"
-									className="bg-surface-900 border border-border rounded-md p-2 text-fg focus:outline-none focus:border-accent-500"
-									{...form.register("endDate")}
+								<Controller
+									control={form.control}
+									name="endDate"
+									render={({ field }) => (
+										<DatePicker
+											value={field.value}
+											onChange={field.onChange}
+										/>
+									)}
 								/>
+								{form.formState.errors.endDate && (
+									<span className="text-red-400 text-xs">
+										{form.formState.errors.endDate.message}
+									</span>
+								)}
 							</div>
 						</div>
 

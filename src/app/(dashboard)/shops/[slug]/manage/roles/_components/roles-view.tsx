@@ -10,6 +10,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	ErrorDialog,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,13 +48,14 @@ export function RolesView({ shopSlug, initialRoles }: RolesViewProps) {
 	const [roles, setRoles] = useState<Role[]>(initialRoles);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingRole, setEditingRole] = useState<Role | null>(null);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const handleDelete = async (roleId: string) => {
 		if (!confirm("Êtes-vous sûr de vouloir supprimer ce rôle ?")) return;
 
 		const res = await deleteShopRole({ shopSlug, roleId });
 		if (res.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		} else {
 			setRoles(roles.filter((r) => r.id !== roleId));
 		}
@@ -80,6 +82,7 @@ export function RolesView({ shopSlug, initialRoles }: RolesViewProps) {
 
 	return (
 		<div className="space-y-6">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 			<div className="flex justify-end">
 				<Button
 					onClick={handleCreate}
@@ -170,6 +173,7 @@ function RoleModal({
 		role?.permissions || [],
 	);
 	const [isLoading, setIsLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -184,7 +188,7 @@ function RoleModal({
 					permissions,
 				});
 				if (res.error) {
-					alert(res.error);
+					setErrorMsg(res.error);
 				} else {
 					onSave({ ...role, name, permissions });
 				}
@@ -195,7 +199,7 @@ function RoleModal({
 					permissions,
 				});
 				if (res.error) {
-					alert(res.error);
+					setErrorMsg(res.error);
 				} else {
 					// We don't have the ID unless createShopRole returns it.
 					// My action return currently is just { success: "..." }.
@@ -228,6 +232,7 @@ function RoleModal({
 	};
 
 	return (
+		<>
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="bg-surface-900 border-border text-fg max-w-lg">
 				<DialogHeader>
@@ -293,6 +298,8 @@ function RoleModal({
 				</form>
 			</DialogContent>
 		</Dialog>
+		<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }
 

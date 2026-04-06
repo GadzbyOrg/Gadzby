@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { deleteFamsAction } from "@/features/famss/admin-actions";
+import { ErrorDialog } from "@/components/ui/dialog";
 
 import { FamsForm } from "./fams-form";
 import { FamsMembersModal } from "./fams-members-modal";
@@ -106,6 +107,7 @@ export function FamssTable({ famss }: FamssTableProps) {
 
     const [selectedFams, setSelectedFams] = useState<Fams | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // Search Handler
     const handleSearch = (term: string) => {
@@ -144,7 +146,7 @@ export function FamssTable({ famss }: FamssTableProps) {
         if (confirm(`Êtes-vous sûr de vouloir supprimer la Fam'ss "${name}" ? \nCette action est irréversible.`)) {
             const res = await deleteFamsAction({ famsId: id });
             if (res?.error) {
-                alert(res.error);
+                setErrorMsg(res.error);
             }
         }
     };
@@ -156,6 +158,7 @@ export function FamssTable({ famss }: FamssTableProps) {
 
     return (
         <div className="space-y-4">
+            <ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
             {/* Toolbar */}
             <div className="flex flex-col md:flex-row items-center gap-4 bg-surface-900 border border-border p-3 rounded-xl">
                 <div className="relative w-full md:flex-1 md:max-w-sm">

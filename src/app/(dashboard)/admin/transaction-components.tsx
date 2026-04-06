@@ -17,6 +17,7 @@ import { useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -24,49 +25,32 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	ErrorDialog,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function DateRangeFilter() {
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
 	const { replace } = useRouter();
 
-	const handleDateChange = (key: "startDate" | "endDate", value: string) => {
+	const handleDateRangeChange = (range: { start: string; end: string }) => {
 		const params = new URLSearchParams(searchParams);
-		if (value) {
-			params.set(key, value);
-		} else {
-			params.delete(key);
-		}
+		if (range.start) params.set("startDate", range.start); else params.delete("startDate");
+		if (range.end) params.set("endDate", range.end); else params.delete("endDate");
 		params.set("page", "1");
 		replace(`${pathname}?${params.toString()}`);
 	};
 
 	return (
-		<div className="flex items-center gap-2 w-full">
-			<div className="relative flex-1">
-				<IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
-				<input
-					type="date"
-					className="w-full bg-surface-950 border-border text-fg pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-accent-500"
-					value={searchParams.get("startDate") || ""}
-					onChange={(e) => handleDateChange("startDate", e.target.value)}
-					placeholder="Date début"
-				/>
-			</div>
-			<span className="text-fg-subtle shrink-0">-</span>
-			<div className="relative flex-1">
-				<IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
-				<input
-					type="date"
-					className="w-full bg-surface-950 border-border text-fg pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-accent-500"
-					value={searchParams.get("endDate") || ""}
-					onChange={(e) => handleDateChange("endDate", e.target.value)}
-					placeholder="Date fin"
-				/>
-			</div>
+		<div className="flex items-center gap-2 w-full md:w-[260px]">
+			<DateRangePicker
+				startValue={searchParams.get("startDate") || ""}
+				endValue={searchParams.get("endDate") || ""}
+				onChange={handleDateRangeChange}
+			/>
 		</div>
 	);
 }
@@ -75,6 +59,7 @@ export function TransactionToolbar() {
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
 	const { replace } = useRouter();
+	const [filtersOpen, setFiltersOpen] = useState(false);
 
 	const handleSearch = useDebouncedCallback((term: string) => {
 		const params = new URLSearchParams(searchParams);
@@ -83,7 +68,7 @@ export function TransactionToolbar() {
 		} else {
 			params.delete("search");
 		}
-		params.set("page", "1"); // Reset page on search
+		params.set("page", "1");
 		replace(`${pathname}?${params.toString()}`);
 	}, 300);
 
@@ -104,58 +89,80 @@ export function TransactionToolbar() {
 		replace(`${pathname}?${params.toString()}`);
 	};
 
+	const activeFilterCount = [
+		searchParams.get("type") && searchParams.get("type") !== "ALL",
+		searchParams.get("sort") && searchParams.get("sort") !== "DATE_DESC",
+		searchParams.get("startDate"),
+		searchParams.get("endDate"),
+	].filter(Boolean).length;
+
 	return (
-		<div className="flex flex-col gap-3 mb-6">
-			<div className="flex flex-col md:flex-row gap-3">
+		<div className="flex flex-col gap-2 mb-6">
+			{/* Row 1: Search + mobile filter toggle */}
+			<div className="flex gap-2">
 				<div className="relative flex-1">
-					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4" />
+					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3.5 h-3.5 pointer-events-none" />
 					<input
 						type="text"
-						placeholder="Rechercher (description, montant)..."
-						className="w-full bg-surface-950 border-border text-fg pl-10 pr-4 py-2 rounded-lg focus:ring-1 focus:ring-accent-500 focus:border-accent-500 text-sm"
+						placeholder="Rechercher..."
+						className="h-10 w-full rounded-lg border border-dark-700 bg-surface-950 pl-9 pr-4 text-sm text-fg placeholder:text-gray-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-600 focus-visible:border-primary-600"
 						defaultValue={searchParams.get("search")?.toString()}
 						onChange={(e) => handleSearch(e.target.value)}
 					/>
 				</div>
-				<div className="flex gap-2 w-full md:w-auto">
-					<div className="relative flex-1 md:flex-none">
-						<select
-							className="w-full bg-surface-950 border-border text-fg pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-accent-500 cursor-pointer"
-							onChange={(e) => handleTypeFilter(e.target.value)}
-							defaultValue={searchParams.get("type")?.toString() || "ALL"}
-						>
-							<option value="ALL">Tous les types</option>
-							<option value="PURCHASE">Achats</option>
-							<option value="TOPUP">Rechargement</option>
-							<option value="TRANSFER">Virements</option>
-							<option value="REFUND">Remboursements</option>
-							<option value="DEPOSIT">Pénalité</option>
-							<option value="ADJUSTMENT">Ajustements</option>
-						</select>
-						<IconFilter className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
-					</div>
+				<button
+					type="button"
+					onClick={() => setFiltersOpen((o) => !o)}
+					className="md:hidden relative h-10 px-3 rounded-lg border border-dark-700 bg-dark-950 text-gray-400 hover:text-white hover:border-dark-600 transition-colors shrink-0"
+				>
+					<IconFilter size={16} />
+					{activeFilterCount > 0 && (
+						<span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center">
+							{activeFilterCount}
+						</span>
+					)}
+				</button>
+			</div>
 
-					<div className="relative flex-1 md:flex-none">
-						<select
-							className="w-full bg-surface-950 border-border text-fg pl-3 pr-8 py-2 rounded-lg text-sm appearance-none focus:ring-1 focus:ring-accent-500 cursor-pointer"
-							onChange={(e) => handleSort(e.target.value)}
-							defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
+			{/* Row 2: Filters — always visible on desktop, collapsible on mobile */}
+			<div className={`flex-col gap-2 md:flex ${filtersOpen ? "flex" : "hidden"}`}>
+				<div className="flex gap-2">
+					<div className="flex-1 md:w-44">
+						<Select
+							defaultValue={searchParams.get("type")?.toString() || "ALL"}
+							onValueChange={handleTypeFilter}
 						>
-							<option value="DATE_DESC">Date (Réc.)</option>
-							<option value="DATE_ASC">Date (Anc.)</option>
-							<option value="AMOUNT_DESC">Montant (Décr.)</option>
-							<option value="AMOUNT_ASC">Montant (Crois.)</option>
-						</select>
-						{searchParams.get("sort")?.includes("ASC") ? (
-							<IconSortAscending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
-						) : (
-							<IconSortDescending className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
-						)}
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="ALL">Tous les types</SelectItem>
+								<SelectItem value="PURCHASE">Achats</SelectItem>
+								<SelectItem value="TOPUP">Rechargements</SelectItem>
+								<SelectItem value="TRANSFER">Virements</SelectItem>
+								<SelectItem value="REFUND">Remboursements</SelectItem>
+								<SelectItem value="DEPOSIT">Pénalités</SelectItem>
+								<SelectItem value="ADJUSTMENT">Ajustements</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="flex-1 md:w-44">
+						<Select
+							defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
+							onValueChange={handleSort}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="DATE_DESC">Date (récent)</SelectItem>
+								<SelectItem value="DATE_ASC">Date (ancien)</SelectItem>
+								<SelectItem value="AMOUNT_DESC">Montant (décr.)</SelectItem>
+								<SelectItem value="AMOUNT_ASC">Montant (crois.)</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 				</div>
-			</div>
-			{/* New Row for Date Filter */}
-			<div className="flex items-center gap-2 w-full">
 				<DateRangeFilter />
 			</div>
 		</div>
@@ -172,6 +179,7 @@ import {
 export function ExportButton() {
 	const searchParams = useSearchParams();
 	const [isExporting, startExport] = useTransition();
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const handleExport = () => {
 		startExport(async () => {
@@ -184,7 +192,7 @@ export function ExportButton() {
 			const res = await exportTransactionsAction({ search, type, sort, startDate, endDate });
 
 			if (res.error) {
-				alert(res.error);
+				setErrorMsg(res.error);
 				return;
 			}
 
@@ -201,18 +209,21 @@ export function ExportButton() {
 	};
 
 	return (
-		<button
-			onClick={handleExport}
-			disabled={isExporting}
-			className="flex items-center gap-2 px-3 py-2 bg-surface-950 hover:bg-surface-900 text-fg rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-		>
-			{isExporting ? (
-				<IconLoader2 className="w-4 h-4 animate-spin" />
-			) : (
-				<IconDownload className="w-4 h-4" />
-			)}
-			Export Excel
-		</button>
+		<>
+			<button
+				onClick={handleExport}
+				disabled={isExporting}
+				className="flex items-center gap-2 px-3 py-2 bg-surface-950 hover:bg-surface-900 text-fg rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+			>
+				{isExporting ? (
+					<IconLoader2 className="w-4 h-4 animate-spin" />
+				) : (
+					<IconDownload className="w-4 h-4" />
+				)}
+				Export Excel
+			</button>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }
 
@@ -236,6 +247,7 @@ export function TransactionActions({
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [editQuantity, setEditQuantity] = useState(quantity || 0);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const [isCancelling, startCancel] = useTransition();
 	const [isUpdating, startUpdate] = useTransition();
@@ -256,14 +268,13 @@ export function TransactionActions({
 				"@/features/transactions/actions"
 			);
 			const res = await cancelTransactionAction({ transactionId });
-			if (res.error) alert(res.error);
+			if (res.error) setErrorMsg(res.error);
 		});
 	};
 
 	const handleUpdate = () => {
-		if (editQuantity < 0) return alert("La quantité ne peut pas être négative");
-		if (quantity && editQuantity >= quantity)
-			return alert("La nouvelle quantité doit être inférieure à la quantité actuelle");
+		if (editQuantity < 0) { setErrorMsg("La quantité ne peut pas être négative"); return; }
+		if (quantity && editQuantity >= quantity) { setErrorMsg("La nouvelle quantité doit être inférieure à la quantité actuelle"); return; }
 
 		startUpdate(async () => {
 			const { updateTransactionQuantityAction } = await import(
@@ -275,7 +286,7 @@ export function TransactionActions({
 			});
 
 			if (res.error) {
-				alert(res.error);
+				setErrorMsg(res.error);
 			} else {
 				setEditDialogOpen(false);
 			}
@@ -398,6 +409,7 @@ export function TransactionActions({
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 		</>
 	);
 }
@@ -410,6 +422,7 @@ export function CancelGroupButton({
 	isCancelled: boolean;
 }) {
 	const [isPending, startTransition] = useTransition();
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	if (isCancelled)
 		return (
@@ -434,7 +447,7 @@ export function CancelGroupButton({
 			);
 			const res = await cancelTransactionGroupAction({ groupId });
 			if (res.error) {
-				alert(res.error);
+				setErrorMsg(res.error);
 			} else {
 				// successful revalidation happens in action
 			}
@@ -442,19 +455,22 @@ export function CancelGroupButton({
 	};
 
 	return (
-		<button
-			onClick={onCancel}
-			disabled={isPending}
-			className="flex items-center gap-2 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded text-xs font-medium transition-colors disabled:opacity-50 border border-red-500/20"
-			title="Annuler tout le groupe"
-		>
-			{isPending ? (
-				<IconLoader2 className="w-3 h-3 animate-spin" />
-			) : (
-				<IconTrash className="w-3 h-3" />
-			)}
-			Annuler le groupe
-		</button>
+		<>
+			<button
+				onClick={onCancel}
+				disabled={isPending}
+				className="flex items-center gap-2 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded text-xs font-medium transition-colors disabled:opacity-50 border border-red-500/20"
+				title="Annuler tout le groupe"
+			>
+				{isPending ? (
+					<IconLoader2 className="w-3 h-3 animate-spin" />
+				) : (
+					<IconTrash className="w-3 h-3" />
+				)}
+				Annuler le groupe
+			</button>
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		</>
 	);
 }
 
