@@ -96,6 +96,7 @@ html[data-theme="ocean"] {
   --color-surface-700: #345a80;
   --color-surface-900: #f0f8ff;
   --color-surface-950: #dde8f5;
+  --color-elevated: #e1effe;
   --color-fg-subtle: #3d6080;
 
   --color-accent-200: #a5f3fc;
@@ -117,6 +118,7 @@ html[data-theme="forest"] {
   --color-surface-700: #2a5c3f;
   --color-surface-900: #f4fcf7;
   --color-surface-950: #d8f0e2;
+  --color-elevated: #e4f5ea;
   --color-fg-subtle: #2d5c40;
 
   --color-accent-200: #d9f99d;
@@ -138,6 +140,7 @@ html[data-theme="sunset"] {
   --color-surface-700: #653624;
   --color-surface-900: #fff9f5;
   --color-surface-950: #f5e8d5;
+  --color-elevated: #f7e5d4;
   --color-fg-subtle: #7a4a30;
 
   --color-accent-200: #fed7aa;
@@ -159,6 +162,7 @@ html[data-theme="galaxy"] {
   --color-surface-700: #3e2b6a;
   --color-surface-900: #f8f5ff;
   --color-surface-950: #e5dff5;
+  --color-elevated: #ece5f8;
   --color-fg-subtle: #4d3a80;
 
   --color-accent-200: #ddd6fe;
@@ -180,6 +184,7 @@ html[data-theme="rose"] {
   --color-surface-700: #5a2040;
   --color-surface-900: #fff5f6;
   --color-surface-950: #f5dde2;
+  --color-elevated: #fae2e6;
   --color-fg-subtle: #7a3050;
 
   --color-accent-200: #fecdd3;
@@ -213,28 +218,33 @@ html[data-theme="ocean"][data-mode="dark"] {
   --color-surface-100: #0a1628;
   --color-surface-900: #192b44;
   --color-surface-950: #0a1628;
+  --color-elevated: #243b59;
 }
 
 html[data-theme="forest"][data-mode="dark"] {
   --color-surface-100: #071a0e;
   --color-surface-900: #122b1e;
   --color-surface-950: #071a0e;
+  --color-elevated: #1c442f;
 }
 
 html[data-theme="sunset"][data-mode="dark"] {
   --color-surface-100: #1c0d07;
   --color-surface-900: #2d1810;
   --color-surface-950: #1c0d07;
+  --color-elevated: #462518;
 }
 
 html[data-theme="galaxy"][data-mode="dark"] {
   --color-surface-100: #100a1e;
   --color-surface-900: #1e1332;
   --color-surface-950: #100a1e;
+  --color-elevated: #2f1e4e;
 }
 
 html[data-theme="rose"][data-mode="dark"] {
   --color-surface-100: #17080f;
   --color-surface-900: #28111e;
   --color-surface-950: #17080f;
+  --color-elevated: #3e1a2e;
 }
