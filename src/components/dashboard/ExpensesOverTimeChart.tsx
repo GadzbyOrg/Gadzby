@@ -68,7 +68,7 @@ export function ExpensesOverTimeChart({ data }: ExpensesOverTimeChartProps) {
 				/>
 				<Bar
 					dataKey="amount"
-					fill="#891c34" // primary
+					fill="var(--color-chart-primary)"
 					radius={[4, 4, 0, 0]}
 				/>
 			</BarChart>

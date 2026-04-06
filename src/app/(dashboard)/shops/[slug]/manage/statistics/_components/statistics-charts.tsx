@@ -41,7 +41,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const pathname = usePathname();
-	const [isPending, startTransition] = useTransition();
+	const [, startTransition] = useTransition();
 
 	const timeframe = (searchParams.get("timeframe") as Timeframe) || "30d";
 	const customStart = searchParams.get("from") || "";
@@ -67,7 +67,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 	const [customerStats, setCustomerStats] = useState<CustomerStats[]>([]);
 	const [topProducts, setTopProducts] = useState<ProductStats[]>([]);
 	const [flopProducts, setFlopProducts] = useState<ProductStats[]>([]);
-	const [projections, setProjections] = useState<StockProjection[]>([]);
+	const [, setProjections] = useState<StockProjection[]>([]);
 	const [categoryStats, setCategoryStats] = useState<{ categoryId: string; categoryName: string; totalRevenue: number }[]>([]);
 	const [isChartsExpanded, setIsChartsExpanded] = useState(false);
 
@@ -525,7 +525,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 														<Bar
 															dataKey="totalRevenue"
 															name="Revenus"
-															fill="#818cf8"
+															fill="var(--color-chart-primary)"
 															radius={[4, 4, 0, 0]}
 															maxBarSize={60}
 														/>

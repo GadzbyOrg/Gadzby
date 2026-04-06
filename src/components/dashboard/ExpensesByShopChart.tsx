@@ -14,9 +14,16 @@ interface ExpensesByShopChartProps {
 	data: {
 		name: string;
 		value: number;
-		fill: string;
 	}[];
 }
+
+const CHART_COLORS = [
+	"var(--color-chart-primary)",
+	"var(--color-chart-secondary)",
+	"#6b7280",
+	"#94a3b8",
+	"#cbd5e1",
+];
 
 const RADIAN = Math.PI / 180;
 
@@ -61,7 +68,7 @@ function CenterLabel({
 				y={cy - 10}
 				textAnchor="middle"
 				dominantBaseline="central"
-				fill="#9ca3af"
+				fill="var(--color-fg-muted)"
 				fontSize={11}
 			>
 				Total
@@ -71,7 +78,7 @@ function CenterLabel({
 				y={cy + 10}
 				textAnchor="middle"
 				dominantBaseline="central"
-				fill="#ffffff"
+				fill="var(--color-fg)"
 				fontSize={16}
 				fontWeight={700}
 			>
@@ -120,7 +127,7 @@ export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 					{data.map((entry, index) => (
 						<Cell
 							key={`cell-${index}`}
-							fill={entry.fill}
+							fill={CHART_COLORS[index % CHART_COLORS.length]}
 							stroke="rgba(0,0,0,0.2)"
 							strokeWidth={1}
 						/>
