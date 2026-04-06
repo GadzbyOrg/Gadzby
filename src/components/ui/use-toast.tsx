@@ -49,7 +49,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 								? "destructive group border-red-900 bg-red-900 text-red-50"
 								: t.variant === "success" || t.title?.toLowerCase().includes("succès")
 								? "success group border-green-900 bg-green-900 text-green-50"
-								: "border-gray-800 bg-dark-900 text-gray-100"
+								: "border-border bg-surface-900 text-fg"
 						)}
 					>
 						<div className="grid gap-1">

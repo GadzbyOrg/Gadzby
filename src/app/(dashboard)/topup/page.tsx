@@ -22,10 +22,10 @@ export default async function TopUpPage() {
 	return (
 		<div className="max-w-5xl mx-auto space-y-8">
 			<div>
-				<h1 className="text-3xl font-bold tracking-tight text-white">
+				<h1 className="text-3xl font-bold tracking-tight text-fg">
 					Recharger mon compte
 				</h1>
-				<p className="text-gray-400 mt-2">
+				<p className="text-fg-muted mt-2">
 					Ajoutez des crédits à votre solde.
 					<br />
 					Les frais de transaction sont à votre charge pour garantir que

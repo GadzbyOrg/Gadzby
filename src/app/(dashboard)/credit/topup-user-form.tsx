@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { UserSearch } from "@/components/user-search";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { topUpUserAction } from "@/features/transactions/actions";
 
 function SubmitButton() {
@@ -11,7 +12,7 @@ function SubmitButton() {
 		<button
 			type="submit"
 			disabled={pending}
-			className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+			className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
 		>
 			{pending ? "Traitement..." : "Créditer le compte"}
 		</button>
@@ -35,10 +36,10 @@ export function TopUpUserForm() {
 	return (
 		<form
 			action={clientAction}
-			className="space-y-6 bg-dark-900 p-6 rounded-xl border border-dark-800 shadow-xl"
+			className="space-y-6 bg-surface-900 p-6 rounded-xl border border-border shadow-xl"
 		>
 			<div>
-				<label className="block text-sm font-medium text-gray-200 mb-2">
+				<label className="block text-sm font-medium text-fg mb-2">
 					Rechercher un utilisateur
 				</label>
 				<div className="relative">
@@ -54,12 +55,12 @@ export function TopUpUserForm() {
 			{selectedUser && (
 				<div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
 					<div>
-						<label className="block text-sm font-medium text-gray-200">
+						<label className="block text-sm font-medium text-fg">
 							Montant (€)
 						</label>
 						<div className="relative mt-1 rounded-md shadow-sm">
 							<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-								<span className="text-gray-500 sm:text-sm">€</span>
+								<span className="text-fg-subtle sm:text-sm">€</span>
 							</div>
 							<input
 								type="number"
@@ -67,25 +68,27 @@ export function TopUpUserForm() {
 								step="0.01"
 								min="0.01"
 								required
-								className="block w-full rounded-lg border-dark-700 bg-dark-950 pl-7 pr-12 text-white placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+								className="block w-full rounded-lg border-border bg-surface-950 pl-7 pr-12 text-white placeholder-gray-500 focus:border-accent-500 focus:ring-accent-500 sm:text-sm py-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 								placeholder="0.00"
 							/>
 						</div>
 					</div>
 
 					<div>
-						<label className="block text-sm font-medium text-gray-200">
+						<label className="block text-sm font-medium text-fg">
 							Moyen de paiement
 						</label>
-						<select
-							name="paymentMethod"
-							className="mt-1 block w-full rounded-lg border-dark-700 bg-dark-950 text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2.5"
-						>
-							<option value="CASH">Espèces</option>
-							<option value="CARD">Carte Bancaire (TPE)</option>
-							<option value="CHECK">Chèque</option>
-							<option value="TRANSFER">Virement</option>
-						</select>
+						<Select name="paymentMethod" defaultValue="CASH">
+							<SelectTrigger className="mt-1">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="CASH">Espèces</SelectItem>
+								<SelectItem value="CARD">Carte Bancaire (TPE)</SelectItem>
+								<SelectItem value="CHECK">Chèque</SelectItem>
+								<SelectItem value="TRANSFER">Virement</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 
 					{state.error && (

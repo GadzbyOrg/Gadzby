@@ -59,7 +59,7 @@ function typeLabel(type: string): string {
 export function FamsTransactionTable({ transactions }: { transactions: FamsTransaction[] }) {
     if (transactions.length === 0) {
         return (
-            <div className="bg-dark-900 border border-dark-800 rounded-2xl p-12 flex justify-center items-center text-gray-500">
+            <div className="bg-surface-900 border border-border rounded-2xl p-12 flex justify-center items-center text-fg-subtle">
                 Aucune transaction récente
             </div>
         );
@@ -68,10 +68,10 @@ export function FamsTransactionTable({ transactions }: { transactions: FamsTrans
     return (
         <>
             {/* Desktop */}
-            <div className="hidden md:block bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-sm">
+            <div className="hidden md:block bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-dark-800 text-gray-400 uppercase text-xs font-medium tracking-wider">
+                        <thead className="bg-elevated text-fg-muted uppercase text-xs font-medium tracking-wider">
                             <tr>
                                 <th className="px-6 py-4">Type</th>
                                 <th className="px-6 py-4">Description</th>
@@ -80,7 +80,7 @@ export function FamsTransactionTable({ transactions }: { transactions: FamsTrans
                                 <th className="px-6 py-4 text-right">Montant</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-dark-800">
+                        <tbody className="divide-y divide-border">
                             {transactions.map((tx) => {
                                 const famsAmount = getFamssAmount(tx);
                                 const isPositive = famsAmount > 0;
@@ -118,25 +118,25 @@ export function FamsTransactionTable({ transactions }: { transactions: FamsTrans
                                         </td>
 
                                         {/* Description */}
-                                        <td className={`px-6 py-4 text-gray-300 ${isCancelled ? "line-through" : ""}`}>
+                                        <td className={`px-6 py-4 text-fg ${isCancelled ? "line-through" : ""}`}>
                                             {description}
-                                            {isCancelled && <span className="ml-2 text-xs text-gray-500">(Annulé)</span>}
+                                            {isCancelled && <span className="ml-2 text-xs text-fg-subtle">(Annulé)</span>}
                                         </td>
 
                                         {/* Issuer */}
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2 text-gray-400">
+                                            <div className="flex items-center gap-2 text-fg-muted">
                                                 <span className="text-sm">{tx.targetUser.username}</span>
                                             </div>
                                         </td>
 
                                         {/* Date */}
-                                        <td className="px-6 py-4 text-gray-500 text-sm capitalize" suppressHydrationWarning>
+                                        <td className="px-6 py-4 text-fg-subtle text-sm capitalize" suppressHydrationWarning>
                                             {date}
                                         </td>
 
                                         {/* Amount */}
-                                        <td className={`px-6 py-4 text-right font-mono font-bold text-base whitespace-nowrap ${isCancelled ? "line-through text-gray-600" : isPositive ? "text-emerald-400" : "text-rose-400"
+                                        <td className={`px-6 py-4 text-right font-mono font-bold text-base whitespace-nowrap ${isCancelled ? "line-through text-fg-subtle" : isPositive ? "text-emerald-400" : "text-rose-400"
                                             }`}>
                                             {isPositive ? "+" : ""}{(Math.abs(famsAmount) / 100).toFixed(2)} €
                                         </td>
@@ -166,7 +166,7 @@ export function FamsTransactionTable({ transactions }: { transactions: FamsTrans
                         <div
                             key={tx.id}
                             className={`rounded-xl p-3 border flex flex-col gap-2 ${isCancelled
-                                ? "opacity-40 grayscale bg-dark-900 border-dark-800"
+                                ? "opacity-40 grayscale bg-surface-900 border-border"
                                 : isPositive
                                     ? "bg-emerald-500/5 border-emerald-500/20"
                                     : "bg-rose-500/5 border-rose-500/20"
@@ -181,23 +181,23 @@ export function FamsTransactionTable({ transactions }: { transactions: FamsTrans
                                         }
                                     </div>
                                     <div className="min-w-0">
-                                        <div className={`font-semibold text-sm text-gray-200 truncate ${isCancelled ? "line-through" : ""}`}>
+                                        <div className={`font-semibold text-sm text-fg truncate ${isCancelled ? "line-through" : ""}`}>
                                             {description}
                                         </div>
-                                        <div className="text-xs text-gray-500 capitalize flex items-center gap-1.5 mt-0.5">
+                                        <div className="text-xs text-fg-subtle capitalize flex items-center gap-1.5 mt-0.5">
                                             <span suppressHydrationWarning>{date}</span>
-                                            <span className="w-0.5 h-0.5 bg-gray-600 rounded-full" />
+                                            <span className="w-0.5 h-0.5 bg-fg-subtle rounded-full" />
                                             <span>{typeLabel(tx.type)}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className={`font-bold font-mono text-sm shrink-0 ${isCancelled ? "line-through text-gray-600" : isPositive ? "text-emerald-400" : "text-rose-400"}`}>
+                                <div className={`font-bold font-mono text-sm shrink-0 ${isCancelled ? "line-through text-fg-subtle" : isPositive ? "text-emerald-400" : "text-rose-400"}`}>
                                     {isPositive ? "+" : ""}{(Math.abs(famsAmount) / 100).toFixed(2)} €
                                 </div>
                             </div>
 
                             {/* Issuer */}
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 pt-1 border-t border-dashed border-dark-700/50">
+                            <div className="flex items-center gap-1.5 text-xs text-fg-subtle pt-1 border-t border-dashed border-border/50">
                                 <IconUser size={11} />
                                 <span>{tx.targetUser.prenom} {tx.targetUser.nom}</span>
                             </div>

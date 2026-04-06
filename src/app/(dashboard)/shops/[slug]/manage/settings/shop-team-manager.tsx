@@ -7,8 +7,9 @@ import {
 	removeShopMember,
 	updateShopMemberRole,
 } from "@/features/shops/actions";
+import { ErrorDialog } from "@/components/ui/dialog";
 
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 //TODO: Use standard User search instead (/components/user-search)
 import { UserSearch } from "@/components/user-search";
 
@@ -49,6 +50,7 @@ export function ShopTeamManager({
 		text: string;
 		type: "success" | "error";
 	} | null>(null);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const handleAddMember = async () => {
 		if (!selectedUser) return;
@@ -72,7 +74,7 @@ export function ShopTeamManager({
 		setIsLoading(true);
 		const res = await removeShopMember(slug, userId);
 		if (res.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		}
 		setIsLoading(false);
 	};
@@ -84,7 +86,7 @@ export function ShopTeamManager({
 		setIsLoading(true);
 		const res = await updateShopMemberRole(slug, userId, newRoleId);
 		if (res.error) {
-			alert(res.error);
+			setErrorMsg(res.error);
 		}
 		setIsLoading(false);
 	};
@@ -98,54 +100,56 @@ export function ShopTeamManager({
 	};
 
 	return (
-		<div className="rounded-2xl bg-dark-900 border border-dark-800 p-6 space-y-8">
+		<div className="rounded-2xl bg-surface-900 border border-border p-6 space-y-8">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 			{/* List Members */}
 			<div className="space-y-4">
-				<h3 className="text-lg font-medium text-white mb-4">
+				<h3 className="text-lg font-medium text-fg mb-4">
 					Équipe actuelle ({members.length})
 				</h3>
 				<div className="space-y-3">
 					{members.map((member) => (
 						<div
 							key={member.user.id}
-							className="flex items-center justify-between p-3 bg-dark-800 rounded-xl border border-dark-700"
+							className="flex items-center justify-between p-3 bg-elevated rounded-xl border border-border"
 						>
 							<div className="flex items-center gap-3">
-								<div className="h-10 w-10 rounded-full bg-primary-900/50 flex items-center justify-center text-primary-200 font-bold border border-primary-500/30">
+								<div className="h-10 w-10 rounded-full bg-accent-900/50 flex items-center justify-center text-accent-200 font-bold border border-accent-500/30">
 									{member.user.prenom?.[0] ||
 										member.user.username[0].toUpperCase()}
 								</div>
 								<div>
-									<div className="font-medium text-white">
+									<div className="font-medium text-fg">
 										{member.user.prenom} {member.user.nom}
 									</div>
-									<div className="text-xs text-gray-500">
+									<div className="text-xs text-fg-subtle">
 										@{member.user.username}
 									</div>
 								</div>
 							</div>
 
 							<div className="flex items-center gap-4">
-								<select
+								<Select
 									value={getMemberRoleId(member)}
-									onChange={(e) =>
-										handleUpdateRole(member.user.id, e.target.value)
-									}
+									onValueChange={(value) => handleUpdateRole(member.user.id, value)}
 									disabled={isLoading || member.user.id === currentUserId}
-									className="bg-dark-950 border border-dark-700 rounded-lg px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-primary-500"
 								>
-									<option value="" disabled>Inconnu</option>
-									{availableRoles.map(role => (
-										<option key={role.id} value={role.id}>
-											{role.name}
-										</option>
-									))}
-								</select>
+									<SelectTrigger className="w-36">
+										<SelectValue placeholder="Inconnu" />
+									</SelectTrigger>
+									<SelectContent>
+										{availableRoles.map(role => (
+											<SelectItem key={role.id} value={role.id}>
+												{role.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 
 								<button
 									onClick={() => handleRemoveMember(member.user.id)}
 									disabled={isLoading || member.user.id === currentUserId}
-									className="text-gray-500 hover:text-red-400 disabled:opacity-30 transition-colors p-1"
+									className="text-fg-subtle hover:text-red-400 disabled:opacity-30 transition-colors p-1"
 									title="Retirer de l'équipe"
 								>
 									<svg
@@ -170,11 +174,11 @@ export function ShopTeamManager({
 				</div>
 			</div>
 
-			<div className="border-t border-dark-800 my-6"></div>
+			<div className="border-t border-border my-6"></div>
 
 			{/* Add Member */}
 			<div className="space-y-4">
-				<h3 className="text-lg font-medium text-white">Ajouter un membre</h3>
+				<h3 className="text-lg font-medium text-fg">Ajouter un membre</h3>
 
 				<div className="flex flex-col gap-4">
 					{!selectedUser ? (
@@ -186,24 +190,24 @@ export function ShopTeamManager({
 							/>
 						</div>
 					) : (
-						<div className="flex items-center justify-between bg-dark-800 border border-dark-700 rounded-xl p-3">
+						<div className="flex items-center justify-between bg-elevated border border-border rounded-xl p-3">
 							<div className="flex items-center gap-3">
-								<div className="h-10 w-10 rounded-full bg-primary-900/50 flex items-center justify-center text-primary-200 font-bold border border-primary-500/30">
+								<div className="h-10 w-10 rounded-full bg-accent-900/50 flex items-center justify-center text-accent-200 font-bold border border-accent-500/30">
 									{selectedUser.prenom?.[0] ||
 										selectedUser.username[0].toUpperCase()}
 								</div>
 								<div>
-									<div className="font-medium text-white">
+									<div className="font-medium text-fg">
 										{selectedUser.prenom} {selectedUser.nom}
 									</div>
-									<div className="text-xs text-gray-500">
+									<div className="text-xs text-fg-subtle">
 										@{selectedUser.username} • {selectedUser.bucque}
 									</div>
 								</div>
 							</div>
 							<button
 								onClick={() => setSelectedUser(null)}
-								className="text-gray-400 hover:text-white transition-colors"
+								className="text-fg-muted hover:text-fg transition-colors"
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -225,22 +229,23 @@ export function ShopTeamManager({
 
 					<div className="flex gap-4">
 						<div className="flex-1">
-							<select
-								value={selectedRoleId}
-								onChange={(e) => setSelectedRoleId(e.target.value)}
-								className="w-full bg-dark-950 border border-dark-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
-							>
-								{availableRoles.map(role => (
-									<option key={role.id} value={role.id}>
-										{role.name}
-									</option>
-								))}
-							</select>
+							<Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+								<SelectTrigger>
+									<SelectValue placeholder="Choisir un rôle" />
+								</SelectTrigger>
+								<SelectContent>
+									{availableRoles.map(role => (
+										<SelectItem key={role.id} value={role.id}>
+											{role.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 						<button
 							onClick={handleAddMember}
 							disabled={!selectedUser || isLoading || !selectedRoleId}
-							className="bg-primary-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+							className="bg-accent-600 text-fg px-6 py-3 rounded-xl font-bold hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 						>
 							{isLoading ? "..." : "Ajouter"}
 						</button>

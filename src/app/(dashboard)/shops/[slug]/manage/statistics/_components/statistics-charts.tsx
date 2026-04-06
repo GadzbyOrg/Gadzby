@@ -25,11 +25,13 @@ import {
 	getStockProjections,
 } from "@/features/shops/analytics-actions";
 import { formatPrice } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { ProductPerformanceCard, ProductStats } from "./product-performance-card";
 import { StaffActivityCard, StaffStats } from "./staff-activity-card";
 import { StockProjection } from "./stock-projection-card";
 import { CustomerStats, TopCustomersCard } from "./top-customers-card";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";
 
@@ -237,15 +239,15 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 		<div className="space-y-6">
 			{/* Controls */}
 			{/* Controls */}
-			<div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-dark-900 p-4 rounded-xl border border-dark-800 w-full overflow-hidden">
-				<div className="flex bg-dark-800 rounded-lg p-1 overflow-x-auto whitespace-nowrap custom-scrollbar w-full sm:w-auto pb-2 sm:pb-1 -mb-1 sm:mb-0">
+			<div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-surface-900 p-4 rounded-xl border border-border w-full overflow-hidden">
+				<div className="flex bg-elevated rounded-lg p-1 overflow-x-auto whitespace-nowrap custom-scrollbar w-full sm:w-auto pb-2 sm:pb-1 -mb-1 sm:mb-0">
 					{(["7d", "30d", "90d", "all", "custom"] as Timeframe[]).map((t) => (
 						<button
 							key={t}
 							onClick={() => handleTimeframeChange(t)}
 							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${timeframe === t
-								? "bg-primary-600 text-white shadow-sm"
-								: "text-gray-400 hover:text-white hover:bg-dark-700"
+								? "bg-accent-600 text-white shadow-sm"
+								: "text-fg-muted hover:text-white hover:bg-elevated"
 								}`}
 						>
 							{t === "7d" && "7 Jours"}
@@ -258,65 +260,58 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 				</div>
 
 				{timeframe === "custom" && (
-					<div className="flex items-center gap-2 w-full sm:w-auto">
-						<input
-							type="date"
-							value={customStart}
-							onChange={(e) => handleDateChange("from", e.target.value)}
-							className="flex-1 w-full sm:w-auto min-w-0 bg-dark-800 border-dark-700 text-white rounded-md px-2 sm:px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
-						/>
-						<span className="text-gray-500 shrink-0">-</span>
-						<input
-							type="date"
-							value={customEnd}
-							onChange={(e) => handleDateChange("to", e.target.value)}
-							className="flex-1 w-full sm:w-auto min-w-0 bg-dark-800 border-dark-700 text-white rounded-md px-2 sm:px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+					<div className="flex items-center gap-2 w-full sm:w-[260px]">
+						<DateRangePicker
+							startValue={customStart}
+							endValue={customEnd}
+							onChange={(range) => updateParams({ from: range.start || null, to: range.end || null })}
 						/>
 					</div>
 				)}
 
 				<div className="w-full sm:w-[200px] shrink-0">
-					<select
-						value={eventIdParam}
-						onChange={(e) => handleEventChange(e.target.value)}
-						className="w-full bg-dark-800 border border-dark-700 text-white text-sm rounded-md px-3 py-2 focus:ring-primary-500 focus:border-primary-500 appearance-none cursor-pointer"
-					>
-						<option value="all">Tous les événements</option>
-						{events.map((e) => (
-							<option key={e.id} value={e.id}>
-								{e.name}
-							</option>
-						))}
-					</select>
+					<Select value={eventIdParam} onValueChange={handleEventChange}>
+						<SelectTrigger>
+							<SelectValue placeholder="Tous les événements" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Tous les événements</SelectItem>
+							{events.map((e) => (
+								<SelectItem key={e.id} value={e.id}>
+									{e.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 			</div>
 
 			{loading ? (
-				<div className="h-64 flex items-center justify-center text-gray-400">
+				<div className="h-64 flex items-center justify-center text-fg-muted">
 					Chargement des statistiques...
 				</div>
 			) : data ? (
 				<>
 					{/* Summary Cards */}
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-						<div className="bg-dark-900 p-6 rounded-xl border border-dark-800">
-							<p className="text-sm text-gray-400 font-medium">
+						<div className="bg-surface-900 p-6 rounded-xl border border-border">
+							<p className="text-sm text-fg-muted font-medium">
 								Chiffre d&apos;affaires
 							</p>
 							<p className="text-2xl font-bold text-green-400 mt-2">
 								{formatPrice(data.summary.totalRevenue)}
 							</p>
 						</div>
-						<div className="bg-dark-900 p-6 rounded-xl border border-dark-800">
-							<p className="text-sm text-gray-400 font-medium">
+						<div className="bg-surface-900 p-6 rounded-xl border border-border">
+							<p className="text-sm text-fg-muted font-medium">
 								Dépenses (Stock)
 							</p>
 							<p className="text-2xl font-bold text-red-400 mt-2">
 								{formatPrice(data.summary.totalExpenses)}
 							</p>
 						</div>
-						<div className="bg-dark-900 p-6 rounded-xl border border-dark-800">
-							<p className="text-sm text-gray-400 font-medium">Bénéfice</p>
+						<div className="bg-surface-900 p-6 rounded-xl border border-border">
+							<p className="text-sm text-fg-muted font-medium">Bénéfice</p>
 							<p
 								className={`text-2xl font-bold mt-2 ${data.summary.profit >= 0 ? "text-blue-400" : "text-orange-400"
 									}`}
@@ -336,7 +331,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					<div className="flex justify-center w-full py-2">
 						<button
 							onClick={() => setIsChartsExpanded(!isChartsExpanded)}
-							className="flex items-center gap-2 px-5 py-2.5 bg-dark-800 hover:bg-dark-700 text-gray-300 hover:text-white rounded-full text-sm font-medium transition-all shadow-sm border border-dark-700 select-none"
+							className="flex items-center gap-2 px-5 py-2.5 bg-elevated hover:bg-elevated text-fg-muted hover:text-white rounded-full text-sm font-medium transition-all shadow-sm border border-border select-none"
 						>
 							{isChartsExpanded ? (
 								<>
@@ -357,7 +352,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 							{/* Top Charts Row */}
 							<div className="grid grid-cols-1 gap-6">
 								{/* Evolution financière */}
-								<div className="bg-dark-900 p-6 rounded-xl border border-dark-800 flex flex-col w-full">
+								<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
 									<h3 className="text-lg font-medium text-white mb-6">
 										Évolution financière
 									</h3>
@@ -433,8 +428,8 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 															borderColor: "#374151",
 															borderRadius: "0.5rem",
 														}}
-														formatter={(value?: number) => [
-															`${((value || 0) / 100).toFixed(2)}€`,
+														formatter={(value) => [
+															`${((Number(value) || 0) / 100).toFixed(2)}€`,
 															"",
 														]}
 														labelStyle={{
@@ -476,12 +471,12 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 								</div>
 
 								{/* Category Stats */}
-								<div className="bg-dark-900 p-6 rounded-xl border border-dark-800 flex flex-col w-full">
+								<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
 									<h3 className="text-lg font-medium text-white mb-4">
 										Revenus par catégorie
 									</h3>
 									{categoryStats.length === 0 ? (
-										<p className="text-gray-500 text-sm">Aucune donnée de catégorie</p>
+										<p className="text-fg-subtle text-sm">Aucune donnée de catégorie</p>
 									) : (
 										<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
 											<div className="min-w-[300px] h-full">
@@ -513,8 +508,8 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 																borderColor: "#374151",
 																borderRadius: "0.5rem",
 															}}
-															formatter={(value?: number) => [
-																`${((value || 0) / 100).toFixed(2)}€`,
+															formatter={(value) => [
+																`${((Number(value) || 0) / 100).toFixed(2)}€`,
 																"Revenus",
 															]}
 															labelStyle={{

@@ -2,7 +2,7 @@ import { IconReceipt } from "@tabler/icons-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
+import { checkTeamMemberAccess, getShopBySlug } from "@/features/shops/actions";
 import {
 	createShopExpense,
 	deleteShopExpense,
@@ -10,6 +10,7 @@ import {
 } from "@/features/shops/expenses";
 import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
 
+import { DatePicker } from "@/components/ui/date-picker";
 import { PennylaneImportModal } from "./_components/pennylane-import-modal";
 
 export default async function ShopExpensesPage({
@@ -77,23 +78,23 @@ export default async function ShopExpensesPage({
 
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-			<div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+			<div className="flex items-center gap-4 text-sm text-fg-subtle mb-4">
 				<Link
 					href={`/shops/${slug}/manage`}
-					className="hover:text-white transition-colors"
+					className="hover:text-fg transition-colors"
 				>
 					← Retour à la gestion
 				</Link>
 				<span>/</span>
-				<span className="text-white font-medium">Dépenses</span>
+				<span className="text-fg font-medium">Dépenses</span>
 			</div>
 
 			<header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold text-white tracking-tight mb-2">
+					<h1 className="text-3xl font-bold text-fg tracking-tight mb-2">
 						Dépenses du Shop
 					</h1>
-					<p className="text-gray-400">
+					<p className="text-fg-muted">
 						Déclarez et suivez les dépenses de {shop.name}.
 					</p>
 				</div>
@@ -102,8 +103,8 @@ export default async function ShopExpensesPage({
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 				{/* Formulaire d'ajout / Lien Pennylane */}
 				<div className="lg:col-span-1">
-					<div className="rounded-2xl bg-dark-900 border border-dark-800 p-6 sticky top-6">
-						<h2 className="text-xl font-semibold text-white mb-4">
+					<div className="rounded-2xl bg-surface-900 border border-border p-6 sticky top-6">
+						<h2 className="text-xl font-semibold text-fg mb-4">
 							Nouvelle Dépense
 						</h2>
 
@@ -112,19 +113,19 @@ export default async function ShopExpensesPage({
 						)}
 						<form action={addExpense} className="space-y-4">
 							<div className="space-y-2">
-								<label className="text-sm font-medium text-gray-300">
+								<label className="text-sm font-medium text-fg">
 									Description
 								</label>
 								<input
 									name="description"
 									required
-									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+									className="w-full rounded-lg bg-elevated border border-border px-4 py-2 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500/50"
 									placeholder="Ex: Facture Métro"
 								/>
 							</div>
 
 							<div className="space-y-2">
-								<label className="text-sm font-medium text-gray-300">
+								<label className="text-sm font-medium text-fg">
 									Montant (€)
 								</label>
 								<input
@@ -133,27 +134,24 @@ export default async function ShopExpensesPage({
 									step="0.01"
 									min="0"
 									required
-									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 no-spinner"
+									className="w-full rounded-lg bg-elevated border border-border px-4 py-2 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500/50 no-spinner"
 									placeholder="0.00"
 								/>
 							</div>
 
 							<div className="space-y-2">
-								<label className="text-sm font-medium text-gray-300">
+								<label className="text-sm font-medium text-fg">
 									Date
 								</label>
-								<input
+								<DatePicker
 									name="date"
-									type="date"
-									required
 									defaultValue={new Date().toISOString().split("T")[0]}
-									className="w-full rounded-lg bg-dark-800 border border-dark-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50"
 								/>
 							</div>
 
 							<button
 								type="submit"
-								className="w-full py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors"
+								className="w-full py-2 bg-accent-600 hover:bg-accent-500 text-fg rounded-lg font-medium transition-colors"
 							>
 								Ajouter
 							</button>
@@ -163,12 +161,12 @@ export default async function ShopExpensesPage({
 
 				{/* Liste des dépenses */}
 				<div className="lg:col-span-2 space-y-6">
-					<div className="rounded-2xl bg-dark-900 border border-dark-800 overflow-hidden">
-						<div className="p-6 border-b border-dark-800 flex justify-between items-center">
-							<h2 className="text-lg font-semibold text-white">Historique</h2>
-							<div className="text-sm text-gray-400">
+					<div className="rounded-2xl bg-surface-900 border border-border overflow-hidden">
+						<div className="p-6 border-b border-border flex justify-between items-center">
+							<h2 className="text-lg font-semibold text-fg">Historique</h2>
+							<div className="text-sm text-fg-muted">
 								Total:{" "}
-								<span className="text-white font-medium">
+								<span className="text-fg font-medium">
 									{(totalExpenses / 100).toFixed(2)} €
 								</span>
 							</div>
@@ -176,8 +174,8 @@ export default async function ShopExpensesPage({
 
 						{/* Desktop view */}
 						<div className="hidden md:block overflow-x-auto">
-							<table className="w-full text-left text-sm text-gray-400">
-								<thead className="bg-dark-800 text-gray-200 uppercase font-medium">
+							<table className="w-full text-left text-sm text-fg-muted">
+								<thead className="bg-elevated text-fg uppercase font-medium">
 									<tr>
 										<th className="px-6 py-4 whitespace-nowrap">Date</th>
 										<th className="px-6 py-4">Description</th>
@@ -186,23 +184,23 @@ export default async function ShopExpensesPage({
 										<th className="px-6 py-4 text-right whitespace-nowrap">Action</th>
 									</tr>
 								</thead>
-								<tbody className="divide-y divide-dark-800">
+								<tbody className="divide-y divide-border">
 									{expenses && expenses.length > 0 ? (
 										expenses.map((expense) => (
 											<tr
 												key={expense.id}
-												className="hover:bg-dark-800/50 transition-colors"
+												className="hover:bg-elevated/50 transition-colors"
 											>
 												<td className="px-6 py-4 whitespace-nowrap">
 													{new Date(expense.date).toLocaleDateString()}
 												</td>
-												<td className="px-6 py-4 font-medium text-white">
+												<td className="px-6 py-4 font-medium text-fg">
 													{expense.description}
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap">
 													{expense.issuer.prenom} {expense.issuer.nom}
 												</td>
-												<td className="px-6 py-4 text-right text-white whitespace-nowrap">
+												<td className="px-6 py-4 text-right text-fg whitespace-nowrap">
 													{(expense.amount / 100).toFixed(2)} €
 												</td>
 												<td className="px-6 py-4 text-right whitespace-nowrap">
@@ -222,7 +220,7 @@ export default async function ShopExpensesPage({
 										<tr>
 											<td
 												colSpan={5}
-												className="px-6 py-12 text-center text-gray-500"
+												className="px-6 py-12 text-center text-fg-subtle"
 											>
 												Aucune dépense déclarée.
 											</td>
@@ -233,28 +231,28 @@ export default async function ShopExpensesPage({
 						</div>
 
 						{/* Mobile view */}
-						<div className="md:hidden flex flex-col divide-y divide-dark-800">
+						<div className="md:hidden flex flex-col divide-y divide-border">
 							{expenses && expenses.length > 0 ? (
 								expenses.map((expense) => (
-									<div key={expense.id} className="p-3 flex flex-col gap-2 hover:bg-dark-800/20 transition-colors">
+									<div key={expense.id} className="p-3 flex flex-col gap-2 hover:bg-elevated/20 transition-colors">
 										<div className="flex justify-between items-start gap-3">
 											<div className="flex items-center gap-3 flex-1 min-w-0">
-												<div className="p-2 rounded-lg shrink-0 bg-dark-800 text-gray-400 border border-dark-700">
+												<div className="p-2 rounded-lg shrink-0 bg-elevated text-fg-muted border border-border">
 													<IconReceipt size={20} stroke={1.5} />
 												</div>
 												<div className="flex flex-col min-w-0">
-													<div className="font-semibold text-gray-200 line-clamp-2 text-sm leading-snug">
+													<div className="font-semibold text-fg line-clamp-2 text-sm leading-snug">
 														{expense.description}
 													</div>
-													<div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 min-w-0 mt-0.5">
+													<div className="text-xs text-fg-muted capitalize flex items-center gap-1.5 min-w-0 mt-0.5">
 														<span className="shrink-0">{new Date(expense.date).toLocaleDateString()}</span>
-														<span className="w-0.5 h-0.5 bg-gray-600 rounded-full shrink-0"></span>
+														<span className="w-0.5 h-0.5 bg-fg-subtle rounded-full shrink-0"></span>
 														<span className="truncate">{expense.issuer.prenom} {expense.issuer.nom}</span>
 													</div>
 												</div>
 											</div>
 											<div className="flex flex-col items-end shrink-0 gap-0.5">
-												<div className="font-bold text-sm text-gray-200">
+												<div className="font-bold text-sm text-fg">
 													{(expense.amount / 100).toFixed(2)} €
 												</div>
 												<div className="mt-1 flex gap-2 justify-end z-20 relative">
@@ -273,7 +271,7 @@ export default async function ShopExpensesPage({
 									</div>
 								))
 							) : (
-								<div className="px-6 py-12 text-center text-gray-500 text-sm">
+								<div className="px-6 py-12 text-center text-fg-subtle text-sm">
 									Aucune dépense déclarée.
 								</div>
 							)}

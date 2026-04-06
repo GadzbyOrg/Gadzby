@@ -28,8 +28,8 @@ export default async function TransferPage() {
     return (
         <div className="max-w-2xl mx-auto space-y-8">
             <header>
-                <h1 className="text-3xl font-bold tracking-tight text-white">Virement</h1>
-                <p className="text-gray-400 mt-2">
+                <h1 className="text-3xl font-bold tracking-tight text-fg">Virement</h1>
+                <p className="text-fg-muted mt-2">
                     Envoyez de l&apos;argent à un autre utilisateur instantanément.
                 </p>
             </header>

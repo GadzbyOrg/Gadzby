@@ -41,11 +41,11 @@ export function AvatarUpload({ user }: AvatarUploadProps) {
 				// Force a refresh to show the new image (revalidatePath on server might not update client cache immediately for the image request)
 				router.refresh();
 			}
-            
-            // Reset input value to allow uploading the same file again if needed
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
+
+			// Reset input value to allow uploading the same file again if needed
+			if (fileInputRef.current) {
+				fileInputRef.current.value = "";
+			}
 		});
 	};
 
@@ -67,16 +67,16 @@ export function AvatarUpload({ user }: AvatarUploadProps) {
 					className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
 				>
 					{isPending ? (
-						<IconLoader2 className="animate-spin text-white" />
+						<IconLoader2 className="animate-spin text-fg" />
 					) : (
-						<IconCamera className="text-white" />
+						<IconCamera className="text-fg" />
 					)}
 				</button>
 			</div>
 
 			<div className="flex-1 space-y-2">
-				<h3 className="font-medium text-white">Photo de profil</h3>
-				<p className="text-sm text-gray-400">
+				<h3 className="font-medium text-fg">Photo de profil</h3>
+				<p className="text-sm text-fg-muted">
 					JPG, GIF ou PNG. 5 Mo maximum.
 				</p>
 				<input
@@ -96,7 +96,7 @@ export function AvatarUpload({ user }: AvatarUploadProps) {
 					type="button"
 					onClick={() => fileInputRef.current?.click()}
 					disabled={isPending}
-					className="text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors disabled:opacity-50"
+					className="text-sm font-medium text-accent-400 hover:text-accent-300 transition-colors disabled:opacity-50"
 				>
 					Changer la photo
 				</button>

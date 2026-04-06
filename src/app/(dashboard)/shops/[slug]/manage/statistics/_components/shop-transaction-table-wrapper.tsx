@@ -37,7 +37,7 @@ export function ShopTransactionTableWrapper({
 		<TransactionTable
 			transactions={transactions}
 			isAdmin={isAdmin}
-			pagination={{
+	pagination={{
 				page: currentPage,
 				setPage: setPage,
 				total: totalCount,

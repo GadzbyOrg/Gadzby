@@ -4,6 +4,7 @@ import { IconAlertTriangle,IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useActionState, useEffect } from "react";
 
 import { TabagnssSelector } from "@/components/tabagnss-selector";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createUserAction } from "@/features/users/actions";
 
 interface CreateUserFormProps {
@@ -50,7 +51,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 					<div className="space-y-2">
 						<label
 							htmlFor="prenom"
-							className="text-sm font-medium text-gray-300"
+							className="text-sm font-medium text-fg-muted"
 						>
 							Prénom
 						</label>
@@ -60,11 +61,11 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							name="prenom"
 							id="prenom"
 							placeholder="Ex: Louis"
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 						/>
 					</div>
 					<div className="space-y-2">
-						<label htmlFor="nom" className="text-sm font-medium text-gray-300">
+						<label htmlFor="nom" className="text-sm font-medium text-fg-muted">
 							Nom
 						</label>
 						<input
@@ -73,13 +74,13 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							name="nom"
 							id="nom"
 							placeholder="Ex: Chabanon"
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 						/>
 					</div>
 				</div>
 
 				<div className="space-y-2">
-					<label htmlFor="email" className="text-sm font-medium text-gray-300">
+					<label htmlFor="email" className="text-sm font-medium text-fg-muted">
 						Email
 					</label>
 					<input
@@ -88,20 +89,20 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						name="email"
 						id="email"
 						placeholder="Ex: louis.chabanon@gadz.org"
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 					/>
 				</div>
 
 				<div className="space-y-2">
-					<label htmlFor="phone" className="text-sm font-medium text-gray-300">
-						Numéro de téléphone <span className="text-gray-500 text-xs font-normal">(Optionnel)</span>
+					<label htmlFor="phone" className="text-sm font-medium text-fg-muted">
+						Numéro de téléphone <span className="text-fg-subtle text-xs font-normal">(Optionnel)</span>
 					</label>
 					<input
 						type="tel"
 						name="phone"
 						id="phone"
 						placeholder="Ex: 06 12 34 56 78"
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 					/>
 				</div>
 
@@ -109,7 +110,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 					<div className="space-y-2">
 						<label
 							htmlFor="bucque"
-							className="text-sm font-medium text-gray-300"
+							className="text-sm font-medium text-fg-muted"
 						>
 							Bucque
 						</label>
@@ -119,13 +120,13 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							name="bucque"
 							id="bucque"
 							placeholder="Ex: Modo"
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 						/>
 					</div>
 					<div className="space-y-2">
 						<label
 							htmlFor="promss"
-							className="text-sm font-medium text-gray-300"
+							className="text-sm font-medium text-fg-muted"
 						>
 							Prom&apos;ss
 						</label>
@@ -135,13 +136,13 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							name="promss"
 							id="promss"
 							placeholder="Ex: Me223"
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 						/>
 					</div>
 				</div>
 
 				<div className="space-y-2">
-					<label htmlFor="nums" className="text-sm font-medium text-gray-300">
+					<label htmlFor="nums" className="text-sm font-medium text-fg-muted">
 						Nums
 					</label>
 					<input
@@ -150,7 +151,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						name="nums"
 						id="nums"
 						placeholder="Ex: 4!"
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 					/>
 				</div>
 
@@ -159,7 +160,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 				<div className="space-y-2">
 					<label
 						htmlFor="password"
-						className="text-sm font-medium text-gray-300"
+						className="text-sm font-medium text-fg-muted"
 					>
 						Mot de passe
 					</label>
@@ -170,41 +171,38 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						id="password"
 						minLength={6}
 						placeholder="••••••"
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 					/>
 				</div>
 
-				<div className="pt-4 border-t border-dark-800 mt-4">
+				<div className="pt-4 border-t border-border mt-4">
 					<h3 className="text-white text-sm font-semibold mb-4">Options</h3>
 
 					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-2">
 							<label
 								htmlFor="roleId"
-								className="text-sm font-medium text-primary-300"
+								className="text-sm font-medium text-accent-400"
 							>
 								Rôle
 							</label>
-							<select
-								name="roleId"
-								id="roleId"
-								defaultValue="USER"
-								className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all"
-							>
-								<option value="" disabled>
-									Sélectionner un rôle
-								</option>
+							<Select name="roleId" required>
+							<SelectTrigger id="roleId">
+								<SelectValue placeholder="Sélectionner un rôle" />
+							</SelectTrigger>
+							<SelectContent>
 								{roles.map((role) => (
-									<option key={role.id} value={role.id}>
+									<SelectItem key={role.id} value={role.id}>
 										{role.name}
-									</option>
+									</SelectItem>
 								))}
-							</select>
+							</SelectContent>
+						</Select>
 						</div>
 						<div className="space-y-2">
 							<label
 								htmlFor="balance"
-								className="text-sm font-medium text-primary-300"
+								className="text-sm font-medium text-accent-400"
 							>
 								Solde Initial (€)
 							</label>
@@ -214,7 +212,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 								id="balance"
 								step="0.01"
 								defaultValue="0.00"
-								className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition-all font-mono"
+								className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all font-mono"
 							/>
 						</div>
 					</div>
@@ -225,7 +223,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 				<button
 					type="submit"
 					disabled={isPending}
-					className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary-900/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+					className="px-6 py-2.5 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-accent-900/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
 				>
 					{isPending ? (
 						<>

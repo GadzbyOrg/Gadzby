@@ -123,26 +123,24 @@ export function UpcomingEventsList({
 	};
 
 	return (
-		<div className="rounded-2xl border border-dark-800 bg-dark-900 overflow-hidden">
+		<div className="rounded-2xl border border-border bg-surface-900 overflow-hidden">
 			{/* Header with Tabs */}
-			<div className="border-b border-dark-800 p-0 flex">
+			<div className="border-b border-border p-0 flex">
 				<button
 					onClick={() => setActiveTab("enrolled")}
-					className={`flex-1 py-4 text-center text-sm font-medium transition-colors ${
-						activeTab === "enrolled"
-							? "bg-dark-900 text-white border-b-2 border-primary-500"
-							: "bg-dark-950 text-gray-400 hover:text-gray-300 hover:bg-dark-900/50"
-					}`}
+					className={`flex-1 py-4 text-center text-sm font-medium transition-colors ${activeTab === "enrolled"
+						? "bg-surface-900 text-fg border-b-2 border-accent-500"
+						: "bg-surface-950 text-fg-muted hover:text-fg hover:bg-surface-900/50"
+						}`}
 				>
 					Mes Événements ({enrolledEvents.length})
 				</button>
 				<button
 					onClick={() => setActiveTab("upcoming")}
-					className={`flex-1 py-4 text-center text-sm font-medium transition-colors ${
-						activeTab === "upcoming"
-							? "bg-dark-900 text-white border-b-2 border-primary-500"
-							: "bg-dark-950 text-gray-400 hover:text-gray-300 hover:bg-dark-900/50"
-					}`}
+					className={`flex-1 py-4 text-center text-sm font-medium transition-colors ${activeTab === "upcoming"
+						? "bg-surface-900 text-fg border-b-2 border-accent-500"
+						: "bg-surface-950 text-fg-muted hover:text-fg hover:bg-surface-900/50"
+						}`}
 				>
 					Événements à Venir ({upcomingPublicEvents.length})
 				</button>
@@ -152,7 +150,7 @@ export function UpcomingEventsList({
 				{activeTab === "enrolled" && (
 					<div className="space-y-4">
 						{enrolledEvents.length === 0 ? (
-							<div className="text-center py-8 text-gray-500">
+							<div className="text-center py-8 text-fg-subtle">
 								Vous ne participez à aucun événement pour le moment.
 							</div>
 						) : (
@@ -161,14 +159,14 @@ export function UpcomingEventsList({
 								return (
 									<div
 										key={event.id}
-										className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border border-dark-700 bg-dark-950/50 hover:bg-dark-950 transition-colors"
+										className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-surface-950/50 hover:bg-surface-950 transition-colors"
 									>
 										<div className="flex flex-col gap-1 flex-1">
 											<div className="flex items-center gap-2">
-												<h4 className="font-semibold text-white">
+												<h4 className="font-semibold text-fg">
 													{event.name}
 												</h4>
-												<span className="text-xs px-2 py-0.5 rounded-full bg-primary-500/10 text-primary-400 border border-primary-500/20">
+												<span className="text-xs px-2 py-0.5 rounded-full bg-accent-500/10 text-accent-400 border border-accent-500/20">
 													Inscrit
 												</span>
 												{isStarted && (
@@ -178,11 +176,11 @@ export function UpcomingEventsList({
 												)}
 											</div>
 											{event.description && (
-												<p className="text-sm text-gray-400 line-clamp-2">
+												<p className="text-sm text-fg-muted line-clamp-2">
 													{event.description}
 												</p>
 											)}
-											<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-400 mt-1">
+											<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-fg-muted mt-1">
 												<span className="flex items-center gap-1">
 													<IconMapPin size={14} /> {event.shop.name}
 												</span>
@@ -200,11 +198,10 @@ export function UpcomingEventsList({
 													? "Impossible de quitter un événement démarré"
 													: "Quitter l'événement"
 											}
-											className={`w-full md:w-auto text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-												isStarted
-													? "bg-dark-800 text-gray-500 cursor-not-allowed"
-													: "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
-											}`}
+											className={`w-full md:w-auto text-center px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${isStarted
+												? "bg-elevated text-fg-subtle cursor-not-allowed"
+												: "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
+												}`}
 										>
 											{actionId === event.id ? (
 												<IconLoader2 size={16} className="animate-spin" />
@@ -224,7 +221,7 @@ export function UpcomingEventsList({
 				{activeTab === "upcoming" && (
 					<div className="space-y-4">
 						{upcomingPublicEvents.length === 0 ? (
-							<div className="text-center py-8 text-gray-500">
+							<div className="text-center py-8 text-fg-subtle">
 								Aucun événement ouvert à l'inscription pour le moment.
 							</div>
 						) : (
@@ -236,16 +233,16 @@ export function UpcomingEventsList({
 								return (
 									<div
 										key={event.id}
-										className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border border-dark-700 bg-dark-950/50 hover:bg-dark-950 transition-colors"
+										className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border border-border bg-surface-950/50 hover:bg-surface-950 transition-colors"
 									>
 										<div className="flex flex-col gap-1 flex-1">
-											<h4 className="font-semibold text-white">{event.name}</h4>
+											<h4 className="font-semibold text-fg">{event.name}</h4>
 											{event.description && (
-												<p className="text-sm text-gray-400 line-clamp-2">
+												<p className="text-sm text-fg-muted line-clamp-2">
 													{event.description}
 												</p>
 											)}
-											<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 mt-1">
+											<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-fg-subtle mt-1">
 												<span className="flex items-center gap-1">
 													<IconMapPin size={14} /> {event.shop.name}
 												</span>
@@ -255,9 +252,8 @@ export function UpcomingEventsList({
 												</span>
 												{event.maxParticipants && (
 													<span
-														className={`flex items-center gap-1 ${
-															isFull ? "text-red-400" : "text-gray-400"
-														}`}
+														className={`flex items-center gap-1 ${isFull ? "text-red-400" : "text-fg-muted"
+															}`}
 													>
 														<IconTicket size={14} />
 														{event.participants.length} /{" "}
@@ -265,7 +261,7 @@ export function UpcomingEventsList({
 													</span>
 												)}
 												{hasCost && (
-													<span className="flex items-center gap-1 text-primary-400 font-medium">
+													<span className="flex items-center gap-1 text-accent-400 font-medium">
 														{(event.acompte / 100).toFixed(2)} €
 													</span>
 												)}
@@ -281,11 +277,10 @@ export function UpcomingEventsList({
 												)
 											}
 											disabled={isPending || isFull}
-											className={`w-full md:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-												isFull
-													? "bg-dark-800 text-gray-500 cursor-not-allowed"
-													: "bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50"
-											}`}
+											className={`w-full md:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${isFull
+												? "bg-elevated text-fg-subtle cursor-not-allowed"
+												: "bg-accent-600 text-fg hover:bg-accent-700 disabled:opacity-50"
+												}`}
 										>
 											{actionId === event.id ? (
 												<IconLoader2 size={16} className="animate-spin" />

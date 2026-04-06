@@ -20,13 +20,13 @@ export default async function RolesPage() {
 
     return (
         <div className="space-y-8">
-             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-white">Gestion des Rôles</h1>
-                <p className="text-gray-400 mt-2">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight text-fg">Gestion des Rôles</h1>
+                <p className="text-fg-muted mt-2">
                     Définissez les permissions pour chaque rôle de l&apos;application.
                 </p>
             </div>
-            
+
             <RolesMatrix roles={roles || []} />
         </div>
     );

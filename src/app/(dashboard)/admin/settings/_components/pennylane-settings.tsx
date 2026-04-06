@@ -33,20 +33,20 @@ const CategoryMultiSelect = ({
             <input
                 type="text"
                 placeholder="Rechercher une catégorie..."
-                className="w-full mb-2 bg-dark-900 border border-dark-700 text-white rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-600"
+                className="w-full mb-2 bg-surface-900 border border-border text-fg rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-accent-600"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
             />
-            <div className="rounded-md border border-dark-700 bg-dark-950 p-2 h-48 overflow-y-auto space-y-1">
+            <div className="rounded-md border border-border bg-surface-950 p-2 h-48 overflow-y-auto space-y-1">
                 {filteredCategories.length === 0 ? (
-                    <div className="text-gray-500 text-xs text-center py-4">Aucune catégorie trouvée</div>
+                    <div className="text-fg-subtle text-xs text-center py-4">Aucune catégorie trouvée</div>
                 ) : (
                     filteredCategories.map(c => {
                         const isSelected = selectedIds.includes(c.id);
                         return (
                             <div
                                 key={c.id}
-                                className={`flex items-center gap-2 px-2 py-1.5 rounded-sm cursor-pointer select-none transition-colors ${isSelected ? 'bg-primary-900/50 text-white' : 'hover:bg-dark-800 text-gray-300'}`}
+                                className={`flex items-center gap-2 px-2 py-1.5 rounded-sm cursor-pointer select-none transition-colors ${isSelected ? 'bg-accent-900/50 text-fg' : 'hover:bg-elevated text-fg'}`}
                                 onClick={() => {
                                     const newIds = isSelected
                                         ? selectedIds.filter(id => id !== c.id)
@@ -54,8 +54,8 @@ const CategoryMultiSelect = ({
                                     onChange(newIds);
                                 }}
                             >
-                                <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary-600 border-primary-600' : 'border-gray-500'}`}>
-                                    {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                                <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isSelected ? 'bg-accent-600 border-accent-600' : 'border-fg-subtle'}`}>
+                                    {isSelected && <svg className="w-3 h-3 text-fg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                                 </div>
                                 <span className="text-sm truncate">{c.label}</span>
                             </div>
@@ -63,7 +63,7 @@ const CategoryMultiSelect = ({
                     })
                 )}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-fg-subtle mt-1">
                 {selectedIds.length} catégorie{selectedIds.length > 1 ? 's' : ''} sélectionnée{selectedIds.length > 1 ? 's' : ''}
             </p>
         </div>
@@ -148,23 +148,23 @@ export function PennylaneSettings() {
     }, []);
 
     if (loading) {
-        return <div className="p-4 text-center text-gray-500">Chargement...</div>;
+        return <div className="p-4 text-center text-fg-subtle">Chargement...</div>;
     }
 
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-xl font-semibold text-white">Intégration Pennylane</h2>
-                <p className="text-sm text-gray-400">Configurez la connexion avec votre compte Pennylane pour l&apos;envoi automatique des factures.</p>
+                <h2 className="text-xl font-semibold text-fg">Intégration Pennylane</h2>
+                <p className="text-sm text-fg-muted">Configurez la connexion avec votre compte Pennylane pour l&apos;envoi automatique des factures.</p>
             </div>
 
-            <div className="bg-dark-900 border border-dark-800 rounded-xl p-6 space-y-8">
+            <div className="bg-surface-900 border border-border rounded-xl p-6 space-y-8">
                 {/* Main Configuration Form */}
                 <form action={formAction} className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                            <Label className="text-base text-white">Activer l&apos;intégration</Label>
-                            <p className="text-sm text-gray-400">Permet l&apos;envoi et la synchronisation des factures fournisseurs.</p>
+                            <Label className="text-base text-fg">Activer l&apos;intégration</Label>
+                            <p className="text-sm text-fg-muted">Permet l&apos;envoi et la synchronisation des factures fournisseurs.</p>
                         </div>
                         {/* Custom Toggle using simple Tailwind */}
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -175,7 +175,7 @@ export function PennylaneSettings() {
                                 defaultChecked={config?.enabled}
                                 onChange={(e) => setConfig(prev => prev ? { ...prev, enabled: e.target.checked } : { enabled: e.target.checked })}
                             />
-                            <div className="w-11 h-6 bg-dark-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            <div className="w-11 h-6 bg-elevated peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-fg after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-600"></div>
                         </label>
                     </div>
 
@@ -202,20 +202,20 @@ export function PennylaneSettings() {
 
                 {/* Sub-section: Shop Configuration - Only visible if enabled */}
                 {config?.enabled && (
-                    <div className="pt-8 border-t border-dark-800 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="pt-8 border-t border-border animate-in fade-in slide-in-from-top-2 duration-300">
                         {/* Invoice Import Toggle */}
 
                         <div className="mb-6">
-                            <h3 className="text-lg font-medium text-white">Configuration des Boquettes</h3>
-                            <p className="text-sm text-gray-400">Associez les catégories Pennylane par défaut à chaque boquette.</p>
+                            <h3 className="text-lg font-medium text-fg">Configuration des Boquettes</h3>
+                            <p className="text-sm text-fg-muted">Associez les catégories Pennylane par défaut à chaque boquette.</p>
                         </div>
 
                         {shopConfigLoading ? (
-                            <div className="text-center text-gray-500 py-4">Chargement des shops...</div>
+                            <div className="text-center text-fg-subtle py-4">Chargement des shops...</div>
                         ) : (
                             <form action={shopFormAction} className="space-y-6">
                                 {shops.length === 0 ? (
-                                    <p className="text-gray-400 italic">Aucun shop trouvé.</p>
+                                    <p className="text-fg-muted italic">Aucun shop trouvé.</p>
                                 ) : (
                                     shops.map(shop => {
                                         // mapping[shop.id] is now string[] | string. We normalize it.
@@ -225,11 +225,11 @@ export function PennylaneSettings() {
                                         else if (current) selectedIds = [current];
 
                                         return (
-                                            <div key={shop.id} className="flex flex-col md:flex-row gap-6 p-4 bg-dark-800/50 border border-dark-800 rounded-lg">
+                                            <div key={shop.id} className="flex flex-col md:flex-row gap-6 p-4 bg-elevated/50 border border-border rounded-lg">
                                                 <div className="md:w-1/3">
-                                                    <div className="font-medium text-white">{shop.name}</div>
-                                                    <div className="text-xs text-gray-500 mb-2">{shop.description}</div>
-                                                    <p className="text-xs text-gray-400">
+                                                    <div className="font-medium text-fg">{shop.name}</div>
+                                                    <div className="text-xs text-fg-subtle mb-2">{shop.description}</div>
+                                                    <p className="text-xs text-fg-muted">
                                                         Sélectionnez les catégories à appliquer automatiquement aux factures de cette boquette dans Pennylane.
                                                     </p>
                                                 </div>

@@ -1,19 +1,19 @@
 "use client";
 
-import { IconRefresh,IconX } from "@tabler/icons-react";
-import { useCallback,useEffect, useState } from "react";
+import { IconRefresh, IconX } from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
 
 import { TransactionTable } from "@/components/transactions/transaction-table";
 import { getUserTransactions } from "@/features/users/actions";
 
 interface TransactionHistoryModalProps {
-     
-    user: any; 
+
+    user: any;
     onClose: () => void;
 }
 
 export function TransactionHistoryModal({ user, onClose }: TransactionHistoryModalProps) {
-     
+
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -45,26 +45,26 @@ export function TransactionHistoryModal({ user, onClose }: TransactionHistoryMod
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-dark-950 border border-dark-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col">
-                
+            <div className="bg-surface-950 border border-border rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col">
+
                 {/* Header */}
-                <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800 shrink-0">
+                <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-surface-950/95 backdrop-blur border-b border-border shrink-0">
                     <div>
-                        <h2 className="text-xl font-bold text-white">Historique des transactions</h2>
-                        <p className="text-sm text-gray-400">Pour {user.prenom} {user.nom} (@{user.username})</p>
+                        <h2 className="text-xl font-bold text-fg">Historique des transactions</h2>
+                        <p className="text-sm text-fg-muted">Pour {user.prenom} {user.nom} (@{user.username})</p>
                     </div>
                     <div className="flex items-center gap-2">
-                         <button 
+                        <button
                             onClick={handleRefresh}
                             disabled={loading}
-                            className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors disabled:opacity-50"
                             title="Actualiser"
                         >
                             <IconRefresh className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                         </button>
-                        <button 
+                        <button
                             onClick={onClose}
-                            className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+                            className="p-2 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
                         >
                             <IconX className="w-5 h-5" />
                         </button>
@@ -79,7 +79,7 @@ export function TransactionHistoryModal({ user, onClose }: TransactionHistoryMod
                         </div>
                     )}
 
-                   <TransactionTable transactions={transactions} loading={loading} isAdmin={true} />
+                    <TransactionTable transactions={transactions} loading={loading} isAdmin={true} />
                 </div>
             </div>
         </div>

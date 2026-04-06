@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
 	images: {
 		dangerouslyAllowSVG: true,
 	},
+	allowedDevOrigins: ['100.72.206.61'],
 };
 
 export default withSentryConfig(nextConfig, {

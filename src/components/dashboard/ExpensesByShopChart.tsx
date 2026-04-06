@@ -14,9 +14,16 @@ interface ExpensesByShopChartProps {
 	data: {
 		name: string;
 		value: number;
-		fill: string;
 	}[];
 }
+
+const CHART_COLORS = [
+	"var(--color-chart-primary)",
+	"var(--color-chart-secondary)",
+	"#6b7280",
+	"#94a3b8",
+	"#cbd5e1",
+];
 
 const RADIAN = Math.PI / 180;
 
@@ -61,7 +68,7 @@ function CenterLabel({
 				y={cy - 10}
 				textAnchor="middle"
 				dominantBaseline="central"
-				fill="#9ca3af"
+				fill="var(--color-fg-muted)"
 				fontSize={11}
 			>
 				Total
@@ -71,7 +78,7 @@ function CenterLabel({
 				y={cy + 10}
 				textAnchor="middle"
 				dominantBaseline="central"
-				fill="#ffffff"
+				fill="var(--color-fg)"
 				fontSize={16}
 				fontWeight={700}
 			>
@@ -84,7 +91,7 @@ function CenterLabel({
 export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 	if (data.length === 0) {
 		return (
-			<div className="flex h-full flex-col items-center justify-center gap-2 text-gray-500">
+			<div className="flex h-full flex-col items-center justify-center gap-2 text-fg-subtle">
 				<svg
 					width="40"
 					height="40"
@@ -120,7 +127,7 @@ export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 					{data.map((entry, index) => (
 						<Cell
 							key={`cell-${index}`}
-							fill={entry.fill}
+							fill={CHART_COLORS[index % CHART_COLORS.length]}
 							stroke="rgba(0,0,0,0.2)"
 							strokeWidth={1}
 						/>
@@ -144,8 +151,8 @@ export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 				</Pie>
 
 				<Tooltip
-					formatter={(value: number | undefined) => [
-						`${Number(value ?? 0).toFixed(2)} €`,
+					formatter={(value) => [
+						`${((Number(value) || 0) / 100).toFixed(2)} €`,
 						"Dépenses",
 					]}
 					contentStyle={{

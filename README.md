@@ -159,3 +159,9 @@ L'intégration Pennylane permet aux boul'c d'envoyer les factures fournisseurs d
     * Factures Fournisseurs
     * Fichiers
     * Catégories
+
+## 🔌 API Développeur
+
+Gadzby expose une API RESTful qui permet aux applications tierces de s'intégrer au système (débucquage externe, accès au produits, transactions, webhooks, etc.).
+
+Pour en savoir plus sur l'authentification, la gestion des clés, et les endpoints disponibles, consultez la **[documentation de l'API Gadzby](./docs/API-DOCS.md)**.

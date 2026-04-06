@@ -4,7 +4,7 @@ import {
 	IconAlertTriangle,
 	IconArrowDownLeft,
 	IconArrowUpRight,
-    IconChevronDown,
+	IconChevronDown,
 	IconChevronRight,
 	IconClock,
 	IconCoins,
@@ -19,31 +19,28 @@ import { useMemo, useState } from "react";
 import { CancelGroupButton, TransactionActions } from "@/app/(dashboard)/admin/transaction-components";
 import { cn } from "@/lib/utils";
 
-// Define types locally for now, could be moved to shared types
 export interface TransactionWithRelations {
-    id: string;
-    amount: number;
-    quantity?: number | null;
-    type: "PURCHASE" | "TOPUP" | "TRANSFER" | "REFUND" | "DEPOSIT" | "ADJUSTMENT";
-    status: "COMPLETED" | "CANCELLED" | "PENDING" | "FAILED";
-    createdAt: Date | string;
-    description?: string | null;
-    groupId?: string | null;
-    group_id?: string | null;
-    walletSource: "PERSONAL" | "FAMILY";
-    
-    // Relations
-    shop?: { name: string } | null;
-    product?: { name: string } | null;
-    issuer?: { prenom: string; nom: string; username?: string } | null;
-    receiverUser?: { prenom: string; nom: string; username?: string } | null;
-    targetUser?: { prenom: string; nom: string; username?: string } | null;
-    fams?: { name: string } | null;
+	id: string;
+	amount: number;
+	quantity?: number | null;
+	type: "PURCHASE" | "TOPUP" | "TRANSFER" | "REFUND" | "DEPOSIT" | "ADJUSTMENT";
+	status: "COMPLETED" | "CANCELLED" | "PENDING" | "FAILED";
+	createdAt: Date | string;
+	description?: string | null;
+	groupId?: string | null;
+	group_id?: string | null;
+	walletSource: "PERSONAL" | "FAMILY";
+	shop?: { name: string } | null;
+	product?: { name: string } | null;
+	issuer?: { prenom: string; nom: string; username?: string } | null;
+	receiverUser?: { prenom: string; nom: string; username?: string } | null;
+	targetUser?: { prenom: string; nom: string; username?: string } | null;
+	fams?: { name: string } | null;
 }
 
-type GroupedTransactionItem = 
-    | { type: "SINGLE"; data: TransactionWithRelations }
-    | { type: "GROUP"; groupId: string; data: TransactionWithRelations; items: TransactionWithRelations[] };
+type GroupedTransactionItem =
+	| { type: "SINGLE"; data: TransactionWithRelations }
+	| { type: "GROUP"; groupId: string; data: TransactionWithRelations; items: TransactionWithRelations[] };
 
 interface TransactionTableProps {
 	transactions: TransactionWithRelations[];
@@ -52,8 +49,8 @@ interface TransactionTableProps {
 	pagination?: {
 		page: number;
 		setPage: (p: number | ((prev: number) => number)) => void;
-		total?: number; // Optional total count if available
-		hasMore?: boolean; // Or simple hasMore
+		total?: number;
+		hasMore?: boolean;
 	};
 }
 
@@ -63,7 +60,6 @@ export function TransactionTable({
 	isAdmin = false,
 	pagination,
 }: TransactionTableProps) {
-	// Group transactions by groupId
 	const groupedTransactions = useMemo(() => {
 		if (!transactions) return [];
 
@@ -71,11 +67,9 @@ export function TransactionTable({
 		const result: GroupedTransactionItem[] = [];
 
 		transactions.forEach((t) => {
-            const gid = t.groupId || t.group_id;
+			const gid = t.groupId || t.group_id;
 			if (gid) {
-				if (!groups[gid]) {
-					groups[gid] = [];
-				}
+				if (!groups[gid]) groups[gid] = [];
 				groups[gid].push(t);
 			} else {
 				result.push({ type: "SINGLE", data: t });
@@ -84,127 +78,84 @@ export function TransactionTable({
 
 		Object.keys(groups).forEach((groupId) => {
 			const groupTxs = groups[groupId];
-			groupTxs.sort(
-				(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-			);
-			const mostRecent = groupTxs[0];
-
-			result.push({
-				type: "GROUP",
-				groupId: groupId,
-				data: mostRecent, // Representative for sorting
-				items: groupTxs,
-			});
+			groupTxs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+			result.push({ type: "GROUP", groupId, data: groupTxs[0], items: groupTxs });
 		});
 
-		// Sort everything by date desc
-		return result.sort((a, b) => {
-			const dateA = new Date(a.data.createdAt).getTime();
-			const dateB = new Date(b.data.createdAt).getTime();
-			return dateB - dateA;
-		});
+		return result.sort((a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime());
 	}, [transactions]);
 
 	if (loading) {
 		return (
-			<div className="w-full bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-sm">
-				<div className="p-12 flex justify-center items-center text-gray-500">
-					Chargement des transactions...
-				</div>
+			<div className="w-full bg-surface-900 border border-border rounded-2xl p-12 flex justify-center items-center text-fg-subtle text-sm">
+				Chargement des transactions...
 			</div>
 		);
 	}
 
-    if (groupedTransactions.length === 0) {
-        return (
-			<div className="w-full bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-sm">
-				<div className="p-12 flex justify-center items-center text-gray-500">
-					Aucune transaction trouvée.
-				</div>
+	if (groupedTransactions.length === 0) {
+		return (
+			<div className="w-full bg-surface-900 border border-border rounded-2xl p-12 flex justify-center items-center text-fg-subtle text-sm">
+				Aucune transaction trouvée.
 			</div>
 		);
-    }
+	}
 
 	return (
 		<div className="flex flex-col gap-4">
-            {/* Desktop Table View */}
-            <div className="hidden md:block bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-gray-400">
-                        <thead className="bg-dark-800 text-gray-200 uppercase font-medium">
-                            <tr>
-                                <th className="px-6 py-4">Type</th>
-                                {isAdmin && <th className="px-6 py-4">Utilisateur</th>}
-                                <th className="px-6 py-4">Description</th>
-                                <th className="px-6 py-4">Date</th>
-                                <th className="px-6 py-4 text-right">Montant</th>
-                                {isAdmin && <th className="px-6 py-4 text-right">Actions</th>}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-dark-800">
-                            {groupedTransactions.map((item) => {
-                                if (item.type === "GROUP") {
-                                    return (
-                                        <TransactionGroupRow
-                                            key={item.groupId}
-                                            group={item}
-                                            isAdmin={isAdmin}
-                                        />
-                                    );
-                                } else {
-                                    return (
-                                        <TransactionRow
-                                            key={item.data.id}
-                                            t={item.data}
-                                            isAdmin={isAdmin}
-                                        />
-                                    );
-                                }
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+			{/* Desktop Table */}
+			<div className="hidden md:block bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
+				<table className="w-full text-left text-sm">
+					<thead>
+						<tr className="border-b border-border">
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Type</th>
+							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Utilisateur</th>}
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Description</th>
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Date</th>
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Qté</th>
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Montant</th>
+							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Actions</th>}
+						</tr>
+					</thead>
+					<tbody>
+						{groupedTransactions.map((item) =>
+							item.type === "GROUP" ? (
+								<TransactionGroupRow key={item.groupId} group={item} isAdmin={isAdmin} />
+							) : (
+								<TransactionRow key={item.data.id} t={item.data} isAdmin={isAdmin} />
+							)
+						)}
+					</tbody>
+				</table>
+			</div>
 
-            {/* Mobile List View */}
-            <div className="md:hidden flex flex-col gap-3">
-                {groupedTransactions.map((item) => {
-                    if (item.type === "GROUP") {
-                        return (
-                            <TransactionGroupMobileCard
-                                key={item.groupId}
-                                group={item}
-                                isAdmin={isAdmin}
-                            />
-                        );
-                    } else {
-                        return (
-                            <TransactionMobileCard
-                                key={item.data.id}
-                                t={item.data}
-                                isAdmin={isAdmin}
-                            />
-                        );
-                    }
-                })}
-            </div>
+			{/* Mobile List */}
+			<div className="md:hidden flex flex-col gap-2">
+				{groupedTransactions.map((item) =>
+					item.type === "GROUP" ? (
+						<TransactionGroupMobileCard key={item.groupId} group={item} isAdmin={isAdmin} />
+					) : (
+						<TransactionMobileCard key={item.data.id} t={item.data} isAdmin={isAdmin} />
+					)
+				)}
+			</div>
 
 			{pagination && (transactions?.length > 0 || pagination.page > 1) && (
-				<div className="flex justify-center gap-2 p-4 items-center">
+				<div className="flex justify-center items-center gap-3 py-2">
 					<button
 						disabled={pagination.page === 1 || loading}
 						onClick={() => pagination.setPage((p) => Math.max(1, p - 1))}
-						className="px-3 py-1 bg-dark-800 rounded hover:bg-dark-700 disabled:opacity-50 text-sm text-gray-300 transition-colors border border-dark-700"
+						className="px-4 py-1.5 bg-surface-900 border border-border rounded-lg hover:bg-elevated disabled:opacity-40 text-sm text-fg-muted transition-colors"
 					>
 						Précédent
 					</button>
-					<span className="px-3 py-1 text-gray-400 text-sm">
-						Page {pagination.page} {pagination.total ? `sur ${Math.ceil(pagination.total / 50)}` : ""}
+					<span className="text-sm text-fg-subtle tabular-nums">
+						Page {pagination.page}{pagination.total ? ` / ${Math.ceil(pagination.total / 50)}` : ""}
 					</span>
 					<button
 						disabled={loading || (pagination.total ? pagination.page >= Math.ceil(pagination.total / 50) : (transactions?.length || 0) < 50)}
 						onClick={() => pagination.setPage((p) => p + 1)}
-						className="px-3 py-1 bg-dark-800 rounded hover:bg-dark-700 disabled:opacity-50 text-sm text-gray-300 transition-colors border border-dark-700"
+						className="px-4 py-1.5 bg-surface-900 border border-border rounded-lg hover:bg-elevated disabled:opacity-40 text-sm text-fg-muted transition-colors"
 					>
 						Suivant
 					</button>
@@ -214,546 +165,479 @@ export function TransactionTable({
 	);
 }
 
-// Helper to extract display data
 function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean) {
-    const isPositive = t.amount > 0;
-    const amountFormatted = (Math.abs(t.amount) / 100).toFixed(2);
-    
-    let Icon = IconWallet;
-    let title = "Transaction";
-    let typeLabel = "Divers";
-    
-    const date = new Date(t.createdAt);
-    const subtitle = new Intl.DateTimeFormat("fr-FR", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    }).format(date);
+	const isPositive = t.amount > 0;
+	const amountFormatted = (Math.abs(t.amount) / 100).toFixed(2);
 
-    switch (t.type) {
-        case "PURCHASE":
-            Icon = IconShoppingBag;
-            typeLabel = "Achat";
-            title = t.shop ? t.shop.name : "Boutique";
-            if (t.product) title += ` (${t.product.name})`;
-            break;
-        case "TOPUP":
-            Icon = IconCoins;
-            typeLabel = "Rechargement";
-            title = "Rechargement compte";
-            break;
-        case "TRANSFER":
-            typeLabel = "Virement";
-            if (isPositive) {
-                Icon = IconArrowDownLeft;
-                title = t.issuer
-                    ? `De : ${t.issuer.prenom} ${t.issuer.nom}`
-                    : "Reçu";
-            } else {
-                Icon = IconArrowUpRight;
-                title = t.receiverUser
-                    ? `Vers : ${t.receiverUser.prenom} ${t.receiverUser.nom}`
-                    : t.fams
-                    ? `Vers : ${t.fams.name}`
-                    : "Envoyé";
-            }
+	let Icon = IconWallet;
+	let title = "Transaction";
+	let typeLabel = "Divers";
 
-            if (isAdmin && t.walletSource === "FAMILY") {
-                title = t.fams
-                    ? `Fam'ss : ${t.fams.name}`
-                    : "Virement Fam'ss";
-            } else if (isAdmin) {
-                title = "Virement entre utilisateurs";
-            }
-            break;
-        case "REFUND":
-            Icon = IconRefresh;
-            typeLabel = "Remboursement";
-            title = "Remboursement";
-            break;
-        case "DEPOSIT":
-            Icon = IconAlertTriangle;
-            typeLabel = "Caution / Pénalité";
-            title = "Prélèvement administratif";
-            break;
-        case "ADJUSTMENT":
-            Icon = IconWallet;
-            typeLabel = "Ajustement";
-            title = "Ajustement solde";
-            break;
-    }
-
-    const isCancelled =
-		t.status === "CANCELLED" || t.description?.includes("[CANCELLED]");
-	const isPending = t.status === "PENDING";
-	const isFailed = t.status === "FAILED";
-
-    if (
-        t.description &&
-        !t.description.includes("[CANCELLED]") &&
-        t.type !== "TRANSFER" &&
-        t.type !== "PURCHASE"
-    ) {
-        title = t.description;
-    }
-
-    if (isCancelled) {
-        const cancelledByMatch = t.description?.match(/\[CANCELLED\] par (.*)/);
-        if (cancelledByMatch && cancelledByMatch[1]) {
-            title += ` (Annulé par ${cancelledByMatch[1]})`;
-        } else {
-            title += " (Annulé)";
-        }
-    }
-
-    return {
-        isPositive,
-        amountFormatted,
-        Icon,
-        title,
-        typeLabel,
-        subtitle,
-        isCancelled,
-        isPending,
-        isFailed,
-        canCancel: ["PURCHASE", "TOPUP", "DEPOSIT", "ADJUSTMENT", "TRANSFER"].includes(t.type) && !isCancelled && !isPending && !isFailed,
-    };
-}
-
-
-function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem & { type: "GROUP" }; isAdmin: boolean }) {
-	const [expanded, setExpanded] = useState(false);
-	const { items } = group;
-
-	// Summarize group
-	const totalAmount = items.reduce((acc: number, t: TransactionWithRelations) => {
-		return acc + t.amount;
-	}, 0);
-
-	// Check if all cancelled
-	const allCancelled = items.every(
-		(t: TransactionWithRelations) =>
-			t.status === "CANCELLED" || t.description?.includes("[CANCELLED]")
-	);
-	
-	// Effective amount (non-cancelled)
-	const effectiveAmount = items
-		.filter(
-			(t: TransactionWithRelations) =>
-				!(t.status === "CANCELLED" || t.description?.includes("[CANCELLED]"))
-		)
-		.reduce((acc: number, t: TransactionWithRelations) => acc + t.amount, 0);
-
-
-	const isPositive = totalAmount > 0;
-	// Use effective amount for display if not all cancelled, to show real impact
-	const displayAmount = allCancelled ? totalAmount : effectiveAmount;
-	const amountFormatted = (Math.abs(displayAmount) / 100).toFixed(2);
-
-	const date = new Date(group.data.createdAt);
+	const date = new Date(t.createdAt);
 	const subtitle = new Intl.DateTimeFormat("fr-FR", {
 		day: "numeric",
-		month: "long",
+		month: "short",
 		year: "numeric",
 		hour: "2-digit",
 		minute: "2-digit",
 	}).format(date);
 
-	// Determine common type or mixed
-	const firstType = items[0].type;
-	const isUniformType = items.every((t: TransactionWithRelations) => t.type === firstType);
-	
-	let Icon = IconStack; // Default for group
-	let typeLabel = "Groupe";
-	
-	if (isUniformType) {
-		switch (firstType) {
-			case "PURCHASE": Icon = IconShoppingBag; typeLabel = "Achats groupés"; break;
-			case "TOPUP": Icon = IconCoins; typeLabel = "Rechargements"; break;
-			case "ADJUSTMENT": Icon = IconWallet; typeLabel = "Ajustements de masse"; break;
-            case "DEPOSIT": Icon = IconAlertTriangle; typeLabel = "Prélèvements de masse"; break;
-		}
+	switch (t.type) {
+		case "PURCHASE":
+			Icon = IconShoppingBag;
+			typeLabel = "Achat";
+			title = t.shop ? t.shop.name : "Boutique";
+			if (t.product) title += ` · ${t.product.name}`;
+			break;
+		case "TOPUP":
+			Icon = IconCoins;
+			typeLabel = "Rechargement";
+			title = "Rechargement compte";
+			break;
+		case "TRANSFER":
+			typeLabel = "Virement";
+			if (isPositive) {
+				Icon = IconArrowDownLeft;
+				title = t.issuer ? `De : ${t.issuer.prenom} ${t.issuer.nom}` : "Reçu";
+			} else {
+				Icon = IconArrowUpRight;
+				title = t.receiverUser
+					? `Vers : ${t.receiverUser.prenom} ${t.receiverUser.nom}`
+					: t.fams ? `Vers : ${t.fams.name}` : "Envoyé";
+			}
+			if (isAdmin && t.walletSource === "FAMILY") {
+				title = t.fams ? `Fam'ss : ${t.fams.name}` : "Virement Fam'ss";
+			} else if (isAdmin) {
+				title = "Virement entre utilisateurs";
+			}
+			break;
+		case "REFUND":
+			Icon = IconRefresh;
+			typeLabel = "Remboursement";
+			title = "Remboursement";
+			break;
+		case "DEPOSIT":
+			Icon = IconAlertTriangle;
+			typeLabel = "Caution / Pénalité";
+			title = "Prélèvement administratif";
+			break;
+		case "ADJUSTMENT":
+			Icon = IconWallet;
+			typeLabel = "Ajustement";
+			title = "Ajustement solde";
+			break;
 	}
 
-	return (
-		<>
-			<tr
-				className={`hover:bg-dark-800/50 transition-colors cursor-pointer ${
-					allCancelled ? "opacity-50 grayscale" : ""
-				}`}
-				onClick={() => setExpanded(!expanded)}
-			>
-				<td className="px-6 py-4">
-					<div className="flex items-center gap-3">
-						<div className="text-gray-500 transition-transform duration-200" style={{ transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>
-							<IconChevronRight size={16} />
-						</div>
-						<div
-							className={`p-2 rounded-full ${
-								isPositive
-									? "bg-emerald-500/10 text-emerald-500"
-									: "bg-rose-500/10 text-rose-500"
-							}`}
-						>
-							<Icon size={18} stroke={1.5} />
-						</div>
-						<div className="flex flex-col">
-							<span
-								className={`font-medium text-gray-200 ${
-									allCancelled ? "line-through" : ""
-								}`}
-							>
-								{typeLabel}
-							</span>
-							<span className="text-xs text-gray-500">
-								{items.length} transactions
-							</span>
-						</div>
-					</div>
-				</td>
+	const isCancelled = t.status === "CANCELLED" || t.description?.includes("[CANCELLED]");
+	const isPending = t.status === "PENDING";
+	const isFailed = t.status === "FAILED";
 
-				{isAdmin && (
-					<td className="px-6 py-4 text-gray-500 italic">
-						{/* Group might target multiple users if it was a mass operation */}
-						Multiple
-					</td>
-				)}
+	if (t.description && !t.description.includes("[CANCELLED]") && t.type !== "TRANSFER" && t.type !== "PURCHASE") {
+		title = t.description;
+	}
 
-				<td className="px-6 py-4 text-gray-300">
-                    <span className={allCancelled ? "line-through" : ""}>
-					    {group.data.description || "Opération groupée"}
-                    </span>
-				</td>
-				<td className="px-6 py-4 text-gray-400 capitalize" suppressHydrationWarning>{subtitle}</td>
-				<td
-					className={`px-6 py-4 text-right font-semibold ${
-						isPositive ? "text-emerald-500" : "text-gray-200"
-					} ${allCancelled ? "line-through decoration-current" : ""}`}
-				>
-					{isPositive ? "+" : ""}
-					{amountFormatted} €
-				</td>
-				{isAdmin && (
-					<td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-						{!allCancelled && (
-							<CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />
-						)}
-					</td>
-				)}
-			</tr>
-			{expanded &&
-				items.map((t: TransactionWithRelations) => (
-					<TransactionRow
-						key={t.id}
-						t={t}
-						isAdmin={isAdmin}
-						isChild={true}
-					/>
-				))}
-		</>
-	);
+	if (isCancelled) {
+		const match = t.description?.match(/\[CANCELLED\] par (.*)/);
+		title += match?.[1] ? ` (Annulé par ${match[1]})` : " (Annulé)";
+	}
+
+	return {
+		isPositive,
+		amountFormatted,
+		Icon,
+		title,
+		typeLabel,
+		subtitle,
+		isCancelled,
+		isPending,
+		isFailed,
+		canCancel: ["PURCHASE", "TOPUP", "DEPOSIT", "ADJUSTMENT", "TRANSFER"].includes(t.type) && !isCancelled && !isPending && !isFailed,
+	};
 }
 
-function TransactionRow({
-	t,
-	isAdmin,
-	isChild = false,
-}: {
-	t: TransactionWithRelations;
-	isAdmin: boolean;
-	isChild?: boolean;
-}) {
-    const {
-        isPositive,
-        amountFormatted,
-        Icon,
-        title,
-        typeLabel,
-        subtitle,
-        isCancelled,
-        isPending,
-        isFailed,
-        canCancel,
-    } = getTransactionDisplayData(t, isAdmin);
+// ─── Desktop Row ──────────────────────────────────────────────────────────────
+
+function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRelations; isAdmin: boolean; isChild?: boolean }) {
+	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed } =
+		getTransactionDisplayData(t, isAdmin);
 
 	return (
-		<tr
-			className={`hover:bg-dark-800/50 transition-colors ${
-				isCancelled || isFailed ? "opacity-50 grayscale" : ""
-			} ${isPending ? "bg-yellow-500/5" : ""} ${isChild ? "bg-dark-800/20" : ""}`}
-		>
-			<td className={`px-6 py-4 ${isChild ? "pl-12" : ""}`}>
-				<div className="flex items-center gap-3 relative">
-                    {isChild && <div className="w-5 border-l-2 border-b-2 border-dark-700 h-6 absolute -ml-6 -mt-6 rounded-bl-lg"></div>}
-					<div
-						className={`p-2 rounded-full ${
-							isPositive
-								? "bg-emerald-500/10 text-emerald-500"
-								: "bg-rose-500/10 text-rose-500"
-						} ${isPending ? "bg-yellow-500/10 text-yellow-500" : ""}`}
-					>
-						{isPending ? (
-							<IconClock size={18} stroke={1.5} />
-						) : (
-							<Icon size={18} stroke={1.5} />
-						)}
+		<tr className={cn(
+			"border-b border-border/60 transition-colors hover:bg-elevated/25",
+			(isCancelled || isFailed) && "opacity-50",
+			isPending && "bg-yellow-500/5",
+			isChild && "bg-elevated/20",
+		)}>
+			<td className={cn("px-5 py-3", isChild && "pl-10")}>
+				<div className="flex items-center gap-2.5">
+					{isChild && (
+						<div className="absolute w-4 h-4 border-l-2 border-b-2 border-border rounded-bl-sm -ml-5 mt-1 pointer-events-none" />
+					)}
+					<div className={cn(
+						"p-1.5 rounded-md shrink-0",
+						isPending ? "bg-yellow-500/10 text-yellow-400" :
+						isFailed ? "bg-red-500/10 text-red-400" :
+						isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-elevated text-fg-subtle",
+					)}>
+						{isPending ? <IconClock size={13} stroke={1.5} /> : <Icon size={13} stroke={1.5} />}
 					</div>
-					<div className="flex flex-col">
-						<span
-							className={`font-medium text-gray-200 ${
-								isCancelled ? "line-through" : ""
-							}`}
-						>
-							{typeLabel}
-						</span>
-						{isPending && (
-							<span className="text-xs text-yellow-500 font-medium">
-								En attente
-							</span>
-						)}
-						{isFailed && (
-							<span className="text-xs text-red-500 font-medium">Échoué</span>
-						)}
-					</div>
+					<span className={cn(
+						"text-xs font-medium",
+						isPending ? "text-yellow-400" :
+						isFailed ? "text-red-400" :
+						isCancelled ? "text-fg-subtle" : "text-fg-muted",
+					)}>
+						{typeLabel}
+					</span>
 				</div>
 			</td>
 
 			{isAdmin && (
-				<td className="px-6 py-4 text-gray-300">
-					<div className="flex items-center gap-2">
-						<IconUser size={16} className="text-gray-500" />
-						<span className="font-medium text-gray-200">
-							{t.targetUser
-								? `${t.targetUser.prenom} ${t.targetUser.nom}`
-								: "Utilisateur inconnu"}
+				<td className="px-5 py-3">
+					<div className="flex flex-col">
+						<span className="text-sm text-fg font-medium">
+							{t.targetUser ? `${t.targetUser.prenom} ${t.targetUser.nom}` : "—"}
 						</span>
+						{t.targetUser?.username && (
+							<span className="text-xs text-fg-subtle">{t.targetUser.username}</span>
+						)}
 					</div>
-					<span className="text-xs text-gray-500 ml-6">
-						{t.targetUser?.username}
-					</span>
 				</td>
 			)}
 
-			<td className="px-6 py-4 text-gray-300">
-				<span className={isCancelled ? "line-through" : ""}>{title}</span>
+			<td className="px-5 py-3 max-w-xs">
+				<span className={cn("text-sm text-fg truncate block", isCancelled && "line-through text-fg-subtle")}>
+					{title}
+				</span>
 				{isAdmin && t.description && t.description !== title && (
-					<div className="text-xs text-gray-500">{t.description}</div>
+					<span className="text-xs text-fg-subtle truncate block">{t.description}</span>
 				)}
 			</td>
-			<td className="px-6 py-4 text-gray-400 capitalize" suppressHydrationWarning>{subtitle}</td>
-			<td
-				className={`px-6 py-4 text-right font-semibold ${
-					isPositive ? "text-emerald-500" : "text-gray-200"
-				} ${isCancelled ? "line-through decoration-current" : ""}`}
-			>
-				{isPositive ? "+" : ""}
-				{amountFormatted} €
+
+			<td className="px-5 py-3 whitespace-nowrap">
+				<span className="text-xs text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
+			</td>
+
+			<td className="px-5 py-3 text-right whitespace-nowrap">
+				{t.type === "PURCHASE" && t.quantity != null && t.quantity > 1 ? (
+					<span className="text-sm tabular-nums text-fg-muted">×{t.quantity}</span>
+				) : (
+					<span className="text-fg-subtle">—</span>
+				)}
+			</td>
+
+			<td className="px-5 py-3 text-right whitespace-nowrap">
+				<span className={cn(
+					"text-sm font-semibold tabular-nums",
+					isCancelled ? "line-through text-fg-subtle" :
+					isPending ? "text-yellow-400" :
+					isFailed ? "text-red-400" :
+					isPositive ? "text-emerald-400" : "text-fg",
+				)}>
+					{isPositive ? "+" : "−"}{amountFormatted} €
+				</span>
 			</td>
 
 			{isAdmin && (
-				<td className="px-6 py-4 text-right">
+				<td className="px-5 py-3 text-right">
 					<TransactionActions
-                        transactionId={t.id}
-                        quantity={t.quantity}
-                        type={t.type}
-                        isCancelled={isCancelled || false}
-                        isFailed={isFailed}
-                        isPending={isPending}
-                    />
+						transactionId={t.id}
+						quantity={t.quantity}
+						type={t.type}
+						isCancelled={isCancelled || false}
+						isFailed={isFailed}
+						isPending={isPending}
+					/>
 				</td>
 			)}
 		</tr>
 	);
 }
 
-// Mobile Components
+function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem & { type: "GROUP" }; isAdmin: boolean }) {
+	const [expanded, setExpanded] = useState(false);
+	const { items } = group;
 
-function TransactionMobileCard({
-    t,
-    isAdmin,
-    isChild = false,
-}: {
-    t: TransactionWithRelations;
-    isAdmin: boolean;
-    isChild?: boolean;
-}) {
-    const {
-        isPositive,
-        amountFormatted,
-        Icon,
-        title,
-        typeLabel,
-        subtitle,
-        isCancelled,
-        isPending,
-        isFailed,
-        canCancel,
-    } = getTransactionDisplayData(t, isAdmin);
-
-    return (
-        <div className={cn(
-            "bg-dark-900 border border-dark-800 rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden",
-            (isCancelled || isFailed) && "opacity-50 grayscale",
-            isPending && "bg-yellow-500/5 border-yellow-500/20",
-            isChild && "bg-dark-800/20 border-l-4 border-l-dark-700 border-y-0 border-r-0 rounded-l-none"
-        )}>
-            <div className="flex justify-between items-start gap-3">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={cn("p-2 rounded-lg shrink-0",
-                        isPositive ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500",
-                        isPending && "bg-yellow-500/10 text-yellow-500",
-                        "border border-white/5" // Added subtle border for better definition
-                    )}>
-                        {isPending ? <IconClock size={20} stroke={1.5} /> : <Icon size={20} stroke={1.5} />}
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                         {/* Title Row */}
-                         <div className={cn("font-semibold text-gray-200 line-clamp-2 text-sm leading-snug", isCancelled && "line-through")}>
-                            {title}
-                        </div>
-                        {/* Subtitle Row */}
-                        <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 min-w-0 mt-0.5">
-                            <span className="shrink-0" suppressHydrationWarning>{subtitle}</span>
-                             <span className="w-0.5 h-0.5 bg-gray-600 rounded-full shrink-0"></span>
-                            <span className="truncate">{typeLabel}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex flex-col items-end shrink-0 gap-0.5">
-                     <div className={cn("font-bold text-sm", isPositive ? "text-emerald-500" : "text-gray-200", isCancelled && "line-through decoration-current")}>
-                        {isPositive ? "+" : ""}{amountFormatted} €
-                    </div>
-                    {/* Status badges if needed */}
-                    {isPending && <span className="text-[10px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">En attente</span>}
-                    {isFailed && <span className="text-[10px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">Échoué</span>}
-                    
-                     {/* Action Button Integrated */}
-                    {isAdmin && (
-                        <div className="mt-1 flex gap-2 justify-end z-20 relative">
-                             <TransactionActions
-                                transactionId={t.id}
-                                quantity={t.quantity}
-                                type={t.type}
-                                isCancelled={isCancelled || false}
-                                isFailed={isFailed}
-                                isPending={isPending}
-                            />
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Extra Details (User, Description unique from title) */}
-            {(isAdmin || (t.description && t.description !== title)) && (
-                <div className="mt-1 pt-2 border-t border-dashed border-dark-700/50 flex flex-col gap-1 px-1">
-                    {isAdmin && t.targetUser && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                            <IconUser size={12} className="text-gray-600" />
-                            <span>{t.targetUser.prenom} {t.targetUser.nom}</span>
-                        </div>
-                    )}
-                     {t.description && t.description !== title && (
-                        <div className="text-xs text-gray-500 italic truncate">
-                           {t.description}
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-}
-
-function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransactionItem & { type: "GROUP" }; isAdmin: boolean }) {
-    const [expanded, setExpanded] = useState(false);
-    const { items } = group;
-
-	// Same group logic
-	const totalAmount = items.reduce((acc: number, t: TransactionWithRelations) => acc + t.amount, 0);
-	const allCancelled = items.every((t: TransactionWithRelations) => t.status === "CANCELLED" || t.description?.includes("[CANCELLED]"));
+	const allCancelled = items.every((t) => t.status === "CANCELLED" || t.description?.includes("[CANCELLED]"));
 	const effectiveAmount = items
-		.filter((t: TransactionWithRelations) => !(t.status === "CANCELLED" || t.description?.includes("[CANCELLED]")))
-		.reduce((acc: number, t: TransactionWithRelations) => acc + t.amount, 0);
-
-	const isPositive = totalAmount > 0;
+		.filter((t) => !(t.status === "CANCELLED" || t.description?.includes("[CANCELLED]")))
+		.reduce((acc, t) => acc + t.amount, 0);
+	const totalAmount = items.reduce((acc, t) => acc + t.amount, 0);
 	const displayAmount = allCancelled ? totalAmount : effectiveAmount;
+	const isPositive = displayAmount > 0;
 	const amountFormatted = (Math.abs(displayAmount) / 100).toFixed(2);
-    
-    const date = new Date(group.data.createdAt);
-	const subtitle = new Intl.DateTimeFormat("fr-FR", {
-		day: "numeric",
-		month: "short",
-	}).format(date); // Shorter date for mobile group header
 
-    const firstType = items[0].type;
-	const isUniformType = items.every((t: TransactionWithRelations) => t.type === firstType);
-	
-	let Icon = IconStack; 
-	// let typeLabel = "Groupe"; // Unused
-	
+	const date = new Date(group.data.createdAt);
+	const subtitle = new Intl.DateTimeFormat("fr-FR", {
+		day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+	}).format(date);
+
+	const firstType = items[0].type;
+	const isUniformType = items.every((t) => t.type === firstType);
+	let Icon = IconStack;
+	let typeLabel = "Groupe";
 	if (isUniformType) {
 		switch (firstType) {
-			case "PURCHASE": Icon = IconShoppingBag; break; // typeLabel = "Achats groupés"; break;
-			case "TOPUP": Icon = IconCoins; break; // typeLabel = "Rechargements"; break;
-			case "ADJUSTMENT": Icon = IconWallet; break; // typeLabel = "Ajustements"; break;
-            case "DEPOSIT": Icon = IconAlertTriangle; break; // typeLabel = "Prélèvements"; break;
+			case "PURCHASE": Icon = IconShoppingBag; typeLabel = "Achats groupés"; break;
+			case "TOPUP": Icon = IconCoins; typeLabel = "Rechargements"; break;
+			case "ADJUSTMENT": Icon = IconWallet; typeLabel = "Ajustements"; break;
+			case "DEPOSIT": Icon = IconAlertTriangle; typeLabel = "Prélèvements"; break;
 		}
 	}
 
-    return (
-        <div className={cn("bg-dark-900 border border-dark-800 rounded-xl overflow-hidden", allCancelled && "opacity-50 grayscale")}>
-            <div 
-                className="p-3 flex flex-col gap-2 cursor-pointer hover:bg-dark-800/50 transition-colors relative"
-                onClick={() => setExpanded(!expanded)}
-            >
-                 <div className="flex justify-between items-start gap-3">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className={cn("p-2 rounded-lg shrink-0", isPositive ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500", "border border-white/5")}>
-                             {/* Show stack icon or specific icon */}
-                            <IconStack size={20} stroke={1.5} className={cn("absolute opacity-50 translate-x-1 translate-y-1", isUniformType && "hidden")} />
-                            <Icon size={20} stroke={1.5} className="relative z-10" />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                            <div className={cn("font-semibold text-gray-200 text-sm line-clamp-2 leading-snug", allCancelled && "line-through")}>
-                                {group.data.description || "Groupe"}
-                            </div>
-                            <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 mt-0.5 min-w-0">
-                                <span className="bg-dark-800 px-1.5 rounded text-[10px] font-medium border border-dark-700 whitespace-nowrap shrink-0">{items.length} ops</span>
-                                <span className="truncate" suppressHydrationWarning>{subtitle}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="flex flex-col items-end shrink-0 gap-1">
-                        <div className={cn("font-bold text-sm", isPositive ? "text-emerald-500" : "text-gray-200", allCancelled && "line-through decoration-current")}>
-                            {isPositive ? "+" : ""}{amountFormatted} €
-                        </div>
-                        {isAdmin && !allCancelled && (
-                            <div className="mt-1 flex gap-2 justify-end z-20 relative pointer-events-auto" onClick={(e) => e.stopPropagation()}>
-                                <CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />
-                            </div>
-                        )}
-                        <div className="text-gray-500 transition-transform duration-200 mt-1 flex items-center justify-center" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)'}}>
-                            <IconChevronDown size={14} />
-                        </div>
-                    </div>
-                </div>
-            </div>
+	return (
+		<>
+			<tr
+				className={cn(
+					"border-b border-border/60 cursor-pointer transition-colors hover:bg-elevated/30",
+					allCancelled && "opacity-50",
+				)}
+				onClick={() => setExpanded(!expanded)}
+			>
+				<td className="px-5 py-3">
+					<div className="flex items-center gap-2.5">
+						<div className={cn(
+							"text-fg-subtle transition-transform duration-200",
+							expanded && "rotate-90",
+						)}>
+							<IconChevronRight size={14} />
+						</div>
+						<div className={cn(
+							"p-1.5 rounded-md",
+							isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-elevated text-fg-subtle",
+						)}>
+							<Icon size={13} stroke={1.5} />
+						</div>
+						<div className="flex flex-col">
+							<span className={cn("text-xs font-medium text-fg-muted", allCancelled && "line-through")}>
+								{typeLabel}
+							</span>
+							<span className="text-[10px] text-fg-subtle">{items.length} transactions</span>
+						</div>
+					</div>
+				</td>
 
-            {expanded && (
-                <div className="border-t border-dark-800 flex flex-col gap-2 p-2 bg-black/20 pl-4">
-                    {items.map((t: TransactionWithRelations) => (
-                        <TransactionMobileCard
-                            key={t.id}
-                            t={t}
-                            isAdmin={isAdmin}
-                            isChild={true}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+				{isAdmin && (
+					<td className="px-5 py-3 text-xs text-fg-subtle italic">Multiple</td>
+				)}
+
+				<td className="px-5 py-3 max-w-xs">
+					<span className={cn("text-sm text-fg-muted truncate block", allCancelled && "line-through")}>
+						{group.data.description || "Opération groupée"}
+					</span>
+				</td>
+
+				<td className="px-5 py-3 whitespace-nowrap">
+					<span className="text-xs text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
+				</td>
+
+				<td className="px-5 py-3 text-right whitespace-nowrap">
+					<span className={cn(
+						"text-sm font-semibold tabular-nums",
+						isPositive ? "text-emerald-400" : "text-fg",
+						allCancelled && "line-through text-fg-subtle",
+					)}>
+						{isPositive ? "+" : "−"}{amountFormatted} €
+					</span>
+				</td>
+
+				<td className="px-5 py-3 text-right">
+					<span className="text-xs text-fg-subtle">{items.length} lignes</span>
+				</td>
+
+				{isAdmin && (
+					<td className="px-5 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+						{!allCancelled && <CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />}
+					</td>
+				)}
+			</tr>
+
+			{expanded && items.map((t) => (
+				<TransactionRow key={t.id} t={t} isAdmin={isAdmin} isChild />
+			))}
+		</>
+	);
+}
+
+// ─── Mobile Cards ─────────────────────────────────────────────────────────────
+
+function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: TransactionWithRelations; isAdmin: boolean; isChild?: boolean }) {
+	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed } =
+		getTransactionDisplayData(t, isAdmin);
+
+	return (
+		<div className={cn(
+			"flex overflow-hidden rounded-xl border border-border bg-surface-900",
+			(isCancelled || isFailed) && "opacity-55",
+			isPending && "border-yellow-500/20",
+			isChild && "rounded-l-none ml-3",
+		)}>
+			{/* Accent stripe */}
+			<div className={cn(
+				"w-0.5 shrink-0",
+				isPending ? "bg-yellow-500" :
+				isFailed ? "bg-red-500" :
+				isCancelled ? "bg-elevated" :
+				isPositive ? "bg-emerald-500" : "bg-surface-800",
+			)} />
+
+			<div className="flex flex-1 items-center gap-3 px-3 py-2.5 min-w-0">
+				{/* Icon */}
+				<div className={cn(
+					"shrink-0 p-2 rounded-lg",
+					isPending ? "bg-yellow-500/10 text-yellow-400" :
+					isFailed ? "bg-red-500/10 text-red-400" :
+					isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-elevated text-fg-subtle",
+				)}>
+					{isPending ? <IconClock size={15} stroke={1.5} /> : <Icon size={15} stroke={1.5} />}
+				</div>
+
+				{/* Text */}
+				<div className="flex-1 min-w-0">
+					<p className={cn("text-sm font-medium text-fg truncate leading-snug", isCancelled && "line-through text-fg-subtle")}>
+						{title}
+					</p>
+					<div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+						<span className="text-[11px] text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
+						<span className="text-fg-subtle text-[11px]">·</span>
+						<span className={cn(
+							"text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded",
+							isPending ? "bg-yellow-500/10 text-yellow-400" :
+							isFailed ? "bg-red-500/10 text-red-400" :
+							isCancelled ? "bg-elevated text-fg-subtle" :
+							"bg-elevated text-fg-muted",
+						)}>
+							{isPending ? "En attente" : isFailed ? "Échoué" : typeLabel}
+						</span>
+					</div>
+					{isAdmin && t.targetUser && (
+						<div className="flex items-center gap-1 mt-1">
+							<IconUser size={10} className="text-fg-subtle shrink-0" />
+							<span className="text-[11px] text-fg-subtle truncate">
+								{t.targetUser.prenom} {t.targetUser.nom}
+							</span>
+						</div>
+					)}
+				</div>
+
+				{/* Amount + actions */}
+				<div className="shrink-0 flex flex-col items-end gap-1.5">
+					<span className={cn(
+						"text-sm font-bold tabular-nums",
+						isCancelled ? "line-through text-fg-subtle" :
+						isPending ? "text-yellow-400" :
+						isFailed ? "text-red-400" :
+						isPositive ? "text-emerald-400" : "text-fg",
+					)}>
+						{isPositive ? "+" : "−"}{amountFormatted} €
+					</span>
+					{t.type === "PURCHASE" && t.quantity != null && t.quantity > 1 && (
+						<span className="text-[11px] text-fg-subtle tabular-nums">×{t.quantity}</span>
+					)}
+					{isAdmin && (
+						<TransactionActions
+							transactionId={t.id}
+							quantity={t.quantity}
+							type={t.type}
+							isCancelled={isCancelled || false}
+							isFailed={isFailed}
+							isPending={isPending}
+						/>
+					)}
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransactionItem & { type: "GROUP" }; isAdmin: boolean }) {
+	const [expanded, setExpanded] = useState(false);
+	const { items } = group;
+
+	const allCancelled = items.every((t) => t.status === "CANCELLED" || t.description?.includes("[CANCELLED]"));
+	const effectiveAmount = items
+		.filter((t) => !(t.status === "CANCELLED" || t.description?.includes("[CANCELLED]")))
+		.reduce((acc, t) => acc + t.amount, 0);
+	const totalAmount = items.reduce((acc, t) => acc + t.amount, 0);
+	const displayAmount = allCancelled ? totalAmount : effectiveAmount;
+	const isPositive = displayAmount > 0;
+	const amountFormatted = (Math.abs(displayAmount) / 100).toFixed(2);
+
+	const date = new Date(group.data.createdAt);
+	const subtitle = new Intl.DateTimeFormat("fr-FR", {
+		day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+	}).format(date);
+
+	const firstType = items[0].type;
+	const isUniformType = items.every((t) => t.type === firstType);
+	let Icon = IconStack;
+	if (isUniformType) {
+		switch (firstType) {
+			case "PURCHASE": Icon = IconShoppingBag; break;
+			case "TOPUP": Icon = IconCoins; break;
+			case "ADJUSTMENT": Icon = IconWallet; break;
+			case "DEPOSIT": Icon = IconAlertTriangle; break;
+		}
+	}
+
+	return (
+		<div className={cn("overflow-hidden rounded-xl border border-border bg-surface-900", allCancelled && "opacity-55")}>
+			<div
+				className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-elevated/30 transition-colors"
+				onClick={() => setExpanded(!expanded)}
+			>
+				{/* Left stripe */}
+				<div className={cn(
+					"w-0.5 self-stretch rounded-full shrink-0",
+					isPositive ? "bg-emerald-500" : "bg-surface-800",
+				)} />
+
+				<div className={cn(
+					"shrink-0 p-2 rounded-lg",
+					isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-elevated text-fg-subtle",
+				)}>
+					<Icon size={15} stroke={1.5} />
+				</div>
+
+				<div className="flex-1 min-w-0">
+					<p className={cn("text-sm font-medium text-fg truncate leading-snug", allCancelled && "line-through text-fg-subtle")}>
+						{group.data.description || "Opération groupée"}
+					</p>
+					<div className="flex items-center gap-1.5 mt-0.5">
+						<span className="text-[11px] text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
+						<span className="text-fg-subtle text-[11px]">·</span>
+						<span className="text-[10px] font-semibold bg-elevated text-fg-muted px-1.5 py-0.5 rounded uppercase tracking-wide">
+							{items.length} ops
+						</span>
+					</div>
+				</div>
+
+				<div className="shrink-0 flex flex-col items-end gap-1.5">
+					<span className={cn(
+						"text-sm font-bold tabular-nums",
+						isPositive ? "text-emerald-400" : "text-fg",
+						allCancelled && "line-through text-fg-subtle",
+					)}>
+						{isPositive ? "+" : "−"}{amountFormatted} €
+					</span>
+					<div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+						{isAdmin && !allCancelled && (
+							<CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />
+						)}
+						<div className={cn("text-fg-subtle transition-transform duration-200", expanded && "rotate-180")}>
+							<IconChevronDown size={14} />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{expanded && (
+				<div className="border-t border-border flex flex-col gap-1.5 p-2 bg-surface-950/40">
+					{items.map((t) => (
+						<TransactionMobileCard key={t.id} t={t} isAdmin={isAdmin} isChild />
+					))}
+				</div>
+			)}
+		</div>
+	);
 }

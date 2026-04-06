@@ -2,229 +2,217 @@
 
 import {
 	IconArrowsSort,
-    IconChevronLeft,
-    IconChevronRight,
+	IconChevronLeft,
+	IconChevronRight,
 	IconHistory,
-    IconId,
-    IconMail,
+	IconId,
+	IconMail,
 	IconPencil,
 	IconPlus,
 	IconPower,
-    IconSchool,
+	IconSchool,
 	IconSearch,
 	IconSortAscending,
 	IconSortDescending,
 	IconX,
 } from "@tabler/icons-react";
-import { usePathname,useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { PromssSelector } from "@/components/promss-selector";
-import { importUsersBatchAction } from "@/features/users/actions";
-import { toggleUserStatusAction } from "@/features/users/actions";
+import { UserAvatar } from "@/components/user-avatar";
+import { ErrorDialog } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { importUsersBatchAction, toggleUserStatusAction } from "@/features/users/actions";
 
 import { CreateUserForm } from "./create-user-form";
 import { TransactionHistoryModal } from "./transaction-history-modal";
 import { UserEditForm } from "./user-edit-form";
 
-// Define strict types for User and Role to avoid 'any'
 interface Role {
-    id: string;
-    name: string;
+	id: string;
+	name: string;
 }
 
 interface User {
-    id: string;
-    nom: string;
-    prenom: string;
-    email: string;
-    username: string;
-    bucque: string | null;
-    promss: string | null;
-    tabagnss: string | null;
-    phone: string | null;
-    nums: string | null;
-    roleId: string | null;
-    balance: number;
-    isAsleep: boolean | null;
-    isDeleted: boolean | null;
-    role: Role | null;
-    appRole?: string;
-    // Add other fields as necessary based on usage
-    [key: string]: unknown;
+	id: string;
+	nom: string;
+	prenom: string;
+	email: string;
+	username: string;
+	bucque: string | null;
+	promss: string | null;
+	tabagnss: string | null;
+	phone: string | null;
+	nums: string | null;
+	roleId: string | null;
+	balance: number;
+	isAsleep: boolean | null;
+	isDeleted: boolean | null;
+	role: Role | null;
+	appRole?: string;
+	image?: string | null;
+	[key: string]: unknown;
 }
 
 interface UsersTableProps {
 	users: User[];
 	roles: Role[];
-    totalPages?: number;
-    currentPage?: number;
-    promssList?: string[];
+	totalPages?: number;
+	currentPage?: number;
+	promssList?: string[];
 }
 
-function TablePagination({ 
-    total, 
-    current, 
-    onChange 
-}: { 
-    total: number; 
-    current: number; 
-    onChange: (page: number) => void;
+
+function RoleBadge({ role, appRole }: { role: Role | null; appRole?: string }) {
+	const name = role?.name || appRole || "—";
+	if (name === "ADMIN") {
+		return (
+			<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-accent-500/12 text-accent-400 border border-accent-500/25 tracking-wide">
+				ADMIN
+			</span>
+		);
+	}
+	return (
+		<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-elevated text-fg-subtle border border-border/60">
+			{name}
+		</span>
+	);
+}
+
+function BalanceCell({ balance }: { balance: number }) {
+	const formatted = (Math.abs(balance) / 100).toFixed(2);
+	const isNeg = balance < 0;
+	return (
+		<span className={`font-mono text-sm font-semibold tabular-nums ${isNeg ? "text-red-400" : "text-fg"}`}>
+			{isNeg ? "−" : ""}{formatted} €
+		</span>
+	);
+}
+
+function SortIcon({ column, currentSort, currentOrder }: { column: string; currentSort: string | null; currentOrder: string | null }) {
+	if (currentSort !== column)
+		return <IconArrowsSort className="w-3 h-3 opacity-20 group-hover:opacity-60 transition-opacity" />;
+	if (currentOrder === "desc")
+		return <IconSortDescending className="w-3 h-3 text-accent-400" />;
+	return <IconSortAscending className="w-3 h-3 text-accent-400" />;
+}
+
+function TablePagination({ total, current, onChange }: { total: number; current: number; onChange: (page: number) => void }) {
+	if (total <= 1) return null;
+	return (
+		<div className="flex items-center justify-between px-5 py-3 border-t border-border bg-surface-950/40">
+			<span className="text-xs text-fg-subtle tabular-nums">
+				Page <span className="text-fg font-medium">{current}</span> / {total}
+			</span>
+			<div className="flex gap-1.5">
+				<button
+					onClick={() => onChange(current - 1)}
+					disabled={current <= 1}
+					className="p-1.5 rounded-lg border border-border text-fg-subtle hover:text-fg hover:bg-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+				>
+					<IconChevronLeft className="w-4 h-4" />
+				</button>
+				<button
+					onClick={() => onChange(current + 1)}
+					disabled={current >= total}
+					className="p-1.5 rounded-lg border border-border text-fg-subtle hover:text-fg hover:bg-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+				>
+					<IconChevronRight className="w-4 h-4" />
+				</button>
+			</div>
+		</div>
+	);
+}
+
+function UserMobileCard({ user, onEdit, onHistory, onToggleStatus, isPending }: {
+	user: User;
+	onEdit: () => void;
+	onHistory: () => void;
+	onToggleStatus: () => void;
+	isPending: boolean;
 }) {
-    if (total <= 1) return null;
+	return (
+		<div className={`bg-surface-900 border border-border rounded-xl overflow-hidden transition-opacity ${user.isAsleep ? "opacity-60" : ""}`}>
+			<div className="p-4 flex items-center gap-3">
+				<UserAvatar user={{ name: `${user.prenom} ${user.nom}`, username: user.username, image: user.image }} className="w-12 h-12 text-base" />
+				<div className="min-w-0 flex-1">
+					<div className="flex items-center gap-2 flex-wrap">
+						<span className="font-semibold text-fg truncate">
+							{user.prenom} {user.nom}
+						</span>
+						{user.isAsleep && (
+							<span className="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-widest">
+								Inactif
+							</span>
+						)}
+					</div>
+					<div className="text-xs text-fg-subtle mt-0.5">@{user.username}</div>
+				</div>
+				<div className="text-right shrink-0">
+					<BalanceCell balance={user.balance} />
+				</div>
+			</div>
 
-    return (
-        <div className="flex items-center justify-between p-4 border-t border-dark-800 bg-dark-900/50">
-            <div className="text-sm text-gray-500">
-                Page {current} sur {total}
-            </div>
-            <div className="flex gap-2">
-                <button
-                    onClick={() => onChange(current - 1)}
-                    disabled={current <= 1}
-                    className="p-2 rounded-lg border border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                    <IconChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                    onClick={() => onChange(current + 1)}
-                    disabled={current >= total}
-                    className="p-2 rounded-lg border border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                    <IconChevronRight className="w-4 h-4" />
-                </button>
-            </div>
-        </div>
-    );
-}
+			<div className="px-4 pb-3 flex flex-wrap gap-1.5">
+				<RoleBadge role={user.role} appRole={user.appRole} />
+				{user.promss && (
+					<span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono bg-elevated text-fg-subtle border border-border/60">
+						{user.promss}
+					</span>
+				)}
+				{user.tabagnss && (
+					<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-elevated text-fg-subtle border border-border/60">
+						<IconSchool className="w-3 h-3" />{user.tabagnss}
+					</span>
+				)}
+			</div>
 
-function UserMobileCard({ 
-    user, 
-    onEdit, 
-    onHistory, 
-    onToggleStatus,
-    isPending
-}: { 
-    user: User; 
-    onEdit: () => void; 
-    onHistory: () => void;
-    onToggleStatus: () => void;
-    isPending: boolean;
-}) {
-    return (
-        <div className={`bg-dark-900 border border-dark-800 rounded-xl overflow-hidden ${user.isAsleep ? "bg-dark-900/50" : ""}`}>
-             {/* Header Section */}
-            <div className="p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-white text-lg truncate">
-                            {user.prenom} {user.nom}
-                        </h3>
-                        {user.isAsleep && (
-                             <span className="text-[10px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-medium uppercase tracking-wider">
-                                Inactif
-                            </span>
-                        )}
-                    </div>
-                    <div className="text-sm text-gray-500 font-medium">@{user.username}</div>
-                </div>
-                
-                <div className="text-right shrink-0">
-                    <div className="font-mono text-xl text-white font-bold tracking-tight">
-                        {(user.balance / 100).toFixed(2)} €
-                    </div>
-                </div>
-            </div>
-            
-            {/* Info Grid */}
-            <div className="px-4 pb-4 space-y-3">
-                 {/* Badges Row */}
-                <div className="flex flex-wrap gap-2">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium 
-                        ${
-                            user.role?.name === "ADMIN"
-                                ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
-                                : user.role?.name === "TRESORIER"
-                                ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                                : "bg-dark-800 text-gray-400 border border-dark-700"
-                        }`}
-                    >
-                        {user.role?.name || user.appRole}
-                    </span>
-                    {user.promss && (
-                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-dark-800 text-gray-300 border border-dark-700 font-mono">
-                            {user.promss}
-                        </span>
-                    )}
-                    {user.tabagnss && (
-                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-dark-800 text-gray-300 border border-dark-700">
-                             <IconSchool className="w-3 h-3 mr-1" />
-                            {user.tabagnss}
-                        </span>
-                    )}
-                </div>
+			{(user.bucque || user.email) && (
+				<div className="px-4 pb-3 space-y-1 text-xs text-fg-subtle border-t border-border/40 pt-3">
+					{user.bucque && (
+						<div className="flex items-center gap-2">
+							<IconId className="w-3.5 h-3.5 shrink-0" />
+							<span className="truncate">{user.bucque}</span>
+						</div>
+					)}
+					<div className="flex items-center gap-2">
+						<IconMail className="w-3.5 h-3.5 shrink-0" />
+						<span className="truncate">{user.email}</span>
+					</div>
+				</div>
+			)}
 
-                {/* Details */}
-                <div className="grid grid-cols-1 gap-2 text-sm pt-2 border-t border-dark-800/50">
-                    {user.bucque && (
-                        <div className="flex items-center gap-3 text-gray-400">
-                             <IconId className="w-4 h-4 shrink-0 opacity-70" />
-                             <span className="truncate text-gray-300">{user.bucque}</span>
-                        </div>
-                    )}
-                     <div className="flex items-center gap-3 text-gray-400">
-                         <IconMail className="w-4 h-4 shrink-0 opacity-70" />
-                         <span className="truncate text-gray-300">{user.email}</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Actions Footer */}
-            <div className="p-3 bg-dark-950/30 border-t border-dark-800 flex items-center gap-2">
-                <button
-                    onClick={onHistory}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-dark-800 hover:bg-dark-700 text-gray-300 rounded-lg transition-colors text-sm font-medium border border-dark-700/50"
-                >
-                    <IconHistory className="w-4 h-4" />
-                    Historique
-                </button>
-                <button
-                    onClick={onEdit}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-dark-800 hover:bg-dark-700 text-gray-300 rounded-lg transition-colors text-sm font-medium border border-dark-700/50"
-                >
-                    <IconPencil className="w-4 h-4" />
-                     Modifier
-                </button>
-                <button
-                    onClick={onToggleStatus}
-                    disabled={isPending}
-                    className={`px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center border ${
-                        user.isAsleep
-                            ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
-                            : "bg-dark-800 text-gray-400 border-dark-700 hover:text-red-400 hover:bg-dark-700"
-                    }`}
-                    title={user.isAsleep ? "Réactiver" : "Désactiver"}
-                >
-                    <IconPower className="w-5 h-5" />
-                </button>
-            </div>
-        </div>
-    );
-}
-
-function SortIcon({ column, currentSort, currentOrder }: { column: string, currentSort: string | null, currentOrder: string | null }) {
-    if (currentSort !== column)
-        return (
-            <IconArrowsSort className="w-3 h-3 opacity-30 group-hover:opacity-100" />
-        );
-    
-    if (currentOrder === "desc") {
-        return <IconSortDescending className="w-3 h-3 text-primary-400" />;
-    }
-    
-    return <IconSortAscending className="w-3 h-3 text-primary-400" />;
+			<div className="flex border-t border-border divide-x divide-border">
+				<button
+					onClick={onHistory}
+					className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-fg-subtle hover:text-fg hover:bg-elevated transition-colors font-medium"
+				>
+					<IconHistory className="w-3.5 h-3.5" />
+					Historique
+				</button>
+				<button
+					onClick={onEdit}
+					className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-fg-subtle hover:text-fg hover:bg-elevated transition-colors font-medium"
+				>
+					<IconPencil className="w-3.5 h-3.5" />
+					Modifier
+				</button>
+				<button
+					onClick={onToggleStatus}
+					disabled={isPending}
+					className={`flex items-center justify-center px-4 py-2.5 transition-colors disabled:opacity-40 ${user.isAsleep
+						? "text-emerald-400 hover:bg-emerald-500/10"
+						: "text-fg-subtle hover:text-red-400 hover:bg-red-500/10"
+						}`}
+					title={user.isAsleep ? "Réactiver" : "Désactiver"}
+				>
+					<IconPower className="w-4 h-4" />
+				</button>
+			</div>
+		</div>
+	);
 }
 
 export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, promssList = [] }: UsersTableProps) {
@@ -235,125 +223,108 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [viewHistoryUser, setViewHistoryUser] = useState<User | null>(null);
 	const [showCreateModal, setShowCreateModal] = useState(false);
-
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const [isPending, startTransition] = useTransition();
 
 	const handleSearch = (term: string) => {
 		const params = new URLSearchParams(searchParams);
-		if (term) {
-			params.set("search", term);
-		} else {
-			params.delete("search");
-		}
-        params.set("page", "1"); // Reset page on search
+		if (term) params.set("search", term);
+		else params.delete("search");
+		params.set("page", "1");
 		router.replace(`${pathname}?${params.toString()}`);
 	};
 
-    const handlePageChange = (newPage: number) => {
-        const params = new URLSearchParams(searchParams);
-        params.set("page", newPage.toString());
-        router.push(`${pathname}?${params.toString()}`);
-    };
+	const handlePageChange = (newPage: number) => {
+		const params = new URLSearchParams(searchParams);
+		params.set("page", newPage.toString());
+		router.push(`${pathname}?${params.toString()}`);
+	};
 
-    const handlePromssChange = (promss: string) => {
-        const params = new URLSearchParams(searchParams);
-        if (promss) {
-            params.set("promss", promss);
-        } else {
-            params.delete("promss");
-        }
-        params.set("page", "1");
-        router.push(`${pathname}?${params.toString()}`);
-    };
+	const handlePromssChange = (promss: string) => {
+		const params = new URLSearchParams(searchParams);
+		if (promss && promss !== "all") params.set("promss", promss);
+		else params.delete("promss");
+		params.set("page", "1");
+		router.push(`${pathname}?${params.toString()}`);
+	};
 
 	const handleSort = (column: string) => {
 		const params = new URLSearchParams(searchParams);
-		const currentSort = params.get("sort");
-		const currentOrder = params.get("order");
-
-		if (currentSort === column) {
-			if (currentOrder === "asc") {
-                params.set("order", "desc");
-            } else {
-                params.delete("sort");
-                params.delete("order");
-            }
+		const currentSortParam = params.get("sort");
+		const currentOrderParam = params.get("order");
+		if (currentSortParam === column) {
+			if (currentOrderParam === "asc") params.set("order", "desc");
+			else { params.delete("sort"); params.delete("order"); }
 		} else {
 			params.set("sort", column);
-			params.set("order", "asc"); // Default to asc
+			params.set("order", "asc");
 		}
 		router.replace(`${pathname}?${params.toString()}`);
 	};
 
 	const handleRoleFilter = (role: string) => {
 		const params = new URLSearchParams(searchParams);
-		if (role) params.set("role", role);
+		if (role && role !== "all") params.set("role", role);
 		else params.delete("role");
-		params.set("page", "1"); // Reset page
+		params.set("page", "1");
 		router.replace(`${pathname}?${params.toString()}`);
 	};
 
 	const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
-		if (
-			!confirm(
-				currentStatus
-					? "Voulez-vous réactiver cet utilisateur ?"
-					: "Voulez-vous désactiver cet utilisateur ?"
-			)
-		)
+		if (!confirm(currentStatus ? "Voulez-vous réactiver cet utilisateur ?" : "Voulez-vous désactiver cet utilisateur ?"))
 			return;
-
 		startTransition(async () => {
-			const res = await toggleUserStatusAction({
-				userId,
-				isAsleep: !currentStatus,
-			});
-			if (res.error) alert(res.error);
+			const res = await toggleUserStatusAction({ userId, isAsleep: !currentStatus });
+			if (res.error) setErrorMsg(res.error);
 		});
 	};
 
 	const currentSort = searchParams.get("sort");
 	const currentOrder = searchParams.get("order");
-	const currentRole = searchParams.get("role") || "";
-    const currentPromss = searchParams.get("promss") || "";
+	const currentRole = searchParams.get("role") || "all";
+	const currentPromss = searchParams.get("promss") || "all";
+	const activeUsers = users.filter((u) => !u.isDeleted);
 
 	return (
 		<div className="space-y-4">
+			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+
 			{/* Toolbar */}
-			<div className="flex flex-col md:flex-row items-center gap-4 bg-dark-900 border border-dark-800 p-3 rounded-xl">
-				<div className="relative w-full md:flex-1 md:max-w-sm">
-					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+			<div className="flex flex-col md:flex-row gap-3">
+				{/* Search */}
+				<div className="relative flex-1 max-w-sm">
+					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle pointer-events-none" />
 					<input
 						type="search"
-						placeholder="Rechercher..."
-						className="w-full bg-dark-950 border border-dark-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
+						placeholder="Rechercher un utilisateur…"
+						className="w-full bg-surface-900 border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent-500/40 focus:border-accent-500 placeholder:text-fg-subtle transition-all"
 						defaultValue={searchParams.get("search")?.toString()}
 						onChange={(e) => handleSearch(e.target.value)}
 					/>
 				</div>
 
-				<div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
-                    <PromssSelector 
-                        promssList={promssList}
-                        selectedPromss={currentPromss}
-                        onChange={handlePromssChange}
-                    />
-
-					<select
-						value={currentRole}
-						onChange={(e) => handleRoleFilter(e.target.value)}
-						className="w-full sm:w-auto bg-dark-950 border border-dark-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
-					>
-						<option value="">Tous les rôles</option>
-						{roles.map((role) => (
-							<option key={role.id} value={role.id}>
-								{role.name}
-							</option>
-						))}
-					</select>
+				{/* Filters */}
+				<div className="flex gap-2 flex-wrap">
+					<PromssSelector
+						promssList={promssList}
+						selectedPromss={currentPromss}
+						onChange={handlePromssChange}
+					/>
+					<Select value={currentRole} onValueChange={handleRoleFilter}>
+						<SelectTrigger className="w-auto min-w-[140px]">
+							<SelectValue placeholder="Tous les rôles" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Tous les rôles</SelectItem>
+							{roles.map((role) => (
+								<SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
 				</div>
 
-				<div className="w-full md:w-auto flex gap-2 md:ml-auto">
+				{/* Actions */}
+				<div className="flex gap-2 md:ml-auto">
 					<ExcelImportModal
 						action={importUsersBatchAction}
 						triggerLabel="Importer"
@@ -363,234 +334,186 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 					/>
 					<button
 						onClick={() => setShowCreateModal(true)}
-						className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-primary-900/20"
+						className="flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-500 text-white rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-accent-900/20"
 					>
 						<IconPlus className="w-4 h-4" />
-						<span className="inline">Créer</span>
+						Créer
 					</button>
 				</div>
 			</div>
 
-            {/* Mobile View */}
-            <div className="md:hidden space-y-4">
-                {users.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500 bg-dark-900 rounded-xl border border-dark-800">
-                        Aucun utilisateur trouvé
-                    </div>
-                ) : (
-                    users
-                        .filter((u) => !u.isDeleted)
-                        .map((user) => (
-                            <UserMobileCard 
-                                key={user.id} 
-                                user={user}
-                                onEdit={() => setSelectedUser(user)}
-                                onHistory={() => setViewHistoryUser(user)}
-                                onToggleStatus={() => handleToggleStatus(user.id, user.isAsleep ?? false)}
-                                isPending={isPending}
-                            />
-                        ))
-                )}
-                {/* Mobile Pagination */}
-                <div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden">
-                     <TablePagination 
-                        total={totalPages} 
-                        current={currentPage} 
-                        onChange={handlePageChange} 
-                    />
-                </div>
-            </div>
+			{/* Mobile View */}
+			<div className="md:hidden space-y-3">
+				{activeUsers.length === 0 ? (
+					<div className="text-center py-12 text-fg-subtle bg-surface-900 rounded-xl border border-border text-sm">
+						Aucun utilisateur trouvé
+					</div>
+				) : (
+					activeUsers.map((user) => (
+						<UserMobileCard
+							key={user.id}
+							user={user}
+							onEdit={() => setSelectedUser(user)}
+							onHistory={() => setViewHistoryUser(user)}
+							onToggleStatus={() => handleToggleStatus(user.id, user.isAsleep ?? false)}
+							isPending={isPending}
+						/>
+					))
+				)}
+				<div className="bg-surface-900 border border-border rounded-xl overflow-hidden">
+					<TablePagination total={totalPages} current={currentPage} onChange={handlePageChange} />
+				</div>
+			</div>
 
 			{/* Desktop Table */}
-			<div className="hidden md:block bg-dark-900 border border-dark-800 rounded-xl overflow-hidden shadow-sm">
+			<div className="hidden md:block bg-surface-900 border border-border rounded-xl overflow-hidden shadow-sm">
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm">
 						<thead>
-							<tr className="bg-dark-950 border-b border-dark-800 text-gray-400">
-								<th
-									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
-									onClick={() => handleSort("nom")}
-								>
-									<div className="flex items-center gap-1">
-										Utilisateur <SortIcon column="nom" currentSort={currentSort} currentOrder={currentOrder} />
-									</div>
-								</th>
-								<th
-									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
-									onClick={() => handleSort("bucque")}
-								>
-									<div className="flex items-center gap-1">
-										Bucque / Email <SortIcon column="bucque" currentSort={currentSort} currentOrder={currentOrder} />
-									</div>
-								</th>
-                                <th className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
-									onClick={() => handleSort("tabagnss")}>
-										<div className="flex items-center gap-1">
-											Tabagn&apos;ss <SortIcon column="tabagnss" currentSort={currentSort} currentOrder={currentOrder} />
+							<tr className="bg-surface-950/60 border-b border-border">
+								{[
+									{ label: "Utilisateur", col: "nom" },
+									{ label: "Bucque / Email", col: "bucque" },
+									{ label: "Tabagn'ss", col: "tabagnss" },
+									{ label: "Promss", col: "promss" },
+									{ label: "Rôle", col: "role" },
+								].map(({ label, col }) => (
+									<th
+										key={col}
+										className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-fg-subtle cursor-pointer hover:text-fg group transition-colors select-none"
+										onClick={() => handleSort(col)}
+									>
+										<div className="flex items-center gap-1.5">
+											{label}
+											<SortIcon column={col} currentSort={currentSort} currentOrder={currentOrder} />
 										</div>
 									</th>
-                                <th
-									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
-									onClick={() => handleSort("promss")}
-								>
-									<div className="flex items-center gap-1">
-										Promss <SortIcon column="promss" currentSort={currentSort} currentOrder={currentOrder} />
-									</div>
-								</th>
-								<th className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
-									onClick={() => handleSort("role")}
-								>
-									<div className="flex items-center gap-1">
-										Rôle <SortIcon column="role" currentSort={currentSort} currentOrder={currentOrder} />
-									</div>
-								</th>
+								))}
 								<th
-									className="py-3 px-6 font-medium text-right cursor-pointer hover:text-white group transition-colors"
+									className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-fg-subtle text-right cursor-pointer hover:text-fg group transition-colors select-none"
 									onClick={() => handleSort("balance")}
 								>
-									<div className="flex items-center justify-end gap-1">
-										Solde <SortIcon column="balance" currentSort={currentSort} currentOrder={currentOrder} />
+									<div className="flex items-center justify-end gap-1.5">
+										Solde
+										<SortIcon column="balance" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
-								<th className="py-3 px-6 font-medium text-right">Actions</th>
+								<th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-fg-subtle text-right">
+									Actions
+								</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-dark-800">
-							{users.length === 0 ? (
+						<tbody className="divide-y divide-border/60">
+							{activeUsers.length === 0 ? (
 								<tr>
-									<td colSpan={6} className="py-8 text-center text-gray-500">
+									<td colSpan={7} className="py-12 text-center text-fg-subtle text-sm">
 										Aucun utilisateur trouvé
 									</td>
 								</tr>
 							) : (
-								users
-									.filter((u) => !u.isDeleted)
-									.map((user) => (
-										<tr
-											key={user.id}
-											className={`hover:bg-dark-800/50 transition-colors group ${
-												user.isAsleep
-													? "opacity-50 grayscale hover:grayscale-0"
-													: ""
-											}`}
-										>
-											<td className="py-3 px-6">
-												<div className="font-medium text-white flex items-center gap-2">
-													{user.prenom} {user.nom}
-													{user.isAsleep && (
-														<span className="text-[10px] bg-red-900/40 text-red-400 px-1.5 py-0.5 rounded border border-red-900/50">
-															INACTIF
-														</span>
-													)}
+								activeUsers.map((user) => (
+									<tr
+										key={user.id}
+										className={`hover:bg-elevated/40 transition-colors group ${user.isAsleep ? "opacity-50" : ""}`}
+									>
+										<td className="py-3 px-5">
+											<div className="flex items-center gap-3">
+												<UserAvatar user={{ name: `${user.prenom} ${user.nom}`, username: user.username, image: user.image }} className="w-8 h-8 text-xs" />
+												<div>
+													<div className="font-medium text-fg flex items-center gap-1.5">
+														{user.prenom} {user.nom}
+														{user.isAsleep && (
+															<span className="text-[9px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-widest">
+																Inactif
+															</span>
+														)}
+													</div>
+													<div className="text-xs text-fg-subtle">@{user.username}</div>
 												</div>
-												<div className="text-xs text-gray-500">
-													@{user.username}
-												</div>
-											</td>
-											<td className="py-3 px-6">
-												<div className="text-gray-300">{user.bucque}</div>
-												<div className="text-xs text-gray-500">
-													{user.email}
-												</div>
-											</td>
-                                            <td className="py-3 px-6 text-gray-400 text-sm">
-                                                {user.tabagnss && (
-                                                    <span className="flex items-center gap-1">
-                                                        <IconSchool className="w-3.5 h-3.5" />
-                                                        {user.tabagnss}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="py-3 px-6 font-mono text-gray-400 text-xs">
-                                                {user.promss}
-                                            </td>
-											<td className="py-3 px-6">
-												<span
-													className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
-                                                ${
-                                                    user.role?.name === "ADMIN"
-                                                        ? "bg-primary-900/30 text-primary-400 border border-primary-900/50"
-                                                        : user.role?.name ===
-                                                            "TRESORIER"
-                                                        ? "bg-amber-900/30 text-amber-500 border border-amber-900/50"
-                                                        : "bg-dark-800 text-gray-400 border border-dark-700"
-                                                }`}
-												>
-													{user.role?.name || user.appRole}
+											</div>
+										</td>
+										<td className="py-3 px-5">
+											<div className="text-fg-muted text-sm">{user.bucque || <span className="text-fg-subtle/40">—</span>}</div>
+											<div className="text-xs text-fg-subtle truncate max-w-[200px]">{user.email}</div>
+										</td>
+										<td className="py-3 px-5 text-fg-subtle text-sm">
+											{user.tabagnss ? (
+												<span className="flex items-center gap-1">
+													<IconSchool className="w-3.5 h-3.5 shrink-0" />
+													{user.tabagnss}
 												</span>
-											</td>
-											<td className="py-3 px-6 text-right font-mono text-gray-300">
-												{(user.balance / 100).toFixed(2)} €
-											</td>
-											<td className="py-3 px-6 text-right">
+											) : <span className="text-fg-subtle/30">—</span>}
+										</td>
+										<td className="py-3 px-5 font-mono text-fg-subtle text-xs">
+											{user.promss || <span className="text-fg-subtle/30">—</span>}
+										</td>
+										<td className="py-3 px-5">
+											<RoleBadge role={user.role} appRole={user.appRole} />
+										</td>
+										<td className="py-3 px-5 text-right">
+											<BalanceCell balance={user.balance} />
+										</td>
+										<td className="py-3 px-5">
+											<div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
 												<button
 													onClick={() => setViewHistoryUser(user)}
-													className="p-1 text-gray-500 hover:text-blue-400 hover:bg-dark-700 rounded-md transition-colors mr-1"
+													className="p-1.5 text-fg-subtle hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors"
 													title="Historique"
 												>
 													<IconHistory className="w-4 h-4" />
 												</button>
 												<button
 													onClick={() => setSelectedUser(user)}
-													className="p-1 text-gray-500 hover:text-white hover:bg-dark-700 rounded-md transition-colors mr-1"
+													className="p-1.5 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 													title="Modifier"
 												>
 													<IconPencil className="w-4 h-4" />
 												</button>
 												<button
-													onClick={() =>
-														handleToggleStatus(user.id, user.isAsleep ?? false)
-													}
+													onClick={() => handleToggleStatus(user.id, user.isAsleep ?? false)}
 													disabled={isPending}
-													className={`p-1 rounded-md transition-colors ${
-														user.isAsleep
-															? "text-red-500 hover:text-red-300 hover:bg-red-900/20"
-															: "text-gray-500 hover:text-red-400 hover:bg-dark-700"
-													}`}
+													className={`p-1.5 rounded-lg transition-colors disabled:opacity-40 ${user.isAsleep
+														? "text-emerald-400 hover:bg-emerald-400/10"
+														: "text-fg-subtle hover:text-red-400 hover:bg-red-400/10"
+														}`}
 													title={user.isAsleep ? "Réactiver" : "Désactiver"}
 												>
 													<IconPower className="w-4 h-4" />
 												</button>
-											</td>
-										</tr>
-									))
+											</div>
+										</td>
+									</tr>
+								))
 							)}
 						</tbody>
 					</table>
 				</div>
-
-                {/* Desktop Pagination */}
-                <TablePagination 
-                    total={totalPages} 
-                    current={currentPage} 
-                    onChange={handlePageChange} 
-                />
+				<TablePagination total={totalPages} current={currentPage} onChange={handlePageChange} />
 			</div>
 
-			{/* Edit Modal (Simple overlay for now) */}
+			{/* Edit Modal */}
 			{selectedUser && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-					<div className="bg-dark-950 border border-dark-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200">
-						<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800">
-							<div>
-								<h2 className="text-xl font-bold text-white">
-									Modifier l&apos;utilisateur
-								</h2>
-								<p className="text-sm text-gray-400">
-									@{selectedUser.username}
-								</p>
+				<div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+					<div className="bg-surface-950 border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+						<div className="sticky top-0 z-10 flex items-center justify-between p-5 bg-surface-950/95 backdrop-blur border-b border-border">
+							<div className="flex items-center gap-3">
+								<UserAvatar user={{ name: `${selectedUser.prenom} ${selectedUser.nom}`, username: selectedUser.username }} className="w-9 h-9 text-sm" />
+								<div>
+									<h2 className="text-base font-bold text-fg">
+										{selectedUser.prenom} {selectedUser.nom}
+									</h2>
+									<p className="text-xs text-fg-subtle">@{selectedUser.username}</p>
+								</div>
 							</div>
 							<button
 								onClick={() => setSelectedUser(null)}
-								className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+								className="p-2 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 							>
-								<IconX className="w-5 h-5" />
+								<IconX className="w-4 h-4" />
 							</button>
 						</div>
-
-						<div className="p-6">
+						<div className="p-5">
 							<UserEditForm
-								 
 								user={selectedUser as any}
 								roles={roles}
 								onSuccess={() => setSelectedUser(null)}
@@ -608,28 +531,23 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 				/>
 			)}
 
-			{/* Create User Modal */}
+			{/* Create Modal */}
 			{showCreateModal && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-					<div className="bg-dark-950 border border-dark-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200">
-						<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800">
+				<div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+					<div className="bg-surface-950 border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+						<div className="sticky top-0 z-10 flex items-center justify-between p-5 bg-surface-950/95 backdrop-blur border-b border-border">
 							<div>
-								<h2 className="text-xl font-bold text-white">
-									Nouveau Gadz&apos;Arts
-								</h2>
-								<p className="text-sm text-gray-400">
-									Ajouter manuellement un utilisateur.
-								</p>
+								<h2 className="text-base font-bold text-fg">Nouveau Gadz&apos;Arts</h2>
+								<p className="text-xs text-fg-subtle">Ajouter manuellement un utilisateur</p>
 							</div>
 							<button
 								onClick={() => setShowCreateModal(false)}
-								className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+								className="p-2 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 							>
-								<IconX className="w-5 h-5" />
+								<IconX className="w-4 h-4" />
 							</button>
 						</div>
-
-						<div className="p-6">
+						<div className="p-5">
 							<CreateUserForm
 								roles={roles}
 								onSuccess={() => setShowCreateModal(false)}

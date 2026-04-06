@@ -34,12 +34,12 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 				aria-label="Fam'ss indisponible"
 				className="p-4 sm:p-6 max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center"
 			>
-				<div className="flex h-16 w-16 items-center justify-center rounded-full bg-dark-800 text-gray-500" aria-hidden="true">
-					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+				<div className="flex h-16 w-16 items-center justify-center rounded-full bg-elevated text-fg-subtle" aria-hidden="true">
+					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
 				</div>
 				<div>
-					<h1 className="text-xl sm:text-2xl font-bold text-white mb-2">Fam&apos;ss indisponible</h1>
-					<p className="text-gray-400">Cette fonctionnalité a été désactivée par les administrateurs.</p>
+					<h1 className="text-xl sm:text-2xl font-bold text-fg mb-2">Fam&apos;ss indisponible</h1>
+					<p className="text-fg-muted">Cette fonctionnalité a été désactivée par les administrateurs.</p>
 				</div>
 			</main>
 		);
@@ -80,8 +80,8 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 		<main aria-label="Liste des Fam'ss" className="p-4 sm:p-6 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
 			<header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
 				<div>
-					<h1 className="text-2xl sm:text-3xl font-bold text-white">Fam&apos;ss</h1>
-					<p className="text-sm text-gray-400 mt-1" aria-live="polite">
+					<h1 className="text-2xl sm:text-3xl font-bold text-fg">Fam&apos;ss</h1>
+					<p className="text-sm text-fg-muted mt-1" aria-live="polite">
 						{totalCount} fam&apos;ss{query ? ` pour « ${query} »` : ""}
 					</p>
 				</div>
@@ -103,7 +103,7 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 					{allFamss.length === 0 ? (
 						<div
 							role="status"
-							className="col-span-full text-center py-12 text-gray-500 bg-dark-900 rounded-lg border border-dashed border-dark-700"
+							className="col-span-full text-center py-12 text-fg-subtle bg-surface-900 rounded-lg border border-dashed border-border"
 						>
 							<p>Aucune Fam&apos;ss trouvée.</p>
 						</div>
@@ -118,29 +118,28 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 									<Link
 										href={`/famss/${encodeURIComponent(fams.name)}`}
 										key={fams.id}
-										className="block group focus-visible:outline-2 focus-visible:outline-primary-500 focus-visible:outline-offset-2 rounded-xl"
+										className="block group focus-visible:outline-2 focus-visible:outline-accent-500 focus-visible:outline-offset-2 rounded-xl"
 										aria-label={`${fams.name} — ${membership.isAdmin ? "Admin" : "Membre"} — Solde : ${(fams.balance / 100).toFixed(2)} €`}
 									>
-										<article className="bg-dark-900 border border-dark-800 rounded-xl p-4 sm:p-6 hover:border-primary-500/50 transition-all shadow-sm hover:shadow-md hover:shadow-primary-500/10 relative overflow-hidden h-full">
+										<article className="bg-surface-900 border border-border rounded-xl p-4 sm:p-6 hover:border-accent-500/50 transition-all shadow-sm hover:shadow-md hover:shadow-accent-500/10 relative overflow-hidden h-full">
 											<div className="flex justify-between items-start mb-3 sm:mb-4">
-												<h2 className="text-lg sm:text-xl font-bold text-white group-hover:text-primary-400 transition-colors">
+												<h2 className="text-lg sm:text-xl font-bold text-fg group-hover:text-accent-400 transition-colors">
 													{fams.name}
 												</h2>
 												<span
-													className={`text-xs px-2 py-1 rounded-full shrink-0 ${
-														membership.isAdmin
-															? "bg-primary-500/20 text-primary-300"
-															: "bg-dark-800 text-gray-400"
-													}`}
+													className={`text-xs px-2 py-1 rounded-full shrink-0 ${membership.isAdmin
+														? "bg-accent-500/20 text-accent-300"
+														: "bg-elevated text-fg-muted"
+														}`}
 												>
 													{membership.isAdmin ? "Admin" : "Membre"}
 												</span>
 											</div>
 											<div className="flex items-baseline gap-1">
-												<span className="text-xl sm:text-2xl font-mono text-white">
+												<span className="text-xl sm:text-2xl font-mono text-fg">
 													{(fams.balance / 100).toFixed(2)}
 												</span>
-												<span className="text-sm text-gray-400">€</span>
+												<span className="text-sm text-fg-muted">€</span>
 											</div>
 										</article>
 									</Link>
@@ -151,11 +150,11 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 									<article
 										key={fams.id}
 										aria-label={`${fams.name}${request ? " — Demande en attente" : ""}`}
-										className="bg-dark-900/50 border border-dark-800 rounded-xl p-4 sm:p-6 relative overflow-hidden flex flex-col justify-between h-full"
+										className="bg-surface-900/50 border border-border rounded-xl p-4 sm:p-6 relative overflow-hidden flex flex-col justify-between h-full"
 									>
 										<div>
 											<div className="flex justify-between items-start mb-3 sm:mb-4">
-												<h2 className="text-lg sm:text-xl font-bold text-gray-300">
+												<h2 className="text-lg sm:text-xl font-bold text-fg">
 													{fams.name}
 												</h2>
 												{request && (
@@ -165,7 +164,7 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 												)}
 											</div>
 
-											<p className="text-sm text-gray-500 mb-4">
+											<p className="text-sm text-fg-subtle mb-4">
 												Rejoignez pour voir le solde et les activités.
 											</p>
 										</div>

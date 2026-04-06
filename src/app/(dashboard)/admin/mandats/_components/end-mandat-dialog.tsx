@@ -114,7 +114,7 @@ export function EndMandatDialog() {
 					Terminer le mandat
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="max-w-5xl bg-dark-900 border-dark-800">
+			<DialogContent className="max-w-5xl bg-surface-900 border-border">
 				<DialogHeader>
 					<DialogTitle>Clôturer le mandat en cours</DialogTitle>
 					<DialogDescription>
@@ -125,14 +125,14 @@ export function EndMandatDialog() {
 
 				{loading ? (
 					<div className="flex justify-center py-8">
-						<IconLoader2 className="animate-spin text-primary-500" size={32} />
+						<IconLoader2 className="animate-spin text-accent-500" size={32} />
 					</div>
 				) : (
 					<div className="space-y-4 py-4">
-						<div className="max-h-[60vh] overflow-y-auto rounded-md border border-dark-800">
+						<div className="max-h-[60vh] overflow-y-auto rounded-md border border-border">
 							<Table>
 								<TableHeader>
-									<TableRow className="border-dark-800 hover:bg-transparent">
+									<TableRow className="border-border hover:bg-transparent">
 										<TableHead>Magasin</TableHead>
 										<TableHead className="text-right">Stock Initial</TableHead>
 										<TableHead className="text-right">Ventes (+)</TableHead>
@@ -149,12 +149,12 @@ export function EndMandatDialog() {
 									{shopsData.map((shop) => (
 										<TableRow
 											key={shop.shopId}
-											className="border-dark-800 hover:bg-dark-800/50"
+											className="border-border hover:bg-elevated/50"
 										>
-											<TableCell className="font-medium text-gray-200">
+											<TableCell className="font-medium text-fg">
 												{shop.shopName}
 											</TableCell>
-											<TableCell className="text-right text-gray-400">
+											<TableCell className="text-right text-fg-muted">
 												{formatPrice(shop.initialStockValue)}
 											</TableCell>
 											<TableCell className="text-right text-green-400">
@@ -165,7 +165,7 @@ export function EndMandatDialog() {
 											</TableCell>
 											<TableCell className="text-right w-[180px]">
 												<div className="flex items-center justify-end gap-2">
-													<span className="font-medium text-white">
+													<span className="font-medium text-fg">
 														{formatPrice(shop.finalStockValue)}
 													</span>
 													<Link
@@ -196,8 +196,8 @@ export function EndMandatDialog() {
 							</Table>
 						</div>
 
-						<div className="flex justify-end items-center gap-4 p-4 bg-dark-800/50 rounded-lg">
-							<span className="text-gray-400">Bénéfice Global Estimé :</span>
+						<div className="flex justify-end items-center gap-4 p-4 bg-elevated/50 rounded-lg">
+							<span className="text-fg-muted">Bénéfice Global Estimé :</span>
 							<span
 								className={cn(
 									"text-xl font-bold",

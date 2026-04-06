@@ -1,5 +1,7 @@
 import {
 	IconBuildingStore,
+	IconChevronRight,
+	IconSettings,
 	IconShoppingBag,
 	IconTrendingDown,
 	IconTrendingUp,
@@ -42,11 +44,11 @@ function StatCard({
 	trend,
 }: StatCardProps) {
 	return (
-		<div className="group relative overflow-hidden rounded-2xl border border-dark-800 bg-dark-900 p-6 transition-all hover:border-dark-700 hover:shadow-xl hover:shadow-black/20">
+		<div className="group relative overflow-hidden rounded-2xl border border-border bg-surface-900 p-6 transition-all hover:border-border hover:shadow-xl hover:shadow-black/20">
 			<div className="flex items-start justify-between">
 				<div>
-					<p className="text-sm font-medium text-gray-400">{title}</p>
-					<h3 className="mt-2 text-3xl font-bold text-white tracking-tight">
+					<p className="text-sm font-medium text-fg-muted">{title}</p>
+					<h3 className="mt-2 text-3xl font-bold text-fg tracking-tight">
 						{value}
 					</h3>
 				</div>
@@ -59,9 +61,8 @@ function StatCard({
 			<div className="mt-4 flex items-center text-sm">
 				{trend !== undefined && (
 					<span
-						className={`flex items-center font-medium ${
-							trend > 0 ? "text-emerald-400" : "text-rose-400"
-						}`}
+						className={`flex items-center font-medium ${trend > 0 ? "text-emerald-400" : "text-rose-400"
+							}`}
 					>
 						{trend > 0 ? (
 							<IconTrendingUp size={16} className="mr-1" />
@@ -71,10 +72,10 @@ function StatCard({
 						{Math.abs(trend)}%
 					</span>
 				)}
-				<span className="ml-2 text-gray-500">{sub}</span>
+				<span className="ml-2 text-fg-subtle">{sub}</span>
 			</div>
 			{/* Effet Glow au survol */}
-			<div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary-600/10 blur-2xl transition-all group-hover:bg-primary-600/20" />
+			<div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent-600/10 blur-2xl transition-all group-hover:bg-accent-600/20" />
 		</div>
 	);
 }
@@ -105,9 +106,19 @@ export default async function DashboardPage() {
 
 	return (
 		<div className="space-y-8">
-			<div className="mb-8">
-				<h2 className="text-2xl font-bold text-white">Vue d&apos;ensemble</h2>
-				<p className="text-gray-400">Bienvenue sur Gadzby</p>
+			<div className="mb-8 flex items-start justify-between">
+				<div>
+					<h2 className="text-2xl font-bold text-fg">Vue d&apos;ensemble</h2>
+					<p className="text-fg-muted">Bienvenue sur Gadzby</p>
+				</div>
+				<Link
+					href="/settings"
+					className="sm:hidden flex items-center gap-1.5 rounded-xl border border-border bg-surface-900 px-3 py-2 text-sm text-fg-muted transition-colors hover:border-accent-500/50 hover:text-fg"
+				>
+					<IconSettings size={18} />
+					<span>Profil</span>
+					<IconChevronRight size={14} className="text-fg-subtle" />
+				</Link>
 			</div>
 
 			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -124,14 +135,14 @@ export default async function DashboardPage() {
 					sub="par rapport au mois dernier"
 					trend={stats.percentageChange}
 					icon={IconShoppingBag}
-					color="bg-primary-500/10 text-primary-500"
+					color="bg-accent-500/10 text-accent-500"
 				/>
 			</div>
 
 			{/* Shop Shortcuts */}
 			{shops && shops.length > 0 && (
 				<div className="mt-8">
-					<h3 className="mb-4 text-lg font-semibold text-white">
+					<h3 className="mb-4 text-lg font-semibold text-fg">
 						Vos Boquettes
 					</h3>
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -139,17 +150,17 @@ export default async function DashboardPage() {
 							<Link
 								key={shop.id}
 								href={`/shops/${shop.slug}/self-service`}
-								className="group relative overflow-hidden rounded-xl border border-dark-800 bg-dark-900 p-4 transition-all hover:border-primary-500/50 hover:shadow-lg hover:-translate-y-1 block"
+								className="group relative overflow-hidden rounded-xl border border-border bg-surface-900 p-4 transition-all hover:border-accent-500/50 hover:shadow-lg hover:-translate-y-1 block"
 							>
 								<div className="flex items-center gap-4">
-									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-500/10 text-primary-500 group-hover:bg-primary-500 group-hover:text-white transition-colors">
+									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent-500/10 text-accent-500 group-hover:bg-accent-500 group-hover:text-fg transition-colors">
 										<IconBuildingStore size={24} />
 									</div>
 									<div className="flex-1 min-w-0">
-										<h4 className="font-semibold text-white truncate group-hover:text-primary-400 transition-colors">
+										<h4 className="font-semibold text-fg truncate group-hover:text-accent-400 transition-colors">
 											{shop.name}
 										</h4>
-										<p className="text-sm text-gray-400 truncate">
+										<p className="text-sm text-fg-muted truncate">
 											{shop.description || "Accéder au shop"}
 										</p>
 									</div>
@@ -167,8 +178,8 @@ export default async function DashboardPage() {
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 				{/* Charts Section */}
-				<div className="rounded-2xl border border-dark-800 bg-dark-900 p-6">
-					<h3 className="mb-6 text-lg font-semibold text-white">
+				<div className="rounded-2xl border border-border bg-surface-900 p-6">
+					<h3 className="mb-6 text-lg font-semibold text-fg">
 						Dépenses par Boutique
 					</h3>
 					<div className="h-80 w-full">
@@ -176,8 +187,8 @@ export default async function DashboardPage() {
 					</div>
 				</div>
 
-				<div className="rounded-2xl border border-dark-800 bg-dark-900 p-6">
-					<h3 className="mb-6 text-lg font-semibold text-white">
+				<div className="rounded-2xl border border-border bg-surface-900 p-6">
+					<h3 className="mb-6 text-lg font-semibold text-fg">
 						Évolution des Dépenses
 					</h3>
 					<div className="h-80 w-full">
@@ -187,8 +198,8 @@ export default async function DashboardPage() {
 			</div>
 
 			{/* Recent Activity Section */}
-			<div className="rounded-2xl border border-dark-800 bg-dark-900 p-6">
-				<h3 className="mb-6 text-lg font-semibold text-white">
+			<div className="rounded-2xl border border-border bg-surface-900 p-6">
+				<h3 className="mb-6 text-lg font-semibold text-fg">
 					Activité Récente
 				</h3>
 				<div className="mt-2">

@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -15,20 +15,20 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
 		<button
 			type="submit"
 			disabled={pending}
-			className="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+			className="w-full rounded-lg bg-accent-600 px-4 py-2.5 text-sm font-semibold text-fg shadow-sm hover:bg-accent-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 		>
 			{pending
 				? "Chargement..."
 				: isEdit
-				? "Enregistrer les modifications"
-				: "Créer la Fam&apos;ss"}
+					? "Enregistrer les modifications"
+					: "Créer la Fam&apos;ss"}
 		</button>
 	);
 }
 
 
 interface FamsFormProps {
-	 
+
 	fams?: any;
 	onSuccess: () => void;
 }
@@ -78,7 +78,7 @@ export function FamsForm({ fams, onSuccess }: FamsFormProps) {
 				<div>
 					<label
 						htmlFor="name"
-						className="block text-sm font-medium text-gray-400 mb-2"
+						className="block text-sm font-medium text-fg-muted mb-2"
 					>
 						Nom de la Fam&apos;ss
 					</label>
@@ -88,7 +88,7 @@ export function FamsForm({ fams, onSuccess }: FamsFormProps) {
 						id="name"
 						defaultValue={fams?.name || ""}
 						required
-						className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-1 focus:ring-accent-500 placeholder:text-fg-subtle"
 						placeholder="Ex: Les Dalton"
 					/>
 				</div>
@@ -96,7 +96,7 @@ export function FamsForm({ fams, onSuccess }: FamsFormProps) {
 				<div>
 					<label
 						htmlFor="balance"
-						className="block text-sm font-medium text-gray-400 mb-2"
+						className="block text-sm font-medium text-fg-muted mb-2"
 					>
 						Solde
 					</label>
@@ -108,13 +108,13 @@ export function FamsForm({ fams, onSuccess }: FamsFormProps) {
 							step="0.01"
 							defaultValue={fams ? (fams.balance / 100).toFixed(2) : "0"}
 							required
-							className="w-full bg-dark-900 border border-dark-800 rounded-lg pl-4 pr-8 py-2.5 text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600 font-mono"
+							className="w-full bg-surface-900 border border-border rounded-lg pl-4 pr-8 py-2.5 text-fg focus:outline-none focus:ring-1 focus:ring-accent-500 placeholder:text-fg-subtle font-mono"
 						/>
-						<span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+						<span className="absolute right-4 top-1/2 -translate-y-1/2 text-fg-subtle">
 							€
 						</span>
 					</div>
-					<p className="mt-2 text-xs text-gray-500">
+					<p className="mt-2 text-xs text-fg-subtle">
 						Attention : Modifier le solde manuellement crée un déséquilibre
 						comptable, la transaction ne sera pas visible.
 					</p>

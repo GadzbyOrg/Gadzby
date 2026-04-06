@@ -52,13 +52,13 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
         <div
             ref={setNodeRef}
             style={style}
-            className="bg-dark-900 border border-dark-800 rounded-lg p-4 flex items-center gap-4 mb-2 group"
+            className="bg-surface-900 border border-border rounded-lg p-4 flex items-center gap-4 mb-2 group"
         >
             {!disabled && (
                 <button
                     {...attributes}
                     {...listeners}
-                    className="text-gray-600 hover:text-white cursor-grab active:cursor-grabbing p-2 sm:p-0"
+                    className="text-fg-subtle hover:text-fg cursor-grab active:cursor-grabbing p-2 sm:p-0"
                 >
                     <IconGripVertical size={20} />
                 </button>
@@ -67,9 +67,9 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
             <div className="flex-1 min-w-0">
                 {/* Desktop View */}
                 <div className="hidden sm:grid sm:grid-cols-[3fr_1fr_1fr_auto] gap-4 items-center">
-                    <div className="font-medium text-white truncate">{product.name}</div>
+                    <div className="font-medium text-fg truncate">{product.name}</div>
 
-                    <div className="text-sm text-gray-300">
+                    <div className="text-sm text-fg">
                         {(product.price / 100).toFixed(2)} € {product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : ""}
                     </div>
 
@@ -95,7 +95,7 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                         />
                         <Link
                             href={`/shops/${shopSlug}/manage/products/${product.id}`}
-                            className="text-primary-400 hover:text-primary-300 hover:underline text-sm"
+                            className="text-accent-400 hover:text-accent-300 hover:underline text-sm"
                         >
                             Modifier
                         </Link>
@@ -111,16 +111,16 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                 <div className="sm:hidden flex flex-col gap-3">
                     <div className="flex justify-between items-start gap-4">
                         <div className="flex-1 min-w-0">
-                            <div className="font-bold text-white text-lg truncate leading-tight">{product.name}</div>
+                            <div className="font-bold text-fg text-lg truncate leading-tight">{product.name}</div>
                         </div>
                         <div className="text-right shrink-0">
-                            <div className="text-primary-400 font-bold text-lg leading-tight">{(product.price / 100).toFixed(2)}€</div>
-                            <div className="text-xs text-gray-500 font-medium">{product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : "/ Unité"}</div>
+                            <div className="text-accent-400 font-bold text-lg leading-tight">{(product.price / 100).toFixed(2)}€</div>
+                            <div className="text-xs text-fg-subtle font-medium">{product.unit === "liter" ? "/ L" : product.unit === "kg" ? "/ kg" : "/ Unité"}</div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 items-center bg-dark-800/30 p-2 rounded-lg border border-dark-800/50">
-                        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stock Actuel</div>
+                    <div className="grid grid-cols-2 gap-3 items-center bg-elevated/30 p-2 rounded-lg border border-border/50">
+                        <div className="text-xs font-semibold text-fg-subtle uppercase tracking-wide">Stock Actuel</div>
                         <div
                             className={`flex items-center justify-end gap-2 font-mono font-bold text-lg ${product.stock <= 5 ? "text-red-400" : "text-emerald-400"
                                 }`}
@@ -131,7 +131,7 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
                                 </span>
                             )}
-                            {product.stock.toFixed(2)} <span className="text-sm text-gray-500 font-normal">{product.unit === "liter" ? "L" : product.unit === "kg" ? "Kg" : ""}</span>
+                            {product.stock.toFixed(2)} <span className="text-sm text-fg-subtle font-normal">{product.unit === "liter" ? "L" : product.unit === "kg" ? "Kg" : ""}</span>
                         </div>
                     </div>
 
@@ -153,12 +153,12 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                         <div className="flex gap-2">
                             <Link
                                 href={`/shops/${shopSlug}/manage/products/${product.id}`}
-                                className="flex items-center justify-center w-12 bg-dark-800 border border-dark-700 text-gray-400 hover:text-white hover:border-gray-600 rounded-lg transition-colors"
+                                className="flex items-center justify-center w-12 bg-elevated border border-border text-fg-muted hover:text-fg hover:border-fg-subtle rounded-lg transition-colors"
                                 title="Modifier"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                             </Link>
-                            <div className="flex items-center justify-center w-12 bg-dark-800 border border-dark-700 rounded-lg p-0 hover:border-red-900/50 transition-colors">
+                            <div className="flex items-center justify-center w-12 bg-elevated border border-border rounded-lg p-0 hover:border-red-900/50 transition-colors">
                                 <DeleteProductButton
                                     shopSlug={shopSlug}
                                     productId={product.id}
@@ -299,7 +299,7 @@ function CategoryGroup({
                 className="flex items-center gap-2 px-1 w-full text-left mb-4"
             >
                 <button onClick={() => setIsCollapsed(!isCollapsed)} className="hover:opacity-80 transition-opacity">
-                    {isCollapsed ? <IconChevronRight size={20} className="text-gray-400" /> : <IconChevronDown size={20} className="text-gray-400" />}
+                    {isCollapsed ? <IconChevronRight size={20} className="text-fg-muted" /> : <IconChevronDown size={20} className="text-fg-muted" />}
                 </button>
 
                 <div className="flex-1 flex items-center gap-2">
@@ -314,14 +314,14 @@ function CategoryGroup({
                                         setEditedName(e.target.value);
                                         setError(null);
                                     }}
-                                    className={`bg-dark-800 border ${error ? "border-red-500" : "border-dark-700"} rounded px-2 py-1 text-white text-lg font-bold focus:outline-none focus:border-primary-500 min-w-[200px]`}
+                                    className={`bg-elevated border ${error ? "border-red-500" : "border-border"} rounded px-2 py-1 text-fg text-lg font-bold focus:outline-none focus:border-accent-500 min-w-[200px]`}
                                     autoFocus
                                     onClick={(e) => e.stopPropagation()}
                                 />
                                 <button
                                     type="submit"
                                     disabled={isSaving}
-                                    className="p-1 bg-primary-600/20 text-primary-400 rounded hover:bg-primary-600/30 disabled:opacity-50"
+                                    className="p-1 bg-accent-600/20 text-accent-400 rounded hover:bg-accent-600/30 disabled:opacity-50"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <IconCheck size={18} />
@@ -344,9 +344,9 @@ function CategoryGroup({
                             )}
                         </div>
                     ) : (
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2 cursor-pointer group" onClick={() => setIsCollapsed(!isCollapsed)}>
+                        <h3 className="text-xl font-bold text-fg flex items-center gap-2 cursor-pointer group" onClick={() => setIsCollapsed(!isCollapsed)}>
                             <span className="group-hover:opacity-80 transition-opacity">{categoryName}</span>
-                            <span className="text-sm font-normal text-gray-500">({products.length})</span>
+                            <span className="text-sm font-normal text-fg-subtle">({products.length})</span>
 
                             {categoryId && (
                                 <button
@@ -354,7 +354,7 @@ function CategoryGroup({
                                         e.stopPropagation();
                                         setIsEditing(true);
                                     }}
-                                    className="p-1 text-dark-400 hover:text-white transition-colors"
+                                    className="p-1 text-fg-subtle hover:text-fg transition-colors"
                                     title="Renommer la catégorie"
                                 >
                                     <IconPencil size={18} />
@@ -364,7 +364,7 @@ function CategoryGroup({
                                 <button
                                     onClick={handleDeleteCategory}
                                     disabled={isDeleting}
-                                    className="p-1 text-dark-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                                    className="p-1 text-fg-subtle hover:text-red-500 transition-colors disabled:opacity-50"
                                     title="Supprimer la catégorie"
                                 >
                                     <IconTrash size={18} />
@@ -400,7 +400,7 @@ function CategoryGroup({
                         </SortableContext>
                     </DndContext>
                     {products.length === 0 && (
-                        <div className="text-gray-500 text-sm text-center py-8 italic border border-dashed border-dark-800 rounded-lg">
+                        <div className="text-fg-subtle text-sm text-center py-8 italic border border-dashed border-border rounded-lg">
                             Aucun produit dans cette catégorie.
                         </div>
                     )}
@@ -457,7 +457,7 @@ export function SortableProductList({ products, categories = [], shopSlug, disab
             })}
 
             {products.length === 0 && (
-                <div className="text-center py-12 text-gray-500 bg-dark-900 border border-dark-800 rounded-xl">
+                <div className="text-center py-12 text-fg-subtle bg-surface-900 border border-border rounded-xl">
                     Aucun produit trouvé. Créez-en un nouveau !
                 </div>
             )}

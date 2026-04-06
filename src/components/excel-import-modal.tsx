@@ -67,7 +67,7 @@ export function ExcelImportModal({
 	const [isPending, setIsPending] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [statusMessage, setStatusMessage] = useState<string>("");
-	
+
 	const [state, setState] = useState<typeof initialState>(initialState);
 	const [inputFileName, setInputFileName] = useState<string | null>(null);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -94,7 +94,7 @@ export function ExcelImportModal({
 		setIsPending(true);
 		setProgress(0);
 		setState({ ...initialState });
-		
+
 		try {
 			// 1. Parse File
 			setStatusMessage("Lecture du fichier...");
@@ -102,7 +102,7 @@ export function ExcelImportModal({
 			const workbook = XLSX.read(data);
 			const sheet = workbook.Sheets[workbook.SheetNames[0]];
 			const rows = XLSX.utils.sheet_to_json(sheet);
-			
+
 			if (rows.length === 0) {
 				setState({ ...initialState, error: "Le fichier est vide" });
 				setIsPending(false);
@@ -111,7 +111,7 @@ export function ExcelImportModal({
 
 			const BATCH_SIZE = 200;
 			const totalBatches = Math.ceil(rows.length / BATCH_SIZE);
-			
+
 			let totalSuccess = 0;
 			let totalSkipped = 0;
 			let totalErrors = 0;
@@ -122,38 +122,38 @@ export function ExcelImportModal({
 				const start = i * BATCH_SIZE;
 				const end = Math.min(start + BATCH_SIZE, rows.length);
 				const chunk = rows.slice(start, end);
-				
+
 				setStatusMessage(`Traitement du lot ${i + 1}/${totalBatches}...`);
-				
+
 				const cleanChunk = JSON.parse(JSON.stringify(chunk));
 				const result = await action(initialState, { rows: cleanChunk, ...additionalData });
-					
-					if (result.error) {
-						totalErrors += chunk.length;
-						allErrors.push(`Erreur lot ${i+1}: ${result.error}`);
-					} else {
-						totalSuccess += result.importedCount || 0;
-						totalSkipped += result.skippedCount || 0;
-						if (result.skipped) allSkipped.push(...result.skipped);
-						if (result.errors) allErrors.push(...result.errors);
-					}
 
-					setProgress(Math.round(((i + 1) / totalBatches) * 100));
+				if (result.error) {
+					totalErrors += chunk.length;
+					allErrors.push(`Erreur lot ${i + 1}: ${result.error}`);
+				} else {
+					totalSuccess += result.importedCount || 0;
+					totalSkipped += result.skippedCount || 0;
+					if (result.skipped) allSkipped.push(...result.skipped);
+					if (result.errors) allErrors.push(...result.errors);
 				}
 
-				
-				let summary = `Import terminé: ${totalSuccess} importés`;
-				if (totalSkipped > 0) summary += `, ${totalSkipped} ignorés`;
-				if (totalErrors > 0) summary += `, ${totalErrors} erreurs`;
+				setProgress(Math.round(((i + 1) / totalBatches) * 100));
+			}
 
-				setState({
-					success: summary,
-					importedCount: totalSuccess,
-					skippedCount: totalSkipped,
-					failCount: totalErrors,
-					skipped: allSkipped,
-					errors: allErrors,
-				});
+
+			let summary = `Import terminé: ${totalSuccess} importés`;
+			if (totalSkipped > 0) summary += `, ${totalSkipped} ignorés`;
+			if (totalErrors > 0) summary += `, ${totalErrors} erreurs`;
+
+			setState({
+				success: summary,
+				importedCount: totalSuccess,
+				skippedCount: totalSkipped,
+				failCount: totalErrors,
+				skipped: allSkipped,
+				errors: allErrors,
+			});
 
 		} catch (e: any) {
 			setState({ ...initialState, error: e.message || "Erreur inconnue" });
@@ -173,7 +173,7 @@ export function ExcelImportModal({
 		return (
 			<button
 				onClick={() => setIsOpen(true)}
-				className="px-4 py-2 bg-dark-800 hover:bg-dark-700 text-white rounded-lg transition-colors font-medium border border-dark-700 flex items-center gap-2"
+				className="px-4 py-2 bg-elevated hover:bg-elevated text-fg rounded-lg transition-colors font-medium border border-border flex items-center gap-2"
 			>
 				{triggerIcon || <IconUpload size={18} />}
 				<span>{triggerLabel}</span>
@@ -183,17 +183,17 @@ export function ExcelImportModal({
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-			<div className="bg-dark-950 border border-dark-800 rounded-2xl w-full max-w-lg shadow-2xl relative animate-in zoom-in-95 duration-200 p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+			<div className="bg-surface-950 border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in zoom-in-95 duration-200 p-6 space-y-6 max-h-[90vh] overflow-y-auto">
 				<div className="flex justify-between items-start">
 					<div>
-						<h2 className="text-xl font-bold text-white">{modalTitle}</h2>
-						<p className="text-gray-400 text-sm mt-1">
+						<h2 className="text-xl font-bold text-fg">{modalTitle}</h2>
+						<p className="text-fg-muted text-sm mt-1">
 							Fichier Excel (.xlsx, .xls) requis.
 						</p>
 					</div>
 					<button
 						onClick={handleClose}
-						className="text-gray-500 hover:text-white transition-colors"
+						className="text-fg-subtle hover:text-fg transition-colors"
 					>
 						<IconX size={24} />
 					</button>
@@ -254,7 +254,7 @@ export function ExcelImportModal({
 						</div>
 					)}
 
-					<div className="border-2 border-dashed border-dark-700 rounded-xl p-8 hover:bg-dark-900/50 transition-colors cursor-pointer relative group">
+					<div className="border-2 border-dashed border-border rounded-xl p-8 hover:bg-surface-900/50 transition-colors cursor-pointer relative group">
 						<input
 							type="file"
 							name="file"
@@ -270,7 +270,7 @@ export function ExcelImportModal({
 							required
 						/>
 						<div className="flex flex-col items-center justify-center text-center space-y-3 pointer-events-none">
-							<div className="w-12 h-12 rounded-full bg-dark-800 flex items-center justify-center text-primary-400 group-hover:scale-110 transition-transform">
+							<div className="w-12 h-12 rounded-full bg-elevated flex items-center justify-center text-accent-400 group-hover:scale-110 transition-transform">
 								{inputFileName ? (
 									<IconFileSpreadsheet className="w-6 h-6" />
 								) : (
@@ -278,11 +278,11 @@ export function ExcelImportModal({
 								)}
 							</div>
 							<div>
-								<p className="text-sm font-medium text-white">
+								<p className="text-sm font-medium text-fg">
 									{inputFileName || "Cliquez pour sélectionner un fichier"}
 								</p>
 								{!inputFileName && (
-									<p className="text-xs text-gray-500 mt-1">
+									<p className="text-xs text-fg-subtle mt-1">
 										ou glissez-déposez ici
 									</p>
 								)}
@@ -292,28 +292,28 @@ export function ExcelImportModal({
 
 					{isPending && (
 						<div className="space-y-2">
-							<div className="flex justify-between text-xs text-gray-400">
+							<div className="flex justify-between text-xs text-fg-muted">
 								<span>{statusMessage}</span>
 								<span>{progress}%</span>
 							</div>
-							<div className="h-2 w-full bg-dark-800 rounded-full overflow-hidden">
-								<div 
-									className="h-full bg-primary-500 transition-all duration-300 ease-out"
+							<div className="h-2 w-full bg-elevated rounded-full overflow-hidden">
+								<div
+									className="h-full bg-accent-500 transition-all duration-300 ease-out"
 									style={{ width: `${progress}%` }}
 								/>
 							</div>
 						</div>
 					)}
 
-					<div className="bg-dark-900 rounded-lg p-3 text-xs text-gray-400 font-mono border border-dark-800">
+					<div className="bg-surface-900 rounded-lg p-3 text-xs text-fg-muted font-mono border border-border">
 						<div className="flex justify-between items-center mb-1">
-							<p className="font-semibold text-gray-300">
+							<p className="font-semibold text-fg">
 								Format attendu (colonnes):
 							</p>
 							<button
 								type="button"
 								onClick={handleDownloadTemplate}
-								className="text-primary-400 hover:text-primary-300 hover:underline flex items-center gap-1"
+								className="text-accent-400 hover:text-accent-300 hover:underline flex items-center gap-1"
 							>
 								<IconDownload size={12} />
 								Télécharger un modèle
@@ -326,14 +326,14 @@ export function ExcelImportModal({
 						<button
 							type="button"
 							onClick={handleClose}
-							className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+							className="px-4 py-2 text-sm text-fg-muted hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 						>
 							Fermer
 						</button>
 						<button
 							type="submit"
 							disabled={isPending || !selectedFile}
-							className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-primary-900/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+							className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-fg rounded-lg text-sm font-medium transition-all shadow-lg shadow-accent-900/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							{isPending ? (
 								<>

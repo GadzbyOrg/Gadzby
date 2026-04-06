@@ -80,13 +80,13 @@ export function ProductGrid({
         <div className="space-y-4">
             {/* Search Input */}
             <div className="relative">
-                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-subtle" />
                 <input
                     type="text"
                     placeholder="Rechercher un produit..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-dark-800 border border-dark-700 text-white text-sm rounded-lg pl-10 pr-4 py-2.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+                    className="w-full bg-elevated border border-border text-fg text-sm rounded-lg pl-10 pr-4 py-2.5 focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-colors"
                 />
             </div>
 
@@ -100,7 +100,7 @@ export function ProductGrid({
                             "px-4 py-2 rounded-full text-sm font-medium transition-colors border",
                             selectedCategory === tab.id
                                 ? "bg-white text-black border-white"
-                                : "text-gray-400 border-dark-700 bg-dark-800 hover:text-white hover:bg-dark-700 hover:border-dark-600"
+                                : "text-fg-muted border-border bg-elevated hover:text-fg hover:bg-elevated hover:border-border"
                         )}
                     >
                         {tab.name}
@@ -120,8 +120,8 @@ export function ProductGrid({
                             className={cn(
                                 "flex flex-col justify-center rounded-xl border p-3 transition-all",
                                 quantityInCart > 0
-                                    ? "bg-dark-800 border-primary-500/50 shadow-[0_0_15px_-3px_rgba(var(--primary-500-rgb),0.3)]"
-                                    : "bg-dark-900 border-dark-700 hover:border-dark-600"
+                                    ? "bg-elevated border-accent-500/50 shadow-[0_0_15px_-3px_rgba(var(--accent-500-rgb),0.3)]"
+                                    : "bg-surface-900 border-border hover:border-border"
                             )}
                             onClick={() => {
                                 if (hasVariants) {
@@ -134,12 +134,12 @@ export function ProductGrid({
                             <div className="space-y-1">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1 pr-2">
-                                        <h3 className={cn("font-medium leading-tight min-h-[1.5em]", hasVariants ? "text-sm" : "text-white text-sm line-clamp-2")}>
+                                        <h3 className={cn("font-medium leading-tight min-h-[1.5em]", hasVariants ? "text-sm" : "text-fg text-sm line-clamp-2")}>
                                             {product.name}
                                         </h3>
                                         {product.event && product.event.status === "OPEN" && (
                                             <span
-                                                className="inline-block w-fit bg-primary-500/10 text-primary-400 text-[10px] px-1.5 py-0.5 rounded-md border border-primary-500/20 whitespace-nowrap"
+                                                className="inline-block w-fit bg-accent-500/10 text-accent-400 text-[10px] px-1.5 py-0.5 rounded-md border border-accent-500/20 whitespace-nowrap"
                                                 title={`Manip en cours: ${product.event.name}`}
                                             >
                                                 {product.event.name}
@@ -147,13 +147,13 @@ export function ProductGrid({
                                         )}
                                     </div>
                                     {hasVariants && (
-                                        <div className="text-xs text-gray-500 font-mono text-right whitespace-nowrap ml-2">
+                                        <div className="text-xs text-fg-subtle font-mono text-right whitespace-nowrap ml-2">
                                             {(product.price / 100).toFixed(2)}€ / {product.unit === 'liter' ? 'L' : product.unit === 'kg' ? 'Kg' : 'u'}
                                         </div>
                                     )}
                                 </div>
                                 {!hasVariants && (
-                                    <div className="text-lg font-bold text-primary-400">
+                                    <div className="text-lg font-bold text-accent-400">
                                         {(product.price / 100).toFixed(2)}€
                                     </div>
                                 )}
@@ -162,32 +162,32 @@ export function ProductGrid({
                             <div className="mt-2 flex flex-col gap-2">
                                 <div className="flex items-center justify-between">
                                     {!hasVariants && (
-                                        <div className="text-xs text-gray-500 font-mono">
+                                        <div className="text-xs text-fg-subtle font-mono">
                                             Stock: {product.stock.toFixed(2)}
                                         </div>
                                     )}
                                     {hasVariants && (
-                                        <div className="text-xs text-gray-600 font-mono">
+                                        <div className="text-xs text-fg-subtle font-mono">
                                             Stock: {product.stock.toFixed(2)}{product.unit === 'liter' ? 'L' : product.unit === 'kg' ? 'Kg' : 'u'}
                                         </div>
                                     )}
                                     {!hasVariants && (
                                         quantityInCart > 0 ? (
                                             <div
-                                                className="flex items-center gap-2 bg-dark-950 rounded-lg p-1 border border-dark-700 shadow-sm"
+                                                className="flex items-center gap-2 bg-surface-950 rounded-lg p-1 border border-border shadow-sm"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
                                                 <button
-                                                    className="h-6 w-6 rounded bg-dark-800 hover:bg-red-500/20 hover:text-red-400 text-gray-400 flex items-center justify-center transition-colors"
+                                                    className="h-6 w-6 rounded bg-elevated hover:bg-red-500/20 hover:text-red-400 text-fg-muted flex items-center justify-center transition-colors"
                                                     onClick={() => onAddToCart(product, -1)}
                                                 >
                                                     -
                                                 </button>
-                                                <span className="w-4 text-center text-sm font-bold text-white">
+                                                <span className="w-4 text-center text-sm font-bold text-fg">
                                                     {quantityInCart}
                                                 </span>
                                                 <button
-                                                    className="h-6 w-6 rounded bg-primary-600 hover:bg-primary-500 text-white flex items-center justify-center transition-colors"
+                                                    className="h-6 w-6 rounded bg-accent-600 hover:bg-accent-500 text-fg flex items-center justify-center transition-colors"
                                                     onClick={() => onAddToCart(product, 1)}
                                                 >
                                                     +
@@ -199,31 +199,31 @@ export function ProductGrid({
                                     )}
                                 </div>
                                 {hasVariants && (
-                                    <div className="space-y-2 mt-1 pt-2 border-t border-dark-700/50" onClick={(e) => e.stopPropagation()}>
+                                    <div className="space-y-2 mt-1 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
                                         {product.variants?.map(v => {
                                             const variantKey = `${product.id}:${v.id}`;
                                             const vQty = cart[variantKey] || 0;
                                             const vPrice = v.price ?? Math.round(product.price * v.quantity);
                                             return (
-                                                <div key={v.id} className="flex justify-between items-center bg-dark-900/40 rounded-lg p-2 border border-dark-700/50 gap-2">
+                                                <div key={v.id} className="flex justify-between items-center bg-surface-900/40 rounded-lg p-2 border border-border/50 gap-2">
                                                     <div className="flex flex-col min-w-0 flex-1">
-                                                        <span className="text-sm font-bold text-white truncate">{v.name}</span>
-                                                        <span className="text-xs text-primary-400 font-bold truncate">{(vPrice / 100).toFixed(2)}€</span>
+                                                        <span className="text-sm font-bold text-fg truncate">{v.name}</span>
+                                                        <span className="text-xs text-accent-400 font-bold truncate">{(vPrice / 100).toFixed(2)}€</span>
                                                     </div>
                                                     <div className="flex items-center gap-1 shrink-0">
                                                         {vQty > 0 ? (
                                                             <>
                                                                 <button
-                                                                    className="h-7 w-7 rounded bg-dark-800 hover:bg-red-500/20 hover:text-red-400 text-gray-400 flex items-center justify-center transition-colors"
+                                                                    className="h-7 w-7 rounded bg-elevated hover:bg-red-500/20 hover:text-red-400 text-fg-muted flex items-center justify-center transition-colors"
                                                                     onClick={() => onAddToCart(product, -1, v.id)}
                                                                 >
                                                                     -
                                                                 </button>
-                                                                <span className="min-w-[1.25rem] text-center text-sm font-bold text-white">
+                                                                <span className="min-w-[1.25rem] text-center text-sm font-bold text-fg">
                                                                     {vQty}
                                                                 </span>
                                                                 <button
-                                                                    className="h-7 w-7 rounded bg-primary-600 hover:bg-primary-500 text-white flex items-center justify-center transition-colors"
+                                                                    className="h-7 w-7 rounded bg-accent-600 hover:bg-accent-500 text-fg flex items-center justify-center transition-colors"
                                                                     onClick={() => onAddToCart(product, 1, v.id)}
                                                                 >
                                                                     +
@@ -231,7 +231,7 @@ export function ProductGrid({
                                                             </>
                                                         ) : (
                                                             <button
-                                                                className="h-7 w-7 rounded bg-dark-800 hover:bg-primary-600 hover:text-white text-gray-400 flex items-center justify-center transition-colors border border-dark-700"
+                                                                className="h-7 w-7 rounded bg-elevated hover:bg-accent-600 hover:text-fg text-fg-muted flex items-center justify-center transition-colors border border-border"
                                                                 onClick={() => onAddToCart(product, 1, v.id)}
                                                             >
                                                                 +
@@ -250,14 +250,14 @@ export function ProductGrid({
             </div>
 
             {/* Desktop List View (>= md) */}
-            <div className="hidden md:block bg-dark-900 rounded-xl border border-dark-800 overflow-hidden">
-                <div className="grid grid-cols-[1fr_80px_120px] gap-4 p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-dark-800">
+            <div className="hidden md:block bg-surface-900 rounded-xl border border-border overflow-hidden">
+                <div className="grid grid-cols-[1fr_80px_120px] gap-4 p-4 text-xs font-semibold text-fg-muted uppercase tracking-wider border-b border-border">
                     <div>Produit</div>
                     <div className="text-right">Prix</div>
                     <div className="text-center">Commande</div>
                 </div>
 
-                <div className="divide-y divide-dark-800">
+                <div className="divide-y divide-border">
                     {filteredProducts.map((product) => {
                         const quantityInCart = getProductCartQuantity(product);
                         const hasVariants = product.variants && product.variants.length > 0;
@@ -265,26 +265,26 @@ export function ProductGrid({
                         return (
                             <div
                                 key={product.id}
-                                className="flex flex-col border-b border-dark-800 last:border-0"
+                                className="flex flex-col border-b border-border last:border-0"
                             >
-                                <div className={cn("grid grid-cols-[1fr_80px_120px] gap-4 p-4 items-center transition-colors", hasVariants ? "bg-dark-900/50" : "hover:bg-dark-800/50")}>
+                                <div className={cn("grid grid-cols-[1fr_80px_120px] gap-4 p-4 items-center transition-colors", hasVariants ? "bg-surface-900/50" : "hover:bg-elevated/50")}>
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-center gap-2">
-                                            <div className={cn("font-medium", hasVariants ? "text-sm" : "text-white")}>{product.name}</div>
+                                            <div className={cn("font-medium", hasVariants ? "text-sm" : "text-fg")}>{product.name}</div>
                                             {product.event && product.event.status === "OPEN" && (
                                                 <span
-                                                    className="inline-block w-fit bg-primary-500/10 text-primary-400 text-[10px] px-1.5 py-0.5 rounded-md border border-primary-500/20 whitespace-nowrap"
+                                                    className="inline-block w-fit bg-accent-500/10 text-accent-400 text-[10px] px-1.5 py-0.5 rounded-md border border-accent-500/20 whitespace-nowrap"
                                                     title={`Manip en cours: ${product.event.name}`}
                                                 >
                                                     {product.event.name}
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="text-xs text-gray-600">
+                                        <div className="text-xs text-fg-subtle">
                                             Stock: {product.stock.toFixed(2)} {product.unit === 'liter' ? 'L' : product.unit === 'kg' ? 'Kg' : 'u'}
                                         </div>
                                     </div>
-                                    <div className={cn("text-right font-mono", hasVariants ? "text-gray-600 text-xs" : "text-gray-300")}>
+                                    <div className={cn("text-right font-mono", hasVariants ? "text-fg-subtle text-xs" : "text-fg")}>
                                         {(product.price / 100).toFixed(2)}€ {product.unit === 'liter' ? '/ L' : product.unit === 'kg' ? '/ Kg' : ''}
                                     </div>
                                     <div className="flex items-center justify-center gap-2">
@@ -292,16 +292,16 @@ export function ProductGrid({
                                         {!hasVariants && (
                                             <>
                                                 <button
-                                                    className="h-8 w-8 rounded bg-dark-800 hover:bg-dark-700 text-white flex items-center justify-center border border-dark-700"
+                                                    className="h-8 w-8 rounded bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border"
                                                     onClick={() => onAddToCart(product, -1)}
                                                 >
                                                     -
                                                 </button>
-                                                <span className="w-6 text-center font-mono font-bold text-white">
+                                                <span className="w-6 text-center font-mono font-bold text-fg">
                                                     {quantityInCart}
                                                 </span>
                                                 <button
-                                                    className="h-8 w-8 rounded bg-dark-800 hover:bg-dark-700 text-white flex items-center justify-center border border-dark-700"
+                                                    className="h-8 w-8 rounded bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border"
                                                     onClick={() => onAddToCart(product, 1)}
                                                 >
                                                     +
@@ -311,32 +311,32 @@ export function ProductGrid({
                                     </div>
                                 </div>
                                 {hasVariants && (
-                                    <div className="bg-dark-900/30 px-4 pb-4 space-y-2">
+                                    <div className="bg-surface-900/30 px-4 pb-4 space-y-2">
                                         {product.variants?.map(v => {
                                             const variantKey = `${product.id}:${v.id}`;
                                             const vQty = cart[variantKey] || 0;
                                             const vPrice = v.price ?? Math.round(product.price * v.quantity);
                                             return (
-                                                <div key={v.id} className="grid grid-cols-[1fr_80px_120px] gap-4 py-3 px-4 items-center bg-dark-800/40 rounded-lg border border-dark-700/50">
+                                                <div key={v.id} className="grid grid-cols-[1fr_80px_120px] gap-4 py-3 px-4 items-center bg-elevated/40 rounded-lg border border-border/50">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-1.5 h-8 bg-primary-600/50 rounded-full"></div>
-                                                        <div className="font-bold text-white text-base">{v.name}</div>
+                                                        <div className="w-1.5 h-8 bg-accent-600/50 rounded-full"></div>
+                                                        <div className="font-bold text-fg text-base">{v.name}</div>
                                                     </div>
-                                                    <div className="text-right font-mono text-sm font-bold text-primary-400">
+                                                    <div className="text-right font-mono text-sm font-bold text-accent-400">
                                                         {(vPrice / 100).toFixed(2)}€
                                                     </div>
                                                     <div className="flex items-center justify-center gap-3">
                                                         <button
-                                                            className="h-8 w-8 rounded-lg bg-dark-800 hover:bg-dark-700 text-white flex items-center justify-center border border-dark-700 text-lg leading-none pb-1"
+                                                            className="h-8 w-8 rounded-lg bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border text-lg leading-none pb-1"
                                                             onClick={() => onAddToCart(product, -1, v.id)}
                                                         >
                                                             -
                                                         </button>
-                                                        <span className="w-6 text-center font-mono font-bold text-white text-base">
+                                                        <span className="w-6 text-center font-mono font-bold text-fg text-base">
                                                             {vQty}
                                                         </span>
                                                         <button
-                                                            className="h-8 w-8 rounded-lg bg-primary-600 hover:bg-primary-500 text-white flex items-center justify-center text-lg leading-none pb-1 shadow-lg shadow-primary-900/20"
+                                                            className="h-8 w-8 rounded-lg bg-accent-600 hover:bg-accent-500 text-fg flex items-center justify-center text-lg leading-none pb-1 shadow-lg shadow-accent-900/20"
                                                             onClick={() => onAddToCart(product, 1, v.id)}
                                                         >
                                                             +
@@ -354,7 +354,7 @@ export function ProductGrid({
             </div>
 
             {filteredProducts.length === 0 && (
-                <div className="p-8 text-center text-gray-500 border border-dashed border-dark-700 rounded-xl">
+                <div className="p-8 text-center text-fg-subtle border border-dashed border-border rounded-xl">
                     Aucun produit dans cette catégorie.
                 </div>
             )}

@@ -1,49 +1,50 @@
 @import "tailwindcss";
 
 @theme {
-  /* --- PALETTE PRIMARY (Amber/Beer) --- */
-  --color-primary-50: #fffbeb;
-  --color-primary-100: #fef3c7;
-  --color-primary-200: #fde68a;
-  --color-primary-300: #fcd34d;
-  --color-primary-400: #fbbf24;
-  --color-primary-500: #f59e0b;
-  /* Main */
-  --color-primary-600: #d97706;
-  /* Hover */
-  --color-primary-700: #b45309;
-  --color-primary-800: #92400e;
-  --color-primary-900: #78350f;
-  --color-primary-950: #451a03;
+  /* accent — active link text, icon fill */
+  --color-accent-200: #fde68a;
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  /* accent — buttons, active nav indicator */
+  --color-accent-500: #f59e0b;
+  /* accent — button hover */
+  --color-accent-600: #d97706;
+  /* accent — text on light bg, badge border */
+  --color-accent-700: #b45309;
+  --color-accent-800: #92400e;
+  --color-accent-900: #78350f;
+  --color-accent-950: #451a03;
 
-  /* --- PALETTE BACKGROUND (Cream/Tablecloth) --- */
-  --color-dark-50: #ffffff;
-  --color-dark-100: #fffbf0;
-  --color-dark-200: #fefce8;
-  --color-dark-300: #fef08a;
+  /* surface — page / body background */
+  --color-surface-100: #fffbf0;
+  /* surface — scrollbar thumb, muted icons */
+  --color-surface-700: #475569;
+  /* surface — card / panel background */
+  --color-surface-900: #faf8f0;
+  /* surface — sidebar icon column, header backdrop */
+  --color-surface-950: #f2eddc;
 
-  /* --- PALETTE TEXT (Slate/Menu) --- */
-  --color-dark-950: #0f172a;
-  /* Slate 900 for Headings */
-  --color-dark-900: #1e293b;
-  /* Slate 800 */
-  --color-dark-800: #334155;
-  /* Slate 700 for Body */
-  --color-dark-700: #475569;
-  /* Slate 600 */
-
-  /* --- PALETTE DESTRUCTIVE (Red) --- */
   --color-destructive: #dc2626;
   --color-destructive-foreground: #ffffff;
+
+  /* Chart colors */
+  --color-chart-primary: #f59e0b;
+  --color-chart-secondary: #3b82f6;
+
+  /* Foreground text — flips in dark mode */
+  --color-fg: #0f172a;        /* primary text */
+  --color-fg-muted: #475569;  /* secondary / label text */
+  --color-fg-subtle: #64748b; /* placeholder / hint text */
+
+  /* Adaptive border & elevated surface — flip in dark mode */
+  --color-border: #cbd5e1;    /* border color */
+  --color-elevated: #f1f5f9;  /* elevated bg / input bg */
 }
 
-/* Application des couleurs de base via les directives CSS natives et les variables du thème */
 @layer base {
   body {
-    background-color: var(--color-dark-100);
-    /* CREAM BACKGROUND */
-    color: var(--color-dark-800);
-    /* SLATE TEXT */
+    background-color: var(--color-surface-100);
+    color: var(--color-fg);
     font-family: Arial, Helvetica, sans-serif;
   }
 }
@@ -54,16 +55,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-dark-100);
+  background: var(--color-surface-100);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-dark-700);
+  background: var(--color-surface-700);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-600);
+  background: var(--color-accent-600);
 }
 
 @layer utilities {
@@ -82,7 +83,168 @@
 
   /* Recharts dark theme overrides */
   .recharts-tooltip-cursor {
-    fill: var(--color-dark-800);
+    fill: var(--color-fg-muted);
     opacity: 0.5;
   }
+}
+
+/* ── OCEAN ─────────────────────────────────────────── */
+html[data-theme="ocean"] {
+  --color-chart-primary: #06b6d4;
+  --color-chart-secondary: #0ea5e9;
+  --color-surface-100: #eff6ff;
+  --color-surface-700: #345a80;
+  --color-surface-900: #f0f8ff;
+  --color-surface-950: #dde8f5;
+  --color-elevated: #e1effe;
+  --color-fg-subtle: #3d6080;
+
+  --color-accent-200: #a5f3fc;
+  --color-accent-300: #67e8f9;
+  --color-accent-400: #22d3ee;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+  --color-accent-700: #0e7490;
+  --color-accent-800: #155e75;
+  --color-accent-900: #164e63;
+  --color-accent-950: #083344;
+}
+
+/* ── FOREST ─────────────────────────────────────────── */
+html[data-theme="forest"] {
+  --color-chart-primary: #84cc16;
+  --color-chart-secondary: #10b981;
+  --color-surface-100: #f0fdf4;
+  --color-surface-700: #2a5c3f;
+  --color-surface-900: #f4fcf7;
+  --color-surface-950: #d8f0e2;
+  --color-elevated: #e4f5ea;
+  --color-fg-subtle: #2d5c40;
+
+  --color-accent-200: #d9f99d;
+  --color-accent-300: #bef264;
+  --color-accent-400: #a3e635;
+  --color-accent-500: #84cc16;
+  --color-accent-600: #65a30d;
+  --color-accent-700: #4d7c0f;
+  --color-accent-800: #3f6212;
+  --color-accent-900: #365314;
+  --color-accent-950: #1a2e05;
+}
+
+/* ── SUNSET ─────────────────────────────────────────── */
+html[data-theme="sunset"] {
+  --color-chart-primary: #f97316;
+  --color-chart-secondary: #fbbf24;
+  --color-surface-100: #fff7ed;
+  --color-surface-700: #653624;
+  --color-surface-900: #fff9f5;
+  --color-surface-950: #f5e8d5;
+  --color-elevated: #f7e5d4;
+  --color-fg-subtle: #7a4a30;
+
+  --color-accent-200: #fed7aa;
+  --color-accent-300: #fdba74;
+  --color-accent-400: #fb923c;
+  --color-accent-500: #f97316;
+  --color-accent-600: #ea580c;
+  --color-accent-700: #c2410c;
+  --color-accent-800: #9a3412;
+  --color-accent-900: #7c2d12;
+  --color-accent-950: #431407;
+}
+
+/* ── GALAXY ─────────────────────────────────────────── */
+html[data-theme="galaxy"] {
+  --color-chart-primary: #8b5cf6;
+  --color-chart-secondary: #ec4899;
+  --color-surface-100: #faf5ff;
+  --color-surface-700: #3e2b6a;
+  --color-surface-900: #f8f5ff;
+  --color-surface-950: #e5dff5;
+  --color-elevated: #ece5f8;
+  --color-fg-subtle: #4d3a80;
+
+  --color-accent-200: #ddd6fe;
+  --color-accent-300: #c4b5fd;
+  --color-accent-400: #a78bfa;
+  --color-accent-500: #8b5cf6;
+  --color-accent-600: #7c3aed;
+  --color-accent-700: #6d28d9;
+  --color-accent-800: #5b21b6;
+  --color-accent-900: #4c1d95;
+  --color-accent-950: #2e1065;
+}
+
+/* ── ROSE ───────────────────────────────────────────── */
+html[data-theme="rose"] {
+  --color-chart-primary: #f43f5e;
+  --color-chart-secondary: #fb923c;
+  --color-surface-100: #fff1f2;
+  --color-surface-700: #5a2040;
+  --color-surface-900: #fff5f6;
+  --color-surface-950: #f5dde2;
+  --color-elevated: #fae2e6;
+  --color-fg-subtle: #7a3050;
+
+  --color-accent-200: #fecdd3;
+  --color-accent-300: #fda4af;
+  --color-accent-400: #fb7185;
+  --color-accent-500: #f43f5e;
+  --color-accent-600: #e11d48;
+  --color-accent-700: #be123c;
+  --color-accent-800: #9f1239;
+  --color-accent-900: #881337;
+  --color-accent-950: #4c0519;
+}
+
+/* ── DARK MODE ──────────────────────────────────────── */
+/* surface-100 (page), surface-900 (cards), surface-950 (sidebar) flip per theme. */
+
+html[data-mode="dark"] {
+  --color-surface-100: #0f172a;
+  --color-surface-900: #1e293b;
+  --color-surface-950: #0f172a;
+
+  --color-fg: #e2e8f0;
+  --color-fg-muted: #94a3b8;
+  --color-fg-subtle: #64748b;
+
+  --color-border: #334155;
+  --color-elevated: #334155;
+}
+
+html[data-theme="ocean"][data-mode="dark"] {
+  --color-surface-100: #0a1628;
+  --color-surface-900: #192b44;
+  --color-surface-950: #0a1628;
+  --color-elevated: #243b59;
+}
+
+html[data-theme="forest"][data-mode="dark"] {
+  --color-surface-100: #071a0e;
+  --color-surface-900: #122b1e;
+  --color-surface-950: #071a0e;
+  --color-elevated: #1c442f;
+}
+
+html[data-theme="sunset"][data-mode="dark"] {
+  --color-surface-100: #1c0d07;
+  --color-surface-900: #2d1810;
+  --color-surface-950: #1c0d07;
+  --color-elevated: #462518;
+}
+
+html[data-theme="galaxy"][data-mode="dark"] {
+  --color-surface-100: #100a1e;
+  --color-surface-900: #1e1332;
+  --color-surface-950: #100a1e;
+  --color-elevated: #2f1e4e;
+}
+
+html[data-theme="rose"][data-mode="dark"] {
+  --color-surface-100: #17080f;
+  --color-surface-900: #28111e;
+  --color-surface-950: #17080f;
+  --color-elevated: #3e1a2e;
 }

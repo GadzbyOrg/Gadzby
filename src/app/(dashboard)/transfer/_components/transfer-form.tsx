@@ -1,7 +1,7 @@
 "use client";
 
 import { IconCurrencyEuro, IconSearch } from "@tabler/icons-react";
-import { useActionState, useEffect, useRef,useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 
 import { UserAvatar } from "@/components/user-avatar";
@@ -20,8 +20,8 @@ type UserResult = {
 };
 
 interface ActionState {
-    error?: string;
-    success?: string;
+	error?: string;
+	success?: string;
 }
 
 const initialState: ActionState = {
@@ -79,18 +79,18 @@ export function TransferForm({ balance }: { balance: number }) {
 	}, []);
 
 	// Feedback Effect
-    // Reset form on success. 
-    // We check if we have data to clear to avoid redundant updates, although React handles strict equality checks.
+	// Reset form on success. 
+	// We check if we have data to clear to avoid redundant updates, although React handles strict equality checks.
 	useEffect(() => {
 		if (state.success) {
-            // Use setTimeout to avoid "setState synchronously within an effect" warning.
-            // This ensures state updates happen in the next tick.
-            const timer = setTimeout(() => {
-                setAmount("");
-                setSelectedUser(null);
-                setQuery("");
-            }, 0);
-            return () => clearTimeout(timer);
+			// Use setTimeout to avoid "setState synchronously within an effect" warning.
+			// This ensures state updates happen in the next tick.
+			const timer = setTimeout(() => {
+				setAmount("");
+				setSelectedUser(null);
+				setQuery("");
+			}, 0);
+			return () => clearTimeout(timer);
 		}
 	}, [state]);
 
@@ -112,33 +112,33 @@ export function TransferForm({ balance }: { balance: number }) {
 
 			<div className="grid gap-6">
 				{/* Balance Card */}
-				<div className="rounded-xl border border-primary-900/30 bg-gradient-to-br from-primary-900/10 to-transparent p-6">
-					<h3 className="text-sm font-medium text-gray-400">
+				<div className="rounded-xl border border-accent-900/30 bg-gradient-to-br from-accent-900/10 to-transparent p-6">
+					<h3 className="text-sm font-medium text-fg-muted">
 						Votre solde actuel
 					</h3>
-					<p className="mt-2 text-4xl font-bold text-white tracking-tight">
+					<p className="mt-2 text-4xl font-bold text-fg tracking-tight">
 						{formatPrice(balance)} €
 					</p>
-					<p className="mt-2 text-xs text-gray-500">
+					<p className="mt-2 text-xs text-fg-subtle">
 						Les virements sont débités immédiatement.
 					</p>
 				</div>
 
 				{/* Form Card */}
-				<div className="rounded-xl border border-dark-800 bg-dark-900 p-6 shadow-sm">
-					<h2 className="text-lg font-semibold text-white mb-6">
+				<div className="rounded-xl border border-border bg-surface-900 p-6 shadow-sm">
+					<h2 className="text-lg font-semibold text-fg mb-6">
 						Effectuer un virement
 					</h2>
 
 					<form action={action} className="space-y-6">
 						{/* User Selector */}
 						<div className="space-y-2 relative" ref={dropdownRef}>
-							<label className="text-sm font-medium text-gray-300">
+							<label className="text-sm font-medium text-fg">
 								Destinataire
 							</label>
 
 							{selectedUser ? (
-								<div className="flex items-center justify-between p-3 rounded-lg border border-dark-700 bg-dark-800 text-white">
+								<div className="flex items-center justify-between p-3 rounded-lg border border-border bg-elevated text-fg">
 									<div className="flex items-center gap-3">
 										<UserAvatar
 											user={{
@@ -153,7 +153,7 @@ export function TransferForm({ balance }: { balance: number }) {
 											<span className="font-semibold">
 												{selectedUser.prenom} {selectedUser.nom}
 											</span>
-											<span className="text-xs text-gray-400">
+											<span className="text-xs text-fg-muted">
 												{selectedUser.username}{" "}
 												{selectedUser.bucque && `- ${selectedUser.bucque}`}
 											</span>
@@ -165,14 +165,14 @@ export function TransferForm({ balance }: { balance: number }) {
 											setSelectedUser(null);
 											setQuery("");
 										}}
-										className="text-gray-400 hover:text-white"
+										className="text-fg-muted hover:text-fg"
 									>
 										Changer
 									</button>
 								</div>
 							) : (
 								<div className="relative">
-									<IconSearch className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+									<IconSearch className="absolute left-3 top-3 h-5 w-5 text-fg-subtle" />
 									<input
 										type="text"
 										placeholder="Rechercher (Nom, bucque, num'ss...)"
@@ -181,17 +181,17 @@ export function TransferForm({ balance }: { balance: number }) {
 											setQuery(e.target.value);
 											if (!dropdownOpen) setDropdownOpen(true);
 										}}
-										className="w-full rounded-lg border border-dark-700 bg-dark-950 py-2.5 pl-10 pr-4 text-white placeholder:text-gray-600 focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+										className="w-full rounded-lg border border-border bg-surface-950 py-2.5 pl-10 pr-4 text-fg placeholder:text-fg-subtle focus:border-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-600"
 									/>
 									{searching && (
-										<div className="absolute right-3 top-3 h-4 w-4 animate-spin rounded-full border-2 border-gray-600 border-t-transparent"></div>
+										<div className="absolute right-3 top-3 h-4 w-4 animate-spin rounded-full border-2 border-fg-subtle border-t-transparent"></div>
 									)}
 								</div>
 							)}
 
 							{/* Dropdown Results */}
 							{dropdownOpen && !selectedUser && query.length >= 2 && (
-								<div className="absolute z-10 mt-1 w-full rounded-lg border border-dark-700 bg-dark-900 shadow-xl max-h-60 overflow-auto">
+								<div className="absolute z-10 mt-1 w-full rounded-lg border border-border bg-surface-900 shadow-xl max-h-60 overflow-auto">
 									{results.length > 0 ? (
 										<ul className="py-1">
 											{results.map((user) => (
@@ -201,7 +201,7 @@ export function TransferForm({ balance }: { balance: number }) {
 														setSelectedUser(user);
 														setDropdownOpen(false);
 													}}
-													className="cursor-pointer px-4 py-2 hover:bg-dark-800 text-sm text-gray-200 flex items-center gap-3"
+													className="cursor-pointer px-4 py-2 hover:bg-elevated text-sm text-fg flex items-center gap-3"
 												>
 													<UserAvatar
 														user={{
@@ -213,10 +213,10 @@ export function TransferForm({ balance }: { balance: number }) {
 														className="h-8 w-8"
 													/>
 													<div className="flex flex-col">
-														<span className="font-medium text-white">
+														<span className="font-medium text-fg">
 															{user.prenom} {user.nom}
 														</span>
-														<span className="text-xs text-gray-500">
+														<span className="text-xs text-fg-subtle">
 															{user.username}{" "}
 															{user.bucque && `· ${user.bucque}`}
 														</span>
@@ -225,7 +225,7 @@ export function TransferForm({ balance }: { balance: number }) {
 											))}
 										</ul>
 									) : (
-										<div className="p-4 text-center text-sm text-gray-500">
+										<div className="p-4 text-center text-sm text-fg-subtle">
 											Aucun résultat trouvé.
 										</div>
 									)}
@@ -242,12 +242,12 @@ export function TransferForm({ balance }: { balance: number }) {
 						<div className="space-y-2">
 							<label
 								htmlFor="amount"
-								className="text-sm font-medium text-gray-300"
+								className="text-sm font-medium text-fg"
 							>
 								Montant (€)
 							</label>
 							<div className="relative">
-								<IconCurrencyEuro className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+								<IconCurrencyEuro className="absolute left-3 top-3 h-5 w-5 text-fg-subtle" />
 								<input
 									id="amount"
 									name="amount"
@@ -258,7 +258,7 @@ export function TransferForm({ balance }: { balance: number }) {
 									value={amount}
 									onChange={(e) => setAmount(e.target.value)}
 									required
-									className="w-full rounded-lg border border-dark-700 bg-dark-950 py-2.5 pl-10 pr-4 text-white placeholder:text-gray-600 focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+									className="w-full rounded-lg border border-border bg-surface-950 py-2.5 pl-10 pr-4 text-fg placeholder:text-fg-subtle focus:border-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 								/>
 							</div>
 						</div>
@@ -267,7 +267,7 @@ export function TransferForm({ balance }: { balance: number }) {
 						<div className="space-y-2">
 							<label
 								htmlFor="description"
-								className="text-sm font-medium text-gray-300"
+								className="text-sm font-medium text-fg"
 							>
 								Message (optionnel)
 							</label>
@@ -275,14 +275,14 @@ export function TransferForm({ balance }: { balance: number }) {
 								id="description"
 								name="description"
 								placeholder="Merci pour les bières !"
-								className="w-full h-24 rounded-lg border border-dark-700 bg-dark-950 p-3 text-white placeholder:text-gray-600 focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600 resize-none"
+								className="w-full h-24 rounded-lg border border-border bg-surface-950 p-3 text-fg placeholder:text-fg-subtle focus:border-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-600 resize-none"
 							/>
 						</div>
 
 						<button
 							type="submit"
 							disabled={isPending || !selectedUser}
-							className="w-full rounded-lg bg-primary-700 px-4 py-3 text-sm font-bold text-white hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 focus:ring-offset-dark-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+							className="w-full rounded-lg bg-accent-700 px-4 py-3 text-sm font-bold text-fg hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-600 focus:ring-offset-2 focus:ring-offset-surface-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
 						>
 							{isPending ? "Envoi en cours..." : "Confirmer le virement"}
 						</button>

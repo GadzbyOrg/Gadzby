@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation"; // Correct import for App Router
 import { useState } from "react";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createCategory,createProduct, updateProduct } from "@/features/shops/products";
 
 type Category = {
@@ -152,7 +153,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
             <div className="space-y-4">
                 {/* Name */}
                 <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+                    <label htmlFor="name" className="block text-sm font-medium text-fg-muted mb-1">
                         Nom du produit
                     </label>
                     <input
@@ -161,14 +162,14 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         id="name"
                         required
                         defaultValue={product?.name}
-                        className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                        className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all"
                         placeholder="Ex: Coca-Cola"
                     />
                 </div>
 
                 {/* Description */}
                 <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
+                    <label htmlFor="description" className="block text-sm font-medium text-fg-muted mb-1">
                         Description (optionnel)
                     </label>
                     <textarea
@@ -176,14 +177,14 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         id="description"
                         rows={3}
                         defaultValue={product?.description || ""}
-                        className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+                        className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all"
                     />
                 </div>
 
                 {/* Price & Stock */}
                 <div className="grid grid-cols-3 gap-4">
                     <div>
-                        <label htmlFor="price" className="block text-sm font-medium text-gray-300 mb-1">
+                        <label htmlFor="price" className="block text-sm font-medium text-fg-muted mb-1">
                             Prix {unit === "unit" ? "(€ / Unité)" : unit === "liter" ? "(€ / Litre)" : "(€ / Kg)"}
                         </label>
                         <input
@@ -194,11 +195,11 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             min="0"
                             required
                             defaultValue={product ? (product.price / 100).toFixed(2) : ""}
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                     </div>
                     <div>
-                        <label htmlFor="stock" className="block text-sm font-medium text-gray-300 mb-1">
+                        <label htmlFor="stock" className="block text-sm font-medium text-fg-muted mb-1">
                             Stock
                         </label>
                          <input
@@ -208,25 +209,23 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             step="0.01" // Allow decimals
                             required
                             defaultValue={product?.stock || 0}
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                     </div>
                     <div>
-                        <label htmlFor="unit" className="block text-sm font-medium text-gray-300 mb-1">
+                        <label htmlFor="unit" className="block text-sm font-medium text-fg-muted mb-1">
                             Unité
                         </label>
-                        <select
-                            name="unit"
-                            id="unit"
-                            required
-                            value={unit}
-                            onChange={(e) => setUnit(e.target.value)}
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                        >
-                            <option value="unit">Unités</option>
-                            <option value="liter">Litres</option>
-                            <option value="kg">Kilos</option>
-                        </select>
+                        <Select name="unit" value={unit} onValueChange={setUnit} required>
+                            <SelectTrigger id="unit">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="unit">Unités</SelectItem>
+                                <SelectItem value="liter">Litres</SelectItem>
+                                <SelectItem value="kg">Kilos</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 
@@ -235,7 +234,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                 */}
                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label htmlFor="fcv" className="block text-sm font-medium text-gray-300 mb-1">
+                        <label htmlFor="fcv" className="block text-sm font-medium text-fg-muted mb-1">
                             Facteur Correction (FCV)
                         </label>
                         <input
@@ -245,34 +244,32 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             step="0.01"
                             required
                             defaultValue={product?.fcv || 1.0}
-                            className="w-full bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Multiplicateur de sortie stock (défaut: 1)</p>
+                        <p className="text-xs text-fg-subtle mt-1">Multiplicateur de sortie stock (défaut: 1)</p>
                     </div>
                  </div>
 
                 {/* Category */}
                 <div>
-                    <label htmlFor="categoryId" className="block text-sm font-medium text-gray-300 mb-1">
+                    <label htmlFor="categoryId" className="block text-sm font-medium text-fg-muted mb-1">
                         Catégorie
                     </label>
                     <div className="flex gap-2">
-                        <select
-                            name="categoryId"
-                            id="categoryId"
-                            required
-                            defaultValue={product?.categoryId}
-                            className="flex-1 bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
-                        >
-                            <option value="" disabled>Choisir une catégorie</option>
-                            {localCategories.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                        </select>
+                        <Select name="categoryId" defaultValue={product?.categoryId} required>
+                            <SelectTrigger id="categoryId" className="flex-1">
+                                <SelectValue placeholder="Choisir une catégorie" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {localCategories.map(cat => (
+                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         <button 
                             type="button"
                             onClick={() => setShowNewCatInput(!showNewCatInput)}
-                            className="px-3 py-2 bg-dark-800 hover:bg-dark-700 text-white rounded-lg transition-colors border border-dark-700"
+                            className="px-3 py-2 bg-elevated hover:bg-elevated text-white rounded-lg transition-colors border border-border"
                         >
                             +
                         </button>
@@ -284,12 +281,12 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                                 value={newCategoryName}
                                 onChange={(e) => setNewCategoryName(e.target.value)}
                                 placeholder="Nouvelle catégorie"
-                                className="flex-1 bg-dark-900 border border-dark-800 rounded-lg px-4 py-2 text-white text-sm"
+                                className="flex-1 bg-surface-900 border border-border rounded-lg px-4 py-2 text-white text-sm"
                             />
                             <button 
                                 type="button"
                                 onClick={handleAddCategory}
-                                className="px-3 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm"
+                                className="px-3 py-2 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-sm"
                             >
                                 Créer
                             </button>
@@ -306,25 +303,25 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         name="allowSelfService" 
                         id="allowSelfService" 
                         defaultChecked={product?.allowSelfService || false}
-                        className="w-5 h-5 rounded bg-dark-900 border-dark-800 text-primary-600 focus:ring-primary-500"
+                        className="w-5 h-5 rounded bg-surface-900 border-border text-accent-600 focus:ring-accent-500"
                     />
-                     <label htmlFor="allowSelfService" className="text-sm font-medium text-gray-300">
+                     <label htmlFor="allowSelfService" className="text-sm font-medium text-fg-muted">
                         Autoriser en libre-service
                     </label>
                 </div>
 
                 {/* Variants Section */}
                 {unit !== 'unit' && (
-                    <div className="space-y-4 pt-6 border-t border-dark-800">
+                    <div className="space-y-4 pt-6 border-t border-border">
                         <div className="flex justify-between items-center">
                             <div>
                                 <h3 className="text-lg font-medium text-white">Variantes / Portions</h3>
-                                <p className="text-sm text-gray-400">Ajoutez des formats de vente (ex: Pinte 0.5L)</p>
+                                <p className="text-sm text-fg-muted">Ajoutez des formats de vente (ex: Pinte 0.5L)</p>
                             </div>
                             <button 
                                 type="button"
                                 onClick={addVariant}
-                                className="px-3 py-2 bg-primary-600/10 hover:bg-primary-600/20 text-primary-400 rounded-lg text-sm font-medium transition-colors"
+                                className="px-3 py-2 bg-accent-600/10 hover:bg-accent-600/20 text-accent-400 rounded-lg text-sm font-medium transition-colors"
                             >
                                 + Ajouter
                             </button>
@@ -332,39 +329,39 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         
                         <div className="space-y-3">
                             {variants.map((variant, index) => (
-                                <div key={index} className="flex gap-3 items-start bg-dark-800/50 p-3 rounded-xl border border-dark-800">
+                                <div key={index} className="flex gap-3 items-start bg-elevated/50 p-3 rounded-xl border border-border">
                                     <div className="flex-1 space-y-1">
-                                        <label className="text-xs text-gray-500">Nom</label>
+                                        <label className="text-xs text-fg-subtle">Nom</label>
                                         <input
                                             type="text"
                                             value={variant.name}
                                             onChange={(e) => updateVariant(index, "name", e.target.value)}
                                             placeholder="Ex: Pinte"
-                                            className="w-full bg-dark-950 border border-dark-800 rounded-lg px-3 py-1.5 text-white text-sm"
+                                            className="w-full bg-surface-950 border border-border rounded-lg px-3 py-1.5 text-white text-sm"
                                             required
                                         />
                                     </div>
                                     <div className="w-24 space-y-1">
-                                        <label className="text-xs text-gray-500">Qté ({unit === "liter" ? "L" : "Kg"})</label>
+                                        <label className="text-xs text-fg-subtle">Qté ({unit === "liter" ? "L" : "Kg"})</label>
                                         <input
                                             type="number"
                                             step="0.01"
                                             value={variant.quantity}
                                             onChange={(e) => updateVariant(index, "quantity", e.target.value)}
                                             placeholder="0.5"
-                                            className="w-full bg-dark-950 border border-dark-800 rounded-lg px-3 py-1.5 text-white text-sm"
+                                            className="w-full bg-surface-950 border border-border rounded-lg px-3 py-1.5 text-white text-sm"
                                             required
                                         />
                                     </div>
                                     <div className="w-28 space-y-1">
-                                        <label className="text-xs text-gray-500">Prix €</label>
+                                        <label className="text-xs text-fg-subtle">Prix €</label>
                                         <input
                                             type="number"
                                             step="0.01"
                                             value={variant.price}
                                             onChange={(e) => updateVariant(index, "price", e.target.value)}
                                             placeholder="Auto"
-                                            className="w-full bg-dark-950 border border-dark-800 rounded-lg px-3 py-1.5 text-white text-sm"
+                                            className="w-full bg-surface-950 border border-border rounded-lg px-3 py-1.5 text-white text-sm"
                                         />
                                     </div>
                                     <button 
@@ -378,7 +375,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                                 </div>
                             ))}
                             {variants.length === 0 && (
-                                <p className="text-sm text-gray-500 italic">Aucune variante définie. Le prix sera calculé au prorata si utilisé tel quel.</p>
+                                <p className="text-sm text-fg-subtle italic">Aucune variante définie. Le prix sera calculé au prorata si utilisé tel quel.</p>
                             )}
                         </div>
                     </div>
@@ -389,14 +386,14 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                 <button
                     type="button"
                     onClick={() => router.back()}
-                    className="flex-1 px-4 py-3 bg-dark-800 hover:bg-dark-700 text-white rounded-xl transition-colors font-medium"
+                    className="flex-1 px-4 py-3 bg-elevated hover:bg-elevated text-white rounded-xl transition-colors font-medium"
                 >
                     Annuler
                 </button>
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors font-medium"
+                    className="flex-1 px-4 py-3 bg-accent-600 hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-colors font-medium"
                 >
                     {isPending ? "Enregistrement..." : (product ? "Mettre à jour" : "Créer le produit")}
                 </button>
