@@ -13,8 +13,10 @@ import { dayPickerClassNames } from "./date-picker-classes";
 
 interface DatePickerProps {
 	name?: string;
-	value?: string; // YYYY-MM-DD
-	defaultValue?: string; // YYYY-MM-DD
+	/** Controlled value (YYYY-MM-DD). When provided, component is fully controlled. */
+	value?: string;
+	/** Initial value for uncontrolled mode (YYYY-MM-DD). Changes after mount are ignored. */
+	defaultValue?: string;
 	onChange?: (value: string) => void;
 	placeholder?: string;
 	className?: string;
