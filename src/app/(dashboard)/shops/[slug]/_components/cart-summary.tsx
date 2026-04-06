@@ -81,7 +81,7 @@ export function CartSummary({
     const showPaymentOptions = selectedClient || isSelfService;
 
     return (
-        <div className={`rounded-xl border border-dark-700 bg-dark-800 p-4 ${className}`}>
+        <div className={`rounded-xl border border-border bg-elevated p-4 ${className}`}>
             
             {/* Header / Clear */}
             <div className="flex items-center justify-between mb-4">
@@ -98,7 +98,7 @@ export function CartSummary({
 
             {/* Items List */}
             {cartItemsCount > 0 ? (
-                <ul className="space-y-2 mb-4 text-sm text-gray-300 max-h-60 overflow-y-auto custom-scrollbar">
+                <ul className="space-y-2 mb-4 text-sm text-fg-muted max-h-60 overflow-y-auto custom-scrollbar">
                     {Object.entries(cart).map(([key, qty]) => {
                         let product: any;
                         let variant: any;
@@ -121,11 +121,11 @@ export function CartSummary({
                         return (
                             <li
                                 key={key}
-                                className="flex justify-between items-center bg-dark-900/50 p-2 rounded-lg"
+                                className="flex justify-between items-center bg-surface-900/50 p-2 rounded-lg"
                             >
                                 <span className="flex-1">
-                                    <div className="text-white font-medium">{product.name} {variant && <span className="text-gray-400 text-xs font-normal">({variant.name})</span>}</div>
-                                    <div className="text-xs text-gray-500">{(price / 100).toFixed(2)}€ x {qty}</div>
+                                    <div className="text-white font-medium">{product.name} {variant && <span className="text-fg-muted text-xs font-normal">({variant.name})</span>}</div>
+                                    <div className="text-xs text-fg-subtle">{(price / 100).toFixed(2)}€ x {qty}</div>
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <span className="font-mono font-bold text-white">
@@ -134,13 +134,13 @@ export function CartSummary({
                                     <div className="flex items-center gap-1 ml-2">
                                          <button
                                             onClick={() => onUpdateCart(product, -1, variantId)}
-                                            className="h-6 w-6 bg-dark-700 hover:bg-red-500/20 hover:text-red-400 text-gray-400 rounded flex items-center justify-center transition-colors"
+                                            className="h-6 w-6 bg-surface-800 hover:bg-red-500/20 hover:text-red-400 text-fg-muted rounded flex items-center justify-center transition-colors"
                                         >
                                             -
                                         </button>
                                         <button
                                             onClick={() => onUpdateCart(product, 1, variantId)}
-                                            className="h-6 w-6 bg-dark-700 hover:bg-primary-500/20 hover:text-primary-400 text-gray-400 rounded flex items-center justify-center transition-colors"
+                                            className="h-6 w-6 bg-surface-800 hover:bg-accent-500/20 hover:text-accent-400 text-fg-muted rounded flex items-center justify-center transition-colors"
                                         >
                                             +
                                         </button>
@@ -151,12 +151,12 @@ export function CartSummary({
                     })}
                 </ul>
             ) : (
-                <div className="text-gray-500 text-sm mb-4 italic text-center py-4 border border-dashed border-dark-700 rounded-lg">
+                <div className="text-fg-subtle text-sm mb-4 italic text-center py-4 border border-dashed border-border rounded-lg">
                     Panier vide
                 </div>
             )}
 
-            <div className="border-t border-dark-700 pt-3 flex items-center justify-between mb-4">
+            <div className="border-t border-border pt-3 flex items-center justify-between mb-4">
                 <span className="font-semibold text-white">Total</span>
                 <div className="text-2xl font-bold font-mono text-white">
                     {(cartTotal / 100).toFixed(2)}€
@@ -172,8 +172,8 @@ export function CartSummary({
                             onClick={() => setPaymentSource("PERSONAL")}
                             className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${
                                 paymentSource === "PERSONAL"
-                                    ? "bg-dark-700 border-primary-500 text-white"
-                                    : "bg-dark-900 border-dark-700 text-gray-400 hover:bg-dark-700"
+                                    ? "bg-surface-800 border-accent-500 text-white"
+                                    : "bg-surface-900 border-border text-fg-muted hover:bg-elevated"
                             }`}
                         >
                             <IconWallet className="h-4 w-4 mr-1.5" />
@@ -189,8 +189,8 @@ export function CartSummary({
                             disabled={clientFamss.length === 0}
                             className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${
                                 paymentSource === "FAMILY"
-                                    ? "bg-dark-700 border-primary-500 text-white"
-                                    : "bg-dark-900 border-dark-700 text-gray-400 hover:bg-dark-700 disabled:opacity-50"
+                                    ? "bg-surface-800 border-accent-500 text-white"
+                                    : "bg-surface-900 border-border text-fg-muted hover:bg-elevated disabled:opacity-50"
                             }`}
                         >
                             <IconUsers className="h-4 w-4 mr-1.5" />
@@ -215,8 +215,8 @@ export function CartSummary({
                     )}
 
                     {selectedClient && (
-                        <div className="flex justify-between items-center text-sm px-2 py-1 rounded bg-dark-900 border border-dark-700">
-                            <span className="text-gray-400">Nouveau solde estimé</span>
+                        <div className="flex justify-between items-center text-sm px-2 py-1 rounded bg-surface-900 border border-border">
+                            <span className="text-fg-muted">Nouveau solde estimé</span>
                             <span
                                 className={
                                     currentBalance - cartTotal < 0

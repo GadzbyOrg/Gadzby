@@ -26,8 +26,8 @@ export function TabagnssSelector({
 }: TabagnssSelectorProps) {
     return (
         <div className={`space-y-2 ${className}`}>
-            <label htmlFor={name} className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <IconSchool className="w-4 h-4 text-primary-400" />
+            <label htmlFor={name} className="text-sm font-medium text-fg-muted flex items-center gap-2">
+                <IconSchool className="w-4 h-4 text-accent-400" />
                 Tabagn&apos;ss
             </label>
             <Select name={name} value={value} defaultValue={defaultValue} onValueChange={onChange} required={required}>

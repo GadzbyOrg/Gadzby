@@ -35,11 +35,11 @@ export function ShopTransactionToolbar() {
 	return (
 		<div className="flex flex-col md:flex-row gap-4 mb-6">
 			<div className="relative flex-1">
-				<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
+				<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4" />
 				<input
 					type="text"
 					placeholder="Rechercher (description, montant)..."
-					className="w-full bg-dark-800 border-dark-700 text-gray-200 pl-10 pr-4 py-2 rounded-lg focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-sm"
+					className="w-full bg-elevated border-border text-fg pl-10 pr-4 py-2 rounded-lg focus:ring-1 focus:ring-accent-500 focus:border-accent-500 text-sm"
 					defaultValue={searchParams.get("search")?.toString()}
 					onChange={(e) => handleSearch(e.target.value)}
 				/>
