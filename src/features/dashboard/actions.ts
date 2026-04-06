@@ -115,14 +115,9 @@ export async function getUserExpensesByShop() {
 		.groupBy(shops.name)
 		.orderBy(sql`sum(abs(${transactions.amount})) desc`);
 
-	// Format for Recharts
-    // Define a palette of colors to cycle through
-    const COLORS = ["#891c34", "#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"];
-
-	return expensesByShop.map((item, index) => ({
+	return expensesByShop.map((item) => ({
 		name: item.shopName || "Inconnu",
 		value: item.amount / 100,
-        fill: COLORS[index % COLORS.length]
 	}));
 }
 

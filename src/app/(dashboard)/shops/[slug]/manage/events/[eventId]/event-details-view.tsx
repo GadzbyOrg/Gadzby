@@ -109,9 +109,9 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 		if (!confirm("Voulez-vous vraiment activer cet événement ?")) return;
 		startTransition(async () => {
 			try {
-				interface ActivateEventResult { 
-					insufficientUsers?: Array<{ id: string; name: string; }>; 
-					error?: string; 
+				interface ActivateEventResult {
+					insufficientUsers?: Array<{ id: string; name: string; }>;
+					error?: string;
 				}
 				let result = (await activateEvent({
 					shopId: event.shopId,
@@ -327,7 +327,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 		switch (status) {
 			case "DRAFT":
 				return (
-					<span className="bg-gray-500/10 text-gray-400 px-2 py-0.5 rounded text-xs border border-gray-500/20">
+					<span className="bg-fg-subtle/10 text-fg-muted px-2 py-0.5 rounded text-xs border border-fg-subtle/20">
 						Brouillon
 					</span>
 				);
@@ -351,7 +351,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 				);
 			case "ARCHIVED":
 				return (
-					<span className="bg-gray-500/10 text-gray-400 px-2 py-0.5 rounded text-xs border border-gray-500/20">
+					<span className="bg-fg-subtle/10 text-fg-muted px-2 py-0.5 rounded text-xs border border-fg-subtle/20">
 						Archivé
 					</span>
 				);
@@ -366,10 +366,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
 					<div className="flex items-center gap-3 mb-1">
-						<h1 className="text-2xl font-bold text-white">{event.name}</h1>
+						<h1 className="text-2xl font-bold text-fg">{event.name}</h1>
 						{getStatusBadge(event.status)}
 					</div>
-					<p className="text-gray-400 text-sm">
+					<p className="text-fg-muted text-sm">
 						{event.type === "SHARED_COST" ? "Coûts Partagés" : "Commercial"} •
 						Du {new Date(event.startDate).toLocaleDateString()}{" "}
 						{event.endDate &&
@@ -444,14 +444,13 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 			</div>
 
 			{/* Tabs Header */}
-			<div className="flex border-b border-dark-700 overflow-x-auto">
+			<div className="flex border-b border-border overflow-x-auto">
 				<button
 					onClick={() => setActiveTab("dashboard")}
-					className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${
-						activeTab === "dashboard"
-							? "border-primary-500 text-primary-400"
-							: "border-transparent text-gray-400 hover:text-gray-300 hover:border-dark-600"
-					}`}
+					className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === "dashboard"
+						? "border-accent-500 text-accent-400"
+						: "border-transparent text-fg-muted hover:text-fg hover:border-border"
+						}`}
 				>
 					<IconChartBar size={16} /> Tableau de bord
 				</button>
@@ -459,11 +458,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 				{event.type !== "COMMERCIAL" && (
 					<button
 						onClick={() => setActiveTab("participants")}
-						className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${
-							activeTab === "participants"
-								? "border-primary-500 text-primary-400"
-								: "border-transparent text-gray-400 hover:text-gray-300 hover:border-dark-600"
-						}`}
+						className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === "participants"
+							? "border-accent-500 text-accent-400"
+							: "border-transparent text-fg-muted hover:text-fg hover:border-border"
+							}`}
 					>
 						<IconUsers size={16} /> Participants
 					</button>
@@ -472,11 +470,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 				{event.type === "COMMERCIAL" && (
 					<button
 						onClick={() => setActiveTab("products")}
-						className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${
-							activeTab === "products"
-								? "border-primary-500 text-primary-400"
-								: "border-transparent text-gray-400 hover:text-gray-300 hover:border-dark-600"
-						}`}
+						className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === "products"
+							? "border-accent-500 text-accent-400"
+							: "border-transparent text-fg-muted hover:text-fg hover:border-border"
+							}`}
 					>
 						<IconBasket size={16} /> Produits
 					</button>
@@ -484,21 +481,19 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 
 				<button
 					onClick={() => setActiveTab("expenses")}
-					className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${
-						activeTab === "expenses"
-							? "border-primary-500 text-primary-400"
-							: "border-transparent text-gray-400 hover:text-gray-300 hover:border-dark-600"
-					}`}
+					className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === "expenses"
+						? "border-accent-500 text-accent-400"
+						: "border-transparent text-fg-muted hover:text-fg hover:border-border"
+						}`}
 				>
 					<IconReceipt size={16} /> Dépenses
 				</button>
 				<button
 					onClick={() => setActiveTab("revenues")}
-					className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${
-						activeTab === "revenues"
-							? "border-primary-500 text-primary-400"
-							: "border-transparent text-gray-400 hover:text-gray-300 hover:border-dark-600"
-					}`}
+					className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === "revenues"
+						? "border-accent-500 text-accent-400"
+						: "border-transparent text-fg-muted hover:text-fg hover:border-border"
+						}`}
 				>
 					<IconReceipt size={16} /> Revenus
 				</button>
@@ -506,11 +501,10 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 
 				<button
 					onClick={() => setActiveTab("settings")}
-					className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${
-						activeTab === "settings"
-							? "border-primary-500 text-primary-400"
-							: "border-transparent text-gray-400 hover:text-gray-300 hover:border-dark-600"
-					}`}
+					className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === "settings"
+						? "border-accent-500 text-accent-400"
+						: "border-transparent text-fg-muted hover:text-fg hover:border-border"
+						}`}
 				>
 					<IconSettings size={16} /> Paramètres
 				</button>
@@ -542,7 +536,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 					<div className="grid gap-8">
 						{/* Edit Form */}
 						<div>
-							<h3 className="text-lg font-medium text-white mb-4">
+							<h3 className="text-lg font-medium text-fg mb-4">
 								Modifier l&apos;événement
 							</h3>
 							<EventForm
@@ -553,8 +547,8 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 						</div>
 
 						{/* Actions */}
-						<div className="bg-dark-800 border border-dark-700/50 rounded-lg p-6">
-							<h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
+						<div className="bg-elevated border border-border/50 rounded-lg p-6">
+							<h3 className="text-lg font-medium text-fg mb-4 flex items-center gap-2">
 								<IconAlertTriangle className="text-orange-400" />
 								Actions
 							</h3>
@@ -563,7 +557,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 									<button
 										onClick={handleActivate}
 										disabled={isPending}
-										className="flex items-center gap-2 px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+										className="flex items-center gap-2 px-4 py-2 rounded-md bg-green-600 text-fg hover:bg-green-700 transition-colors disabled:opacity-50"
 									>
 										{isPending ? (
 											<IconLoader2 size={16} className="animate-spin" />
@@ -578,7 +572,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 									<button
 										onClick={handleClose}
 										disabled={isPending}
-										className="flex items-center gap-2 px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 transition-colors disabled:opacity-50"
+										className="flex items-center gap-2 px-4 py-2 rounded-md bg-orange-600 text-fg hover:bg-orange-700 transition-colors disabled:opacity-50"
 									>
 										{isPending ? (
 											<IconLoader2 size={16} className="animate-spin" />
@@ -592,7 +586,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 								<button
 									onClick={handleDelete}
 									disabled={isPending}
-									className="flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+									className="flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 text-fg hover:bg-red-700 transition-colors disabled:opacity-50"
 								>
 									{isPending ? (
 										<IconLoader2 size={16} className="animate-spin" />
@@ -611,14 +605,14 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 			{/* Settlement Modal */}
 			{settleOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-					<div className="bg-dark-800 border border-dark-700 rounded-lg shadow-xl w-full max-w-2xl p-6 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+					<div className="bg-elevated border border-border rounded-lg shadow-xl w-full max-w-2xl p-6 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
 						<div className="flex justify-between items-center">
-							<h3 className="text-lg font-bold text-white">
+							<h3 className="text-lg font-bold text-fg">
 								Prévisualisation du Solde
 							</h3>
 							<button
 								onClick={() => setSettleOpen(false)}
-								className="text-gray-500 hover:text-white"
+								className="text-fg-subtle hover:text-fg"
 							>
 								<IconX size={20} />
 							</button>
@@ -627,35 +621,35 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 						{settlementPreview && (
 							<div className="flex flex-col gap-6">
 								<div className="grid grid-cols-3 gap-4">
-									<div className="bg-dark-900 border border-dark-700 p-3 rounded-lg text-center">
-										<div className="text-xs text-gray-500 uppercase">
+									<div className="bg-surface-900 border border-border p-3 rounded-lg text-center">
+										<div className="text-xs text-fg-subtle uppercase">
 											Coût Total
 										</div>
-										<div className="text-lg font-bold text-white">
+										<div className="text-lg font-bold text-fg">
 											{(settlementPreview.totalExpenses / 100).toFixed(2)} €
 										</div>
 									</div>
-									<div className="bg-dark-900 border border-dark-700 p-3 rounded-lg text-center">
-										<div className="text-xs text-gray-500 uppercase">
+									<div className="bg-surface-900 border border-border p-3 rounded-lg text-center">
+										<div className="text-xs text-fg-subtle uppercase">
 											Poids Total
 										</div>
-										<div className="text-lg font-bold text-white">
+										<div className="text-lg font-bold text-fg">
 											{settlementPreview.totalWeight}
 										</div>
 									</div>
-									<div className="bg-dark-900 border border-dark-700 p-3 rounded-lg text-center">
-										<div className="text-xs text-gray-500 uppercase">
+									<div className="bg-surface-900 border border-border p-3 rounded-lg text-center">
+										<div className="text-xs text-fg-subtle uppercase">
 											Coût / Part
 										</div>
-										<div className="text-lg font-bold text-white">
+										<div className="text-lg font-bold text-fg">
 											{(settlementPreview.costPerUnit / 100).toFixed(2)} €
 										</div>
 									</div>
 								</div>
 
-								<div className="border border-dark-700 rounded-lg overflow-hidden max-h-60 overflow-y-auto custom-scrollbar">
-									<table className="w-full text-sm text-left text-gray-400">
-										<thead className="bg-dark-900 text-gray-200 uppercase text-xs sticky top-0">
+								<div className="border border-border rounded-lg overflow-hidden max-h-60 overflow-y-auto custom-scrollbar">
+									<table className="w-full text-sm text-left text-fg-muted">
+										<thead className="bg-surface-900 text-fg uppercase text-xs sticky top-0">
 											<tr>
 												<th className="px-4 py-2">User</th>
 												<th className="px-4 py-2">Part</th>
@@ -663,7 +657,7 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 												<th className="px-4 py-2">Différence</th>
 											</tr>
 										</thead>
-										<tbody className="divide-y divide-dark-700">
+										<tbody className="divide-y divide-border">
 											{settlementPreview.breakdown.map((item) => (
 												<tr key={item.userId}>
 													<td className="px-4 py-2">{item.name}</td>
@@ -678,13 +672,12 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 														{(item.alreadyPaid / 100).toFixed(2)} €
 													</td>
 													<td
-														className={`px-4 py-2 font-medium ${
-															item.diff > 0
-																? "text-green-400"
-																: item.diff < 0
+														className={`px-4 py-2 font-medium ${item.diff > 0
+															? "text-green-400"
+															: item.diff < 0
 																? "text-red-400"
-																: "text-gray-500"
-														}`}
+																: "text-fg-subtle"
+															}`}
 													>
 														{item.diff > 0 ? "+" : ""}
 														{(item.diff / 100).toFixed(2)} €
@@ -698,14 +691,14 @@ export function EventDetailsView({ event, slug, stats }: Props) {
 								<div className="flex justify-end gap-3">
 									<button
 										onClick={() => setSettleOpen(false)}
-										className="px-4 py-2 rounded-md bg-dark-700 text-gray-300 hover:bg-dark-600 transition-colors text-sm"
+										className="px-4 py-2 rounded-md bg-elevated text-fg hover:bg-elevated transition-colors text-sm"
 									>
 										Annuler
 									</button>
 									<button
 										onClick={handleExecuteSettlement}
 										disabled={isSettling}
-										className="px-4 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 transition-colors text-sm font-medium disabled:opacity-50"
+										className="px-4 py-2 rounded-md bg-orange-600 text-fg hover:bg-orange-700 transition-colors text-sm font-medium disabled:opacity-50"
 									>
 										{isSettling ? "..." : "Confirmer et Solder"}
 									</button>

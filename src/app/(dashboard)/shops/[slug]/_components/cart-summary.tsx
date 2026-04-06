@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2, IconTrash,IconUsers, IconWallet } from "@tabler/icons-react";
+import { IconLoader2, IconTrash, IconUsers, IconWallet } from "@tabler/icons-react";
 import { useEffect } from "react";
 
 interface Product {
@@ -63,30 +63,30 @@ export function CartSummary({
             const product = products.find(p => p.id === productId) as any;
             const variant = product?.variants?.find((v: any) => v.id === variantId);
             const price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
-             return total + (price * qty);
+            return total + (price * qty);
         }
         const product = products.find((p) => p.id === key);
         return total + (product ? product.price * qty : 0);
     }, 0);
 
     const selectedFams = clientFamss.find((f) => f.id === selectedFamsId);
-    
+
     // In Self Service, we might not know the personal balance of the connected user easily here
     // unless passed. For now, we only show balance estimation if selectedClient is present.
-	const currentBalance = selectedClient 
+    const currentBalance = selectedClient
         ? (paymentSource === "PERSONAL" ? selectedClient.balance : selectedFams?.balance || 0)
         : (selectedFams?.balance || 0); // specific fallback if needed
 
     const showPaymentOptions = selectedClient || isSelfService;
 
     return (
-        <div className={`rounded-xl border border-dark-700 bg-dark-800 p-4 ${className}`}>
-            
+        <div className={`rounded-xl border border-border bg-surface-900 p-4 ${className}`}>
+
             {/* Header / Clear */}
             <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white">Panier ({cartItemsCount})</h3>
+                <h3 className="font-semibold text-fg">Panier ({cartItemsCount})</h3>
                 {onClearCart && cartItemsCount > 0 && (
-                    <button 
+                    <button
                         onClick={onClearCart}
                         className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
                     >
@@ -97,7 +97,7 @@ export function CartSummary({
 
             {/* Items List */}
             {cartItemsCount > 0 ? (
-                <ul className="space-y-2 mb-4 text-sm text-gray-300 max-h-60 overflow-y-auto custom-scrollbar">
+                <ul className="space-y-2 mb-4 text-sm text-fg max-h-60 overflow-y-auto custom-scrollbar">
                     {Object.entries(cart).map(([key, qty]) => {
                         let product: any;
                         let variant: any;
@@ -109,7 +109,7 @@ export function CartSummary({
                             product = products.find(p => p.id === pId);
                             variantId = vId;
                             variant = product?.variants?.find((v: any) => v.id === vId);
-                             price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
+                            price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
                         } else {
                             product = products.find(p => p.id === key);
                             price = product?.price || 0;
@@ -120,26 +120,26 @@ export function CartSummary({
                         return (
                             <li
                                 key={key}
-                                className="flex justify-between items-center bg-dark-900/50 p-2 rounded-lg"
+                                className="flex justify-between items-center bg-surface-900/50 p-2 rounded-lg"
                             >
                                 <span className="flex-1">
-                                    <div className="text-white font-medium">{product.name} {variant && <span className="text-gray-400 text-xs font-normal">({variant.name})</span>}</div>
-                                    <div className="text-xs text-gray-500">{(price / 100).toFixed(2)}€ x {qty}</div>
+                                    <div className="text-fg font-medium">{product.name} {variant && <span className="text-fg-muted text-xs font-normal">({variant.name})</span>}</div>
+                                    <div className="text-xs text-fg-subtle">{(price / 100).toFixed(2)}€ x {qty}</div>
                                 </span>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-mono font-bold text-white">
+                                    <span className="font-mono font-bold text-fg">
                                         {((price * qty) / 100).toFixed(2)}€
                                     </span>
                                     <div className="flex items-center gap-1 ml-2">
-                                         <button
+                                        <button
                                             onClick={() => onUpdateCart(product, -1, variantId)}
-                                            className="h-6 w-6 bg-dark-700 hover:bg-red-500/20 hover:text-red-400 text-gray-400 rounded flex items-center justify-center transition-colors"
+                                            className="h-6 w-6 bg-elevated hover:bg-red-500/20 hover:text-red-400 text-fg-muted rounded flex items-center justify-center transition-colors"
                                         >
                                             -
                                         </button>
                                         <button
                                             onClick={() => onUpdateCart(product, 1, variantId)}
-                                            className="h-6 w-6 bg-dark-700 hover:bg-primary-500/20 hover:text-primary-400 text-gray-400 rounded flex items-center justify-center transition-colors"
+                                            className="h-6 w-6 bg-elevated hover:bg-accent-500/20 hover:text-accent-400 text-fg-muted rounded flex items-center justify-center transition-colors"
                                         >
                                             +
                                         </button>
@@ -150,14 +150,14 @@ export function CartSummary({
                     })}
                 </ul>
             ) : (
-                <div className="text-gray-500 text-sm mb-4 italic text-center py-4 border border-dashed border-dark-700 rounded-lg">
+                <div className="text-fg-subtle text-sm mb-4 italic text-center py-4 border border-dashed border-border rounded-lg">
                     Panier vide
                 </div>
             )}
 
-            <div className="border-t border-dark-700 pt-3 flex items-center justify-between mb-4">
-                <span className="font-semibold text-white">Total</span>
-                <div className="text-2xl font-bold font-mono text-white">
+            <div className="border-t border-border pt-3 flex items-center justify-between mb-4">
+                <span className="font-semibold text-fg">Total</span>
+                <div className="text-2xl font-bold font-mono text-fg">
                     {(cartTotal / 100).toFixed(2)}€
                 </div>
             </div>
@@ -166,43 +166,41 @@ export function CartSummary({
                 <div className="space-y-3 mb-4">
                     {/* Payment Source Selector — only when fam'ss feature is on */}
                     {famssEnabled && (
-                    <div className="grid grid-cols-2 gap-2">
-                        <button
-                            onClick={() => setPaymentSource("PERSONAL")}
-                            className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${
-                                paymentSource === "PERSONAL"
-                                    ? "bg-dark-700 border-primary-500 text-white"
-                                    : "bg-dark-900 border-dark-700 text-gray-400 hover:bg-dark-700"
-                            }`}
-                        >
-                            <IconWallet className="h-4 w-4 mr-1.5" />
-                            Perso
-                        </button>
-                        <button
-                            onClick={() => {
-                                setPaymentSource("FAMILY");
-                                if (clientFamss.length > 0 && !selectedFamsId) {
-                                    setSelectedFamsId(clientFamss[0].id);
-                                }
-                            }}
-                            disabled={clientFamss.length === 0}
-                            className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${
-                                paymentSource === "FAMILY"
-                                    ? "bg-dark-700 border-primary-500 text-white"
-                                    : "bg-dark-900 border-dark-700 text-gray-400 hover:bg-dark-700 disabled:opacity-50"
-                            }`}
-                        >
-                            <IconUsers className="h-4 w-4 mr-1.5" />
-                            Fam'ss
-                        </button>
-                    </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => setPaymentSource("PERSONAL")}
+                                className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${paymentSource === "PERSONAL"
+                                    ? "bg-elevated border-accent-500 text-fg"
+                                    : "bg-surface-900 border-border text-fg-muted hover:bg-elevated"
+                                    }`}
+                            >
+                                <IconWallet className="h-4 w-4 mr-1.5" />
+                                Perso
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setPaymentSource("FAMILY");
+                                    if (clientFamss.length > 0 && !selectedFamsId) {
+                                        setSelectedFamsId(clientFamss[0].id);
+                                    }
+                                }}
+                                disabled={clientFamss.length === 0}
+                                className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${paymentSource === "FAMILY"
+                                    ? "bg-elevated border-accent-500 text-fg"
+                                    : "bg-surface-900 border-border text-fg-muted hover:bg-elevated disabled:opacity-50"
+                                    }`}
+                            >
+                                <IconUsers className="h-4 w-4 mr-1.5" />
+                                Fam'ss
+                            </button>
+                        </div>
                     )}
 
                     {paymentSource === "FAMILY" && clientFamss.length > 0 && (
                         <select
                             value={selectedFamsId}
                             onChange={(e) => setSelectedFamsId(e.target.value)}
-                            className="w-full bg-dark-950 border border-dark-700 text-white text-sm rounded-lg px-3 py-2"
+                            className="w-full bg-surface-950 border border-border text-fg text-sm rounded-lg px-3 py-2"
                         >
                             {clientFamss.map((f: any) => (
                                 <option key={f.id} value={f.id}>
@@ -213,8 +211,8 @@ export function CartSummary({
                     )}
 
                     {selectedClient && (
-                        <div className="flex justify-between items-center text-sm px-2 py-1 rounded bg-dark-900 border border-dark-700">
-                            <span className="text-gray-400">Nouveau solde estimé</span>
+                        <div className="flex justify-between items-center text-sm px-2 py-1 rounded bg-surface-900 border border-border">
+                            <span className="text-fg-muted">Nouveau solde estimé</span>
                             <span
                                 className={
                                     currentBalance - cartTotal < 0
@@ -254,7 +252,7 @@ export function CartSummary({
                     (paymentSource === "FAMILY" && !selectedFamsId) ||
                     (selectedClient && (currentBalance - cartTotal < 0))
                 }
-                className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-bold text-white hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-bold text-fg hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
                 {isSubmitting && <IconLoader2 className="h-4 w-4 animate-spin" />}
                 {isSelfService ? "PAYER" : "ENCAISSER"} {cartTotal > 0 && `- ${(cartTotal / 100).toFixed(2)}€`}

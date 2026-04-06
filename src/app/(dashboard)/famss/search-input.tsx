@@ -30,7 +30,7 @@ export function SearchInput() {
             <input
                 id="famss-search"
                 type="search"
-                className="peer block w-full rounded-lg border border-dark-700 bg-dark-900 py-3 sm:py-[9px] pl-10 pr-4 text-sm placeholder:text-gray-500 text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-colors"
+                className="peer block w-full rounded-lg border border-border bg-surface-900 py-3 sm:py-[9px] pl-10 pr-4 text-sm placeholder:text-fg-subtle text-fg focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-colors"
                 placeholder="Rechercher une Fam&apos;ss..."
                 onChange={(e) => {
                     handleSearch(e.target.value);
@@ -39,7 +39,7 @@ export function SearchInput() {
                 aria-describedby="famss-search-hint"
             />
             <IconSearch
-                className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-primary-500 transition-colors"
+                className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-fg-subtle peer-focus:text-accent-500 transition-colors"
                 aria-hidden="true"
             />
             <span id="famss-search-hint" className="sr-only">

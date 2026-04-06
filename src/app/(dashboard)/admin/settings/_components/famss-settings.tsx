@@ -47,7 +47,7 @@ export function FamssSettings() {
 	if (loading) {
 		return (
 			<div className="flex h-24 items-center justify-center">
-				<IconLoader2 className="animate-spin text-primary-500" size={28} />
+				<IconLoader2 className="animate-spin text-accent-500" size={28} />
 			</div>
 		);
 	}
@@ -55,15 +55,15 @@ export function FamssSettings() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="text-xl font-bold text-white mb-1">
+				<h2 className="text-xl font-bold text-fg mb-1">
 					Fonctionnalité Fam&apos;ss
 				</h2>
-				<p className="text-gray-400 text-sm">
+				<p className="text-fg-muted text-sm">
 					Activez ou désactivez la fonctionnalité Fam&apos;ss pour l&apos;ensemble des utilisateurs.
 				</p>
 			</div>
 
-			<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm space-y-5">
+			<div className="rounded-xl border border-border bg-surface-900/50 p-6 shadow-xl backdrop-blur-sm space-y-5">
 				{/* Feedback banner */}
 				{feedback && (
 					<div
@@ -82,12 +82,12 @@ export function FamssSettings() {
 				{/* Toggle row */}
 				<div className="flex items-center justify-between gap-6">
 					<div className="flex items-center gap-3">
-						<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-900/30 text-primary-500">
+						<div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-900/30 text-accent-500">
 							<IconUsers size={20} />
 						</div>
 						<div>
-							<p className="text-sm font-medium text-white">Fam&apos;ss</p>
-							<p className="text-xs text-gray-400">
+							<p className="text-sm font-medium text-fg">Fam&apos;ss</p>
+							<p className="text-xs text-fg-muted">
 								{enabled ? "La fonctionnalité est active" : "La fonctionnalité est désactivée"}
 							</p>
 						</div>
@@ -101,9 +101,9 @@ export function FamssSettings() {
 						onClick={() => handleToggle(!enabled)}
 						className={cn(
 							"relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent",
-							"transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 focus:ring-offset-dark-900",
+							"transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-600 focus:ring-offset-2 focus:ring-offset-surface-900",
 							"disabled:opacity-60 disabled:cursor-not-allowed",
-							enabled ? "bg-primary-600" : "bg-dark-700"
+							enabled ? "bg-accent-600" : "bg-elevated"
 						)}
 					>
 						<span

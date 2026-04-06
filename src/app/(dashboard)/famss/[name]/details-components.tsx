@@ -35,7 +35,7 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
 
 	return (
 		<div className="space-y-2">
-			<label className="text-xs font-medium text-gray-400">
+			<label className="text-xs font-medium text-fg-muted">
 				Ajouter un membre
 			</label>
 			<div className="flex flex-col gap-2">
@@ -48,7 +48,7 @@ export function AddMemberForm({ famsName }: { famsName: string }) {
 
 				{(status || loading) && (
 					<div className="flex items-center gap-2">
-						{loading && <span className="text-xs text-gray-400">Ajout en cours...</span>}
+						{loading && <span className="text-xs text-fg-muted">Ajout en cours...</span>}
 						{status && (
 							<span
 								className={`text-xs ${status.type === "error" ? "text-red-500" : "text-green-500"
@@ -100,30 +100,30 @@ export function TransferForm({ famsName }: { famsName: string }) {
 	}
 
 	return (
-		<div className="bg-dark-900 border border-dark-800 p-6 rounded-xl space-y-4">
-			<h3 className="text-lg font-bold text-white">Verser de l'argent</h3>
+		<div className="bg-surface-900 border border-border p-6 rounded-xl space-y-4">
+			<h3 className="text-lg font-bold text-fg">Verser de l'argent</h3>
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<div className="space-y-2">
-					<label className="text-sm font-medium text-gray-400">
+					<label className="text-sm font-medium text-fg-muted">
 						Montant (€)
 					</label>
 					<div className="relative">
 						<input
 							type="text"
 							inputMode="decimal"
-							className="border border-dark-700 rounded px-3 py-2 bg-dark-950 text-white focus:border-primary-500 outline-none w-full pr-8 font-mono"
+							className="border border-border rounded px-3 py-2 bg-surface-950 text-fg focus:border-accent-500 outline-none w-full pr-8 font-mono"
 							placeholder="0.00"
 							value={amount}
 							onChange={(e) => setAmount(e.target.value)}
 							required
 						/>
-						<span className="absolute right-3 top-2 text-gray-500">€</span>
+						<span className="absolute right-3 top-2 text-fg-subtle">€</span>
 					</div>
 				</div>
 
 				<button
 					disabled={loading}
-					className="w-full bg-primary-600 text-white px-4 py-2 rounded font-medium hover:bg-primary-500 disabled:opacity-50 transition-colors cursor-pointer"
+					className="w-full bg-accent-600 text-fg px-4 py-2 rounded font-medium hover:bg-accent-500 disabled:opacity-50 transition-colors cursor-pointer"
 				>
 					{loading ? "Transfert en cours..." : "Envoyer vers la Fam'ss"}
 				</button>
@@ -180,7 +180,7 @@ export function RemoveMemberButton({
 		<button
 			onClick={handleRemove}
 			disabled={loading}
-			className="text-gray-500 hover:text-red-500 transition-colors p-1"
+			className="text-fg-subtle hover:text-red-500 transition-colors p-1"
 			title="Retirer le membre"
 		>
 			<IconTrash size={16} />
@@ -214,7 +214,7 @@ export function PromoteMemberButton({
 		<button
 			onClick={handlePromote}
 			disabled={loading}
-			className="text-gray-500 hover:text-yellow-500 transition-colors p-1"
+			className="text-fg-subtle hover:text-yellow-500 transition-colors p-1"
 			title="Promouvoir Admin"
 		>
 			<IconStar size={16} />
@@ -241,7 +241,7 @@ export function JoinFamsButton({ famsName }: { famsName: string }) {
 		<button
 			onClick={handleJoin}
 			disabled={loading}
-			className="w-full mt-4 bg-primary-600/20 hover:bg-primary-600/30 text-primary-400 border border-primary-600/50 rounded-lg py-2 text-sm font-medium transition-colors"
+			className="w-full mt-4 bg-accent-600/20 hover:bg-accent-600/30 text-accent-400 border border-accent-600/50 rounded-lg py-2 text-sm font-medium transition-colors"
 		>
 			{loading ? "..." : "Rejoindre"}
 		</button>
@@ -305,11 +305,11 @@ export function MembershipRequestsList({
 	}
 
 	return (
-		<div className="bg-dark-900 border border-dark-800 p-6 rounded-xl space-y-4 mb-6">
+		<div className="bg-surface-900 border border-border p-6 rounded-xl space-y-4 mb-6">
 			<div className="flex justify-between items-center mb-2">
-				<h3 className="text-lg font-bold text-white flex items-center gap-2">
+				<h3 className="text-lg font-bold text-fg flex items-center gap-2">
 					Demandes d'adhésion
-					<span className="bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full">
+					<span className="bg-accent-500 text-fg text-xs px-2 py-0.5 rounded-full">
 						{requests.length}
 					</span>
 				</h3>
@@ -319,15 +319,15 @@ export function MembershipRequestsList({
 				{requests.map((req) => (
 					<div
 						key={req.userId}
-						className="flex justify-between items-center text-sm p-3 bg-dark-950/50 rounded-lg border border-dark-800"
+						className="flex justify-between items-center text-sm p-3 bg-surface-950/50 rounded-lg border border-border"
 					>
 						<div className="flex items-center gap-3">
 							<UserAvatar user={req.user} className="w-8 h-8" />
 							<div>
-								<div className="text-gray-200 font-medium">
+								<div className="text-fg font-medium">
 									{req.user.username}
 								</div>
-								<div className="text-xs text-gray-500">
+								<div className="text-xs text-fg-subtle">
 									{new Date(req.createdAt).toLocaleDateString()}
 								</div>
 							</div>
@@ -336,7 +336,7 @@ export function MembershipRequestsList({
 							<button
 								onClick={() => handleAccept(req.userId)}
 								disabled={loadingId === req.userId}
-								className="p-2 hover:bg-green-500/20 text-gray-400 hover:text-green-400 rounded transition-colors"
+								className="p-2 hover:bg-green-500/20 text-fg-muted hover:text-green-400 rounded transition-colors"
 								title="Accepter"
 							>
 								<IconCheck size={18} />
@@ -344,7 +344,7 @@ export function MembershipRequestsList({
 							<button
 								onClick={() => handleReject(req.userId)}
 								disabled={loadingId === req.userId}
-								className="p-2 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded transition-colors"
+								className="p-2 hover:bg-red-500/20 text-fg-muted hover:text-red-400 rounded transition-colors"
 								title="Refuser"
 							>
 								<IconX size={18} />

@@ -36,24 +36,22 @@ export function EventsFilter() {
 	return (
 		<div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
 			{/* Status Tabs */}
-			<div className="flex bg-dark-800 p-1 rounded-lg border border-dark-700 w-full md:w-auto">
+			<div className="flex bg-elevated p-1 rounded-lg border border-border w-full md:w-auto">
 				<button
 					onClick={() => handleStatusChange("ACTIVE")}
-					className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
-						currentStatus === "ACTIVE"
-							? "bg-primary-600 text-white shadow-sm"
-							: "text-gray-400 hover:text-white hover:bg-dark-700"
-					}`}
+					className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${currentStatus === "ACTIVE"
+						? "bg-accent-600 text-fg shadow-sm"
+						: "text-fg-muted hover:text-fg hover:bg-elevated"
+						}`}
 				>
 					En cours & À venir
 				</button>
 				<button
 					onClick={() => handleStatusChange("HISTORY")}
-					className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${
-						currentStatus === "HISTORY"
-							? "bg-primary-600 text-white shadow-sm"
-							: "text-gray-400 hover:text-white hover:bg-dark-700"
-					}`}
+					className={`flex-1 md:flex-none px-4 py-2 rounded-md text-sm font-medium transition-all ${currentStatus === "HISTORY"
+						? "bg-accent-600 text-fg shadow-sm"
+						: "text-fg-muted hover:text-fg hover:bg-elevated"
+						}`}
 				>
 					Historique
 				</button>
@@ -61,11 +59,11 @@ export function EventsFilter() {
 
 			{/* Search Input */}
 			<div className="relative w-full md:w-64">
-				<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+				<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-fg-muted">
 					<IconSearch size={16} />
 				</div>
 				<input
-					className="block w-full pl-10 pr-3 py-2 border border-dark-700 rounded-lg leading-5 bg-dark-800 text-gray-300 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:bg-dark-900 focus:border-primary-500 sm:text-sm transition-colors"
+					className="block w-full pl-10 pr-3 py-2 border border-border rounded-lg leading-5 bg-elevated text-fg placeholder-fg-subtle focus:outline-none focus:placeholder-fg-muted focus:bg-surface-900 focus:border-accent-500 sm:text-sm transition-colors"
 					placeholder="Rechercher un événement..."
 					defaultValue={searchParams.get("search")?.toString()}
 					onChange={(e) => handleSearch(e.target.value)}

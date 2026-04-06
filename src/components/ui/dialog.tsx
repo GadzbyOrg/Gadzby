@@ -7,64 +7,64 @@ import { cn } from "@/lib/utils";
 
 // Simplified Modal Context
 interface ModalContextType {
-    open: boolean;
-    setOpen: (open: boolean) => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
 const ModalContext = React.createContext<ModalContextType | undefined>(undefined);
 
 export function useModal() {
-    const context = React.useContext(ModalContext);
-    if (!context) {
-        throw new Error("useModal must be used within a ModalRoot");
-    }
-    return context;
+  const context = React.useContext(ModalContext);
+  if (!context) {
+    throw new Error("useModal must be used within a ModalRoot");
+  }
+  return context;
 }
 
 export const Dialog = ({ open, onOpenChange, children }: { open: boolean, onOpenChange: (o: boolean) => void, children: React.ReactNode }) => {
-    return (
-        <ModalContext.Provider value={{ open, setOpen: onOpenChange }}>
-            {open && (
-                <div className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" onClick={() => onOpenChange(false)} />
-            )}
-            {children}
-        </ModalContext.Provider>
-    );
+  return (
+    <ModalContext.Provider value={{ open, setOpen: onOpenChange }}>
+      {open && (
+        <div className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" onClick={() => onOpenChange(false)} />
+      )}
+      {children}
+    </ModalContext.Provider>
+  );
 };
 
 export const DialogTrigger = ({ asChild, children }: { asChild?: boolean, children: React.ReactNode }) => {
-    const { setOpen } = useModal();
-    // Simplified: assuming asChild pattern handling or just wrapping
-    if (asChild && React.isValidElement(children)) {
-        return React.cloneElement(children as React.ReactElement, {
-             onClick: (e: React.MouseEvent) => {
-                 (children as React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>).props.onClick?.(e);
-                 setOpen(true);
-             }
-        } as any);
-    }
-    return <button onClick={() => setOpen(true)}>{children}</button>;
+  const { setOpen } = useModal();
+  // Simplified: assuming asChild pattern handling or just wrapping
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement, {
+      onClick: (e: React.MouseEvent) => {
+        (children as React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>).props.onClick?.(e);
+        setOpen(true);
+      }
+    } as any);
+  }
+  return <button onClick={() => setOpen(true)}>{children}</button>;
 };
 
 export const DialogContent = ({ children, className }: { children: React.ReactNode, className?: string }) => {
-    const { open, setOpen } = useModal();
-    if (!open) return null;
+  const { open, setOpen } = useModal();
+  if (!open) return null;
 
-    return (
-        <div className={cn(
-            "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-dark-800 bg-dark-900 p-6 shadow-lg duration-200 sm:rounded-xl text-white",
-            className
-        )} onClick={(e) => e.stopPropagation()}>
-            {children}
-            <button 
-                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-                onClick={() => setOpen(false)}
-            >
-                <IconX className="h-4 w-4 text-gray-400" />
-                <span className="sr-only">Close</span>
-            </button>
-        </div>
-    );
+  return (
+    <div className={cn(
+      "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-surface-900 p-6 shadow-lg duration-200 sm:rounded-xl text-fg",
+      className
+    )} onClick={(e) => e.stopPropagation()}>
+      {children}
+      <button
+        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+        onClick={() => setOpen(false)}
+      >
+        <IconX className="h-4 w-4 text-fg-muted" />
+        <span className="sr-only">Close</span>
+      </button>
+    </div>
+  );
 };
 
 export const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
@@ -110,7 +110,7 @@ export const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-gray-500 dark:text-gray-400", className)}
+    className={cn("text-sm text-fg-subtle dark:text-fg-muted", className)}
     {...props}
   />
 ))

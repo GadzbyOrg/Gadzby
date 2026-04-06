@@ -1,7 +1,7 @@
 "use client";
 
-import { IconTrash,IconX } from "@tabler/icons-react";
-import { useCallback,useEffect,useState } from "react";
+import { IconTrash, IconX } from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
 
 import { getFamsTransactionsAction } from "@/features/famss/admin-actions";
 import { cancelTransactionAction } from "@/features/transactions/actions";
@@ -20,7 +20,7 @@ interface Transaction {
 }
 
 interface FamsTransactionsModalProps {
-     
+
     fams: any;
     onClose: () => void;
 }
@@ -34,12 +34,12 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
     const loadTransactions = useCallback(async () => {
         // Removed setLoading(true) here to prevent "setState synchronously in effect" warning.
         // Rely on initial state for mount.
-		const res = await getFamsTransactionsAction({ famsId: fams.id });
-		if (res.error !== undefined) {
-			setError(res.error);
-		} else {
-			setTransactions(res.transactions as Transaction[]);
-		}
+        const res = await getFamsTransactionsAction({ famsId: fams.id });
+        if (res.error !== undefined) {
+            setError(res.error);
+        } else {
+            setTransactions(res.transactions as Transaction[]);
+        }
         setLoading(false);
     }, [fams.id]);
 
@@ -56,14 +56,14 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
 
         setSubmitting(transactionId);
         const res = await cancelTransactionAction({ transactionId });
-        
+
         if (res.error) {
             setError(res.error);
             setTimeout(() => setError(null), 3000);
         } else {
-             // For re-fetching, we can manually set loading if we want, or just let loadTransactions run.
-             // Here we just call it. It won't set loading true but will update data.
-             setLoading(true); // Optional: show loading while refreshing
+            // For re-fetching, we can manually set loading if we want, or just let loadTransactions run.
+            // Here we just call it. It won't set loading true but will update data.
+            setLoading(true); // Optional: show loading while refreshing
             await loadTransactions();
         }
         setSubmitting(null);
@@ -71,15 +71,15 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-dark-950 border border-dark-800 rounded-2xl w-full max-w-2xl shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
-                <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800 shrink-0">
+            <div className="bg-surface-950 border border-border rounded-2xl w-full max-w-2xl shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+                <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-surface-950/95 backdrop-blur border-b border-border shrink-0">
                     <div>
-                        <h2 className="text-xl font-bold text-white">Historique</h2>
-                        <p className="text-sm text-gray-400">{fams.name}</p>
+                        <h2 className="text-xl font-bold text-fg">Historique</h2>
+                        <p className="text-sm text-fg-muted">{fams.name}</p>
                     </div>
-                    <button 
+                    <button
                         onClick={onClose}
-                        className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+                        className="p-2 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
                     >
                         <IconX className="w-5 h-5" />
                     </button>
@@ -93,12 +93,12 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
                     )}
 
                     {loading ? (
-                        <div className="text-center py-12 text-gray-500">Chargement...</div>
+                        <div className="text-center py-12 text-fg-subtle">Chargement...</div>
                     ) : transactions.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500">Aucune transaction</div>
+                        <div className="text-center py-12 text-fg-subtle">Aucune transaction</div>
                     ) : (
                         <table className="w-full text-left text-sm">
-                            <thead className="sticky top-0 bg-dark-950 text-gray-400 border-b border-dark-800">
+                            <thead className="sticky top-0 bg-surface-950 text-fg-muted border-b border-border">
                                 <tr>
                                     <th className="py-3 px-6 font-medium">Date</th>
                                     <th className="py-3 px-6 font-medium">Type</th>
@@ -107,41 +107,41 @@ export function FamsTransactionsModal({ fams, onClose }: FamsTransactionsModalPr
                                     <th className="py-3 px-6 font-medium text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-dark-800">
+                            <tbody className="divide-y divide-border">
                                 {transactions.map((tx) => (
-                                    <tr key={tx.id} className="hover:bg-dark-900/50 transition-colors">
-                                        <td className="py-3 px-6 text-gray-400 whitespace-nowrap">
-                                            {new Date(tx.createdAt).toLocaleDateString()} <span className="text-xs text-gray-600">{new Date(tx.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    <tr key={tx.id} className="hover:bg-surface-900/50 transition-colors">
+                                        <td className="py-3 px-6 text-fg-muted whitespace-nowrap">
+                                            {new Date(tx.createdAt).toLocaleDateString()} <span className="text-xs text-fg-subtle">{new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                         </td>
                                         <td className="py-3 px-6">
-                                            <div className="text-white font-medium">{tx.type}</div>
-                                            <div className="text-xs text-gray-500 truncate max-w-[150px]">{tx.description}</div>
+                                            <div className="text-fg font-medium">{tx.type}</div>
+                                            <div className="text-xs text-fg-subtle truncate max-w-[150px]">{tx.description}</div>
                                         </td>
-                                        <td className="py-3 px-6 text-gray-300">
+                                        <td className="py-3 px-6 text-fg">
                                             {tx.issuer ? `${tx.issuer.prenom} ${tx.issuer.nom}` : 'Système'}
                                         </td>
-                                        <td className={`py-3 px-6 text-right font-mono font-medium ${tx.amount > 0 ? 'text-green-400' : 'text-white'}`}>
+                                        <td className={`py-3 px-6 text-right font-mono font-medium ${tx.amount > 0 ? 'text-green-400' : 'text-fg'}`}>
                                             {tx.amount > 0 ? '+' : ''}{(tx.amount / 100).toFixed(2)} €
                                         </td>
                                         <td className="py-3 px-6 text-right">
-                                             {/* Only show cancel for relevant transactions (e.g. not already cancelled) */}
-                                             {tx.status !== "CANCELLED" && (
+                                            {/* Only show cancel for relevant transactions (e.g. not already cancelled) */}
+                                            {tx.status !== "CANCELLED" && (
                                                 <button
                                                     onClick={() => handleCancel(tx.id)}
                                                     disabled={submitting === tx.id}
                                                     className="text-red-400 hover:text-red-300 hover:bg-red-900/20 p-1.5 rounded disabled:opacity-50 transition-colors"
                                                     title="Annuler"
                                                 >
-                                                     {submitting === tx.id ? (
+                                                    {submitting === tx.id ? (
                                                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                                                     ) : (
                                                         <IconTrash className="w-4 h-4" />
                                                     )}
                                                 </button>
-                                             )}
-                                             {tx.status === "CANCELLED" && (
-                                                 <span className="text-xs text-gray-500 italic">Annulé</span>
-                                             )}
+                                            )}
+                                            {tx.status === "CANCELLED" && (
+                                                <span className="text-xs text-fg-subtle italic">Annulé</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

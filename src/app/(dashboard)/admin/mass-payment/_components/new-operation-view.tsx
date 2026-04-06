@@ -2,7 +2,7 @@
 
 import { IconAlertCircle, IconAlertTriangle, IconLoader2, IconTrash, IconUserPlus } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { PromssSelector } from "@/components/promss-selector";
@@ -10,36 +10,36 @@ import { useToast } from "@/components/ui/use-toast";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserSearch } from "@/components/user-search";
 import {
-	getPromssListAction,
-	getUsersByPromssAction,
-	processMassChargeAction,
-	resolveUsersFromExcelAction,
+    getPromssListAction,
+    getUsersByPromssAction,
+    processMassChargeAction,
+    resolveUsersFromExcelAction,
     resolveUsersFromRowsAction,
     searchUsersForPaymentAction
 } from "@/features/transactions/mass-payment-actions";
 
 export function NewOperationView() {
-	const { toast } = useToast();
-	const router = useRouter();
+    const { toast } = useToast();
+    const router = useRouter();
 
-	const [promssList, setPromssList] = useState<string[]>([]);
-	const [selectedPromss, setSelectedPromss] = useState<string>("");
-	
+    const [promssList, setPromssList] = useState<string[]>([]);
+    const [selectedPromss, setSelectedPromss] = useState<string>("");
+
     // Users Map to avoid duplicates easily. Key = ID
     const [selectedUsers, setSelectedUsers] = useState<Map<string, any>>(new Map());
-    
+
     // Form
     const [amount, setAmount] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-	useEffect(() => {
-		getPromssListAction({}).then((res) => {
-			if (res?.promss) setPromssList(res.promss);
-		});
-	}, []);
+    useEffect(() => {
+        getPromssListAction({}).then((res) => {
+            if (res?.promss) setPromssList(res.promss);
+        });
+    }, []);
 
-	const handleAddPromss = async () => {
+    const handleAddPromss = async () => {
         if (!selectedPromss) return;
         const res = await getUsersByPromssAction({ promss: selectedPromss });
         if (res?.users) {
@@ -71,22 +71,22 @@ export function NewOperationView() {
         }
 
         if (res?.users) {
-             const newMap = new Map(selectedUsers);
-             res.users.forEach((u: any) => newMap.set(u.id, u));
-             setSelectedUsers(newMap);
-             
-             return { 
-                 success: `${res.users.length} trouvés`,
-                 importedCount: res.users.length,
-                 skippedCount: res.notFound?.length,
-                 skipped: res.notFound?.map((n: any) => `Non trouvé: ${n}`)
-             };
+            const newMap = new Map(selectedUsers);
+            res.users.forEach((u: any) => newMap.set(u.id, u));
+            setSelectedUsers(newMap);
+
+            return {
+                success: `${res.users.length} trouvés`,
+                importedCount: res.users.length,
+                skippedCount: res.notFound?.length,
+                skipped: res.notFound?.map((n: any) => `Non trouvé: ${n}`)
+            };
         }
         return { error: res?.error || "Erreur" };
     };
 
     const handleResetSelection = () => {
-         setSelectedUsers(new Map());
+        setSelectedUsers(new Map());
     };
 
     const handleSubmit = async () => {
@@ -119,70 +119,70 @@ export function NewOperationView() {
                 setDescription("");
                 router.refresh();
             } else {
-                 toast({ variant: "destructive", title: "Erreur", description: res?.error || "Erreur" });
+                toast({ variant: "destructive", title: "Erreur", description: res?.error || "Erreur" });
             }
         } catch (e) {
             console.error(e);
-             toast({ variant: "destructive", title: "Erreur", description: "Erreur inconnue" });
+            toast({ variant: "destructive", title: "Erreur", description: "Erreur inconnue" });
         } finally {
             setIsSubmitting(false);
         }
     };
 
-	return (
-		<div className="space-y-6">
-			{/* Selection Toolbar */}
-			<div className="bg-dark-900 border border-dark-800 rounded-xl p-4 sm:p-6">
-				<h2 className="text-lg font-bold text-white mb-4">
-					1. Sélectionner des utilisateurs
-				</h2>
-				<div className="flex flex-col lg:flex-row gap-6 lg:gap-4 lg:items-end">
+    return (
+        <div className="space-y-6">
+            {/* Selection Toolbar */}
+            <div className="bg-surface-900 border border-border rounded-xl p-4 sm:p-6">
+                <h2 className="text-lg font-bold text-fg mb-4">
+                    1. Sélectionner des utilisateurs
+                </h2>
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-4 lg:items-end">
                     {/* Promss Selector */}
-					<div className="flex flex-col gap-2 w-full lg:w-auto lg:min-w-[200px]">
-						<label className="text-sm font-medium text-gray-400">
-							Ajouter une promotion
-						</label>
-						<div className="flex gap-2">
-							<PromssSelector
-								promssList={promssList}
-								selectedPromss={selectedPromss}
-								onChange={setSelectedPromss}
-								placeholder="Choisir..."
-							/>
-							<button
+                    <div className="flex flex-col gap-2 w-full lg:w-auto lg:min-w-[200px]">
+                        <label className="text-sm font-medium text-fg-muted">
+                            Ajouter une promotion
+                        </label>
+                        <div className="flex gap-2">
+                            <PromssSelector
+                                promssList={promssList}
+                                selectedPromss={selectedPromss}
+                                onChange={setSelectedPromss}
+                                placeholder="Choisir..."
+                            />
+                            <button
                                 onClick={handleAddPromss}
                                 disabled={!selectedPromss}
-                                className="px-3 py-2 bg-dark-800 hover:bg-dark-700 text-white rounded-lg transition-colors text-sm disabled:opacity-50 shrink-0"
+                                className="px-3 py-2 bg-elevated hover:bg-elevated text-fg rounded-lg transition-colors text-sm disabled:opacity-50 shrink-0"
                             >
                                 <IconUserPlus size={18} />
                             </button>
-						</div>
-					</div>
+                        </div>
+                    </div>
 
-                    <div className="hidden lg:block h-10 w-px bg-dark-800 mx-2"></div>
+                    <div className="hidden lg:block h-10 w-px bg-elevated mx-2"></div>
 
                     {/* Manual Search */}
                     <div className="flex flex-col gap-2 w-full lg:w-auto">
-                        <label className="text-sm font-medium text-gray-400">
-							Recherche individuelle
-						</label>
-                        <UserSearch 
-                            onSelect={handleManualAdd} 
-                            placeholder="Chercher un Gadz..." 
+                        <label className="text-sm font-medium text-fg-muted">
+                            Recherche individuelle
+                        </label>
+                        <UserSearch
+                            onSelect={handleManualAdd}
+                            placeholder="Chercher un Gadz..."
                             excludeIds={Array.from(selectedUsers.keys())}
                             searchAction={async (q) => await searchUsersForPaymentAction({ query: q })}
                             className="w-full lg:w-auto lg:min-w-[250px]"
                         />
                     </div>
 
-                     <div className="hidden lg:block h-10 w-px bg-dark-800 mx-2"></div>
+                    <div className="hidden lg:block h-10 w-px bg-elevated mx-2"></div>
 
                     {/* Excel */}
                     <div className="flex flex-col gap-2 w-full lg:w-auto">
-                        <label className="text-sm font-medium text-gray-400">
-							Import Excel
-						</label>
-                        <ExcelImportModal 
+                        <label className="text-sm font-medium text-fg-muted">
+                            Import Excel
+                        </label>
+                        <ExcelImportModal
                             action={handleExcelImport}
                             triggerLabel="Importer liste"
                             modalTitle="Conversion Excel -> Utilisateurs"
@@ -190,39 +190,39 @@ export function NewOperationView() {
                             expectedFormat="Username (Num'ssProm'ss) OU Email"
                         />
                     </div>
-				</div>
-                
-                <div className="mt-4 pt-4 border-t border-dark-800">
-                    <p className="text-sm text-gray-400">
-                        <strong className="text-primary-400">{selectedUsers.size}</strong> utilisateurs sélectionnés
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-sm text-fg-muted">
+                        <strong className="text-accent-400">{selectedUsers.size}</strong> utilisateurs sélectionnés
                     </p>
                 </div>
-			</div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* List Preview */}
-                <div className="lg:col-span-2 bg-dark-900 border border-dark-800 rounded-xl overflow-hidden flex flex-col h-[400px] sm:h-[500px]">
-                    <div className="p-4 border-b border-dark-800 bg-dark-800/50 flex justify-between items-center">
-                         <h3 className="font-semibold text-white">Liste des utilisateurs</h3>
-                         {selectedUsers.size > 0 && (
-                            <button 
+                <div className="lg:col-span-2 bg-surface-900 border border-border rounded-xl overflow-hidden flex flex-col h-[400px] sm:h-[500px]">
+                    <div className="p-4 border-b border-border bg-elevated/50 flex justify-between items-center">
+                        <h3 className="font-semibold text-fg">Liste des utilisateurs</h3>
+                        {selectedUsers.size > 0 && (
+                            <button
                                 onClick={handleResetSelection}
                                 className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 hover:underlinetransition-colors"
                             >
                                 <IconTrash size={14} />
                                 Tout supprimer
                             </button>
-                         )}
+                        )}
                     </div>
                     <div className="overflow-y-auto flex-1 p-2">
                         {selectedUsers.size === 0 ? (
-                            <div className="h-full flex items-center justify-center text-gray-500 text-sm italic">
+                            <div className="h-full flex items-center justify-center text-fg-subtle text-sm italic">
                                 Aucun utilisateur sélectionné
                             </div>
                         ) : (
                             <div className="space-y-1">
                                 {Array.from(selectedUsers.values()).map(user => (
-                                    <div key={user.id} className="flex justify-between items-center p-2 hover:bg-dark-800 rounded-lg group">
+                                    <div key={user.id} className="flex justify-between items-center p-2 hover:bg-elevated rounded-lg group">
                                         <div className="flex items-center gap-3">
                                             <UserAvatar
                                                 user={{
@@ -234,37 +234,37 @@ export function NewOperationView() {
                                                 className="w-8 h-8 text-xs shrink-0"
                                             />
                                             <div className="min-w-0">
-                                                 <div className="text-sm font-medium text-gray-200 truncate max-w-[120px] sm:max-w-none">
+                                                <div className="text-sm font-medium text-fg truncate max-w-[120px] sm:max-w-none">
                                                     {user.prenom} {user.nom}
                                                 </div>
-                                                <div className="text-xs text-gray-500 truncate max-w-[120px] sm:max-w-none">
+                                                <div className="text-xs text-fg-subtle truncate max-w-[120px] sm:max-w-none">
                                                     {user.bucque ? `${user.bucque} ` : ''}
                                                     <span className="opacity-70">({user.username})</span>
                                                 </div>
                                             </div>
                                         </div>
-                                         <div className="flex items-center gap-4">
-                                    <div className="text-right shrink-0">
-                                                <div className="text-xs text-gray-500">Solde</div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-right shrink-0">
+                                                <div className="text-xs text-fg-subtle">Solde</div>
                                                 <div className="flex flex-col items-end">
-                                                    <span className={`text-sm font-mono ${(user.balance || 0) < 0 ? 'text-red-400': 'text-green-400'}`}>
-                                                        {((user.balance || 0)/100).toFixed(2)} €
+                                                    <span className={`text-sm font-mono ${(user.balance || 0) < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                                        {((user.balance || 0) / 100).toFixed(2)} €
                                                     </span>
                                                     {amount && Number(amount) > 0 && (
-                                                        <span className={`text-xs font-mono flex items-center gap-1 ${((user.balance || 0) - Math.round(Number(amount)*100)) < 0 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                                                        <span className={`text-xs font-mono flex items-center gap-1 ${((user.balance || 0) - Math.round(Number(amount) * 100)) < 0 ? 'text-red-500 font-bold' : 'text-fg-subtle'}`}>
                                                             <span>→</span>
-                                                            {(((user.balance || 0) - Math.round(Number(amount)*100))/100).toFixed(2)} €
+                                                            {(((user.balance || 0) - Math.round(Number(amount) * 100)) / 100).toFixed(2)} €
                                                         </span>
                                                     )}
                                                 </div>
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={() => handleRemoveUser(user.id)}
-                                                className="text-gray-600 hover:text-red-400 p-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all"
+                                                className="text-fg-subtle hover:text-red-400 p-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all"
                                             >
                                                 <IconTrash size={16} />
                                             </button>
-                                         </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -273,50 +273,50 @@ export function NewOperationView() {
                 </div>
 
                 {/* Validation Form */}
-                <div className="bg-dark-900 border border-dark-800 rounded-xl p-4 sm:p-6 h-fit sticky top-6">
-                    <h2 className="text-lg font-bold text-white mb-4">
+                <div className="bg-surface-900 border border-border rounded-xl p-4 sm:p-6 h-fit sticky top-6">
+                    <h2 className="text-lg font-bold text-fg mb-4">
                         2. Valider le prélèvement
                     </h2>
-                    
+
                     <div className="space-y-4">
-                         <div className="p-3 bg-blue-900/20 border border-blue-900/50 rounded-lg text-sm text-blue-200 flex gap-2">
+                        <div className="p-3 bg-blue-900/20 border border-blue-900/50 rounded-lg text-sm text-blue-200 flex gap-2">
                             <IconAlertCircle className="shrink-0 w-5 h-5" />
                             <p>Cette opération débitera le montant indiqué à TOUS les utilisateurs sélectionnés.</p>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Montant à prélever (€)</label>
-                            <input 
-                                type="number" 
-                                min="0.01" 
-                                step="0.01" 
+                            <label className="block text-sm font-medium text-fg-muted mb-1">Montant à prélever (€)</label>
+                            <input
+                                type="number"
+                                min="0.01"
+                                step="0.01"
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
-                                className="w-full bg-dark-950 border border-dark-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary-500 font-mono text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2 text-fg focus:outline-none focus:border-accent-500 font-mono text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 placeholder="0.00"
                             />
                         </div>
 
                         <div>
-                             <label className="block text-sm font-medium text-gray-400 mb-1">Motif / Description</label>
-                             <input 
+                            <label className="block text-sm font-medium text-fg-muted mb-1">Motif / Description</label>
+                            <input
                                 type="text"
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
-                                className="w-full bg-dark-950 border border-dark-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary-500"
+                                className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2 text-fg focus:outline-none focus:border-accent-500"
                                 placeholder="Ex: Cotisation 2025..."
                             />
                         </div>
 
-                         <div className="pt-4 border-t border-dark-800">
+                        <div className="pt-4 border-t border-border">
                             <div className="flex justify-between text-sm mb-4">
-                                <span className="text-gray-400">Utilisateurs</span>
-                                <span className="text-white font-medium">{selectedUsers.size}</span>
+                                <span className="text-fg-muted">Utilisateurs</span>
+                                <span className="text-fg font-medium">{selectedUsers.size}</span>
                             </div>
                             <div className="flex justify-between text-sm mb-4">
-                                <span className="text-gray-400">Total estimé</span>
-                                <span className="text-primary-400 font-bold font-mono">
-                                    {(selectedUsers.size * (Number(amount)||0)).toFixed(2)} €
+                                <span className="text-fg-muted">Total estimé</span>
+                                <span className="text-accent-400 font-bold font-mono">
+                                    {(selectedUsers.size * (Number(amount) || 0)).toFixed(2)} €
                                 </span>
                             </div>
 
@@ -341,7 +341,7 @@ export function NewOperationView() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || selectedUsers.size === 0 || !amount}
-                                className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                                className="w-full py-3 bg-accent-600 hover:bg-accent-700 text-fg rounded-xl font-bold transition-all shadow-lg shadow-accent-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
                             >
                                 {isSubmitting && <IconLoader2 className="animate-spin" size={20} />}
                                 Confirmer l&apos;opération
@@ -350,6 +350,6 @@ export function NewOperationView() {
                     </div>
                 </div>
             </div>
-		</div>
-	);
+        </div>
+    );
 }

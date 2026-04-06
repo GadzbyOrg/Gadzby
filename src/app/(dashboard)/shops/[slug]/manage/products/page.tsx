@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { ExcelImportModal } from "@/components/excel-import-modal";
-import { checkTeamMemberAccess,getShopBySlug } from "@/features/shops/actions";
+import { checkTeamMemberAccess, getShopBySlug } from "@/features/shops/actions";
 import { importProducts } from "@/features/shops/import";
-import { getShopCategories,getShopProducts } from "@/features/shops/products";
+import { getShopCategories, getShopProducts } from "@/features/shops/products";
 
 import { ProductFilters } from "./_components/ProductFilters";
 import { SortableProductList } from "./_components/SortableProductList";
@@ -47,12 +47,12 @@ export default async function ShopProductsPage({
 	const [shopResult, productsResult, categoriesResult] = await Promise.all([
 		getShopBySlug({ slug }),
 		getShopProducts(slug, {
-            categoryId,
-            search,
-            sortBy,
-            sortOrder
-        }),
-        getShopCategories(slug)
+			categoryId,
+			search,
+			sortBy,
+			sortOrder
+		}),
+		getShopCategories(slug)
 	]);
 
 	if ("error" in shopResult || !shopResult.shop) {
@@ -65,31 +65,31 @@ export default async function ShopProductsPage({
 
 	const { shop } = shopResult;
 	const { products } = productsResult || { products: [] };
-    const { categories } = categoriesResult || { categories: [] };
-    
-    // Disable reordering if any filter is active
-    const isFiltered = !!categoryId || !!search || !!sortBy;
+	const { categories } = categoriesResult || { categories: [] };
+
+	// Disable reordering if any filter is active
+	const isFiltered = !!categoryId || !!search || !!sortBy;
 
 
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-			<div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+			<div className="flex items-center gap-4 text-sm text-fg-subtle mb-4">
 				<Link
 					href={`/shops/${slug}/manage`}
-					className="hover:text-white transition-colors"
+					className="hover:text-fg transition-colors"
 				>
 					← Retour à la gestion
 				</Link>
 				<span>/</span>
-				<span className="text-white font-medium">Produits</span>
+				<span className="text-fg font-medium">Produits</span>
 			</div>
 
 			<header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold text-white tracking-tight mb-2">
+					<h1 className="text-3xl font-bold text-fg tracking-tight mb-2">
 						Produits du Shop
 					</h1>
-					<p className="text-gray-400">
+					<p className="text-fg-muted">
 						Gérez l&apos;inventaire de {shop.name} ({products.length} produits)
 					</p>
 				</div>
@@ -104,15 +104,15 @@ export default async function ShopProductsPage({
 					/>
 					<Link
 						href={`/shops/${slug}/manage/products/new`}
-						className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors font-medium text-center whitespace-nowrap"
+						className="px-4 py-2 bg-accent-600 hover:bg-accent-500 text-fg rounded-lg transition-colors font-medium text-center whitespace-nowrap"
 					>
 						+ Nouveau Produit
 					</Link>
 				</div>
 			</header>
 
-			<div className="bg-dark-900 border border-dark-800 rounded-2xl p-4">
-                <ProductFilters />
+			<div className="bg-surface-900 border border-border rounded-2xl p-4">
+				<ProductFilters />
 				<SortableProductList products={products} categories={categories} shopSlug={slug} disableReorder={isFiltered} />
 			</div>
 		</div>

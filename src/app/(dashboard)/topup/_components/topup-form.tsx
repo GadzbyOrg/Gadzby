@@ -77,7 +77,7 @@ export function TopUpForm({
 
 	if (methods.length === 0) {
 		return (
-			<div className="text-center text-gray-400">
+			<div className="text-center text-fg-muted">
 				Aucun moyen de paiement disponible pour le moment.
 			</div>
 		);
@@ -89,7 +89,7 @@ export function TopUpForm({
 			<div className="space-y-8">
 				{/* Amount Selection */}
 				<div className="space-y-4">
-					<h2 className="text-lg font-semibold text-white">
+					<h2 className="text-lg font-semibold text-fg">
 						1. Choisissez un montant
 					</h2>
 					<div className="grid grid-cols-4 gap-3">
@@ -101,8 +101,8 @@ export function TopUpForm({
 								className={cn(
 									"flex h-12 items-center justify-center rounded-xl border font-medium transition-all",
 									amount === val
-										? "border-primary-600 bg-primary-600/10 text-primary-500 shadow-sm shadow-primary-900/20"
-										: "border-dark-800 bg-dark-900 text-gray-400 hover:bg-dark-800 hover:text-gray-200"
+										? "border-accent-600 bg-accent-600/10 text-accent-500 shadow-sm shadow-accent-900/20"
+										: "border-border bg-surface-900 text-fg-muted hover:bg-elevated hover:text-fg"
 								)}
 							>
 								{val} €
@@ -114,12 +114,12 @@ export function TopUpForm({
 							type="number"
 							value={amount}
 							onChange={(e) => setAmount(Number(e.target.value))}
-							className="w-full rounded-xl border border-dark-800 bg-dark-950 px-4 py-3 text-lg font-bold text-white focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+							className="w-full rounded-xl border border-border bg-surface-950 px-4 py-3 text-lg font-bold text-fg focus:border-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 							placeholder="Montant personnalisé"
 							min="0.01"
 							step="0.01"
 						/>
-						<span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+						<span className="absolute right-4 top-1/2 -translate-y-1/2 text-fg-subtle">
 							EUR
 						</span>
 					</div>
@@ -127,7 +127,7 @@ export function TopUpForm({
 
 				{/* Provider Selection */}
 				<div className="space-y-4">
-					<h2 className="text-lg font-semibold text-white">
+					<h2 className="text-lg font-semibold text-fg">
 						2. Moyen de paiement
 					</h2>
 					<div className="space-y-3">
@@ -138,8 +138,8 @@ export function TopUpForm({
 								className={cn(
 									"relative flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all",
 									selectedMethod === method.slug
-										? "border-primary-600 bg-primary-600/5 ring-1 ring-primary-600/50"
-										: "border-dark-800 bg-dark-900 hover:border-dark-700"
+										? "border-accent-600 bg-accent-600/5 ring-1 ring-accent-600/50"
+										: "border-border bg-surface-900 hover:border-border"
 								)}
 							>
 								<div className="flex items-center gap-4">
@@ -147,24 +147,24 @@ export function TopUpForm({
 										className={cn(
 											"flex h-10 w-10 items-center justify-center rounded-full",
 											selectedMethod === method.slug
-												? "bg-primary-600/20 text-primary-500"
-												: "bg-dark-800 text-gray-500"
+												? "bg-accent-600/20 text-accent-500"
+												: "bg-elevated text-fg-subtle"
 										)}
 									>
 										<IconCreditCard size={20} />
 									</div>
 									<div>
-										<h3 className="font-semibold text-gray-200">
+										<h3 className="font-semibold text-fg">
 											{method.name}
 										</h3>
-										<p className="text-xs text-gray-500">
+										<p className="text-xs text-fg-subtle">
 											Frais: {method.fees.fixed / 100}€ +{" "}
 											{method.fees.percentage}%
 										</p>
 									</div>
 								</div>
 								{selectedMethod === method.slug && (
-									<div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white">
+									<div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-600 text-fg">
 										<IconCheck size={14} />
 									</div>
 								)}
@@ -176,17 +176,17 @@ export function TopUpForm({
 				{/* Phone Number Input (Only for Lydia if missing) */}
 				{showPhoneInput && (
 					<div className="space-y-4 animate-in fade-in slide-in-from-top-4">
-						<h2 className="text-lg font-semibold text-white">
+						<h2 className="text-lg font-semibold text-fg">
 							3. Numéro de téléphone
 						</h2>
-						<p className="text-sm text-gray-400">
+						<p className="text-sm text-fg-muted">
 							Requis pour le paiement Lydia. Sera sauvegardé pour la prochaine fois.
 						</p>
 						<input
 							type="tel"
 							value={phoneNumber}
 							onChange={(e) => setPhoneNumber(e.target.value)}
-							className="w-full rounded-xl border border-dark-800 bg-dark-950 px-4 py-3 text-lg text-white focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+							className="w-full rounded-xl border border-border bg-surface-950 px-4 py-3 text-lg text-fg focus:border-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-600"
 							placeholder="06 12 34 56 78"
 						/>
 					</div>
@@ -195,32 +195,32 @@ export function TopUpForm({
 
 			{/* RIGHT: Summary Card */}
 			<div className="lg:pl-8">
-				<div className="sticky top-8 rounded-2xl border border-dark-800 bg-dark-900/50 p-6 backdrop-blur-sm">
-					<h2 className="mb-6 text-xl font-bold text-white">Récapitulatif</h2>
+				<div className="sticky top-8 rounded-2xl border border-border bg-surface-900/50 p-6 backdrop-blur-sm">
+					<h2 className="mb-6 text-xl font-bold text-fg">Récapitulatif</h2>
 
 					<div className="space-y-4">
-						<div className="flex justify-between text-gray-400">
+						<div className="flex justify-between text-fg-muted">
 							<span>Montant crédité</span>
-							<span className="font-medium text-white">
+							<span className="font-medium text-fg">
 								{amount.toFixed(2)} €
 							</span>
 						</div>
-						<div className="flex justify-between text-gray-400">
+						<div className="flex justify-between text-fg-muted">
 							<span>Frais de transaction</span>
 							<span>{fees.toFixed(2)} €</span>
 						</div>
 
-						<div className="my-4 border-t border-dark-800" />
+						<div className="my-4 border-t border-border" />
 
 						<div className="flex items-end justify-between">
-							<span className="text-lg font-semibold text-white">
+							<span className="text-lg font-semibold text-fg">
 								Total à payer
 							</span>
-							<span className="text-3xl font-bold text-primary-500">
+							<span className="text-3xl font-bold text-accent-500">
 								{total.toFixed(2)} €
 							</span>
 						</div>
-						<p className="text-right text-xs text-gray-500 mt-1">
+						<p className="text-right text-xs text-fg-subtle mt-1">
 							Le montant exact peut varier selon le fournisseur.
 						</p>
 					</div>
@@ -233,7 +233,7 @@ export function TopUpForm({
 							!selectedMethod ||
 							(showPhoneInput && !phoneNumber)
 						}
-						className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 py-4 text-base font-bold text-white shadow-lg shadow-primary-900/40 transition-all hover:bg-primary-700 hover:shadow-primary-900/60 disabled:cursor-not-allowed disabled:opacity-50"
+						className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-accent-600 py-4 text-base font-bold text-fg shadow-lg shadow-accent-900/40 transition-all hover:bg-accent-700 hover:shadow-accent-900/60 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{isLoading && <IconLoader2 className="animate-spin" />}
 						{isLoading ? "Redirection..." : "Payer maintenant"}

@@ -1,6 +1,6 @@
 "use client";
 
-import { IconCreditCardPay,IconHistory } from "@tabler/icons-react";
+import { IconCreditCardPay, IconHistory } from "@tabler/icons-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -14,10 +14,10 @@ export default function MassPaymentPage() {
 	return (
 		<div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
 			<div className="flex flex-col gap-2 mb-6 sm:mb-8">
-				<h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+				<h1 className="text-2xl sm:text-3xl font-extrabold text-fg tracking-tight">
 					Prélèvements de Masse
 				</h1>
-				<p className="text-gray-400">
+				<p className="text-fg-muted">
 					Débite un montant à une liste d&apos;utilisateurs (Cotisations,
 					Événements...)
 				</p>
@@ -25,14 +25,14 @@ export default function MassPaymentPage() {
 
 			<div className="space-y-6">
 				{/* Custom Tabs List */}
-				<div className="bg-dark-900 border border-dark-800 p-1 rounded-xl inline-flex">
+				<div className="bg-surface-900 border border-border p-1 rounded-xl inline-flex">
 					<button
 						onClick={() => setActiveTab("new")}
 						className={cn(
 							"px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors",
 							activeTab === "new"
-								? "bg-dark-800 text-white shadow-sm"
-								: "text-gray-400 hover:text-gray-200 hover:bg-dark-800/50"
+								? "bg-elevated text-fg shadow-sm"
+								: "text-fg-muted hover:text-fg hover:bg-elevated/50"
 						)}
 					>
 						<IconCreditCardPay size={18} />
@@ -43,8 +43,8 @@ export default function MassPaymentPage() {
 						className={cn(
 							"px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors",
 							activeTab === "history"
-								? "bg-dark-800 text-white shadow-sm"
-								: "text-gray-400 hover:text-gray-200 hover:bg-dark-800/50"
+								? "bg-elevated text-fg shadow-sm"
+								: "text-fg-muted hover:text-fg hover:bg-elevated/50"
 						)}
 					>
 						<IconHistory size={18} />

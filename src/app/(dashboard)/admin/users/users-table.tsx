@@ -2,21 +2,21 @@
 
 import {
 	IconArrowsSort,
-    IconChevronLeft,
-    IconChevronRight,
+	IconChevronLeft,
+	IconChevronRight,
 	IconHistory,
-    IconId,
-    IconMail,
+	IconId,
+	IconMail,
 	IconPencil,
 	IconPlus,
 	IconPower,
-    IconSchool,
+	IconSchool,
 	IconSearch,
 	IconSortAscending,
 	IconSortDescending,
 	IconX,
 } from "@tabler/icons-react";
-import { usePathname,useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useTransition } from "react";
 
@@ -31,200 +31,198 @@ import { UserEditForm } from "./user-edit-form";
 
 // Define strict types for User and Role to avoid 'any'
 interface Role {
-    id: string;
-    name: string;
+	id: string;
+	name: string;
 }
 
 interface User {
-    id: string;
-    nom: string;
-    prenom: string;
-    email: string;
-    username: string;
-    bucque: string | null;
-    promss: string | null;
-    tabagnss: string | null;
-    phone: string | null;
-    nums: string | null;
-    roleId: string | null;
-    balance: number;
-    isAsleep: boolean | null;
-    isDeleted: boolean | null;
-    role: Role | null;
-    appRole?: string;
-    // Add other fields as necessary based on usage
-    [key: string]: unknown;
+	id: string;
+	nom: string;
+	prenom: string;
+	email: string;
+	username: string;
+	bucque: string | null;
+	promss: string | null;
+	tabagnss: string | null;
+	phone: string | null;
+	nums: string | null;
+	roleId: string | null;
+	balance: number;
+	isAsleep: boolean | null;
+	isDeleted: boolean | null;
+	role: Role | null;
+	appRole?: string;
+	// Add other fields as necessary based on usage
+	[key: string]: unknown;
 }
 
 interface UsersTableProps {
 	users: User[];
 	roles: Role[];
-    totalPages?: number;
-    currentPage?: number;
-    promssList?: string[];
+	totalPages?: number;
+	currentPage?: number;
+	promssList?: string[];
 }
 
-function TablePagination({ 
-    total, 
-    current, 
-    onChange 
-}: { 
-    total: number; 
-    current: number; 
-    onChange: (page: number) => void;
+function TablePagination({
+	total,
+	current,
+	onChange
+}: {
+	total: number;
+	current: number;
+	onChange: (page: number) => void;
 }) {
-    if (total <= 1) return null;
+	if (total <= 1) return null;
 
-    return (
-        <div className="flex items-center justify-between p-4 border-t border-dark-800 bg-dark-900/50">
-            <div className="text-sm text-gray-500">
-                Page {current} sur {total}
-            </div>
-            <div className="flex gap-2">
-                <button
-                    onClick={() => onChange(current - 1)}
-                    disabled={current <= 1}
-                    className="p-2 rounded-lg border border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                    <IconChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                    onClick={() => onChange(current + 1)}
-                    disabled={current >= total}
-                    className="p-2 rounded-lg border border-dark-800 text-gray-400 hover:text-white hover:bg-dark-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                    <IconChevronRight className="w-4 h-4" />
-                </button>
-            </div>
-        </div>
-    );
+	return (
+		<div className="flex items-center justify-between p-4 border-t border-border bg-surface-900/50">
+			<div className="text-sm text-fg-subtle">
+				Page {current} sur {total}
+			</div>
+			<div className="flex gap-2">
+				<button
+					onClick={() => onChange(current - 1)}
+					disabled={current <= 1}
+					className="p-2 rounded-lg border border-border text-fg-muted hover:text-fg hover:bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				>
+					<IconChevronLeft className="w-4 h-4" />
+				</button>
+				<button
+					onClick={() => onChange(current + 1)}
+					disabled={current >= total}
+					className="p-2 rounded-lg border border-border text-fg-muted hover:text-fg hover:bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+				>
+					<IconChevronRight className="w-4 h-4" />
+				</button>
+			</div>
+		</div>
+	);
 }
 
-function UserMobileCard({ 
-    user, 
-    onEdit, 
-    onHistory, 
-    onToggleStatus,
-    isPending
-}: { 
-    user: User; 
-    onEdit: () => void; 
-    onHistory: () => void;
-    onToggleStatus: () => void;
-    isPending: boolean;
+function UserMobileCard({
+	user,
+	onEdit,
+	onHistory,
+	onToggleStatus,
+	isPending
+}: {
+	user: User;
+	onEdit: () => void;
+	onHistory: () => void;
+	onToggleStatus: () => void;
+	isPending: boolean;
 }) {
-    return (
-        <div className={`bg-dark-900 border border-dark-800 rounded-xl overflow-hidden ${user.isAsleep ? "bg-dark-900/50" : ""}`}>
-             {/* Header Section */}
-            <div className="p-4 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-white text-lg truncate">
-                            {user.prenom} {user.nom}
-                        </h3>
-                        {user.isAsleep && (
-                             <span className="text-[10px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-medium uppercase tracking-wider">
-                                Inactif
-                            </span>
-                        )}
-                    </div>
-                    <div className="text-sm text-gray-500 font-medium">@{user.username}</div>
-                </div>
-                
-                <div className="text-right shrink-0">
-                    <div className="font-mono text-xl text-white font-bold tracking-tight">
-                        {(user.balance / 100).toFixed(2)} €
-                    </div>
-                </div>
-            </div>
-            
-            {/* Info Grid */}
-            <div className="px-4 pb-4 space-y-3">
-                 {/* Badges Row */}
-                <div className="flex flex-wrap gap-2">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium 
-                        ${
-                            user.role?.name === "ADMIN"
-                                ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
-                                : user.role?.name === "TRESORIER"
-                                ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                                : "bg-dark-800 text-gray-400 border border-dark-700"
-                        }`}
-                    >
-                        {user.role?.name || user.appRole}
-                    </span>
-                    {user.promss && (
-                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-dark-800 text-gray-300 border border-dark-700 font-mono">
-                            {user.promss}
-                        </span>
-                    )}
-                    {user.tabagnss && (
-                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-dark-800 text-gray-300 border border-dark-700">
-                             <IconSchool className="w-3 h-3 mr-1" />
-                            {user.tabagnss}
-                        </span>
-                    )}
-                </div>
+	return (
+		<div className={`bg-surface-900 border border-border rounded-xl overflow-hidden ${user.isAsleep ? "bg-surface-900/50" : ""}`}>
+			{/* Header Section */}
+			<div className="p-4 flex items-start justify-between gap-4">
+				<div className="min-w-0">
+					<div className="flex items-center gap-2 mb-1">
+						<h3 className="font-bold text-fg text-lg truncate">
+							{user.prenom} {user.nom}
+						</h3>
+						{user.isAsleep && (
+							<span className="text-[10px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-medium uppercase tracking-wider">
+								Inactif
+							</span>
+						)}
+					</div>
+					<div className="text-sm text-fg-subtle font-medium">@{user.username}</div>
+				</div>
 
-                {/* Details */}
-                <div className="grid grid-cols-1 gap-2 text-sm pt-2 border-t border-dark-800/50">
-                    {user.bucque && (
-                        <div className="flex items-center gap-3 text-gray-400">
-                             <IconId className="w-4 h-4 shrink-0 opacity-70" />
-                             <span className="truncate text-gray-300">{user.bucque}</span>
-                        </div>
-                    )}
-                     <div className="flex items-center gap-3 text-gray-400">
-                         <IconMail className="w-4 h-4 shrink-0 opacity-70" />
-                         <span className="truncate text-gray-300">{user.email}</span>
-                    </div>
-                </div>
-            </div>
+				<div className="text-right shrink-0">
+					<div className="font-mono text-xl text-fg font-bold tracking-tight">
+						{(user.balance / 100).toFixed(2)} €
+					</div>
+				</div>
+			</div>
 
-            {/* Actions Footer */}
-            <div className="p-3 bg-dark-950/30 border-t border-dark-800 flex items-center gap-2">
-                <button
-                    onClick={onHistory}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-dark-800 hover:bg-dark-700 text-gray-300 rounded-lg transition-colors text-sm font-medium border border-dark-700/50"
-                >
-                    <IconHistory className="w-4 h-4" />
-                    Historique
-                </button>
-                <button
-                    onClick={onEdit}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-dark-800 hover:bg-dark-700 text-gray-300 rounded-lg transition-colors text-sm font-medium border border-dark-700/50"
-                >
-                    <IconPencil className="w-4 h-4" />
-                     Modifier
-                </button>
-                <button
-                    onClick={onToggleStatus}
-                    disabled={isPending}
-                    className={`px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center border ${
-                        user.isAsleep
-                            ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
-                            : "bg-dark-800 text-gray-400 border-dark-700 hover:text-red-400 hover:bg-dark-700"
-                    }`}
-                    title={user.isAsleep ? "Réactiver" : "Désactiver"}
-                >
-                    <IconPower className="w-5 h-5" />
-                </button>
-            </div>
-        </div>
-    );
+			{/* Info Grid */}
+			<div className="px-4 pb-4 space-y-3">
+				{/* Badges Row */}
+				<div className="flex flex-wrap gap-2">
+					<span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium 
+                        ${user.role?.name === "ADMIN"
+							? "bg-accent-500/10 text-accent-400 border border-accent-500/20"
+							: user.role?.name === "TRESORIER"
+								? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+								: "bg-elevated text-fg-muted border border-border"
+						}`}
+					>
+						{user.role?.name || user.appRole}
+					</span>
+					{user.promss && (
+						<span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-elevated text-fg border border-border font-mono">
+							{user.promss}
+						</span>
+					)}
+					{user.tabagnss && (
+						<span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-elevated text-fg border border-border">
+							<IconSchool className="w-3 h-3 mr-1" />
+							{user.tabagnss}
+						</span>
+					)}
+				</div>
+
+				{/* Details */}
+				<div className="grid grid-cols-1 gap-2 text-sm pt-2 border-t border-border/50">
+					{user.bucque && (
+						<div className="flex items-center gap-3 text-fg-muted">
+							<IconId className="w-4 h-4 shrink-0 opacity-70" />
+							<span className="truncate text-fg">{user.bucque}</span>
+						</div>
+					)}
+					<div className="flex items-center gap-3 text-fg-muted">
+						<IconMail className="w-4 h-4 shrink-0 opacity-70" />
+						<span className="truncate text-fg">{user.email}</span>
+					</div>
+				</div>
+			</div>
+
+			{/* Actions Footer */}
+			<div className="p-3 bg-surface-950/30 border-t border-border flex items-center gap-2">
+				<button
+					onClick={onHistory}
+					className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-elevated hover:bg-elevated text-fg rounded-lg transition-colors text-sm font-medium border border-border/50"
+				>
+					<IconHistory className="w-4 h-4" />
+					Historique
+				</button>
+				<button
+					onClick={onEdit}
+					className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-elevated hover:bg-elevated text-fg rounded-lg transition-colors text-sm font-medium border border-border/50"
+				>
+					<IconPencil className="w-4 h-4" />
+					Modifier
+				</button>
+				<button
+					onClick={onToggleStatus}
+					disabled={isPending}
+					className={`px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center border ${user.isAsleep
+						? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
+						: "bg-elevated text-fg-muted border-border hover:text-red-400 hover:bg-elevated"
+						}`}
+					title={user.isAsleep ? "Réactiver" : "Désactiver"}
+				>
+					<IconPower className="w-5 h-5" />
+				</button>
+			</div>
+		</div>
+	);
 }
 
 function SortIcon({ column, currentSort, currentOrder }: { column: string, currentSort: string | null, currentOrder: string | null }) {
-    if (currentSort !== column)
-        return (
-            <IconArrowsSort className="w-3 h-3 opacity-30 group-hover:opacity-100" />
-        );
-    
-    if (currentOrder === "desc") {
-        return <IconSortDescending className="w-3 h-3 text-primary-400" />;
-    }
-    
-    return <IconSortAscending className="w-3 h-3 text-primary-400" />;
+	if (currentSort !== column)
+		return (
+			<IconArrowsSort className="w-3 h-3 opacity-30 group-hover:opacity-100" />
+		);
+
+	if (currentOrder === "desc") {
+		return <IconSortDescending className="w-3 h-3 text-accent-400" />;
+	}
+
+	return <IconSortAscending className="w-3 h-3 text-accent-400" />;
 }
 
 export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, promssList = [] }: UsersTableProps) {
@@ -245,26 +243,26 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 		} else {
 			params.delete("search");
 		}
-        params.set("page", "1"); // Reset page on search
+		params.set("page", "1"); // Reset page on search
 		router.replace(`${pathname}?${params.toString()}`);
 	};
 
-    const handlePageChange = (newPage: number) => {
-        const params = new URLSearchParams(searchParams);
-        params.set("page", newPage.toString());
-        router.push(`${pathname}?${params.toString()}`);
-    };
+	const handlePageChange = (newPage: number) => {
+		const params = new URLSearchParams(searchParams);
+		params.set("page", newPage.toString());
+		router.push(`${pathname}?${params.toString()}`);
+	};
 
-    const handlePromssChange = (promss: string) => {
-        const params = new URLSearchParams(searchParams);
-        if (promss) {
-            params.set("promss", promss);
-        } else {
-            params.delete("promss");
-        }
-        params.set("page", "1");
-        router.push(`${pathname}?${params.toString()}`);
-    };
+	const handlePromssChange = (promss: string) => {
+		const params = new URLSearchParams(searchParams);
+		if (promss) {
+			params.set("promss", promss);
+		} else {
+			params.delete("promss");
+		}
+		params.set("page", "1");
+		router.push(`${pathname}?${params.toString()}`);
+	};
 
 	const handleSort = (column: string) => {
 		const params = new URLSearchParams(searchParams);
@@ -273,11 +271,11 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
 		if (currentSort === column) {
 			if (currentOrder === "asc") {
-                params.set("order", "desc");
-            } else {
-                params.delete("sort");
-                params.delete("order");
-            }
+				params.set("order", "desc");
+			} else {
+				params.delete("sort");
+				params.delete("order");
+			}
 		} else {
 			params.set("sort", column);
 			params.set("order", "asc"); // Default to asc
@@ -315,34 +313,34 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 	const currentSort = searchParams.get("sort");
 	const currentOrder = searchParams.get("order");
 	const currentRole = searchParams.get("role") || "";
-    const currentPromss = searchParams.get("promss") || "";
+	const currentPromss = searchParams.get("promss") || "";
 
 	return (
 		<div className="space-y-4">
 			{/* Toolbar */}
-			<div className="flex flex-col md:flex-row items-center gap-4 bg-dark-900 border border-dark-800 p-3 rounded-xl">
+			<div className="flex flex-col md:flex-row items-center gap-4 bg-surface-900 border border-border p-3 rounded-xl">
 				<div className="relative w-full md:flex-1 md:max-w-sm">
-					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
 					<input
 						type="search"
 						placeholder="Rechercher..."
-						className="w-full bg-dark-950 border border-dark-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-gray-600"
+						className="w-full bg-surface-950 border border-border rounded-lg pl-9 pr-4 py-2 text-sm text-fg focus:outline-none focus:ring-1 focus:ring-accent-500 placeholder:text-fg-subtle"
 						defaultValue={searchParams.get("search")?.toString()}
 						onChange={(e) => handleSearch(e.target.value)}
 					/>
 				</div>
 
 				<div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
-                    <PromssSelector 
-                        promssList={promssList}
-                        selectedPromss={currentPromss}
-                        onChange={handlePromssChange}
-                    />
+					<PromssSelector
+						promssList={promssList}
+						selectedPromss={currentPromss}
+						onChange={handlePromssChange}
+					/>
 
 					<select
 						value={currentRole}
 						onChange={(e) => handleRoleFilter(e.target.value)}
-						className="w-full sm:w-auto bg-dark-950 border border-dark-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary-500"
+						className="w-full sm:w-auto bg-surface-950 border border-border rounded-lg px-3 py-2 text-sm text-fg focus:outline-none focus:ring-1 focus:ring-accent-500"
 					>
 						<option value="">Tous les rôles</option>
 						{roles.map((role) => (
@@ -363,7 +361,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 					/>
 					<button
 						onClick={() => setShowCreateModal(true)}
-						className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors text-sm font-medium shadow-lg shadow-primary-900/20"
+						className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-fg rounded-lg transition-colors text-sm font-medium shadow-lg shadow-accent-900/20"
 					>
 						<IconPlus className="w-4 h-4" />
 						<span className="inline">Créer</span>
@@ -371,44 +369,44 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 				</div>
 			</div>
 
-            {/* Mobile View */}
-            <div className="md:hidden space-y-4">
-                {users.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500 bg-dark-900 rounded-xl border border-dark-800">
-                        Aucun utilisateur trouvé
-                    </div>
-                ) : (
-                    users
-                        .filter((u) => !u.isDeleted)
-                        .map((user) => (
-                            <UserMobileCard 
-                                key={user.id} 
-                                user={user}
-                                onEdit={() => setSelectedUser(user)}
-                                onHistory={() => setViewHistoryUser(user)}
-                                onToggleStatus={() => handleToggleStatus(user.id, user.isAsleep ?? false)}
-                                isPending={isPending}
-                            />
-                        ))
-                )}
-                {/* Mobile Pagination */}
-                <div className="bg-dark-900 border border-dark-800 rounded-xl overflow-hidden">
-                     <TablePagination 
-                        total={totalPages} 
-                        current={currentPage} 
-                        onChange={handlePageChange} 
-                    />
-                </div>
-            </div>
+			{/* Mobile View */}
+			<div className="md:hidden space-y-4">
+				{users.length === 0 ? (
+					<div className="text-center py-8 text-fg-subtle bg-surface-900 rounded-xl border border-border">
+						Aucun utilisateur trouvé
+					</div>
+				) : (
+					users
+						.filter((u) => !u.isDeleted)
+						.map((user) => (
+							<UserMobileCard
+								key={user.id}
+								user={user}
+								onEdit={() => setSelectedUser(user)}
+								onHistory={() => setViewHistoryUser(user)}
+								onToggleStatus={() => handleToggleStatus(user.id, user.isAsleep ?? false)}
+								isPending={isPending}
+							/>
+						))
+				)}
+				{/* Mobile Pagination */}
+				<div className="bg-surface-900 border border-border rounded-xl overflow-hidden">
+					<TablePagination
+						total={totalPages}
+						current={currentPage}
+						onChange={handlePageChange}
+					/>
+				</div>
+			</div>
 
 			{/* Desktop Table */}
-			<div className="hidden md:block bg-dark-900 border border-dark-800 rounded-xl overflow-hidden shadow-sm">
+			<div className="hidden md:block bg-surface-900 border border-border rounded-xl overflow-hidden shadow-sm">
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm">
 						<thead>
-							<tr className="bg-dark-950 border-b border-dark-800 text-gray-400">
+							<tr className="bg-surface-950 border-b border-border text-fg-muted">
 								<th
-									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+									className="py-3 px-6 font-medium cursor-pointer hover:text-fg group transition-colors"
 									onClick={() => handleSort("nom")}
 								>
 									<div className="flex items-center gap-1">
@@ -416,28 +414,28 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 									</div>
 								</th>
 								<th
-									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+									className="py-3 px-6 font-medium cursor-pointer hover:text-fg group transition-colors"
 									onClick={() => handleSort("bucque")}
 								>
 									<div className="flex items-center gap-1">
 										Bucque / Email <SortIcon column="bucque" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
-                                <th className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+								<th className="py-3 px-6 font-medium cursor-pointer hover:text-fg group transition-colors"
 									onClick={() => handleSort("tabagnss")}>
-										<div className="flex items-center gap-1">
-											Tabagn&apos;ss <SortIcon column="tabagnss" currentSort={currentSort} currentOrder={currentOrder} />
-										</div>
-									</th>
-                                <th
-									className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+									<div className="flex items-center gap-1">
+										Tabagn&apos;ss <SortIcon column="tabagnss" currentSort={currentSort} currentOrder={currentOrder} />
+									</div>
+								</th>
+								<th
+									className="py-3 px-6 font-medium cursor-pointer hover:text-fg group transition-colors"
 									onClick={() => handleSort("promss")}
 								>
 									<div className="flex items-center gap-1">
 										Promss <SortIcon column="promss" currentSort={currentSort} currentOrder={currentOrder} />
 									</div>
 								</th>
-								<th className="py-3 px-6 font-medium cursor-pointer hover:text-white group transition-colors"
+								<th className="py-3 px-6 font-medium cursor-pointer hover:text-fg group transition-colors"
 									onClick={() => handleSort("role")}
 								>
 									<div className="flex items-center gap-1">
@@ -445,7 +443,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 									</div>
 								</th>
 								<th
-									className="py-3 px-6 font-medium text-right cursor-pointer hover:text-white group transition-colors"
+									className="py-3 px-6 font-medium text-right cursor-pointer hover:text-fg group transition-colors"
 									onClick={() => handleSort("balance")}
 								>
 									<div className="flex items-center justify-end gap-1">
@@ -455,10 +453,10 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 								<th className="py-3 px-6 font-medium text-right">Actions</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-dark-800">
+						<tbody className="divide-y divide-border">
 							{users.length === 0 ? (
 								<tr>
-									<td colSpan={6} className="py-8 text-center text-gray-500">
+									<td colSpan={6} className="py-8 text-center text-fg-subtle">
 										Aucun utilisateur trouvé
 									</td>
 								</tr>
@@ -468,14 +466,13 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 									.map((user) => (
 										<tr
 											key={user.id}
-											className={`hover:bg-dark-800/50 transition-colors group ${
-												user.isAsleep
-													? "opacity-50 grayscale hover:grayscale-0"
-													: ""
-											}`}
+											className={`hover:bg-elevated/50 transition-colors group ${user.isAsleep
+												? "opacity-50 grayscale hover:grayscale-0"
+												: ""
+												}`}
 										>
 											<td className="py-3 px-6">
-												<div className="font-medium text-white flex items-center gap-2">
+												<div className="font-medium text-fg flex items-center gap-2">
 													{user.prenom} {user.nom}
 													{user.isAsleep && (
 														<span className="text-[10px] bg-red-900/40 text-red-400 px-1.5 py-0.5 rounded border border-red-900/50">
@@ -483,56 +480,55 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 														</span>
 													)}
 												</div>
-												<div className="text-xs text-gray-500">
+												<div className="text-xs text-fg-subtle">
 													@{user.username}
 												</div>
 											</td>
 											<td className="py-3 px-6">
-												<div className="text-gray-300">{user.bucque}</div>
-												<div className="text-xs text-gray-500">
+												<div className="text-fg">{user.bucque}</div>
+												<div className="text-xs text-fg-subtle">
 													{user.email}
 												</div>
 											</td>
-                                            <td className="py-3 px-6 text-gray-400 text-sm">
-                                                {user.tabagnss && (
-                                                    <span className="flex items-center gap-1">
-                                                        <IconSchool className="w-3.5 h-3.5" />
-                                                        {user.tabagnss}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="py-3 px-6 font-mono text-gray-400 text-xs">
-                                                {user.promss}
-                                            </td>
+											<td className="py-3 px-6 text-fg-muted text-sm">
+												{user.tabagnss && (
+													<span className="flex items-center gap-1">
+														<IconSchool className="w-3.5 h-3.5" />
+														{user.tabagnss}
+													</span>
+												)}
+											</td>
+											<td className="py-3 px-6 font-mono text-fg-muted text-xs">
+												{user.promss}
+											</td>
 											<td className="py-3 px-6">
 												<span
 													className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
-                                                ${
-                                                    user.role?.name === "ADMIN"
-                                                        ? "bg-primary-900/30 text-primary-400 border border-primary-900/50"
-                                                        : user.role?.name ===
-                                                            "TRESORIER"
-                                                        ? "bg-amber-900/30 text-amber-500 border border-amber-900/50"
-                                                        : "bg-dark-800 text-gray-400 border border-dark-700"
-                                                }`}
+                                                ${user.role?.name === "ADMIN"
+															? "bg-accent-900/30 text-accent-400 border border-accent-900/50"
+															: user.role?.name ===
+																"TRESORIER"
+																? "bg-amber-900/30 text-amber-500 border border-amber-900/50"
+																: "bg-elevated text-fg-muted border border-border"
+														}`}
 												>
 													{user.role?.name || user.appRole}
 												</span>
 											</td>
-											<td className="py-3 px-6 text-right font-mono text-gray-300">
+											<td className="py-3 px-6 text-right font-mono text-fg">
 												{(user.balance / 100).toFixed(2)} €
 											</td>
 											<td className="py-3 px-6 text-right">
 												<button
 													onClick={() => setViewHistoryUser(user)}
-													className="p-1 text-gray-500 hover:text-blue-400 hover:bg-dark-700 rounded-md transition-colors mr-1"
+													className="p-1 text-fg-subtle hover:text-blue-400 hover:bg-elevated rounded-md transition-colors mr-1"
 													title="Historique"
 												>
 													<IconHistory className="w-4 h-4" />
 												</button>
 												<button
 													onClick={() => setSelectedUser(user)}
-													className="p-1 text-gray-500 hover:text-white hover:bg-dark-700 rounded-md transition-colors mr-1"
+													className="p-1 text-fg-subtle hover:text-fg hover:bg-elevated rounded-md transition-colors mr-1"
 													title="Modifier"
 												>
 													<IconPencil className="w-4 h-4" />
@@ -542,11 +538,10 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 														handleToggleStatus(user.id, user.isAsleep ?? false)
 													}
 													disabled={isPending}
-													className={`p-1 rounded-md transition-colors ${
-														user.isAsleep
-															? "text-red-500 hover:text-red-300 hover:bg-red-900/20"
-															: "text-gray-500 hover:text-red-400 hover:bg-dark-700"
-													}`}
+													className={`p-1 rounded-md transition-colors ${user.isAsleep
+														? "text-red-500 hover:text-red-300 hover:bg-red-900/20"
+														: "text-fg-subtle hover:text-red-400 hover:bg-elevated"
+														}`}
 													title={user.isAsleep ? "Réactiver" : "Désactiver"}
 												>
 													<IconPower className="w-4 h-4" />
@@ -559,30 +554,30 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 					</table>
 				</div>
 
-                {/* Desktop Pagination */}
-                <TablePagination 
-                    total={totalPages} 
-                    current={currentPage} 
-                    onChange={handlePageChange} 
-                />
+				{/* Desktop Pagination */}
+				<TablePagination
+					total={totalPages}
+					current={currentPage}
+					onChange={handlePageChange}
+				/>
 			</div>
 
 			{/* Edit Modal (Simple overlay for now) */}
 			{selectedUser && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-					<div className="bg-dark-950 border border-dark-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200">
-						<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800">
+					<div className="bg-surface-950 border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200">
+						<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-surface-950/95 backdrop-blur border-b border-border">
 							<div>
-								<h2 className="text-xl font-bold text-white">
+								<h2 className="text-xl font-bold text-fg">
 									Modifier l&apos;utilisateur
 								</h2>
-								<p className="text-sm text-gray-400">
+								<p className="text-sm text-fg-muted">
 									@{selectedUser.username}
 								</p>
 							</div>
 							<button
 								onClick={() => setSelectedUser(null)}
-								className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+								className="p-2 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 							>
 								<IconX className="w-5 h-5" />
 							</button>
@@ -590,7 +585,7 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 
 						<div className="p-6">
 							<UserEditForm
-								 
+
 								user={selectedUser as any}
 								roles={roles}
 								onSuccess={() => setSelectedUser(null)}
@@ -611,19 +606,19 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 			{/* Create User Modal */}
 			{showCreateModal && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-					<div className="bg-dark-950 border border-dark-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200">
-						<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800">
+					<div className="bg-surface-950 border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200">
+						<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-surface-950/95 backdrop-blur border-b border-border">
 							<div>
-								<h2 className="text-xl font-bold text-white">
+								<h2 className="text-xl font-bold text-fg">
 									Nouveau Gadz&apos;Arts
 								</h2>
-								<p className="text-sm text-gray-400">
+								<p className="text-sm text-fg-muted">
 									Ajouter manuellement un utilisateur.
 								</p>
 							</div>
 							<button
 								onClick={() => setShowCreateModal(false)}
-								className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+								className="p-2 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 							>
 								<IconX className="w-5 h-5" />
 							</button>

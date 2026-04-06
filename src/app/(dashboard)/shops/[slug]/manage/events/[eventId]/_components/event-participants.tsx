@@ -7,7 +7,7 @@ import {
 	IconX,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
 import { PromssSelector } from "@/components/promss-selector";
@@ -119,9 +119,9 @@ export function EventParticipants({ event }: Props) {
 					return { identifier, weight: weight ? Number(weight) : undefined };
 				})
 				.filter((d) => Boolean(d.identifier)) as {
-				identifier: string;
-				weight?: number;
-			}[];
+					identifier: string;
+					weight?: number;
+				}[];
 
 			if (importData.length === 0) {
 				toast({
@@ -236,7 +236,7 @@ export function EventParticipants({ event }: Props) {
 	return (
 		<div className="flex flex-col gap-4">
 			<div className="flex justify-between items-center">
-				<span className="font-medium text-white">
+				<span className="font-medium text-fg">
 					{event.participants.length} /{" "}
 					{event.maxParticipants ? event.maxParticipants : "∞"} Participants
 				</span>
@@ -247,7 +247,7 @@ export function EventParticipants({ event }: Props) {
 					/>
 					<button
 						onClick={() => setImportOpen(true)}
-						className="flex items-center gap-2 px-3 py-2 rounded-md bg-dark-700 text-gray-300 hover:bg-dark-600 transition-colors text-sm"
+						className="flex items-center gap-2 px-3 py-2 rounded-md bg-elevated text-fg hover:bg-elevated transition-colors text-sm"
 					>
 						<IconUserPlus />
 						Importer Massivement
@@ -255,9 +255,9 @@ export function EventParticipants({ event }: Props) {
 				</div>
 			</div>
 
-			<div className="border border-dark-700 rounded-lg overflow-hidden">
-				<table className="w-full text-sm text-left text-gray-400">
-					<thead className="bg-dark-800 text-gray-200 uppercase text-xs">
+			<div className="border border-border rounded-lg overflow-hidden">
+				<table className="w-full text-sm text-left text-fg-muted">
+					<thead className="bg-elevated text-fg uppercase text-xs">
 						<tr>
 							<th className="px-4 py-3">Utilisateur</th>
 							<th className="px-4 py-3">Solde</th>
@@ -268,24 +268,23 @@ export function EventParticipants({ event }: Props) {
 							<th className="px-4 py-3 text-right">Actions</th>
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-dark-700 bg-dark-900">
+					<tbody className="divide-y divide-border bg-surface-900">
 						{event.participants.map((p: ParticipantData) => (
-							<tr key={p.userId} className="hover:bg-dark-800/50">
+							<tr key={p.userId} className="hover:bg-elevated/50">
 								<td className="px-4 py-3">
-									<div className="font-medium text-white flex items-center gap-2">
+									<div className="font-medium text-fg flex items-center gap-2">
 										{p.user.prenom} {p.user.nom}
 									</div>
-									<div className="text-xs text-gray-500">
+									<div className="text-xs text-fg-subtle">
 										{p.user.bucque || p.user.username}
 									</div>
 								</td>
 								<td className="px-4 py-3">
 									<div
-										className={`flex items-center ${
-											(event.acompte || 0) > 0 && p.user.balance < (event.acompte || 0)
-												? "text-orange-400 font-semibold  px-2 py-1 rounded"
-												: ""
-										}`}
+										className={`flex items-center ${(event.acompte || 0) > 0 && p.user.balance < (event.acompte || 0)
+											? "text-orange-400 font-semibold  px-2 py-1 rounded"
+											: ""
+											}`}
 									>
 										{(event.acompte || 0) > 0 &&
 											p.user.balance < (event.acompte || 0) && (
@@ -312,11 +311,10 @@ export function EventParticipants({ event }: Props) {
 								</td>
 								<td className="px-4 py-3">
 									<span
-										className={`px-2 py-0.5 rounded text-xs font-medium uppercase border ${
-											p.status === "APPROVED"
-												? "bg-green-500/10 text-green-400 border-green-500/20"
-												: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-										}`}
+										className={`px-2 py-0.5 rounded text-xs font-medium uppercase border ${p.status === "APPROVED"
+											? "bg-green-500/10 text-green-400 border-green-500/20"
+											: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+											}`}
 									>
 										{p.status}
 									</span>
@@ -330,7 +328,7 @@ export function EventParticipants({ event }: Props) {
 											onChange={(e) =>
 												handleWeightChange(p.userId, Number(e.target.value))
 											}
-											className="w-20 bg-dark-950 border border-dark-700 rounded px-2 py-1 text-white text-center focus:outline-none focus:border-primary-500"
+											className="w-20 bg-surface-950 border border-border rounded px-2 py-1 text-fg text-center focus:outline-none focus:border-accent-500"
 										/>
 									</td>
 								)}
@@ -351,14 +349,14 @@ export function EventParticipants({ event }: Props) {
 			{/* Import Modal */}
 			{importOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-					<div className="bg-dark-800 border border-dark-700 rounded-lg shadow-xl w-full max-w-md p-6 flex flex-col gap-4">
+					<div className="bg-elevated border border-border rounded-lg shadow-xl w-full max-w-md p-6 flex flex-col gap-4">
 						<div className="flex justify-between items-center">
-							<h3 className="text-lg font-bold text-white">
+							<h3 className="text-lg font-bold text-fg">
 								Importer des participants
 							</h3>
 							<button
 								onClick={() => setImportOpen(false)}
-								className="text-gray-500 hover:text-white"
+								className="text-fg-subtle hover:text-fg"
 							>
 								<IconX size={20} />
 							</button>
@@ -366,7 +364,7 @@ export function EventParticipants({ event }: Props) {
 
 						<div className="flex flex-col gap-4">
 							<div className="flex flex-col gap-1">
-								<label className="text-sm font-medium text-gray-300">
+								<label className="text-sm font-medium text-fg">
 									Via Prom&apos;ss
 								</label>
 								<div className="flex gap-2">
@@ -380,7 +378,7 @@ export function EventParticipants({ event }: Props) {
 									<button
 										onClick={handlePromssImport}
 										disabled={!promss || isImporting}
-										className="px-3 py-2 bg-primary-600 rounded-md text-white text-sm hover:bg-primary-700 disabled:opacity-50"
+										className="px-3 py-2 bg-accent-600 rounded-md text-fg text-sm hover:bg-accent-700 disabled:opacity-50"
 									>
 										OK
 									</button>
@@ -388,28 +386,28 @@ export function EventParticipants({ event }: Props) {
 							</div>
 
 							<div className="flex items-center gap-2">
-								<span className="h-px bg-dark-700 flex-1"></span>
-								<span className="text-xs text-gray-500 uppercase">OU</span>
-								<span className="h-px bg-dark-700 flex-1"></span>
+								<span className="h-px bg-elevated flex-1"></span>
+								<span className="text-xs text-fg-subtle uppercase">OU</span>
+								<span className="h-px bg-elevated flex-1"></span>
 							</div>
 
 							<div className="flex flex-col gap-1">
-								<label className="text-sm font-medium text-gray-300">
+								<label className="text-sm font-medium text-fg">
 									Via Fichier Excel (.xlsx)
 								</label>
-								<p className="text-xs text-gray-500 mb-2">
+								<p className="text-xs text-fg-subtle mb-2">
 									Le fichier doit contenir une colonne &quot;Username&quot; (Num&apos;ss +
 									Prom&apos;ss) Et une colonne &quot;Poids&quot; (Optionnelle)
 								</p>
 								<input
 									type="file"
 									accept=".xlsx, .xls"
-									className="block w-full text-sm text-gray-400
+									className="block w-full text-sm text-fg-muted
                                       file:mr-4 file:py-2 file:px-4
                                       file:rounded-md file:border-0
                                       file:text-sm file:font-semibold
-                                      file:bg-dark-700 file:text-white
-                                      hover:file:bg-dark-600
+                                      file:bg-elevated file:text-fg
+                                      hover:file:bg-elevated
                                     "
 									onChange={handleFileUpload}
 									disabled={isImporting}

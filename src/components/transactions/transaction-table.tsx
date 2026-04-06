@@ -107,8 +107,8 @@ export function TransactionTable({
 
 	if (loading) {
 		return (
-			<div className="w-full bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-sm">
-				<div className="p-12 flex justify-center items-center text-gray-500">
+			<div className="w-full bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
+				<div className="p-12 flex justify-center items-center text-fg-subtle">
 					Chargement des transactions...
 				</div>
 			</div>
@@ -117,8 +117,8 @@ export function TransactionTable({
 
     if (groupedTransactions.length === 0) {
         return (
-			<div className="w-full bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-sm">
-				<div className="p-12 flex justify-center items-center text-gray-500">
+			<div className="w-full bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
+				<div className="p-12 flex justify-center items-center text-fg-subtle">
 					Aucune transaction trouvée.
 				</div>
 			</div>
@@ -128,11 +128,11 @@ export function TransactionTable({
 	return (
 		<div className="flex flex-col gap-4">
             {/* Desktop Table View */}
-            <div className="hidden md:block bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-sm">
+            <div className="hidden md:block bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-gray-400">
-                        <thead className="bg-dark-800 text-gray-200 uppercase font-medium">
-                            <tr>
+                    <table className="w-full text-left text-sm text-fg-muted">
+                        <thead>
+                            <tr className="bg-surface-950 text-fg-muted text-xs uppercase font-semibold tracking-wider border-b border-border">
                                 <th className="px-6 py-4">Type</th>
                                 {isAdmin && <th className="px-6 py-4">Utilisateur</th>}
                                 <th className="px-6 py-4">Description</th>
@@ -141,7 +141,7 @@ export function TransactionTable({
                                 {isAdmin && <th className="px-6 py-4 text-right">Actions</th>}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-dark-800">
+                        <tbody className="divide-y divide-border">
                             {groupedTransactions.map((item) => {
                                 if (item.type === "GROUP") {
                                     return (
@@ -194,17 +194,17 @@ export function TransactionTable({
 					<button
 						disabled={pagination.page === 1 || loading}
 						onClick={() => pagination.setPage((p) => Math.max(1, p - 1))}
-						className="px-3 py-1 bg-dark-800 rounded hover:bg-dark-700 disabled:opacity-50 text-sm text-gray-300 transition-colors border border-dark-700"
+						className="px-3 py-1 bg-elevated rounded hover:bg-elevated disabled:opacity-50 text-sm text-fg transition-colors border border-border"
 					>
 						Précédent
 					</button>
-					<span className="px-3 py-1 text-gray-400 text-sm">
+					<span className="px-3 py-1 text-fg-muted text-sm">
 						Page {pagination.page} {pagination.total ? `sur ${Math.ceil(pagination.total / 50)}` : ""}
 					</span>
 					<button
 						disabled={loading || (pagination.total ? pagination.page >= Math.ceil(pagination.total / 50) : (transactions?.length || 0) < 50)}
 						onClick={() => pagination.setPage((p) => p + 1)}
-						className="px-3 py-1 bg-dark-800 rounded hover:bg-dark-700 disabled:opacity-50 text-sm text-gray-300 transition-colors border border-dark-700"
+						className="px-3 py-1 bg-elevated rounded hover:bg-elevated disabled:opacity-50 text-sm text-fg transition-colors border border-border"
 					>
 						Suivant
 					</button>
@@ -380,14 +380,14 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 	return (
 		<>
 			<tr
-				className={`hover:bg-dark-800/50 transition-colors cursor-pointer ${
+				className={`hover:bg-elevated/50 transition-colors cursor-pointer ${
 					allCancelled ? "opacity-50 grayscale" : ""
 				}`}
 				onClick={() => setExpanded(!expanded)}
 			>
 				<td className="px-6 py-4">
 					<div className="flex items-center gap-3">
-						<div className="text-gray-500 transition-transform duration-200" style={{ transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>
+						<div className="text-fg-subtle transition-transform duration-200" style={{ transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>
 							<IconChevronRight size={16} />
 						</div>
 						<div
@@ -401,13 +401,13 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 						</div>
 						<div className="flex flex-col">
 							<span
-								className={`font-medium text-gray-200 ${
+								className={`font-medium text-fg ${
 									allCancelled ? "line-through" : ""
 								}`}
 							>
 								{typeLabel}
 							</span>
-							<span className="text-xs text-gray-500">
+							<span className="text-xs text-fg-subtle">
 								{items.length} transactions
 							</span>
 						</div>
@@ -415,21 +415,21 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 				</td>
 
 				{isAdmin && (
-					<td className="px-6 py-4 text-gray-500 italic">
+					<td className="px-6 py-4 text-fg-subtle italic">
 						{/* Group might target multiple users if it was a mass operation */}
 						Multiple
 					</td>
 				)}
 
-				<td className="px-6 py-4 text-gray-300">
+				<td className="px-6 py-4 text-fg">
                     <span className={allCancelled ? "line-through" : ""}>
 					    {group.data.description || "Opération groupée"}
                     </span>
 				</td>
-				<td className="px-6 py-4 text-gray-400 capitalize" suppressHydrationWarning>{subtitle}</td>
+				<td className="px-6 py-4 text-fg-muted capitalize" suppressHydrationWarning>{subtitle}</td>
 				<td
 					className={`px-6 py-4 text-right font-semibold ${
-						isPositive ? "text-emerald-500" : "text-gray-200"
+						isPositive ? "text-emerald-500" : "text-fg"
 					} ${allCancelled ? "line-through decoration-current" : ""}`}
 				>
 					{isPositive ? "+" : ""}
@@ -480,13 +480,13 @@ function TransactionRow({
 
 	return (
 		<tr
-			className={`hover:bg-dark-800/50 transition-colors ${
+			className={`hover:bg-elevated/50 transition-colors ${
 				isCancelled || isFailed ? "opacity-50 grayscale" : ""
-			} ${isPending ? "bg-yellow-500/5" : ""} ${isChild ? "bg-dark-800/20" : ""}`}
+			} ${isPending ? "bg-yellow-500/5" : ""} ${isChild ? "bg-elevated/20" : ""}`}
 		>
 			<td className={`px-6 py-4 ${isChild ? "pl-12" : ""}`}>
 				<div className="flex items-center gap-3 relative">
-                    {isChild && <div className="w-5 border-l-2 border-b-2 border-dark-700 h-6 absolute -ml-6 -mt-6 rounded-bl-lg"></div>}
+                    {isChild && <div className="w-5 border-l-2 border-b-2 border-border h-6 absolute -ml-6 -mt-6 rounded-bl-lg"></div>}
 					<div
 						className={`p-2 rounded-full ${
 							isPositive
@@ -502,7 +502,7 @@ function TransactionRow({
 					</div>
 					<div className="flex flex-col">
 						<span
-							className={`font-medium text-gray-200 ${
+							className={`font-medium text-fg ${
 								isCancelled ? "line-through" : ""
 							}`}
 						>
@@ -521,31 +521,31 @@ function TransactionRow({
 			</td>
 
 			{isAdmin && (
-				<td className="px-6 py-4 text-gray-300">
+				<td className="px-6 py-4 text-fg">
 					<div className="flex items-center gap-2">
-						<IconUser size={16} className="text-gray-500" />
-						<span className="font-medium text-gray-200">
+						<IconUser size={16} className="text-fg-subtle" />
+						<span className="font-medium text-fg">
 							{t.targetUser
 								? `${t.targetUser.prenom} ${t.targetUser.nom}`
 								: "Utilisateur inconnu"}
 						</span>
 					</div>
-					<span className="text-xs text-gray-500 ml-6">
+					<span className="text-xs text-fg-subtle ml-6">
 						{t.targetUser?.username}
 					</span>
 				</td>
 			)}
 
-			<td className="px-6 py-4 text-gray-300">
+			<td className="px-6 py-4 text-fg">
 				<span className={isCancelled ? "line-through" : ""}>{title}</span>
 				{isAdmin && t.description && t.description !== title && (
-					<div className="text-xs text-gray-500">{t.description}</div>
+					<div className="text-xs text-fg-subtle">{t.description}</div>
 				)}
 			</td>
-			<td className="px-6 py-4 text-gray-400 capitalize" suppressHydrationWarning>{subtitle}</td>
+			<td className="px-6 py-4 text-fg-muted capitalize" suppressHydrationWarning>{subtitle}</td>
 			<td
 				className={`px-6 py-4 text-right font-semibold ${
-					isPositive ? "text-emerald-500" : "text-gray-200"
+					isPositive ? "text-emerald-500" : "text-fg"
 				} ${isCancelled ? "line-through decoration-current" : ""}`}
 			>
 				{isPositive ? "+" : ""}
@@ -594,10 +594,10 @@ function TransactionMobileCard({
 
     return (
         <div className={cn(
-            "bg-dark-900 border border-dark-800 rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden",
+            "bg-surface-900 border border-border rounded-xl p-3 flex flex-col gap-2 relative overflow-hidden",
             (isCancelled || isFailed) && "opacity-50 grayscale",
             isPending && "bg-yellow-500/5 border-yellow-500/20",
-            isChild && "bg-dark-800/20 border-l-4 border-l-dark-700 border-y-0 border-r-0 rounded-l-none"
+            isChild && "bg-elevated/20 border-l-4 border-l-border border-y-0 border-r-0 rounded-l-none"
         )}>
             <div className="flex justify-between items-start gap-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -610,20 +610,20 @@ function TransactionMobileCard({
                     </div>
                     <div className="flex flex-col min-w-0">
                          {/* Title Row */}
-                         <div className={cn("font-semibold text-gray-200 line-clamp-2 text-sm leading-snug", isCancelled && "line-through")}>
+                         <div className={cn("font-semibold text-fg line-clamp-2 text-sm leading-snug", isCancelled && "line-through")}>
                             {title}
                         </div>
                         {/* Subtitle Row */}
-                        <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 min-w-0 mt-0.5">
+                        <div className="text-xs text-fg-muted capitalize flex items-center gap-1.5 min-w-0 mt-0.5">
                             <span className="shrink-0" suppressHydrationWarning>{subtitle}</span>
-                             <span className="w-0.5 h-0.5 bg-gray-600 rounded-full shrink-0"></span>
+                             <span className="w-0.5 h-0.5 bg-fg-subtle rounded-full shrink-0"></span>
                             <span className="truncate">{typeLabel}</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col items-end shrink-0 gap-0.5">
-                     <div className={cn("font-bold text-sm", isPositive ? "text-emerald-500" : "text-gray-200", isCancelled && "line-through decoration-current")}>
+                     <div className={cn("font-bold text-sm", isPositive ? "text-emerald-500" : "text-fg", isCancelled && "line-through decoration-current")}>
                         {isPositive ? "+" : ""}{amountFormatted} €
                     </div>
                     {/* Status badges if needed */}
@@ -648,15 +648,15 @@ function TransactionMobileCard({
 
             {/* Extra Details (User, Description unique from title) */}
             {(isAdmin || (t.description && t.description !== title)) && (
-                <div className="mt-1 pt-2 border-t border-dashed border-dark-700/50 flex flex-col gap-1 px-1">
+                <div className="mt-1 pt-2 border-t border-dashed border-border/50 flex flex-col gap-1 px-1">
                     {isAdmin && t.targetUser && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                            <IconUser size={12} className="text-gray-600" />
+                        <div className="flex items-center gap-1.5 text-xs text-fg-muted">
+                            <IconUser size={12} className="text-fg-subtle" />
                             <span>{t.targetUser.prenom} {t.targetUser.nom}</span>
                         </div>
                     )}
                      {t.description && t.description !== title && (
-                        <div className="text-xs text-gray-500 italic truncate">
+                        <div className="text-xs text-fg-subtle italic truncate">
                            {t.description}
                         </div>
                     )}
@@ -703,9 +703,9 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
 	}
 
     return (
-        <div className={cn("bg-dark-900 border border-dark-800 rounded-xl overflow-hidden", allCancelled && "opacity-50 grayscale")}>
+        <div className={cn("bg-surface-900 border border-border rounded-xl overflow-hidden", allCancelled && "opacity-50 grayscale")}>
             <div 
-                className="p-3 flex flex-col gap-2 cursor-pointer hover:bg-dark-800/50 transition-colors relative"
+                className="p-3 flex flex-col gap-2 cursor-pointer hover:bg-elevated/50 transition-colors relative"
                 onClick={() => setExpanded(!expanded)}
             >
                  <div className="flex justify-between items-start gap-3">
@@ -716,18 +716,18 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
                             <Icon size={20} stroke={1.5} className="relative z-10" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <div className={cn("font-semibold text-gray-200 text-sm line-clamp-2 leading-snug", allCancelled && "line-through")}>
+                            <div className={cn("font-semibold text-fg text-sm line-clamp-2 leading-snug", allCancelled && "line-through")}>
                                 {group.data.description || "Groupe"}
                             </div>
-                            <div className="text-xs text-gray-400 capitalize flex items-center gap-1.5 mt-0.5 min-w-0">
-                                <span className="bg-dark-800 px-1.5 rounded text-[10px] font-medium border border-dark-700 whitespace-nowrap shrink-0">{items.length} ops</span>
+                            <div className="text-xs text-fg-muted capitalize flex items-center gap-1.5 mt-0.5 min-w-0">
+                                <span className="bg-elevated px-1.5 rounded text-[10px] font-medium border border-border whitespace-nowrap shrink-0">{items.length} ops</span>
                                 <span className="truncate" suppressHydrationWarning>{subtitle}</span>
                             </div>
                         </div>
                     </div>
                     
                     <div className="flex flex-col items-end shrink-0 gap-1">
-                        <div className={cn("font-bold text-sm", isPositive ? "text-emerald-500" : "text-gray-200", allCancelled && "line-through decoration-current")}>
+                        <div className={cn("font-bold text-sm", isPositive ? "text-emerald-500" : "text-fg", allCancelled && "line-through decoration-current")}>
                             {isPositive ? "+" : ""}{amountFormatted} €
                         </div>
                         {isAdmin && !allCancelled && (
@@ -735,7 +735,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
                                 <CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />
                             </div>
                         )}
-                        <div className="text-gray-500 transition-transform duration-200 mt-1 flex items-center justify-center" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)'}}>
+                        <div className="text-fg-subtle transition-transform duration-200 mt-1 flex items-center justify-center" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)'}}>
                             <IconChevronDown size={14} />
                         </div>
                     </div>
@@ -743,7 +743,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
             </div>
 
             {expanded && (
-                <div className="border-t border-dark-800 flex flex-col gap-2 p-2 bg-black/20 pl-4">
+                <div className="border-t border-border flex flex-col gap-2 p-2 bg-black/20 pl-4">
                     {items.map((t: TransactionWithRelations) => (
                         <TransactionMobileCard
                             key={t.id}

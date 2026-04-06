@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AlertCircle,Download, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, Download, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -111,15 +111,15 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
             if (val) fetchCandidates();
         }}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="w-full gap-2 border-dashed border-primary-700 bg-primary-950/20 text-primary-400 hover:text-primary-300 hover:bg-primary-950/40">
+                <Button variant="outline" className="w-full gap-2 border-dashed border-accent-700 bg-accent-950/20 text-accent-400 hover:text-accent-300 hover:bg-accent-950/40">
                     <Download className="w-4 h-4" />
                     Importer depuis Pennylane
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl bg-dark-900 border-dark-800 text-white">
+            <DialogContent className="sm:max-w-2xl bg-surface-900 border-border text-fg">
                 <DialogHeader>
                     <DialogTitle>Importer des factures Pennylane</DialogTitle>
-                    <DialogDescription className="text-gray-400">
+                    <DialogDescription className="text-fg-muted">
                         Sélectionnez les factures à importer depuis Pennylane. Seules les factures correspondant aux catégories de votre shop et qui ne sont pas déjà présentes sont affichées.
                     </DialogDescription>
                 </DialogHeader>
@@ -127,26 +127,26 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
                 <div className="py-4">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-                            <p className="text-sm text-gray-500">Recherche des factures...</p>
+                            <Loader2 className="w-8 h-8 animate-spin text-accent-500" />
+                            <p className="text-sm text-fg-subtle">Recherche des factures...</p>
                         </div>
                     ) : error ? (
                         <div className="flex flex-col items-center justify-center py-8 space-y-4 text-red-400">
                             <AlertCircle className="w-8 h-8" />
                             <p>{error}</p>
-                            <Button variant="ghost" size="sm" onClick={fetchCandidates} className="text-white hover:bg-dark-800">
+                            <Button variant="ghost" size="sm" onClick={fetchCandidates} className="text-fg hover:bg-elevated">
                                 <RefreshCw className="w-4 h-4 mr-2" /> Réessayer
                             </Button>
                         </div>
                     ) : candidates.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500">
+                        <div className="text-center py-12 text-fg-subtle">
                             Aucune nouvelle facture trouvée pour ce shop.
                         </div>
                     ) : (
                         <div className="space-y-4">
                             <div className="flex items-center justify-between px-2">
-                                <span className="text-sm text-gray-400">{candidates.length} facture(s) trouvée(s)</span>
-                                <Button variant="ghost" size="sm" className="h-auto py-1 text-xs text-primary-400"
+                                <span className="text-sm text-fg-muted">{candidates.length} facture(s) trouvée(s)</span>
+                                <Button variant="ghost" size="sm" className="h-auto py-1 text-xs text-accent-400"
                                     onClick={() => {
                                         if (selectedIds.size === candidates.length) setSelectedIds(new Set());
                                         else setSelectedIds(new Set(candidates.map(c => c.id)));
@@ -155,74 +155,74 @@ export function PennylaneImportModal({ shopSlug }: { shopSlug: string }) {
                                     {selectedIds.size === candidates.length ? "Tout désélectionner" : "Tout sélectionner"}
                                 </Button>
                             </div>
-                            <div className="border border-dark-700 rounded-md overflow-hidden max-h-[600px] overflow-y-auto">
+                            <div className="border border-border rounded-md overflow-hidden max-h-[600px] overflow-y-auto">
                                 {candidates.map((invoice) => (
-                                    <div key={invoice.id} className="flex flex-col border-b border-dark-700 last:border-0 hover:bg-dark-800/50 transition-colors">
+                                    <div key={invoice.id} className="flex flex-col border-b border-border last:border-0 hover:bg-elevated/50 transition-colors">
                                         <div className="flex items-start gap-3 p-3">
-                                        <Checkbox
-                                            id={invoice.id}
-                                            checked={selectedIds.has(invoice.id)}
-                                            onCheckedChange={(checked: boolean | 'indeterminate') => {
-                                                const newSet = new Set(selectedIds);
-                                                if (checked === true) newSet.add(invoice.id);
-                                                else newSet.delete(invoice.id);
-                                                setSelectedIds(newSet);
-                                            }}
-                                            className="mt-1 border-gray-600 data-[state=checked]:bg-primary-600 data-[state=checked]:border-primary-600"
-                                        />
-                                        <div className="flex-1 space-y-1">
-                                            <Label htmlFor={invoice.id} className="font-medium text-white cursor-pointer block">
-                                                {invoice.description}
-                                            </Label>
-                                            <p className="text-xs text-gray-400 line-clamp-1">{invoice.supplier}</p>
-                                            <div className="flex items-center gap-3 text-xs text-gray-500">
-                                                <span>{format(new Date(invoice.date), "dd MMM yyyy", { locale: fr })}</span>
-                                                {invoice.fileUrl && (
-                                                    <>
-                                                        <span className="w-1 h-1 rounded-full bg-gray-600" />
-                                                        <button
-                                                            className="text-primary-400 hover:text-primary-300 transition-colors text-xs inline-flex items-center"
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                if (previewUrl === invoice.fileUrl) {
-                                                                    setPreviewUrl(null);
-                                                                } else {
-                                                                    setPreviewUrl(invoice.fileUrl!);
-                                                                }
-                                                            }}
-                                                        >
-                                                            {previewUrl === invoice.fileUrl ? "Masquer la facture" : "Aperçu de la facture"}
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="font-medium text-white whitespace-nowrap">
-                                            {invoice.amount} €
-                                        </div>
-                                    </div>
-                                    {previewUrl === invoice.fileUrl && (
-                                        <div className="p-3 pt-0 border-t border-dark-800">
-                                            <div className="bg-dark-950 rounded overflow-hidden mt-2 relative w-full" style={{ height: "400px" }}>
-                                                <div className="absolute top-2 right-2 flex gap-2 z-10">
-                                                    <a
-                                                        href={invoice.fileUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="bg-dark-800/80 hover:bg-dark-800 text-white text-xs px-2 py-1 rounded border border-dark-700 backdrop-blur-sm transition-colors flex items-center gap-1"
-                                                    >
-                                                        <Download className="w-3 h-3" /> Ouvrir dans un nouvel onglet
-                                                    </a>
+                                            <Checkbox
+                                                id={invoice.id}
+                                                checked={selectedIds.has(invoice.id)}
+                                                onCheckedChange={(checked: boolean | 'indeterminate') => {
+                                                    const newSet = new Set(selectedIds);
+                                                    if (checked === true) newSet.add(invoice.id);
+                                                    else newSet.delete(invoice.id);
+                                                    setSelectedIds(newSet);
+                                                }}
+                                                className="mt-1 border-fg-subtle data-[state=checked]:bg-accent-600 data-[state=checked]:border-accent-600"
+                                            />
+                                            <div className="flex-1 space-y-1">
+                                                <Label htmlFor={invoice.id} className="font-medium text-fg cursor-pointer block">
+                                                    {invoice.description}
+                                                </Label>
+                                                <p className="text-xs text-fg-muted line-clamp-1">{invoice.supplier}</p>
+                                                <div className="flex items-center gap-3 text-xs text-fg-subtle">
+                                                    <span>{format(new Date(invoice.date), "dd MMM yyyy", { locale: fr })}</span>
+                                                    {invoice.fileUrl && (
+                                                        <>
+                                                            <span className="w-1 h-1 rounded-full bg-fg-subtle" />
+                                                            <button
+                                                                className="text-accent-400 hover:text-accent-300 transition-colors text-xs inline-flex items-center"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    if (previewUrl === invoice.fileUrl) {
+                                                                        setPreviewUrl(null);
+                                                                    } else {
+                                                                        setPreviewUrl(invoice.fileUrl!);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                {previewUrl === invoice.fileUrl ? "Masquer la facture" : "Aperçu de la facture"}
+                                                            </button>
+                                                        </>
+                                                    )}
                                                 </div>
-                                                <iframe
-                                                    src={`${invoice.fileUrl}#toolbar=0`}
-                                                    className="w-full h-full border-0 bg-white"
-                                                    title={`Facture ${invoice.supplier}`}
-                                                />
+                                            </div>
+                                            <div className="font-medium text-fg whitespace-nowrap">
+                                                {invoice.amount} €
                                             </div>
                                         </div>
-                                    )}
-                                </div>
+                                        {previewUrl === invoice.fileUrl && (
+                                            <div className="p-3 pt-0 border-t border-border">
+                                                <div className="bg-surface-950 rounded overflow-hidden mt-2 relative w-full" style={{ height: "400px" }}>
+                                                    <div className="absolute top-2 right-2 flex gap-2 z-10">
+                                                        <a
+                                                            href={invoice.fileUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="bg-elevated/80 hover:bg-elevated text-fg text-xs px-2 py-1 rounded border border-border backdrop-blur-sm transition-colors flex items-center gap-1"
+                                                        >
+                                                            <Download className="w-3 h-3" /> Ouvrir dans un nouvel onglet
+                                                        </a>
+                                                    </div>
+                                                    <iframe
+                                                        src={`${invoice.fileUrl}#toolbar=0`}
+                                                        className="w-full h-full border-0 bg-white"
+                                                        title={`Facture ${invoice.supplier}`}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                         </div>

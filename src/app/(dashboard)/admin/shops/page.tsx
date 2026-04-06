@@ -24,10 +24,10 @@ export default async function AdminShopsPage() {
 		<div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
 			<div className="flex items-center justify-between space-y-2">
 				<div>
-					<h2 className="text-3xl font-bold tracking-tight text-white mb-1">
+					<h2 className="text-3xl font-bold tracking-tight text-fg mb-1">
 						Gestion des Boquettes
 					</h2>
-					<p className="text-gray-400">Gérez les shops</p>
+					<p className="text-fg-muted">Gérez les shops</p>
 				</div>
 				<div className="flex items-center gap-2">
 					<CreateShopModal />
@@ -36,14 +36,14 @@ export default async function AdminShopsPage() {
 
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				{shops.length === 0 ? (
-					<div className="col-span-full flex flex-col items-center justify-center p-12 text-center bg-dark-900 rounded-xl border border-dark-800 border-dashed">
-						<div className="p-4 bg-dark-800 rounded-full mb-4">
-							<IconBuildingStore size={32} className="text-gray-500" />
+					<div className="col-span-full flex flex-col items-center justify-center p-12 text-center bg-surface-900 rounded-xl border border-border border-dashed">
+						<div className="p-4 bg-elevated rounded-full mb-4">
+							<IconBuildingStore size={32} className="text-fg-subtle" />
 						</div>
-						<h3 className="text-lg font-medium text-gray-300">
+						<h3 className="text-lg font-medium text-fg">
 							Aucun shop trouvé
 						</h3>
-						<p className="text-gray-500 mt-2 max-w-sm">
+						<p className="text-fg-subtle mt-2 max-w-sm">
 							Commencez par créer votre premier shop pour activer les
 							fonctionnalités de vente.
 						</p>

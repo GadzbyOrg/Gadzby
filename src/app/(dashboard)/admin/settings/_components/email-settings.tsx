@@ -26,8 +26,8 @@ function SubmitButton() {
 			type="submit"
 			disabled={pending}
 			className={cn(
-				"flex w-full justify-center rounded-lg bg-primary-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm transition-all whitespace-nowrap",
-				"hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
+				"flex w-full justify-center rounded-lg bg-accent-600 px-3 py-2.5 text-sm font-semibold leading-6 text-fg shadow-sm transition-all whitespace-nowrap",
+				"hover:bg-accent-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600",
 				"disabled:opacity-50 disabled:cursor-not-allowed"
 			)}
 		>
@@ -90,7 +90,7 @@ export function EmailSettings() {
 	if (loading) {
 		return (
 			<div className="flex h-64 items-center justify-center">
-				<IconLoader2 className="animate-spin text-primary-500" size={32} />
+				<IconLoader2 className="animate-spin text-accent-500" size={32} />
 			</div>
 		);
 	}
@@ -98,16 +98,16 @@ export function EmailSettings() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="text-xl font-bold text-white mb-1">
+				<h2 className="text-xl font-bold text-fg mb-1">
 					Configuration Email
 				</h2>
-				<p className="text-gray-400 text-sm">
+				<p className="text-fg-muted text-sm">
 					Gérez le fournisseur d&apos;email pour la gestion des mots de passes
 					oubliés.
 				</p>
 			</div>
 
-			<div className="rounded-xl border border-dark-800 bg-dark-900/50 p-6 shadow-xl backdrop-blur-sm">
+			<div className="rounded-xl border border-border bg-surface-900/50 p-6 shadow-xl backdrop-blur-sm">
 				<form ref={formRef} action={action} className="space-y-8">
 					{state?.error && (
 						<div className="p-4 rounded-xl bg-red-900/20 text-red-100 border border-red-900/50 flex items-center gap-3">
@@ -137,7 +137,7 @@ export function EmailSettings() {
 
 					{/* Provider Selection */}
 					<div className="space-y-4">
-						<label className="text-sm font-medium text-white">
+						<label className="text-sm font-medium text-fg">
 							Fournisseur
 						</label>
 						<div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
@@ -147,8 +147,8 @@ export function EmailSettings() {
 								className={cn(
 									"flex items-center justify-center gap-3 rounded-lg border p-4 transition-all",
 									provider === "smtp"
-										? "border-primary-600 bg-primary-900/20 text-primary-400"
-										: "border-dark-800 bg-dark-950 text-gray-400 hover:border-dark-700"
+										? "border-accent-600 bg-accent-900/20 text-accent-400"
+										: "border-border bg-surface-950 text-fg-muted hover:border-border"
 								)}
 							>
 								<IconMail size={24} />
@@ -160,8 +160,8 @@ export function EmailSettings() {
 								className={cn(
 									"flex items-center justify-center gap-3 rounded-lg border p-4 transition-all",
 									provider === "resend"
-										? "border-primary-600 bg-primary-900/20 text-primary-400"
-										: "border-dark-800 bg-dark-950 text-gray-400 hover:border-dark-700"
+										? "border-accent-600 bg-accent-900/20 text-accent-400"
+										: "border-border bg-surface-950 text-fg-muted hover:border-border"
 								)}
 							>
 								<svg
@@ -178,19 +178,19 @@ export function EmailSettings() {
 						<input type="hidden" name="provider" value={provider} />
 					</div>
 
-					<div className="h-px bg-dark-800" />
+					<div className="h-px bg-elevated" />
 
 					{/* SMTP Configuration */}
 					{provider === "smtp" && (
 						<div className="space-y-4 animate-in fade-in slide-in-from-top-4">
-							<h3 className="text-lg font-semibold text-white">
+							<h3 className="text-lg font-semibold text-fg">
 								Paramètres SMTP
 							</h3>
 							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 								<div className="space-y-2">
 									<label
 										htmlFor="smtpHost"
-										className="text-sm font-medium text-gray-300"
+										className="text-sm font-medium text-fg"
 									>
 										Host
 									</label>
@@ -200,13 +200,13 @@ export function EmailSettings() {
 										id="smtpHost"
 										defaultValue={defaultConfig?.smtpHost}
 										placeholder="smtp.example.com"
-										className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+										className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
 									/>
 								</div>
 								<div className="space-y-2">
 									<label
 										htmlFor="smtpPort"
-										className="text-sm font-medium text-gray-300"
+										className="text-sm font-medium text-fg"
 									>
 										Port
 									</label>
@@ -216,13 +216,13 @@ export function EmailSettings() {
 										id="smtpPort"
 										defaultValue={defaultConfig?.smtpPort}
 										placeholder="587"
-										className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+										className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
 									/>
 								</div>
 								<div className="space-y-2">
 									<label
 										htmlFor="smtpUser"
-										className="text-sm font-medium text-gray-300"
+										className="text-sm font-medium text-fg"
 									>
 										Utilisateur
 									</label>
@@ -231,13 +231,13 @@ export function EmailSettings() {
 										name="smtpUser"
 										id="smtpUser"
 										defaultValue={defaultConfig?.smtpUser}
-										className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+										className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
 									/>
 								</div>
 								<div className="space-y-2">
 									<label
 										htmlFor="smtpPassword"
-										className="text-sm font-medium text-gray-300"
+										className="text-sm font-medium text-fg"
 									>
 										Mot de passe
 									</label>
@@ -246,13 +246,13 @@ export function EmailSettings() {
 										name="smtpPassword"
 										id="smtpPassword"
 										defaultValue={defaultConfig?.smtpPassword}
-										className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+										className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
 									/>
 								</div>
 								<div className="space-y-2 sm:col-span-2">
 									<label
 										htmlFor="smtpFrom"
-										className="text-sm font-medium text-gray-300"
+										className="text-sm font-medium text-fg"
 									>
 										Email Expéditeur (From)
 									</label>
@@ -264,7 +264,7 @@ export function EmailSettings() {
 											defaultConfig?.smtpFrom || "noreply@gadzby.com"
 										}
 										placeholder="noreply@example.com"
-										className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+										className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
 									/>
 								</div>
 								<div className="sm:col-span-2">
@@ -273,9 +273,9 @@ export function EmailSettings() {
 											type="checkbox"
 											name="smtpSecure"
 											defaultChecked={defaultConfig?.smtpSecure}
-											className="w-4 h-4 rounded border-gray-600 text-primary-600 focus:ring-primary-600 bg-dark-950"
+											className="w-4 h-4 rounded border-fg-subtle text-accent-600 focus:ring-accent-600 bg-surface-950"
 										/>
-										<span className="text-sm text-gray-300">
+										<span className="text-sm text-fg">
 											Utiliser une connexion sécurisée (SSL/TLS)
 										</span>
 									</label>
@@ -287,13 +287,13 @@ export function EmailSettings() {
 					{/* Resend Configuration */}
 					{provider === "resend" && (
 						<div className="space-y-4 animate-in fade-in slide-in-from-top-4">
-							<h3 className="text-lg font-semibold text-white">
+							<h3 className="text-lg font-semibold text-fg">
 								Configuration Resend
 							</h3>
 							<div className="space-y-2">
 								<label
 									htmlFor="resendApiKey"
-									className="text-sm font-medium text-gray-300"
+									className="text-sm font-medium text-fg"
 								>
 									Clé API (API Key)
 								</label>
@@ -303,13 +303,13 @@ export function EmailSettings() {
 									id="resendApiKey"
 									defaultValue={defaultConfig?.resendApiKey}
 									placeholder="re_123456789"
-									className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+									className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
 								/>
 							</div>
 							<div className="space-y-2">
 								<label
 									htmlFor="smtpFrom"
-									className="text-sm font-medium text-gray-300"
+									className="text-sm font-medium text-fg"
 								>
 									Email Expéditeur (Doit être vérifié sur Resend)
 								</label>
@@ -321,7 +321,7 @@ export function EmailSettings() {
 										defaultConfig?.smtpFrom || "onboarding@resend.dev"
 									}
 									placeholder="onboarding@resend.dev"
-									className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+									className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
 								/>
 							</div>
 						</div>
@@ -331,7 +331,7 @@ export function EmailSettings() {
 						<div className="w-full sm:flex-1 sm:max-w-sm">
 							<label
 								htmlFor="testEmail"
-								className="mb-2 block text-xs font-medium text-gray-400"
+								className="mb-2 block text-xs font-medium text-fg-muted"
 							>
 								Email de test (Optionnel)
 							</label>
@@ -340,7 +340,7 @@ export function EmailSettings() {
 								name="testEmail"
 								id="testEmail"
 								placeholder="test@gadzby.com"
-								className="w-full bg-dark-950 border border-dark-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+								className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
 							/>
 						</div>
 						<button
@@ -348,8 +348,8 @@ export function EmailSettings() {
 							onClick={handleTestConfig}
 							disabled={testState.loading}
 							className={cn(
-								"flex items-center justify-center gap-2 rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 text-sm font-semibold text-gray-300 shadow-sm transition-all whitespace-nowrap",
-								"hover:bg-dark-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-500",
+								"flex items-center justify-center gap-2 rounded-lg border border-border bg-elevated px-4 py-2.5 text-sm font-semibold text-fg shadow-sm transition-all whitespace-nowrap",
+								"hover:bg-elevated hover:text-fg focus:outline-none focus:ring-2 focus:ring-fg-subtle",
 								"disabled:opacity-50 disabled:cursor-not-allowed"
 							)}
 						>
