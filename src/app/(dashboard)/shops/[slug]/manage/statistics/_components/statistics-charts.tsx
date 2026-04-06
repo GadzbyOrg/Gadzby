@@ -31,6 +31,7 @@ import { ProductPerformanceCard, ProductStats } from "./product-performance-card
 import { StaffActivityCard, StaffStats } from "./staff-activity-card";
 import { StockProjection } from "./stock-projection-card";
 import { CustomerStats, TopCustomersCard } from "./top-customers-card";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";
 
@@ -259,19 +260,11 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 				</div>
 
 				{timeframe === "custom" && (
-					<div className="flex items-center gap-2 w-full sm:w-auto">
-						<input
-							type="date"
-							value={customStart}
-							onChange={(e) => handleDateChange("from", e.target.value)}
-							className="flex-1 w-full sm:w-auto min-w-0 bg-elevated border-border text-white rounded-md px-2 sm:px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
-						/>
-						<span className="text-fg-subtle shrink-0">-</span>
-						<input
-							type="date"
-							value={customEnd}
-							onChange={(e) => handleDateChange("to", e.target.value)}
-							className="flex-1 w-full sm:w-auto min-w-0 bg-elevated border-border text-white rounded-md px-2 sm:px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
+					<div className="flex items-center gap-2 w-full sm:w-[260px]">
+						<DateRangePicker
+							startValue={customStart}
+							endValue={customEnd}
+							onChange={(range) => updateParams({ from: range.start || null, to: range.end || null })}
 						/>
 					</div>
 				)}

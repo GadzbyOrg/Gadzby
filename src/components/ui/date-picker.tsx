@@ -60,10 +60,10 @@ export function DatePicker({
 					type="button"
 					disabled={disabled}
 					className={cn(
-						"flex items-center gap-2 w-full rounded-lg border border-border bg-surface-950 px-3 py-2 text-sm text-left",
-						"focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-600",
+						"flex h-10 w-full items-center gap-2 rounded-lg border border-border bg-surface-950 hover:bg-surface-900 px-3 py-2 text-sm text-left transition-colors shadow-sm",
+						"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500",
 						"disabled:cursor-not-allowed disabled:opacity-50",
-						currentValue ? "text-fg" : "text-fg-subtle",
+						currentValue ? "text-fg font-medium" : "text-fg-subtle font-normal",
 						className,
 					)}
 				>

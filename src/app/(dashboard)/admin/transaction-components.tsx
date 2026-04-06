@@ -17,6 +17,7 @@ import { useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -35,40 +36,21 @@ function DateRangeFilter() {
 	const pathname = usePathname();
 	const { replace } = useRouter();
 
-	const handleDateChange = (key: "startDate" | "endDate", value: string) => {
+	const handleDateRangeChange = (range: { start: string; end: string }) => {
 		const params = new URLSearchParams(searchParams);
-		if (value) {
-			params.set(key, value);
-		} else {
-			params.delete(key);
-		}
+		if (range.start) params.set("startDate", range.start); else params.delete("startDate");
+		if (range.end) params.set("endDate", range.end); else params.delete("endDate");
 		params.set("page", "1");
 		replace(`${pathname}?${params.toString()}`);
 	};
 
 	return (
-		<div className="flex items-center gap-2 w-full">
-			<div className="relative flex-1">
-				<IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
-				<input
-					type="date"
-					className="w-full bg-surface-950 border-border text-fg pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-accent-500"
-					value={searchParams.get("startDate") || ""}
-					onChange={(e) => handleDateChange("startDate", e.target.value)}
-					placeholder="Date début"
-				/>
-			</div>
-			<span className="text-fg-subtle shrink-0">-</span>
-			<div className="relative flex-1">
-				<IconCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-4 h-4 pointer-events-none" />
-				<input
-					type="date"
-					className="w-full bg-surface-950 border-border text-fg pl-9 pr-2 py-2 rounded-lg text-sm focus:ring-1 focus:ring-accent-500"
-					value={searchParams.get("endDate") || ""}
-					onChange={(e) => handleDateChange("endDate", e.target.value)}
-					placeholder="Date fin"
-				/>
-			</div>
+		<div className="flex items-center gap-2 w-full md:w-[260px]">
+			<DateRangePicker
+				startValue={searchParams.get("startDate") || ""}
+				endValue={searchParams.get("endDate") || ""}
+				onChange={handleDateRangeChange}
+			/>
 		</div>
 	);
 }
