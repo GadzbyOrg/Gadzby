@@ -6,7 +6,7 @@ import {
 	IconTrash,
 	IconX,
 } from "@tabler/icons-react";
-import { useCallback,useEffect,useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { UserAvatar } from "@/components/user-avatar";
 import { UserSearch } from "@/components/user-search";
@@ -18,16 +18,16 @@ import {
 } from "@/features/famss/admin-actions";
 
 interface FamsMember {
-    id: string;
-    username: string;
-    nom: string;
-    prenom: string;
-    image: string | null;
-    isAdmin: boolean;
+	id: string;
+	username: string;
+	nom: string;
+	prenom: string;
+	image: string | null;
+	isAdmin: boolean;
 }
 
 interface FamsMembersModalProps {
-     
+
 	fams: any;
 	onClose: () => void;
 }
@@ -43,7 +43,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 		if (res.error !== undefined) {
 			setError(res.error);
 		} else {
-			 
+
 			setMembers(res.members as any);
 		}
 		setLoading(false);
@@ -51,7 +51,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 
 	// Fetch members on mount
 	useEffect(() => {
-		 
+
 		loadMembers();
 	}, [loadMembers]);
 
@@ -104,15 +104,15 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-			<div className="bg-dark-950 border border-dark-800 rounded-2xl w-full max-w-lg shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
-				<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-dark-950/95 backdrop-blur border-b border-dark-800 shrink-0">
+			<div className="bg-surface-950 border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+				<div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-surface-950/95 backdrop-blur border-b border-border shrink-0">
 					<div>
-						<h2 className="text-xl font-bold text-white">Membres</h2>
-						<p className="text-sm text-gray-400">{fams.name}</p>
+						<h2 className="text-xl font-bold text-fg">Membres</h2>
+						<p className="text-sm text-fg-muted">{fams.name}</p>
 					</div>
 					<button
 						onClick={onClose}
-						className="p-2 text-gray-500 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+						className="p-2 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 					>
 						<IconX className="w-5 h-5" />
 					</button>
@@ -137,15 +137,15 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 
 					{/* Members List */}
 					{loading ? (
-						<div className="text-center py-8 text-gray-500">Chargement...</div>
+						<div className="text-center py-8 text-fg-subtle">Chargement...</div>
 					) : members.length === 0 ? (
-						<div className="text-center py-8 text-gray-500">Aucun membre</div>
+						<div className="text-center py-8 text-fg-subtle">Aucun membre</div>
 					) : (
 						<ul className="space-y-2">
 							{members.map((member) => (
 								<li
 									key={member.id}
-									className="flex items-center justify-between p-3 bg-dark-900/50 border border-dark-800/50 rounded-xl hover:border-dark-700 transition-colors"
+									className="flex items-center justify-between p-3 bg-surface-900/50 border border-border/50 rounded-xl hover:border-border transition-colors"
 								>
 									<div className="flex items-center gap-3">
 										<UserAvatar
@@ -159,16 +159,16 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 										/>
 										<div>
 											<div className="flex items-center gap-2">
-												<div className="text-sm font-medium text-white">
+												<div className="text-sm font-medium text-fg">
 													{member.prenom} {member.nom}
 												</div>
 												{member.isAdmin && (
-													<span className="text-[10px] bg-primary-900/50 text-primary-400 px-1.5 py-0.5 rounded border border-primary-900/50">
+													<span className="text-[10px] bg-accent-900/50 text-accent-400 px-1.5 py-0.5 rounded border border-accent-900/50">
 														Admin
 													</span>
 												)}
 											</div>
-											<div className="text-xs text-gray-500">
+											<div className="text-xs text-fg-subtle">
 												@{member.username}
 											</div>
 										</div>
@@ -176,11 +176,10 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 									<div className="flex items-center gap-2">
 										<button
 											onClick={() => toggleAdmin(member)}
-											className={`p-1.5 rounded-lg transition-colors ${
-												member.isAdmin
-													? "text-primary-400 hover:bg-primary-900/20"
-													: "text-gray-600 hover:text-gray-300 hover:bg-dark-800"
-											}`}
+											className={`p-1.5 rounded-lg transition-colors ${member.isAdmin
+												? "text-accent-400 hover:bg-accent-900/20"
+												: "text-fg-subtle hover:text-fg hover:bg-elevated"
+												}`}
 											title={
 												member.isAdmin ? "Révoquer Admin" : "Promouvoir Admin"
 											}
@@ -193,7 +192,7 @@ export function FamsMembersModal({ fams, onClose }: FamsMembersModalProps) {
 										</button>
 										<button
 											onClick={() => handleRemove(member.id)}
-											className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-dark-800 rounded-lg transition-colors"
+											className="p-1.5 text-fg-subtle hover:text-red-400 hover:bg-elevated rounded-lg transition-colors"
 											title="Retirer"
 										>
 											<IconTrash size={16} />

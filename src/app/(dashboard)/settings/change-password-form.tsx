@@ -15,8 +15,8 @@ function SubmitButton() {
 			type="submit"
 			disabled={pending}
 			className={cn(
-				"flex w-full justify-center rounded-lg bg-primary-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm transition-all",
-				"hover:bg-primary-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
+				"flex w-full justify-center rounded-lg bg-accent-600 px-3 py-2.5 text-sm font-semibold leading-6 text-fg shadow-sm transition-all",
+				"hover:bg-accent-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600",
 				"disabled:opacity-50 disabled:cursor-not-allowed"
 			)}
 		>
@@ -42,7 +42,7 @@ function InputLabel({
 	return (
 		<label
 			htmlFor={htmlFor}
-			className="block text-sm font-medium leading-6 text-gray-300"
+			className="block text-sm font-medium leading-6 text-fg"
 		>
 			{children}
 		</label>
@@ -72,14 +72,14 @@ export function ChangePasswordForm() {
 				<InputLabel htmlFor="currentPassword">Mot de passe actuel</InputLabel>
 				<div className="relative mt-2">
 					<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-						<IconLock className="h-5 w-5 text-gray-500" />
+						<IconLock className="h-5 w-5 text-fg-subtle" />
 					</div>
 					<input
 						type="password"
 						name="currentPassword"
 						id="currentPassword"
 						required
-						className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+						className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
 					/>
 				</div>
 			</div>
@@ -89,7 +89,7 @@ export function ChangePasswordForm() {
 					<InputLabel htmlFor="newPassword">Nouveau mot de passe</InputLabel>
 					<div className="relative mt-2">
 						<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-							<IconLock className="h-5 w-5 text-gray-500" />
+							<IconLock className="h-5 w-5 text-fg-subtle" />
 						</div>
 						<input
 							type="password"
@@ -97,7 +97,7 @@ export function ChangePasswordForm() {
 							id="newPassword"
 							required
 							placeholder="Min. 6 caractères"
-							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -106,7 +106,7 @@ export function ChangePasswordForm() {
 					<InputLabel htmlFor="confirmNewPassword">Confirmer</InputLabel>
 					<div className="relative mt-2">
 						<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-							<IconLock className="h-5 w-5 text-gray-500" />
+							<IconLock className="h-5 w-5 text-fg-subtle" />
 						</div>
 						<input
 							type="password"
@@ -114,7 +114,7 @@ export function ChangePasswordForm() {
 							id="confirmNewPassword"
 							required
 							placeholder="Répétez le mot de passe"
-							className="block w-full rounded-md border-0 bg-dark-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-dark-700 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>

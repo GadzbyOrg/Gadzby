@@ -136,8 +136,8 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                         <h3 className={`font-medium ${hasIssues ? 'text-red-300' : 'text-green-300'}`}>
                             {hasIssues ? 'Écarts détectés' : 'Tout est en ordre'}
                         </h3>
-                        <p className="text-sm text-gray-400">
-                            Valeur totale des écarts : <span className={totalDiffValue < 0 ? 'text-red-400' : totalDiffValue > 0 ? 'text-green-400' : 'text-gray-300'}>
+                        <p className="text-sm text-fg-muted">
+                            Valeur totale des écarts : <span className={totalDiffValue < 0 ? 'text-red-400' : totalDiffValue > 0 ? 'text-green-400' : 'text-fg'}>
                                 {totalDiffValue > 0 ? '+' : ''}{totalDiffValue.toFixed(2)} €
                             </span>
                         </p>
@@ -150,8 +150,8 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
             <div className="space-y-8">
                 {groupedItems.map((group) => (
                     <div key={group.name} className="space-y-4">
-                        <h3 className="text-xl font-bold text-white px-1">
-                            {group.name} <span className="text-gray-500 text-sm font-normal">({group.items.length})</span>
+                        <h3 className="text-xl font-bold text-fg px-1">
+                            {group.name} <span className="text-fg-subtle text-sm font-normal">({group.items.length})</span>
                         </h3>
 
                         {/* Mobile View */}
@@ -161,20 +161,20 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                 return (
                                     <div
                                         key={item.id}
-                                        className="bg-dark-900 border border-dark-800 p-4 rounded-xl space-y-4"
+                                        className="bg-surface-900 border border-border p-4 rounded-xl space-y-4"
                                     >
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <div className="font-medium text-white text-lg">
+                                                <div className="font-medium text-fg text-lg">
                                                     {item.product.name}
                                                 </div>
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-fg-subtle">
                                                     {(item.product.price / 100).toFixed(2)}€ / unit
                                                 </div>
                                             </div>
                                             <div
                                                 className={`text-sm font-mono font-medium ${item.difference === 0
-                                                    ? "text-gray-500"
+                                                    ? "text-fg-subtle"
                                                     : item.difference > 0
                                                         ? "text-green-400"
                                                         : "text-red-400"
@@ -186,21 +186,21 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-dark-950/50 p-3 rounded-lg border border-dark-800/50">
-                                                <div className="text-xs text-gray-400 uppercase font-medium mb-1">
+                                            <div className="bg-surface-950/50 p-3 rounded-lg border border-border/50">
+                                                <div className="text-xs text-fg-muted uppercase font-medium mb-1">
                                                     Système
                                                 </div>
-                                                <div className="text-gray-300 font-mono text-lg">
+                                                <div className="text-fg font-mono text-lg">
                                                     {item.systemStock.toFixed(2)} {item.product.unit || "u"}
                                                 </div>
                                             </div>
 
                                             <div>
-                                                <div className="text-xs text-gray-400 uppercase font-medium mb-1">
+                                                <div className="text-xs text-fg-muted uppercase font-medium mb-1">
                                                     Réel
                                                 </div>
                                                 {isReadOnly ? (
-                                                    <div className="text-white font-mono text-lg bg-dark-950/50 p-3 rounded-lg border border-dark-800/50">
+                                                    <div className="text-fg font-mono text-lg bg-surface-950/50 p-3 rounded-lg border border-border/50">
                                                         {item.actualStock.toFixed(2)}
                                                     </div>
                                                 ) : (
@@ -209,10 +209,10 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                             type="number"
                                                             inputMode="decimal"
                                                             step="0.01"
-                                                            className={`w-full bg-dark-950 border ${item.difference !== 0
+                                                            className={`w-full bg-surface-950 border ${item.difference !== 0
                                                                 ? "border-yellow-500/30 focus:border-yellow-500"
-                                                                : "border-dark-700 focus:border-primary-500"
-                                                                } rounded-lg px-3 py-3 text-right text-white font-mono text-lg focus:ring-1 focus:ring-primary-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                                : "border-border focus:border-accent-500"
+                                                                } rounded-lg px-3 py-3 text-right text-fg font-mono text-lg focus:ring-1 focus:ring-accent-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                                             value={item.actualStock}
                                                             onChange={(e) =>
                                                                 handleStockChange(item.id, e.target.value)
@@ -220,7 +220,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                         />
                                                         {isUpdating && (
                                                             <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                                                                <div className="w-4 h-4 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+                                                                <div className="w-4 h-4 border-2 border-accent-500/30 border-t-accent-500 rounded-full animate-spin" />
                                                             </div>
                                                         )}
                                                     </div>
@@ -233,10 +233,10 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                         </div>
 
                         {/* Desktop View */}
-                        <div className="hidden md:block bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden">
+                        <div className="hidden md:block bg-surface-900 border border-border rounded-2xl overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm">
-                                    <thead className="bg-dark-950 text-gray-400 uppercase text-xs">
+                                    <thead className="bg-surface-950 text-fg-muted uppercase text-xs">
                                         <tr>
                                             <th className="px-6 py-4 font-medium">Produit</th>
                                             <th className="px-6 py-4 font-medium text-right">
@@ -248,25 +248,25 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                             <th className="px-6 py-4 font-medium text-right">Écart</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-dark-800">
+                                    <tbody className="divide-y divide-border">
                                         {group.items.map((item) => {
                                             const isUpdating = updatingItems[item.id];
                                             return (
-                                                <tr key={item.id} className="hover:bg-dark-800/30">
+                                                <tr key={item.id} className="hover:bg-elevated/30">
                                                     <td className="px-6 py-4">
-                                                        <div className="font-medium text-white">
+                                                        <div className="font-medium text-fg">
                                                             {item.product.name}
                                                         </div>
-                                                        <div className="text-xs text-gray-500">
+                                                        <div className="text-xs text-fg-subtle">
                                                             {(item.product.price / 100).toFixed(2)}€ / unit
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right text-gray-400">
+                                                    <td className="px-6 py-4 text-right text-fg-muted">
                                                         {item.systemStock} {item.product.unit || "unit"}
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         {isReadOnly ? (
-                                                            <span className="text-white font-mono">
+                                                            <span className="text-fg font-mono">
                                                                 {item.actualStock}
                                                             </span>
                                                         ) : (
@@ -274,10 +274,10 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                                 <input
                                                                     type="number"
                                                                     step="0.01"
-                                                                    className={`w-full bg-dark-950 border ${item.difference !== 0
+                                                                    className={`w-full bg-surface-950 border ${item.difference !== 0
                                                                         ? "border-yellow-500/30 focus:border-yellow-500"
-                                                                        : "border-dark-700 focus:border-primary-500"
-                                                                        } rounded-lg px-3 py-2 text-right text-white font-mono focus:ring-1 focus:ring-primary-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                                        : "border-border focus:border-accent-500"
+                                                                        } rounded-lg px-3 py-2 text-right text-fg font-mono focus:ring-1 focus:ring-accent-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                                                     value={item.actualStock}
                                                                     onChange={(e) =>
                                                                         handleStockChange(item.id, e.target.value)
@@ -285,7 +285,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                                 />
                                                                 {isUpdating && (
                                                                     <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                                                                        <div className="w-3 h-3 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+                                                                        <div className="w-3 h-3 border-2 border-accent-500/30 border-t-accent-500 rounded-full animate-spin" />
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -294,7 +294,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                     <td className="px-6 py-4 text-right">
                                                         <span
                                                             className={`font-mono font-medium ${item.difference === 0
-                                                                ? "text-gray-500"
+                                                                ? "text-fg-subtle"
                                                                 : item.difference > 0
                                                                     ? "text-green-400"
                                                                     : "text-red-400"
@@ -321,7 +321,7 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                     <button
                         onClick={handleComplete}
                         disabled={isCompleting}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-primary-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-6 py-3 bg-accent-600 hover:bg-accent-500 text-fg rounded-xl font-medium transition-all shadow-lg shadow-accent-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isCompleting ? (
                             <>Validation...</>

@@ -1,10 +1,10 @@
-import "@mantine/core/styles.css";
 import "./globals.css";
 
 import type { Metadata, Viewport } from "next";
 import React from "react";
 
 import { ServiceWorkerUnregister } from "@/components/ServiceWorkerUnregister";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
 	title: "Gadzby",
@@ -31,14 +31,14 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<html lang="fr">
+		<html lang="fr" data-mode="dark">
 			<head>
-				{/* Playfair Display font for campus name display */}
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
 				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 				<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,600;1,700&display=swap" rel="stylesheet" />
 			</head>
 			<body>
+				<ThemeProvider />
 				<ServiceWorkerUnregister />
 				{children}
 			</body>

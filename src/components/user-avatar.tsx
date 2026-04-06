@@ -24,7 +24,7 @@ export function UserAvatar({ user, className }: UserAvatarProps) {
 	return (
 		<div
 			className={cn(
-				"relative flex shrink-0 overflow-hidden rounded-full border border-dark-700 bg-dark-800 items-center justify-center",
+				"relative flex shrink-0 overflow-hidden rounded-full border border-border bg-elevated items-center justify-center",
 				className
 			)}
 		>
@@ -37,7 +37,7 @@ export function UserAvatar({ user, className }: UserAvatarProps) {
 					className="object-cover"
 				/>
 			) : (
-				<span className="font-semibold text-gray-400 text-xs">
+				<span className="font-semibold text-fg-muted text-xs">
 					{displayName.substring(0, 2).toUpperCase()}
 				</span>
 			)}

@@ -60,26 +60,26 @@ export default function RestockButton({ shopSlug, productId, productName, curren
 
             {isOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-dark-900 border border-dark-700 rounded-xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+                    <div className="bg-surface-900 border border-border rounded-xl p-6 max-w-sm w-full shadow-2xl space-y-4">
                         <div className="space-y-1">
-                            <h3 className="text-xl font-bold text-white">Réapprovisionner</h3>
-                            <p className="text-gray-400 text-sm">
-                                Ajouter du stock pour <span className="text-white font-medium">{productName}</span>.
+                            <h3 className="text-xl font-bold text-fg">Réapprovisionner</h3>
+                            <p className="text-fg-muted text-sm">
+                                Ajouter du stock pour <span className="text-fg font-medium">{productName}</span>.
                             </p>
                         </div>
 
                         <form onSubmit={handleRestock} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-1">
+                                <label className="block text-sm font-medium text-fg mb-1">
                                     Quantité à ajouter ({currentUnit})
                                 </label>
-                                <input 
-                                    type="number" 
-                                    step="0.01" 
+                                <input
+                                    type="number"
+                                    step="0.01"
                                     min="0.01"
                                     value={quantity}
                                     onChange={(e) => setQuantity(Number(e.target.value))}
-                                    className="w-full bg-dark-800 border-dark-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-primary-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    className="w-full bg-elevated border-border rounded-lg px-4 py-2 text-fg focus:ring-2 focus:ring-accent-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="Ex: 50"
                                     autoFocus
                                 />
@@ -95,14 +95,14 @@ export default function RestockButton({ shopSlug, productId, productName, curren
                                 <button
                                     type="button"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex-1 px-4 py-2 bg-dark-800 hover:bg-dark-700 text-gray-300 rounded-lg transition-colors"
+                                    className="flex-1 px-4 py-2 bg-elevated hover:bg-elevated text-fg rounded-lg transition-colors"
                                 >
                                     Annuler
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isLoading || !quantity}
-                                    className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                                    className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-fg font-medium rounded-lg transition-colors"
                                 >
                                     {isLoading ? "..." : "Ajouter"}
                                 </button>

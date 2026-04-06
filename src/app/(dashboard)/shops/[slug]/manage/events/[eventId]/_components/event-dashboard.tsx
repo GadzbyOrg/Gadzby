@@ -19,7 +19,7 @@ interface Props {
 export function EventDashboard({ stats, event, slug }: Props) {
 	if (!stats)
 		return (
-			<div className="text-gray-400">
+			<div className="text-fg-muted">
 				Impossible de charger les statistiques
 			</div>
 		);
@@ -30,9 +30,8 @@ export function EventDashboard({ stats, event, slug }: Props) {
 	const data = [
 		{
 			label: "Participants",
-			value: `${
-				event.type === "COMMERCIAL" ? "Tous" : stats.participantsCount
-			}`,
+			value: `${event.type === "COMMERCIAL" ? "Tous" : stats.participantsCount
+				}`,
 			icon: IconUsers,
 			color: "text-blue-400",
 			bg: "bg-blue-400/10",
@@ -66,13 +65,13 @@ export function EventDashboard({ stats, event, slug }: Props) {
 				{data.map((stat) => (
 					<div
 						key={stat.label}
-						className="bg-dark-800 border border-dark-700 p-4 rounded-lg flex items-center justify-between"
+						className="bg-elevated border border-border p-4 rounded-lg flex items-center justify-between"
 					>
 						<div>
-							<p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+							<p className="text-xs font-bold text-fg-subtle uppercase tracking-wider">
 								{stat.label}
 							</p>
-							<p className="text-xl font-bold text-white mt-1">{stat.value}</p>
+							<p className="text-xl font-bold text-fg mt-1">{stat.value}</p>
 						</div>
 						<div className={`p-2 rounded-lg ${stat.bg} ${stat.color}`}>
 							<stat.icon size={24} stroke={1.5} />

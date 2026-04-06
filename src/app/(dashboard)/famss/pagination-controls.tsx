@@ -31,7 +31,7 @@ export function PaginationControls({
 			aria-label="Pagination des Fam'ss"
 			className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2"
 		>
-			<p className="text-sm text-gray-500 order-2 sm:order-1" aria-live="polite">
+			<p className="text-sm text-fg-subtle order-2 sm:order-1" aria-live="polite">
 				Page {currentPage} sur {totalPages}
 				<span className="hidden sm:inline"> — {totalCount} résultat{totalCount > 1 ? "s" : ""}</span>
 			</p>
@@ -41,7 +41,7 @@ export function PaginationControls({
 					onClick={() => goToPage(currentPage - 1)}
 					disabled={currentPage <= 1}
 					aria-label="Page précédente"
-					className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-dark-700 bg-dark-900 text-gray-300 hover:bg-dark-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-2 focus-visible:outline-primary-500"
+					className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-border bg-surface-900 text-fg hover:bg-elevated hover:text-fg disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-2 focus-visible:outline-accent-500"
 				>
 					<IconChevronLeft size={16} aria-hidden="true" />
 					<span className="hidden sm:inline">Précédent</span>
@@ -51,7 +51,7 @@ export function PaginationControls({
 					onClick={() => goToPage(currentPage + 1)}
 					disabled={currentPage >= totalPages}
 					aria-label="Page suivante"
-					className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-dark-700 bg-dark-900 text-gray-300 hover:bg-dark-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-2 focus-visible:outline-primary-500"
+					className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-border bg-surface-900 text-fg hover:bg-elevated hover:text-fg disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-visible:outline-2 focus-visible:outline-accent-500"
 				>
 					<span className="hidden sm:inline">Suivant</span>
 					<IconChevronRight size={16} aria-hidden="true" />

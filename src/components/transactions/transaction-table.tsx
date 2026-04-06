@@ -87,7 +87,7 @@ export function TransactionTable({
 
 	if (loading) {
 		return (
-			<div className="w-full bg-dark-900 border border-dark-800 rounded-2xl p-12 flex justify-center items-center text-gray-500 text-sm">
+			<div className="w-full bg-surface-900 border border-border rounded-2xl p-12 flex justify-center items-center text-fg-subtle text-sm">
 				Chargement des transactions...
 			</div>
 		);
@@ -95,7 +95,7 @@ export function TransactionTable({
 
 	if (groupedTransactions.length === 0) {
 		return (
-			<div className="w-full bg-dark-900 border border-dark-800 rounded-2xl p-12 flex justify-center items-center text-gray-500 text-sm">
+			<div className="w-full bg-surface-900 border border-border rounded-2xl p-12 flex justify-center items-center text-fg-subtle text-sm">
 				Aucune transaction trouvée.
 			</div>
 		);
@@ -104,17 +104,17 @@ export function TransactionTable({
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Desktop Table */}
-			<div className="hidden md:block bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-sm">
+			<div className="hidden md:block bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
 				<table className="w-full text-left text-sm">
 					<thead>
-						<tr className="border-b border-dark-800">
-							<th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
-							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Utilisateur</th>}
-							<th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
-							<th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-							<th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Qté</th>
-							<th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Montant</th>
-							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>}
+						<tr className="border-b border-border">
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Type</th>
+							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Utilisateur</th>}
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Description</th>
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Date</th>
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Qté</th>
+							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Montant</th>
+							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Actions</th>}
 						</tr>
 					</thead>
 					<tbody>
@@ -145,17 +145,17 @@ export function TransactionTable({
 					<button
 						disabled={pagination.page === 1 || loading}
 						onClick={() => pagination.setPage((p) => Math.max(1, p - 1))}
-						className="px-4 py-1.5 bg-dark-900 border border-dark-800 rounded-lg hover:bg-dark-800 disabled:opacity-40 text-sm text-gray-300 transition-colors"
+						className="px-4 py-1.5 bg-surface-900 border border-border rounded-lg hover:bg-elevated disabled:opacity-40 text-sm text-fg-muted transition-colors"
 					>
 						Précédent
 					</button>
-					<span className="text-sm text-gray-500 tabular-nums">
+					<span className="text-sm text-fg-subtle tabular-nums">
 						Page {pagination.page}{pagination.total ? ` / ${Math.ceil(pagination.total / 50)}` : ""}
 					</span>
 					<button
 						disabled={loading || (pagination.total ? pagination.page >= Math.ceil(pagination.total / 50) : (transactions?.length || 0) < 50)}
 						onClick={() => pagination.setPage((p) => p + 1)}
-						className="px-4 py-1.5 bg-dark-900 border border-dark-800 rounded-lg hover:bg-dark-800 disabled:opacity-40 text-sm text-gray-300 transition-colors"
+						className="px-4 py-1.5 bg-surface-900 border border-border rounded-lg hover:bg-elevated disabled:opacity-40 text-sm text-fg-muted transition-colors"
 					>
 						Suivant
 					</button>
@@ -263,21 +263,21 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 
 	return (
 		<tr className={cn(
-			"border-b border-dark-800/60 transition-colors hover:bg-dark-800/25",
+			"border-b border-border/60 transition-colors hover:bg-elevated/25",
 			(isCancelled || isFailed) && "opacity-50",
 			isPending && "bg-yellow-500/5",
-			isChild && "bg-dark-800/20",
+			isChild && "bg-elevated/20",
 		)}>
 			<td className={cn("px-5 py-3", isChild && "pl-10")}>
 				<div className="flex items-center gap-2.5">
 					{isChild && (
-						<div className="absolute w-4 h-4 border-l-2 border-b-2 border-dark-700 rounded-bl-sm -ml-5 mt-1 pointer-events-none" />
+						<div className="absolute w-4 h-4 border-l-2 border-b-2 border-border rounded-bl-sm -ml-5 mt-1 pointer-events-none" />
 					)}
 					<div className={cn(
 						"p-1.5 rounded-md shrink-0",
 						isPending ? "bg-yellow-500/10 text-yellow-400" :
 						isFailed ? "bg-red-500/10 text-red-400" :
-						isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-dark-800 text-gray-500",
+						isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-elevated text-fg-subtle",
 					)}>
 						{isPending ? <IconClock size={13} stroke={1.5} /> : <Icon size={13} stroke={1.5} />}
 					</div>
@@ -285,7 +285,7 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 						"text-xs font-medium",
 						isPending ? "text-yellow-400" :
 						isFailed ? "text-red-400" :
-						isCancelled ? "text-gray-600" : "text-gray-300",
+						isCancelled ? "text-fg-subtle" : "text-fg-muted",
 					)}>
 						{typeLabel}
 					</span>
@@ -295,44 +295,44 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 			{isAdmin && (
 				<td className="px-5 py-3">
 					<div className="flex flex-col">
-						<span className="text-sm text-gray-200 font-medium">
+						<span className="text-sm text-fg font-medium">
 							{t.targetUser ? `${t.targetUser.prenom} ${t.targetUser.nom}` : "—"}
 						</span>
 						{t.targetUser?.username && (
-							<span className="text-xs text-gray-500">{t.targetUser.username}</span>
+							<span className="text-xs text-fg-subtle">{t.targetUser.username}</span>
 						)}
 					</div>
 				</td>
 			)}
 
 			<td className="px-5 py-3 max-w-xs">
-				<span className={cn("text-sm text-gray-200 truncate block", isCancelled && "line-through text-gray-500")}>
+				<span className={cn("text-sm text-fg truncate block", isCancelled && "line-through text-fg-subtle")}>
 					{title}
 				</span>
 				{isAdmin && t.description && t.description !== title && (
-					<span className="text-xs text-gray-600 truncate block">{t.description}</span>
+					<span className="text-xs text-fg-subtle truncate block">{t.description}</span>
 				)}
 			</td>
 
 			<td className="px-5 py-3 whitespace-nowrap">
-				<span className="text-xs text-gray-500 tabular-nums" suppressHydrationWarning>{subtitle}</span>
+				<span className="text-xs text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
 			</td>
 
 			<td className="px-5 py-3 text-right whitespace-nowrap">
 				{t.type === "PURCHASE" && t.quantity != null && t.quantity > 1 ? (
-					<span className="text-sm tabular-nums text-gray-300">×{t.quantity}</span>
+					<span className="text-sm tabular-nums text-fg-muted">×{t.quantity}</span>
 				) : (
-					<span className="text-gray-700">—</span>
+					<span className="text-fg-subtle">—</span>
 				)}
 			</td>
 
 			<td className="px-5 py-3 text-right whitespace-nowrap">
 				<span className={cn(
 					"text-sm font-semibold tabular-nums",
-					isCancelled ? "line-through text-gray-600" :
+					isCancelled ? "line-through text-fg-subtle" :
 					isPending ? "text-yellow-400" :
 					isFailed ? "text-red-400" :
-					isPositive ? "text-emerald-400" : "text-gray-100",
+					isPositive ? "text-emerald-400" : "text-fg",
 				)}>
 					{isPositive ? "+" : "−"}{amountFormatted} €
 				</span>
@@ -389,7 +389,7 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 		<>
 			<tr
 				className={cn(
-					"border-b border-dark-800/60 cursor-pointer transition-colors hover:bg-dark-800/30",
+					"border-b border-border/60 cursor-pointer transition-colors hover:bg-elevated/30",
 					allCancelled && "opacity-50",
 				)}
 				onClick={() => setExpanded(!expanded)}
@@ -397,52 +397,52 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 				<td className="px-5 py-3">
 					<div className="flex items-center gap-2.5">
 						<div className={cn(
-							"text-gray-500 transition-transform duration-200",
+							"text-fg-subtle transition-transform duration-200",
 							expanded && "rotate-90",
 						)}>
 							<IconChevronRight size={14} />
 						</div>
 						<div className={cn(
 							"p-1.5 rounded-md",
-							isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-dark-800 text-gray-500",
+							isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-elevated text-fg-subtle",
 						)}>
 							<Icon size={13} stroke={1.5} />
 						</div>
 						<div className="flex flex-col">
-							<span className={cn("text-xs font-medium text-gray-300", allCancelled && "line-through")}>
+							<span className={cn("text-xs font-medium text-fg-muted", allCancelled && "line-through")}>
 								{typeLabel}
 							</span>
-							<span className="text-[10px] text-gray-600">{items.length} transactions</span>
+							<span className="text-[10px] text-fg-subtle">{items.length} transactions</span>
 						</div>
 					</div>
 				</td>
 
 				{isAdmin && (
-					<td className="px-5 py-3 text-xs text-gray-600 italic">Multiple</td>
+					<td className="px-5 py-3 text-xs text-fg-subtle italic">Multiple</td>
 				)}
 
 				<td className="px-5 py-3 max-w-xs">
-					<span className={cn("text-sm text-gray-300 truncate block", allCancelled && "line-through")}>
+					<span className={cn("text-sm text-fg-muted truncate block", allCancelled && "line-through")}>
 						{group.data.description || "Opération groupée"}
 					</span>
 				</td>
 
 				<td className="px-5 py-3 whitespace-nowrap">
-					<span className="text-xs text-gray-500 tabular-nums" suppressHydrationWarning>{subtitle}</span>
+					<span className="text-xs text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
 				</td>
 
 				<td className="px-5 py-3 text-right whitespace-nowrap">
 					<span className={cn(
 						"text-sm font-semibold tabular-nums",
-						isPositive ? "text-emerald-400" : "text-gray-100",
-						allCancelled && "line-through text-gray-600",
+						isPositive ? "text-emerald-400" : "text-fg",
+						allCancelled && "line-through text-fg-subtle",
 					)}>
 						{isPositive ? "+" : "−"}{amountFormatted} €
 					</span>
 				</td>
 
 				<td className="px-5 py-3 text-right">
-					<span className="text-xs text-gray-600">{items.length} lignes</span>
+					<span className="text-xs text-fg-subtle">{items.length} lignes</span>
 				</td>
 
 				{isAdmin && (
@@ -467,7 +467,7 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 
 	return (
 		<div className={cn(
-			"flex overflow-hidden rounded-xl border border-dark-800 bg-dark-900",
+			"flex overflow-hidden rounded-xl border border-border bg-surface-900",
 			(isCancelled || isFailed) && "opacity-55",
 			isPending && "border-yellow-500/20",
 			isChild && "rounded-l-none ml-3",
@@ -477,8 +477,8 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 				"w-0.5 shrink-0",
 				isPending ? "bg-yellow-500" :
 				isFailed ? "bg-red-500" :
-				isCancelled ? "bg-dark-800" :
-				isPositive ? "bg-emerald-500" : "bg-dark-700",
+				isCancelled ? "bg-elevated" :
+				isPositive ? "bg-emerald-500" : "bg-surface-800",
 			)} />
 
 			<div className="flex flex-1 items-center gap-3 px-3 py-2.5 min-w-0">
@@ -487,33 +487,33 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 					"shrink-0 p-2 rounded-lg",
 					isPending ? "bg-yellow-500/10 text-yellow-400" :
 					isFailed ? "bg-red-500/10 text-red-400" :
-					isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-dark-800 text-gray-500",
+					isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-elevated text-fg-subtle",
 				)}>
 					{isPending ? <IconClock size={15} stroke={1.5} /> : <Icon size={15} stroke={1.5} />}
 				</div>
 
 				{/* Text */}
 				<div className="flex-1 min-w-0">
-					<p className={cn("text-sm font-medium text-gray-100 truncate leading-snug", isCancelled && "line-through text-gray-500")}>
+					<p className={cn("text-sm font-medium text-fg truncate leading-snug", isCancelled && "line-through text-fg-subtle")}>
 						{title}
 					</p>
 					<div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-						<span className="text-[11px] text-gray-500 tabular-nums" suppressHydrationWarning>{subtitle}</span>
-						<span className="text-dark-700 text-[11px]">·</span>
+						<span className="text-[11px] text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
+						<span className="text-fg-subtle text-[11px]">·</span>
 						<span className={cn(
 							"text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded",
 							isPending ? "bg-yellow-500/10 text-yellow-400" :
 							isFailed ? "bg-red-500/10 text-red-400" :
-							isCancelled ? "bg-dark-800 text-gray-600" :
-							"bg-dark-800 text-gray-400",
+							isCancelled ? "bg-elevated text-fg-subtle" :
+							"bg-elevated text-fg-muted",
 						)}>
 							{isPending ? "En attente" : isFailed ? "Échoué" : typeLabel}
 						</span>
 					</div>
 					{isAdmin && t.targetUser && (
 						<div className="flex items-center gap-1 mt-1">
-							<IconUser size={10} className="text-gray-600 shrink-0" />
-							<span className="text-[11px] text-gray-500 truncate">
+							<IconUser size={10} className="text-fg-subtle shrink-0" />
+							<span className="text-[11px] text-fg-subtle truncate">
 								{t.targetUser.prenom} {t.targetUser.nom}
 							</span>
 						</div>
@@ -524,15 +524,15 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 				<div className="shrink-0 flex flex-col items-end gap-1.5">
 					<span className={cn(
 						"text-sm font-bold tabular-nums",
-						isCancelled ? "line-through text-gray-600" :
+						isCancelled ? "line-through text-fg-subtle" :
 						isPending ? "text-yellow-400" :
 						isFailed ? "text-red-400" :
-						isPositive ? "text-emerald-400" : "text-gray-100",
+						isPositive ? "text-emerald-400" : "text-fg",
 					)}>
 						{isPositive ? "+" : "−"}{amountFormatted} €
 					</span>
 					{t.type === "PURCHASE" && t.quantity != null && t.quantity > 1 && (
-						<span className="text-[11px] text-gray-500 tabular-nums">×{t.quantity}</span>
+						<span className="text-[11px] text-fg-subtle tabular-nums">×{t.quantity}</span>
 					)}
 					{isAdmin && (
 						<TransactionActions
@@ -581,32 +581,32 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
 	}
 
 	return (
-		<div className={cn("overflow-hidden rounded-xl border border-dark-800 bg-dark-900", allCancelled && "opacity-55")}>
+		<div className={cn("overflow-hidden rounded-xl border border-border bg-surface-900", allCancelled && "opacity-55")}>
 			<div
-				className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-dark-800/30 transition-colors"
+				className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-elevated/30 transition-colors"
 				onClick={() => setExpanded(!expanded)}
 			>
 				{/* Left stripe */}
 				<div className={cn(
 					"w-0.5 self-stretch rounded-full shrink-0",
-					isPositive ? "bg-emerald-500" : "bg-dark-700",
+					isPositive ? "bg-emerald-500" : "bg-surface-800",
 				)} />
 
 				<div className={cn(
 					"shrink-0 p-2 rounded-lg",
-					isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-dark-800 text-gray-500",
+					isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-elevated text-fg-subtle",
 				)}>
 					<Icon size={15} stroke={1.5} />
 				</div>
 
 				<div className="flex-1 min-w-0">
-					<p className={cn("text-sm font-medium text-gray-100 truncate leading-snug", allCancelled && "line-through text-gray-500")}>
+					<p className={cn("text-sm font-medium text-fg truncate leading-snug", allCancelled && "line-through text-fg-subtle")}>
 						{group.data.description || "Opération groupée"}
 					</p>
 					<div className="flex items-center gap-1.5 mt-0.5">
-						<span className="text-[11px] text-gray-500 tabular-nums" suppressHydrationWarning>{subtitle}</span>
-						<span className="text-dark-700 text-[11px]">·</span>
-						<span className="text-[10px] font-semibold bg-dark-800 text-gray-400 px-1.5 py-0.5 rounded uppercase tracking-wide">
+						<span className="text-[11px] text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
+						<span className="text-fg-subtle text-[11px]">·</span>
+						<span className="text-[10px] font-semibold bg-elevated text-fg-muted px-1.5 py-0.5 rounded uppercase tracking-wide">
 							{items.length} ops
 						</span>
 					</div>
@@ -615,8 +615,8 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
 				<div className="shrink-0 flex flex-col items-end gap-1.5">
 					<span className={cn(
 						"text-sm font-bold tabular-nums",
-						isPositive ? "text-emerald-400" : "text-gray-100",
-						allCancelled && "line-through text-gray-600",
+						isPositive ? "text-emerald-400" : "text-fg",
+						allCancelled && "line-through text-fg-subtle",
 					)}>
 						{isPositive ? "+" : "−"}{amountFormatted} €
 					</span>
@@ -624,7 +624,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
 						{isAdmin && !allCancelled && (
 							<CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />
 						)}
-						<div className={cn("text-gray-600 transition-transform duration-200", expanded && "rotate-180")}>
+						<div className={cn("text-fg-subtle transition-transform duration-200", expanded && "rotate-180")}>
 							<IconChevronDown size={14} />
 						</div>
 					</div>
@@ -632,7 +632,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
 			</div>
 
 			{expanded && (
-				<div className="border-t border-dark-800 flex flex-col gap-1.5 p-2 bg-dark-950/40">
+				<div className="border-t border-border flex flex-col gap-1.5 p-2 bg-surface-950/40">
 					{items.map((t) => (
 						<TransactionMobileCard key={t.id} t={t} isAdmin={isAdmin} isChild />
 					))}

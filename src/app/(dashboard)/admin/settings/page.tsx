@@ -35,12 +35,12 @@ export default async function AdminSettingsPage() {
     return (
         <div className="space-y-12 pb-12">
             <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-900/30 text-primary-500">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-900/30 text-accent-500">
                     <IconSettings size={24} />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Paramètres</h1>
-                    <p className="text-gray-400">Gérez la configuration globale de l&apos;application.</p>
+                    <h1 className="text-2xl font-bold text-fg">Paramètres</h1>
+                    <p className="text-fg-muted">Gérez la configuration globale de l&apos;application.</p>
                 </div>
             </div>
 
@@ -49,31 +49,31 @@ export default async function AdminSettingsPage() {
                     <CampusSettings />
                 </section>
 
-                <div className="h-px bg-dark-800" />
+                <div className="h-px bg-elevated" />
 
                 <section>
                     <FamssSettings />
                 </section>
 
-                <div className="h-px bg-dark-800" />
+                <div className="h-px bg-elevated" />
 
                 <section>
-                     <EmailSettings />
+                    <EmailSettings />
                 </section>
 
-                <div className="h-px bg-dark-800" />
+                <div className="h-px bg-elevated" />
 
                 <section>
                     <PaymentsSettings methods={secureMethods} />
                 </section>
 
-                <div className="h-px bg-dark-800" />
+                <div className="h-px bg-elevated" />
 
                 <section>
                     <ApiKeysSettings apiKeys={keys} />
                 </section>
 
-                <div className="h-px bg-dark-800" />
+                <div className="h-px bg-elevated" />
 
                 <section>
                     <PennylaneSettings />

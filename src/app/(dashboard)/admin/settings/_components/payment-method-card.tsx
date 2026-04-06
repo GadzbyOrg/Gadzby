@@ -12,7 +12,6 @@ import {
 	togglePaymentMethod,
 	updatePaymentMethodConfig,
 } from "@/features/payments/admin";
-import { ErrorDialog } from "@/components/ui/dialog";
 
 interface PaymentMethod {
 	id: string;
@@ -27,7 +26,6 @@ interface PaymentMethod {
 export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	// Local state for form
 	const [fees, setFees] = useState(method.fees);
@@ -57,7 +55,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 				isEnabled: !method.isEnabled,
 			});
 		} catch {
-			setErrorMsg("Erreur lors de la mise à jour");
+			alert("Erreur lors de la mise à jour");
 		} finally {
 			setIsLoading(false);
 		}
@@ -82,7 +80,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 			});
 			setIsEditing(false);
 		} catch {
-			setErrorMsg("Erreur lors de la sauvegarde");
+			alert("Erreur lors de la sauvegarde");
 		} finally {
 			setIsLoading(false);
 		}
@@ -110,19 +108,18 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 	};
 
 	return (
-		<div className="rounded-xl border border-dark-800 bg-dark-900 text-gray-100 shadow-md flex flex-col justify-between h-full">
-			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
+		<div className="rounded-xl border border-border bg-surface-900 text-fg shadow-md flex flex-col justify-between h-full">
 			<div className="p-6 flex flex-col gap-4 max-h-[800px] overflow-y-auto custom-scrollbar">
 				{/* Header */}
 				<div className="flex items-start justify-between">
 					<div>
 						<div className="flex items-center gap-2">
-							<h3 className="text-lg font-bold tracking-tight text-white">
+							<h3 className="text-lg font-bold tracking-tight text-fg">
 								{method.name}
 							</h3>
 						</div>
 						{method.description && (
-							<p className="text-sm text-gray-400 mt-1 line-clamp-2">
+							<p className="text-sm text-fg-muted mt-1 line-clamp-2">
 								{method.description}
 							</p>
 						)}
@@ -130,23 +127,21 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 						<div className="mt-4 flex items-center gap-3">
 							{/* Status Badge */}
 							<div
-								className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-									method.isEnabled
-										? "bg-green-900/20 text-green-400 border-green-900/30"
-										: "bg-red-900/20 text-red-400 border-red-900/30"
-								}`}
+								className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${method.isEnabled
+									? "bg-green-900/20 text-green-400 border-green-900/30"
+									: "bg-red-900/20 text-red-400 border-red-900/30"
+									}`}
 							>
 								<div
-									className={`w-1.5 h-1.5 rounded-full ${
-										method.isEnabled ? "bg-green-500" : "bg-red-500"
-									}`}
+									className={`w-1.5 h-1.5 rounded-full ${method.isEnabled ? "bg-green-500" : "bg-red-500"
+										}`}
 								/>
 								{method.isEnabled ? "Actif" : "Inactif"}
 							</div>
 
 							{/* Fees Summary */}
 							{!isEditing && (
-								<div className="text-sm font-medium text-gray-300">
+								<div className="text-sm font-medium text-fg">
 									{method.fees.fixed > 0
 										? (method.fees.fixed / 100).toFixed(2) + "€"
 										: "Gratuit"}
@@ -165,7 +160,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 									initFields();
 								}
 							}}
-							className="p-2 text-gray-400 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+							className="p-2 text-fg-muted hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 							disabled={isLoading}
 							title="Configurer"
 						>
@@ -175,30 +170,28 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 				</div>
 
 				{isEditing && (
-					<div className="space-y-4 pt-4 border-t border-dark-800 animate-in slide-in-from-top-2 duration-200">
+					<div className="space-y-4 pt-4 border-t border-border animate-in slide-in-from-top-2 duration-200">
 						{/* Toggle Action */}
-						<div className="flex items-center justify-between p-3 rounded-lg bg-dark-950 border border-dark-800">
-							<span className="text-sm font-medium text-gray-300">
+						<div className="flex items-center justify-between p-3 rounded-lg bg-surface-950 border border-border">
+							<span className="text-sm font-medium text-fg">
 								État du service
 							</span>
 							<button
 								onClick={handleToggle}
 								disabled={isLoading}
-								className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-950 ${
-									method.isEnabled ? "bg-primary-600" : "bg-dark-700"
-								}`}
+								className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-surface-950 ${method.isEnabled ? "bg-accent-600" : "bg-elevated"
+									}`}
 							>
 								<span
-									className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-										method.isEnabled ? "translate-x-6" : "translate-x-1"
-									}`}
+									className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${method.isEnabled ? "translate-x-6" : "translate-x-1"
+										}`}
 								/>
 							</button>
 						</div>
 
 						<div className="grid grid-cols-2 gap-4">
 							<div>
-								<label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<label className="text-xs font-medium text-fg-subtle uppercase tracking-wider">
 									Frais fixes (cts)
 								</label>
 								<div className="relative mt-1">
@@ -208,16 +201,16 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 										onChange={(e) =>
 											setFees({ ...fees, fixed: Number(e.target.value) })
 										}
-										className="w-full rounded-lg border border-dark-700 bg-dark-950 p-2 text-sm text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+										className="w-full rounded-lg border border-border bg-surface-950 p-2 text-sm text-fg focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all"
 										placeholder="0"
 									/>
-									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
+									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fg-subtle">
 										cts
 									</span>
 								</div>
 							</div>
 							<div>
-								<label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+								<label className="text-xs font-medium text-fg-subtle uppercase tracking-wider">
 									Frais (%)
 								</label>
 								<div className="relative mt-1">
@@ -228,10 +221,10 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 										onChange={(e) =>
 											setFees({ ...fees, percentage: Number(e.target.value) })
 										}
-										className="w-full rounded-lg border border-dark-700 bg-dark-950 p-2 text-sm text-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+										className="w-full rounded-lg border border-border bg-surface-950 p-2 text-sm text-fg focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all"
 										placeholder="0.00"
 									/>
-									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
+									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fg-subtle">
 										%
 									</span>
 								</div>
@@ -239,9 +232,9 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 						</div>
 
 						<div className="space-y-2">
-							<label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center justify-between">
+							<label className="text-xs font-medium text-fg-subtle uppercase tracking-wider flex items-center justify-between">
 								Configuration
-								<span className="text-[10px] text-gray-600">
+								<span className="text-[10px] text-fg-subtle">
 									{configFields.length} variables
 								</span>
 							</label>
@@ -257,7 +250,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 												onChange={(e) =>
 													updateField(field.id, "key", e.target.value)
 												}
-												className="w-full rounded-lg border border-dark-700 bg-dark-950 p-3 text-sm text-white focus:border-primary-500 outline-none transition-all placeholder:text-dark-700"
+												className="w-full rounded-lg border border-border bg-surface-950 p-3 text-sm text-fg focus:border-accent-500 outline-none transition-all placeholder:text-fg-subtle"
 											/>
 										</div>
 										<div className="flex-[3]">
@@ -268,12 +261,12 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 												onChange={(e) =>
 													updateField(field.id, "value", e.target.value)
 												}
-												className="w-full rounded-lg border border-dark-700 bg-dark-950 p-3 text-sm text-white focus:border-primary-500 outline-none transition-all placeholder:text-dark-700 font-mono"
+												className="w-full rounded-lg border border-border bg-surface-950 p-3 text-sm text-fg focus:border-accent-500 outline-none transition-all placeholder:text-fg-subtle font-mono"
 											/>
 										</div>
 										<button
 											onClick={() => removeField(field.id)}
-											className="mt-1 p-2 text-dark-500 hover:text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
+											className="mt-1 p-2 text-fg-subtle hover:text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
 										>
 											<IconTrash size={18} />
 										</button>
@@ -282,7 +275,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 
 								<button
 									onClick={addField}
-									className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-primary-400 hover:text-primary-300 hover:bg-primary-900/10 rounded-lg transition-colors w-full justify-center border border-dashed border-dark-700 hover:border-primary-800"
+									className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-accent-400 hover:text-accent-300 hover:bg-accent-900/10 rounded-lg transition-colors w-full justify-center border border-dashed border-border hover:border-accent-800"
 								>
 									<IconPlus size={16} />
 									Ajouter une variable
@@ -297,7 +290,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 									setFees(method.fees); // Reset changes
 									initFields(); // Reset fields
 								}}
-								className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+								className="px-4 py-2 text-sm font-medium text-fg-muted hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 								disabled={isLoading}
 							>
 								Annuler
@@ -305,7 +298,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 							<button
 								onClick={handleSave}
 								disabled={isLoading}
-								className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium shadow-lg shadow-primary-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+								className="flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-fg rounded-lg text-sm font-medium shadow-lg shadow-accent-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								{isLoading && <IconLoader2 className="h-4 w-4 animate-spin" />}
 								Enregistrer
