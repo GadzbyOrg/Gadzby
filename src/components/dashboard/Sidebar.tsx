@@ -282,8 +282,8 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 								className={cn(
 									"group relative flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-200",
 									isActive
-										? "bg-accent-700/20 text-accent-500"
-										: "text-fg-subtle hover:bg-elevated hover:text-fg"
+										? "bg-accent-700/20 text-accent-700"
+										: "text-fg-muted hover:bg-elevated hover:text-fg"
 								)}
 							>
 								<group.icon size={22} stroke={1.5} />
@@ -389,7 +389,7 @@ export function Sidebar({ userRole, permissions, shops }: SidebarProps) {
 								className={cn(
 									"flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
 									isActive
-										? "bg-white text-surface-950 shadow-md" // Style "Carte blanche" active
+										? "bg-white text-[#0f172a] shadow-md" // Style "Carte blanche" active
 										: "text-fg-muted hover:bg-elevated hover:text-fg"
 								)}
 							>

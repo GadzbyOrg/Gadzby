@@ -1,5 +1,7 @@
 import {
 	IconBuildingStore,
+	IconChevronRight,
+	IconSettings,
 	IconShoppingBag,
 	IconTrendingDown,
 	IconTrendingUp,
@@ -104,9 +106,19 @@ export default async function DashboardPage() {
 
 	return (
 		<div className="space-y-8">
-			<div className="mb-8">
-				<h2 className="text-2xl font-bold text-fg">Vue d&apos;ensemble</h2>
-				<p className="text-fg-muted">Bienvenue sur Gadzby</p>
+			<div className="mb-8 flex items-start justify-between">
+				<div>
+					<h2 className="text-2xl font-bold text-fg">Vue d&apos;ensemble</h2>
+					<p className="text-fg-muted">Bienvenue sur Gadzby</p>
+				</div>
+				<Link
+					href="/settings"
+					className="sm:hidden flex items-center gap-1.5 rounded-xl border border-border bg-surface-900 px-3 py-2 text-sm text-fg-muted transition-colors hover:border-accent-500/50 hover:text-fg"
+				>
+					<IconSettings size={18} />
+					<span>Profil</span>
+					<IconChevronRight size={14} className="text-fg-subtle" />
+				</Link>
 			</div>
 
 			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
