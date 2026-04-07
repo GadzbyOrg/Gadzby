@@ -454,6 +454,7 @@ export class UserService {
             orderBy: (users, { asc, desc }) => [
                 desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
                 desc(sql`CASE WHEN ${users.username} ILIKE ${query + '%'} THEN 1 ELSE 0 END`),
+                desc(users.promss),
                 asc(users.username)
             ],
             columns: {
@@ -499,6 +500,7 @@ export class UserService {
             orderBy: (users, { asc, desc }) => [
                 desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
                 desc(sql`CASE WHEN ${users.username} ILIKE ${query + '%'} THEN 1 ELSE 0 END`),
+                desc(users.promss),
                 asc(users.username)
             ],
             columns: {

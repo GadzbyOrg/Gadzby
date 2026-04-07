@@ -73,7 +73,16 @@ export function UserSearch({
                             if (aIncludes && !bIncludes) return -1;
                             if (!aIncludes && bIncludes) return 1;
 
-                            // 4. Fallback alphabétique
+                            // 4. Fallback promotion + alphabétique
+                            const aMatch = a.promss ? a.promss.match(/\d+/) : null;
+                            const bMatch = b.promss ? b.promss.match(/\d+/) : null;
+                            const aPromss = aMatch ? parseInt(aMatch[0], 10) : 0;
+                            const bPromss = bMatch ? parseInt(bMatch[0], 10) : 0;
+
+                            if (aPromss !== bPromss) {
+                                return bPromss - aPromss;
+                            }
+
                             return aUser.localeCompare(bUser);
                         });
 
