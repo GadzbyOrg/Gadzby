@@ -74,6 +74,8 @@ export function SelfServiceView({
             if (res.famss && res.famss.length > 0) {
                 setUserFamss(res.famss);
             }
+        }).catch((err) => {
+            console.error("Failed to fetch famss:", err);
         });
     }, [famssEnabled]);
 
@@ -177,7 +179,11 @@ export function SelfServiceView({
 
                 if (disconnectAfterCheckout) {
                     setTimeout(async () => {
-                        await logoutAction();
+                        try {
+                            await logoutAction();
+                        } catch (err) {
+                            console.error("Logout failed:", err);
+                        }
                     }, 1000);
                 } else {
                     setTimeout(() => setSuccess(null), 3000);
