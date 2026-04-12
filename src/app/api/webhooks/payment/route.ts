@@ -28,11 +28,8 @@ export async function POST(request: NextRequest) {
 		const verification = await provider.verifyWebhook(request);
 
 		if (!verification.isValid || !verification.transactionId) {
-			//console.log("Invalid webhook verification");
-			return NextResponse.json(
-				{ error: "Invalid signature or missing tx ID" },
-				{ status: 400 }
-			);
+			// Return 200 to prevent provider from retrying non-actionable events
+			return NextResponse.json({ received: true });
 		}
 
 		const txId = verification.transactionId;
