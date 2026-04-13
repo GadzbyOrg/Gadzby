@@ -438,3 +438,106 @@ Permet de récupérer tous les utilisateurs appartenant à une Fam'ss spécifiqu
   ]
 }
 ```
+
+---
+
+### 11. Récupérer un Utilisateur par ID
+
+Permet de récupérer le profil public d'un utilisateur actif à partir de son UUID. N'expose aucune adresse email ni mot de passe. Retourne 404 si l'utilisateur est supprimé.
+
+**Endpoint :** `GET /api/v1/users/[userId]`
+
+**Requête d'exemple :**
+```bash
+curl -X GET "https://votre-domaine.com/api/v1/users/user-uuid" \
+  -H "Authorization: Bearer gadzby_xxx"
+```
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "user": {
+    "id": "123e4567-e89b-12d3...",
+    "nom": "Dupont",
+    "prenom": "Jean",
+    "username": "jdupont",
+    "bucque": "Zag",
+    "nums": "100",
+    "promss": "219",
+    "tabagnss": "CL",
+    "image": null,
+    "isAsleep": false,
+    "isDeleted": false
+  }
+}
+```
+
+**Erreurs possibles :**
+- `404 Not Found` : L'utilisateur n'existe pas ou a été supprimé.
+
+---
+
+### 12. Récupérer une Boutique par ID
+
+Permet de récupérer les informations d'une boutique active à partir de son UUID. Retourne 404 si la boutique est inactive ou inexistante.
+
+**Endpoint :** `GET /api/v1/shops/[shopId]`
+
+**Requête d'exemple :**
+```bash
+curl -X GET "https://votre-domaine.com/api/v1/shops/shop-uuid" \
+  -H "Authorization: Bearer gadzby_xxx"
+```
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "shop": {
+    "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "name": "Le Foys",
+    "slug": "foyss",
+    "description": "Le Foyer",
+    "isActive": true,
+    "isSelfServiceEnabled": true,
+    "createdAt": "2026-03-29T08:00:00.000Z"
+  }
+}
+```
+
+**Erreurs possibles :**
+- `404 Not Found` : La boutique n'existe pas ou est désactivée.
+
+---
+
+### 13. Catégories de Produits d'une Boutique
+
+Permet de récupérer la liste des catégories de produits d'une boutique, triées alphabétiquement. Utile pour exploiter le filtre `categoryId` disponible sur l'endpoint `GET /api/v1/shops/[shopId]/products`.
+
+**Endpoint :** `GET /api/v1/shops/[shopId]/categories`
+
+**Requête d'exemple :**
+```bash
+curl -X GET "https://votre-domaine.com/api/v1/shops/shop-uuid/categories" \
+  -H "Authorization: Bearer gadzby_xxx"
+```
+
+**Réponse (200 OK) :**
+```json
+{
+  "success": true,
+  "categories": [
+    {
+      "id": "cat-uuid",
+      "name": "Boissons",
+      "shopId": "shop-uuid"
+    },
+    {
+      "id": "cat-uuid-2",
+      "name": "Snacks",
+      "shopId": "shop-uuid"
+    }
+  ]
+}
+```
