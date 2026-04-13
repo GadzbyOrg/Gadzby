@@ -166,16 +166,23 @@ export class HelloAssoAdapter implements PaymentProvider {
 
 			// Handle Payment events
 			if (body.eventType === "Payment") {
-				//console.log("[HelloAsso] Payment event received");
 				const paymentData = body.data;
 
-				// Check if payment is authorized
 				if (paymentData.state === "Authorized") {
 					return {
 						isValid: true,
 						transactionId: internalId,
 						amount: paymentData.amount, // Amount is in cents
 						providerTransactionId: paymentData.id.toString(),
+					};
+				}
+
+				// Refused or Error — signal the route to mark the transaction as FAILED
+				if (paymentData.state === "Refused" || paymentData.state === "Error") {
+					return {
+						isValid: true,
+						shouldFail: true,
+						transactionId: internalId,
 					};
 				}
 			}

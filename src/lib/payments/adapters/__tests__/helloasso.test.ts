@@ -45,7 +45,7 @@ describe("HelloAssoAdapter", () => {
 			expect(result.providerTransactionId).toBe("42");
 		});
 
-		it("returns isValid false for a Refused Payment event", async () => {
+		it("returns shouldFail true for a Refused Payment event", async () => {
 			const req = makeWebhookRequest({
 				eventType: "Payment",
 				data: { state: "Refused", amount: 1000, id: 42 },
@@ -54,7 +54,23 @@ describe("HelloAssoAdapter", () => {
 
 			const result = await adapter.verifyWebhook(req);
 
-			expect(result.isValid).toBe(false);
+			expect(result.isValid).toBe(true);
+			expect(result.shouldFail).toBe(true);
+			expect(result.transactionId).toBe("tx-uuid-123");
+		});
+
+		it("returns shouldFail true for an Error Payment event", async () => {
+			const req = makeWebhookRequest({
+				eventType: "Payment",
+				data: { state: "Error", amount: 1000, id: 42 },
+				metadata: { internalTransactionId: "tx-uuid-123" },
+			});
+
+			const result = await adapter.verifyWebhook(req);
+
+			expect(result.isValid).toBe(true);
+			expect(result.shouldFail).toBe(true);
+			expect(result.transactionId).toBe("tx-uuid-123");
 		});
 
 		it("returns isValid false for an Order event (non-Payment type)", async () => {
