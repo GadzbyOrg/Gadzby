@@ -34,6 +34,26 @@ export async function POST(request: NextRequest) {
 
 		const txId = verification.transactionId;
 
+		if (verification.shouldFail) {
+			// Provider reported a declined or errored payment — mark as FAILED
+			await db.transaction(async (tx) => {
+				const [currentTx] = await tx
+					.select()
+					.from(transactions)
+					.where(eq(transactions.id, txId))
+					.for("update");
+
+				if (!currentTx || currentTx.status !== "PENDING") return;
+
+				await tx
+					.update(transactions)
+					.set({ status: "FAILED" })
+					.where(eq(transactions.id, txId));
+			});
+
+			return NextResponse.json({ received: true });
+		}
+
 		// TODO: Refactor to use transactions service
 		await db.transaction(async (tx) => {
 			// 1. Get current transaction status

@@ -9,6 +9,8 @@ export interface WebhookResult {
 	transactionId?: string; // The internal transaction ID
 	amount?: number; // The amount credited (without fees)
 	providerTransactionId?: string;
+	/** When true, the transaction should be marked FAILED (provider reported a declined/errored payment) */
+	shouldFail?: boolean;
 }
 
 export interface PaymentProvider {
