@@ -5,188 +5,168 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { eventRevenues } from "@/db/schema/events";
-import { eventExpenseSplits,shopExpenses } from "@/db/schema/expenses";
-import {
-	getUserShopPermissions,
-	hasShopPermission,
-} from "@/features/shops/utils";
+import { eventExpenseSplits, shopExpenses } from "@/db/schema/expenses";
+import { checkShopPermission } from "@/features/shops/utils";
 import { authenticatedAction } from "@/lib/actions";
 
 import {
-	createRevenueSchema,
-	deleteRevenueSchema,
-	deleteSplitSchema,
-	linkExpenseSchema,
-	shopIdSchema,
-	splitExpenseSchema,
-	unlinkExpenseSchema,
+  createRevenueSchema,
+  deleteRevenueSchema,
+  deleteSplitSchema,
+  linkExpenseSchema,
+  shopIdSchema,
+  splitExpenseSchema,
+  unlinkExpenseSchema,
 } from "../schemas";
 
-// Helper for permissions
-async function checkShopPermission(
-	userId: string,
-	permissions: string[],
-	shopId: string,
-	action: string
-) {
-	if (
-		permissions.includes("ADMIN_ACCESS") ||
-		permissions.includes("MANAGE_SHOPS")
-	) {
-		return true;
-	}
-
-	const userPerms = await getUserShopPermissions(userId, shopId);
-	return hasShopPermission(userPerms, action);
-}
 
 // Revenues
 export const createEventRevenue = authenticatedAction(
-	createRevenueSchema,
-	async (data, { session }) => {
-		const authorized = await checkShopPermission(
-			session.userId,
-			session.permissions,
-			data.shopId,
-			"MANAGE_EVENTS"
-		);
-		if (!authorized) return { error: "Unauthorized" };
+  createRevenueSchema,
+  async (data, { session }) => {
+    const authorized = await checkShopPermission(
+      session.userId,
+      session.permissions,
+      data.shopId,
+      "MANAGE_EVENTS"
+    );
+    if (!authorized) return { error: "Unauthorized" };
 
-		await db.insert(eventRevenues).values({
-			eventId: data.eventId,
-			shopId: data.shopId,
-			description: data.description,
-			amount: data.amount,
-			issuerId: session.userId,
-			date: new Date(),
-		});
+    await db.insert(eventRevenues).values({
+      eventId: data.eventId,
+      shopId: data.shopId,
+      description: data.description,
+      amount: data.amount,
+      issuerId: session.userId,
+      date: new Date(),
+    });
 
-		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
-		return { success: "Revenue created" };
-	}
+    revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+    return { success: "Revenue created" };
+  }
 );
 
 export const deleteEventRevenue = authenticatedAction(
-	deleteRevenueSchema,
-	async (data, { session }) => {
-		const authorized = await checkShopPermission(
-			session.userId,
-			session.permissions,
-			data.shopId,
-			"MANAGE_EVENTS"
-		);
-		if (!authorized) return { error: "Unauthorized" };
+  deleteRevenueSchema,
+  async (data, { session }) => {
+    const authorized = await checkShopPermission(
+      session.userId,
+      session.permissions,
+      data.shopId,
+      "MANAGE_EVENTS"
+    );
+    if (!authorized) return { error: "Unauthorized" };
 
-		await db.delete(eventRevenues).where(eq(eventRevenues.id, data.revenueId));
+    await db.delete(eventRevenues).where(eq(eventRevenues.id, data.revenueId));
 
-		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
-		return { success: "Revenue deleted" };
-	}
+    revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+    return { success: "Revenue deleted" };
+  }
 );
 
 // Expenses
 export const getAvailableExpensesAction = authenticatedAction(
-	shopIdSchema,
-	async (data, { session }) => {
-		const authorized = await checkShopPermission(
-			session.userId,
-			session.permissions,
-			data.shopId,
-			"MANAGE_EVENTS"
-		);
-		if (!authorized) return { error: "Unauthorized" };
+  shopIdSchema,
+  async (data, { session }) => {
+    const authorized = await checkShopPermission(
+      session.userId,
+      session.permissions,
+      data.shopId,
+      "MANAGE_EVENTS"
+    );
+    if (!authorized) return { error: "Unauthorized" };
 
-		const expenses = await db.query.shopExpenses.findMany({
-			where: and(
-				eq(shopExpenses.shopId, data.shopId),
-				isNull(shopExpenses.eventId)
-			),
-		});
+    const expenses = await db.query.shopExpenses.findMany({
+      where: and(
+        eq(shopExpenses.shopId, data.shopId),
+        isNull(shopExpenses.eventId)
+      ),
+    });
 
-		return { success: "Expenses retrieved", data: expenses };
-	}
+    return { success: "Expenses retrieved", data: expenses };
+  }
 );
 
 export const linkExpenseToEvent = authenticatedAction(
-	linkExpenseSchema,
-	async (data, { session }) => {
-		const authorized = await checkShopPermission(
-			session.userId,
-			session.permissions,
-			data.shopId,
-			"MANAGE_EVENTS"
-		);
-		if (!authorized) return { error: "Unauthorized" };
+  linkExpenseSchema,
+  async (data, { session }) => {
+    const authorized = await checkShopPermission(
+      session.userId,
+      session.permissions,
+      data.shopId,
+      "MANAGE_EVENTS"
+    );
+    if (!authorized) return { error: "Unauthorized" };
 
-		await db
-			.update(shopExpenses)
-			.set({ eventId: data.eventId })
-			.where(eq(shopExpenses.id, data.expenseId));
+    await db
+      .update(shopExpenses)
+      .set({ eventId: data.eventId })
+      .where(eq(shopExpenses.id, data.expenseId));
 
-		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
-		return { success: "Expense linked" };
-	}
+    revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+    return { success: "Expense linked" };
+  }
 );
 
 export const unlinkExpenseFromEvent = authenticatedAction(
-	unlinkExpenseSchema,
-	async (data, { session }) => {
-		const authorized = await checkShopPermission(
-			session.userId,
-			session.permissions,
-			data.shopId,
-			"MANAGE_EVENTS"
-		);
-		if (!authorized) return { error: "Unauthorized" };
+  unlinkExpenseSchema,
+  async (data, { session }) => {
+    const authorized = await checkShopPermission(
+      session.userId,
+      session.permissions,
+      data.shopId,
+      "MANAGE_EVENTS"
+    );
+    if (!authorized) return { error: "Unauthorized" };
 
-		await db
-			.update(shopExpenses)
-			.set({ eventId: null })
-			.where(eq(shopExpenses.id, data.expenseId));
+    await db
+      .update(shopExpenses)
+      .set({ eventId: null })
+      .where(eq(shopExpenses.id, data.expenseId));
 
-		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
-		return { success: "Expense unlinked" };
-	}
+    revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+    return { success: "Expense unlinked" };
+  }
 );
 
 export const splitExpense = authenticatedAction(
-	splitExpenseSchema,
-	async (data, { session }) => {
-		const authorized = await checkShopPermission(
-			session.userId,
-			session.permissions,
-			data.shopId,
-			"MANAGE_EVENTS"
-		);
-		if (!authorized) return { error: "Unauthorized" };
+  splitExpenseSchema,
+  async (data, { session }) => {
+    const authorized = await checkShopPermission(
+      session.userId,
+      session.permissions,
+      data.shopId,
+      "MANAGE_EVENTS"
+    );
+    if (!authorized) return { error: "Unauthorized" };
 
-		await db.insert(eventExpenseSplits).values({
-			eventId: data.eventId,
-			expenseId: data.expenseId,
-			amount: data.amount,
-		});
+    await db.insert(eventExpenseSplits).values({
+      eventId: data.eventId,
+      expenseId: data.expenseId,
+      amount: data.amount,
+    });
 
-		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
-		return { success: "Expense split created" };
-	}
+    revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+    return { success: "Expense split created" };
+  }
 );
 
 export const deleteExpenseSplit = authenticatedAction(
-	deleteSplitSchema,
-	async (data, { session }) => {
-		const authorized = await checkShopPermission(
-			session.userId,
-			session.permissions,
-			data.shopId,
-			"MANAGE_EVENTS"
-		);
-		if (!authorized) return { error: "Unauthorized" };
+  deleteSplitSchema,
+  async (data, { session }) => {
+    const authorized = await checkShopPermission(
+      session.userId,
+      session.permissions,
+      data.shopId,
+      "MANAGE_EVENTS"
+    );
+    if (!authorized) return { error: "Unauthorized" };
 
-		await db
-			.delete(eventExpenseSplits)
-			.where(eq(eventExpenseSplits.id, data.splitId));
+    await db
+      .delete(eventExpenseSplits)
+      .where(eq(eventExpenseSplits.id, data.splitId));
 
-		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
-		return { success: "Split deleted" };
-	}
+    revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
+    return { success: "Split deleted" };
+  }
 );
