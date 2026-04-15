@@ -61,8 +61,9 @@ function StatCard({
 			<div className="mt-4 flex items-center text-sm">
 				{trend !== undefined && (
 					<span
-						className={`flex items-center font-medium ${trend > 0 ? "text-emerald-400" : "text-rose-400"
-							}`}
+						className={`flex items-center font-medium ${
+							trend > 0 ? "text-emerald-400" : "text-rose-400"
+						}`}
 					>
 						{trend > 0 ? (
 							<IconTrendingUp size={16} className="mr-1" />
@@ -86,8 +87,6 @@ async function EventsSection() {
 
 	const enrolledEvents = await getEnrolledEvents(session.userId);
 	const upcomingEvents = await getUpcomingPublicEvents(session.userId);
-
-
 
 	return (
 		<UpcomingEventsList
@@ -122,13 +121,15 @@ export default async function DashboardPage() {
 			</div>
 
 			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				<StatCard
-					title="Mon Solde"
-					value={`${stats.balance.toFixed(2)} €`}
-					sub="Disponible"
-					icon={IconWallet}
-					color="bg-blue-500/10 text-blue-500"
-				/>
+				<Link href="/topup">
+					<StatCard
+						title="Mon Solde"
+						value={`${stats.balance.toFixed(2)} €`}
+						sub="Recharger mon compte"
+						icon={IconWallet}
+						color="bg-blue-500/10 text-blue-500"
+					/>
+				</Link>
 				<StatCard
 					title="Dépenses ce mois"
 					value={`${stats.expenses.toFixed(2)} €`}
@@ -142,9 +143,7 @@ export default async function DashboardPage() {
 			{/* Shop Shortcuts */}
 			{shops && shops.length > 0 && (
 				<div className="mt-8">
-					<h3 className="mb-4 text-lg font-semibold text-fg">
-						Vos Boquettes
-					</h3>
+					<h3 className="mb-4 text-lg font-semibold text-fg">Vos Boquettes</h3>
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 						{shops.map((shop: any) => (
 							<Link
@@ -199,9 +198,7 @@ export default async function DashboardPage() {
 
 			{/* Recent Activity Section */}
 			<div className="rounded-2xl border border-border bg-surface-900 p-6">
-				<h3 className="mb-6 text-lg font-semibold text-fg">
-					Activité Récente
-				</h3>
+				<h3 className="mb-6 text-lg font-semibold text-fg">Activité Récente</h3>
 				<div className="mt-2">
 					<TransactionTable transactions={recentActivity} />
 				</div>
