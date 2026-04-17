@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
 	themeColor: "#0f172a",
+	viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -34,8 +35,15 @@ export default function RootLayout({
 		<html lang="fr" data-mode="dark">
 			<head>
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
-				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-				<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,600;1,700&display=swap" rel="stylesheet" />
+				<link
+					rel="preconnect"
+					href="https://fonts.gstatic.com"
+					crossOrigin="anonymous"
+				/>
+				<link
+					href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,600;1,700&display=swap"
+					rel="stylesheet"
+				/>
 			</head>
 			<body>
 				<ThemeProvider />
