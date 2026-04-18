@@ -78,7 +78,12 @@ export function DashboardShell({
 						<Link href="/" className="flex items-center gap-1.5 min-w-0">
 							<span className="text-lg font-bold text-fg shrink-0">Gadzby</span>
 							{campusName && (
-								<span className="text-lg italic font-semibold text-accent-400 truncate pt-0.5" style={{ fontFamily: "'Playfair Display', serif" }}>{campusName}</span>
+								<span
+									className="text-lg italic font-semibold text-accent-400 truncate pt-0.5"
+									style={{ fontFamily: "'Playfair Display', serif" }}
+								>
+									{campusName}
+								</span>
 							)}
 						</Link>
 					</div>
@@ -87,7 +92,12 @@ export function DashboardShell({
 					<div className="hidden md:flex items-center gap-1 shrink-0">
 						<h1 className="text-lg font-semibold text-fg">Gadzby</h1>
 						{campusName && (
-							<span className="text-xl italic font-semibold text-accent-400" style={{ fontFamily: "'Playfair Display', serif" }}>{campusName}</span>
+							<span
+								className="text-xl italic font-semibold text-accent-400"
+								style={{ fontFamily: "'Playfair Display', serif" }}
+							>
+								{campusName}
+							</span>
 						)}
 					</div>
 
@@ -99,7 +109,7 @@ export function DashboardShell({
 								"flex items-center gap-2 rounded-full border bg-surface-900 md:px-4 md:py-1.5 px-2.5 py-1 text-sm font-medium shadow-sm shrink-0",
 								user.balance < 0
 									? "border-red-900/50 text-red-400"
-									: "border-green-900/50 text-green-400"
+									: "border-green-900/50 text-green-400",
 							)}
 						>
 							<span className="text-fg-muted hidden md:block">Solde:</span>
@@ -119,7 +129,7 @@ export function DashboardShell({
 				</header>
 
 				{/* PAGE CONTENT (Scrollable) */}
-				<div className="flex-1 overflow-y-auto bg-surface-100 flex flex-col pb-20 md:pb-0">
+				<div className="flex-1 overflow-y-auto bg-surface-100 flex flex-col pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-0">
 					<div className="flex-1 p-6 md:p-8">
 						<div className="mx-auto max-w-6xl animate-in fade-in zoom-in-95 duration-300">
 							{children}
