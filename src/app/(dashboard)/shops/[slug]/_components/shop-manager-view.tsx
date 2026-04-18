@@ -97,6 +97,8 @@ export function ShopManagerView({
 					if (res.famss) {
 						setClientFamss(res.famss);
 					}
+				}).catch((err) => {
+					console.error("Failed to fetch famss:", err);
 				});
 			}
 		}
