@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
 			//console.log("Missing provider param");
 			return NextResponse.json(
 				{ error: "Missing provider param" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -91,10 +92,11 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Webhook processing error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

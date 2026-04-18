@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { and, desc, eq, ilike } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -8,13 +9,19 @@ import { rateLimit, validateApiKey } from "@/lib/api-auth";
 export async function GET(req: NextRequest) {
 	const authRes = await validateApiKey(req);
 	if (!authRes.success) {
-		return NextResponse.json({ error: authRes.error }, { status: authRes.status });
+		return NextResponse.json(
+			{ error: authRes.error },
+			{ status: authRes.status },
+		);
 	}
 
 	const keyId = authRes.keyRecord!.id;
 	const limitRes = await rateLimit(req, keyId, 100, 60000);
 	if (!limitRes.success) {
-		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
+		return NextResponse.json(
+			{ error: limitRes.error },
+			{ status: limitRes.status },
+		);
 	}
 
 	try {
@@ -49,22 +56,22 @@ export async function GET(req: NextRequest) {
 				slug: true,
 				description: true,
 				isSelfServiceEnabled: true,
-				createdAt: true
-			}
+				createdAt: true,
+			},
 		});
 
 		return NextResponse.json({
 			success: true,
 			shops: resultShops,
 			limit,
-			offset
+			offset,
 		});
-
 	} catch (error: any) {
+		Sentry.captureException(error);
 		console.error("API Shops List Error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

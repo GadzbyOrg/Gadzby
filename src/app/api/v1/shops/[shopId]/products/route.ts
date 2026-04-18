@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { and, asc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -7,17 +8,23 @@ import { rateLimit, validateApiKey } from "@/lib/api-auth";
 
 export async function GET(
 	req: NextRequest,
-	{ params }: { params: Promise<{ shopId: string }> }
+	{ params }: { params: Promise<{ shopId: string }> },
 ) {
 	const authRes = await validateApiKey(req);
 	if (!authRes.success) {
-		return NextResponse.json({ error: authRes.error }, { status: authRes.status });
+		return NextResponse.json(
+			{ error: authRes.error },
+			{ status: authRes.status },
+		);
 	}
 
 	const keyId = authRes.keyRecord!.id;
-	const limitRes = await rateLimit(req, keyId, 100, 60000); 
+	const limitRes = await rateLimit(req, keyId, 100, 60000);
 	if (!limitRes.success) {
-		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
+		return NextResponse.json(
+			{ error: limitRes.error },
+			{ status: limitRes.status },
+		);
 	}
 
 	try {
@@ -27,7 +34,7 @@ export async function GET(
 
 		const conditions = [
 			eq(products.shopId, shopId),
-			eq(products.isArchived, false)
+			eq(products.isArchived, false),
 		];
 
 		if (categoryId) {
@@ -41,24 +48,24 @@ export async function GET(
 			orderBy: [asc(products.displayOrder), asc(products.name)],
 			with: {
 				category: {
-                    columns: {
-                        id: true,
-                        name: true
-                    }
-                }
-			}
+					columns: {
+						id: true,
+						name: true,
+					},
+				},
+			},
 		});
 
 		return NextResponse.json({
 			success: true,
 			products: resultProducts,
 		});
-
 	} catch (error: any) {
+		Sentry.captureException(error);
 		console.error("API Shop Products List Error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }
