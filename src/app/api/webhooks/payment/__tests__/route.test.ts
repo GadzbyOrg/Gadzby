@@ -49,6 +49,31 @@ describe("POST /api/webhooks/payment", () => {
 		expect(db.transaction).not.toHaveBeenCalled();
 	});
 
+	it("marks transaction as FAILED and returns 200 when shouldFail is true", async () => {
+		vi.mocked(factory.getPaymentProvider).mockResolvedValue({
+			createPayment: vi.fn(),
+			verifyWebhook: vi.fn().mockResolvedValue({
+				isValid: true,
+				shouldFail: true,
+				transactionId: "tx-uuid-fail",
+			}),
+		});
+
+		vi.mocked(db.transaction).mockResolvedValue(undefined);
+
+		const req = new NextRequest(
+			"http://localhost/api/webhooks/payment?provider=helloasso",
+			{ method: "POST", body: "{}" }
+		);
+
+		const res = await POST(req);
+		const json = await res.json();
+
+		expect(res.status).toBe(200);
+		expect(json.received).toBe(true);
+		expect(db.transaction).toHaveBeenCalledOnce();
+	});
+
 	it("processes the transaction and returns 200 for a valid webhook", async () => {
 		vi.mocked(factory.getPaymentProvider).mockResolvedValue({
 			createPayment: vi.fn(),
