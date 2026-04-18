@@ -1,12 +1,13 @@
 import "server-only";
 
+import * as Sentry from "@sentry/nextjs";
 import { eq } from "drizzle-orm";
-import { jwtVerify,SignJWT } from "jose";
+import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { roles,users } from "@/db/schema";
+import { roles, users } from "@/db/schema";
 import { ENV } from "@/lib/env";
 
 const key = new TextEncoder().encode(ENV.JWT_SECRET);
@@ -25,7 +26,7 @@ export async function createSession(
 	role: string,
 	permissions: string[],
 	preferredDashboardPath: string | null = null,
-	redirectTo = "/"
+	redirectTo = "/",
 ) {
 	const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 2);
 	const session = await new SignJWT({
@@ -52,7 +53,7 @@ export async function createSession(
 		redirectTo === "/" && preferredDashboardPath
 			? preferredDashboardPath
 			: redirectTo;
-			
+
 	redirect(finalRedirect);
 }
 
@@ -89,6 +90,11 @@ export async function verifySession() {
 			return null;
 		}
 
+		Sentry.setUser({
+			id: payload.userId as string,
+			role: payload.role as string,
+		});
+
 		return payload as SessionPayload;
 	} catch (error) {
 		console.log("Failed to verify session : ", error);
@@ -97,5 +103,6 @@ export async function verifySession() {
 }
 
 export async function deleteSession() {
+	Sentry.setUser(null);
 	(await cookies()).delete(COOKIE_NAME);
 }

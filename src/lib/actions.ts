@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
 import { verifySession } from "@/lib/session";
@@ -37,18 +38,22 @@ export function authenticatedAction<T extends z.ZodType, R>(
 	schema: T,
 	handler: (
 		data: z.infer<T>,
-		context: { session: NonNullable<Awaited<ReturnType<typeof verifySession>>> }
+		context: {
+			session: NonNullable<Awaited<ReturnType<typeof verifySession>>>;
+		},
 	) => Promise<R | { error: string } | { success: string; data?: R }>,
-	options: ActionOptions = {}
+	options: ActionOptions = {},
 ) {
 	const err = new Error();
 	const callerLine = err.stack?.split("\n")[2] || "";
 	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
-	const actionName = match ? `${match[1].split(/[\\/]/).pop()}:${match[2]}` : "UnknownAction";
+	const actionName = match
+		? `${match[1].split(/[\\/]/).pop()}:${match[2]}`
+		: "UnknownAction";
 
 	return async (
 		prevState: any,
-		formData?: FormData | z.infer<T>
+		formData?: FormData | z.infer<T>,
 	): Promise<any> => {
 		// 1. Verify Session
 		const session = await verifySession();
@@ -66,12 +71,12 @@ export function authenticatedAction<T extends z.ZodType, R>(
 			const hasPermission = options.permissions.some(
 				(p) =>
 					session.permissions.includes(p) ||
-					session.permissions.includes("ADMIN_ACCESS")
+					session.permissions.includes("ADMIN_ACCESS"),
 			);
 			if (!hasPermission) {
 				return {
 					error: `Non autorisé (Permission requise: ${options.permissions.join(
-						", "
+						", ",
 					)})`,
 				};
 			}
@@ -130,8 +135,9 @@ export function authenticatedAction<T extends z.ZodType, R>(
 		// 4. Run Handler
 		try {
 			const result = await handler(parsed.data, { session });
-			
-			const isErrorResult = result && typeof result === "object" && "error" in result;
+
+			const isErrorResult =
+				result && typeof result === "object" && "error" in result;
 			logAction({
 				userId: session.userId,
 				actionName,
@@ -148,8 +154,9 @@ export function authenticatedAction<T extends z.ZodType, R>(
 			) {
 				throw error;
 			}
+			Sentry.captureException(error, { tags: { action: actionName } });
 			console.error("Action failed:", error);
-			
+
 			logAction({
 				userId: session.userId,
 				actionName,
@@ -157,7 +164,7 @@ export function authenticatedAction<T extends z.ZodType, R>(
 				status: "ERROR",
 				errorMessage: error.message || "Une erreur est survenue",
 			});
-			
+
 			// Return safe error
 			return { error: error.message || "Une erreur est survenue" };
 		}
@@ -171,12 +178,14 @@ export function authenticatedActionNoInput<R>(
 	handler: (context: {
 		session: NonNullable<Awaited<ReturnType<typeof verifySession>>>;
 	}) => Promise<R>,
-	options: ActionOptions = {}
+	options: ActionOptions = {},
 ) {
 	const err = new Error();
 	const callerLine = err.stack?.split("\n")[2] || "";
 	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
-	const actionName = match ? `${match[1].split(/[\\/]/).pop()}:${match[2]}` : "UnknownAction";
+	const actionName = match
+		? `${match[1].split(/[\\/]/).pop()}:${match[2]}`
+		: "UnknownAction";
 
 	return async (): Promise<any> => {
 		const session = await verifySession();
@@ -191,15 +200,16 @@ export function authenticatedActionNoInput<R>(
 			const hasPermission = options.permissions.some(
 				(p) =>
 					session.permissions.includes(p) ||
-					session.permissions.includes("ADMIN_ACCESS")
+					session.permissions.includes("ADMIN_ACCESS"),
 			);
 			if (!hasPermission) return { error: "Non autorisé" };
 		}
 
 		try {
 			const result = await handler({ session });
-			
-			const isErrorResult = result && typeof result === "object" && "error" in result;
+
+			const isErrorResult =
+				result && typeof result === "object" && "error" in result;
 			logAction({
 				userId: session.userId,
 				actionName,
@@ -215,15 +225,16 @@ export function authenticatedActionNoInput<R>(
 			) {
 				throw error;
 			}
+			Sentry.captureException(error, { tags: { action: actionName } });
 			console.error("Action failed:", error);
-			
+
 			logAction({
 				userId: session.userId,
 				actionName,
 				status: "ERROR",
 				errorMessage: error.message || "Erreur serveur",
 			});
-			
+
 			return { error: error.message || "Erreur serveur" };
 		}
 	};
@@ -235,17 +246,19 @@ export function authenticatedActionNoInput<R>(
 export function publicAction<T extends z.ZodType, R>(
 	schema: T,
 	handler: (
-		data: z.infer<T>
-	) => Promise<R | { error: string } | { success: string; data?: R }>
+		data: z.infer<T>,
+	) => Promise<R | { error: string } | { success: string; data?: R }>,
 ) {
 	const err = new Error();
 	const callerLine = err.stack?.split("\n")[2] || "";
 	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
-	const actionName = match ? `${match[1].split(/[\\/]/).pop()}:${match[2]}` : "UnknownAction";
+	const actionName = match
+		? `${match[1].split(/[\\/]/).pop()}:${match[2]}`
+		: "UnknownAction";
 
 	return async (
 		prevState: any,
-		formData?: FormData | z.infer<T>
+		formData?: FormData | z.infer<T>,
 	): Promise<any> => {
 		// 1. Parse Input
 		let input = formData;
@@ -292,7 +305,8 @@ export function publicAction<T extends z.ZodType, R>(
 		try {
 			const result = await handler(parsed.data);
 
-			const isErrorResult = result && typeof result === "object" && "error" in result;
+			const isErrorResult =
+				result && typeof result === "object" && "error" in result;
 			logAction({
 				userId: null,
 				actionName,
@@ -309,6 +323,7 @@ export function publicAction<T extends z.ZodType, R>(
 			) {
 				throw error;
 			}
+			Sentry.captureException(error, { tags: { action: actionName } });
 			console.error("Public action failed:", error);
 
 			logAction({
@@ -328,13 +343,16 @@ export function publicActionNoInput<R>(handler: () => Promise<R>) {
 	const err = new Error();
 	const callerLine = err.stack?.split("\n")[2] || "";
 	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
-	const actionName = match ? `${match[1].split(/[\\/]/).pop()}:${match[2]}` : "UnknownAction";
+	const actionName = match
+		? `${match[1].split(/[\\/]/).pop()}:${match[2]}`
+		: "UnknownAction";
 
 	return async (): Promise<any> => {
 		try {
 			const result = await handler();
 
-			const isErrorResult = result && typeof result === "object" && "error" in result;
+			const isErrorResult =
+				result && typeof result === "object" && "error" in result;
 			logAction({
 				userId: null,
 				actionName,
@@ -350,6 +368,7 @@ export function publicActionNoInput<R>(handler: () => Promise<R>) {
 			) {
 				throw error;
 			}
+			Sentry.captureException(error, { tags: { action: actionName } });
 			console.error("Public action failed:", error);
 
 			logAction({
