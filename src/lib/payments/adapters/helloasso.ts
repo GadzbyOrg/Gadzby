@@ -17,7 +17,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 	private token: string | null = null;
 	private tokenExpiresAt: number = 0;
 
-	constructor(private config: HelloAssoConfig, private fees: HelloAssoFees) {}
+	constructor(private config: HelloAssoConfig, private fees: HelloAssoFees) { }
 
 
 	private calculateTotalCharge(desiredAmountCents: number): number {
@@ -34,9 +34,9 @@ export class HelloAssoAdapter implements PaymentProvider {
 			return this.token;
 		}
 
-        if(!this.config.clientId || !this.config.clientSecret) {
-            throw new Error("HelloAsso config not found");
-        }
+		if (!this.config.clientId || !this.config.clientSecret) {
+			throw new Error("HelloAsso config not found");
+		}
 
 		console.log("[HelloAsso] Fetching new access token...");
 		const params = new URLSearchParams();
@@ -44,7 +44,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 		params.append("client_id", this.config.clientId);
 		params.append("client_secret", this.config.clientSecret);
 
-        const authURL = process.env.NODE_ENV === "production" ? "https://api.helloasso.com/oauth2/token" : "https://api.helloasso-sandbox.com/oauth2/token";
+		const authURL = process.env.NODE_ENV === "production" ? "https://api.helloasso.com/oauth2/token" : "https://api.helloasso-sandbox.com/oauth2/token";
 
 		const response = await fetch(authURL, {
 			method: "POST",
@@ -95,8 +95,8 @@ export class HelloAssoAdapter implements PaymentProvider {
 				totalAmount: totalAmountCents,
 				initialAmount: totalAmountCents,
 				itemName: description,
-				backUrl: makeUrl("/topup/fail"),
-				errorUrl: makeUrl("/topup/fail"),
+				backUrl: makeUrl(`/topup/fail/${internalTransactionId}`),
+				errorUrl: makeUrl(`/topup/fail/${internalTransactionId}`),
 				returnUrl: makeUrl("/topup/success"),
 				containsDonation: false,
 				metadata: {
@@ -140,7 +140,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 		}
 	}
 
-    // Docs : https://dev.helloasso.com/docs/notifications-webhook
+	// Docs : https://dev.helloasso.com/docs/notifications-webhook
 	async verifyWebhook(request: Request): Promise<WebhookResult> {
 		try {
 			const body = await request.json();
@@ -148,7 +148,7 @@ export class HelloAssoAdapter implements PaymentProvider {
 			const internalId = body.metadata.internalTransactionId;
 
 			console.log("[HelloAsso] Received webhook for order:", internalId);
-			
+
 
 			if (!internalId) {
 				console.log("[HelloAsso] Missing internal transaction ID");
@@ -166,16 +166,23 @@ export class HelloAssoAdapter implements PaymentProvider {
 
 			// Handle Payment events
 			if (body.eventType === "Payment") {
-				//console.log("[HelloAsso] Payment event received");
 				const paymentData = body.data;
-				
-				// Check if payment is authorized
+
 				if (paymentData.state === "Authorized") {
 					return {
 						isValid: true,
 						transactionId: internalId,
 						amount: paymentData.amount, // Amount is in cents
 						providerTransactionId: paymentData.id.toString(),
+					};
+				}
+
+				// Refused or Error — signal the route to mark the transaction as FAILED
+				if (paymentData.state === "Refused" || paymentData.state === "Error") {
+					return {
+						isValid: true,
+						shouldFail: true,
+						transactionId: internalId,
 					};
 				}
 			}

@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { and, eq, ilike, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -8,13 +9,19 @@ import { rateLimit, validateApiKey } from "@/lib/api-auth";
 export async function GET(req: NextRequest) {
 	const authRes = await validateApiKey(req);
 	if (!authRes.success) {
-		return NextResponse.json({ error: authRes.error }, { status: authRes.status });
+		return NextResponse.json(
+			{ error: authRes.error },
+			{ status: authRes.status },
+		);
 	}
 
 	const keyId = authRes.keyRecord!.id;
 	const limitRes = await rateLimit(req, keyId, 60, 60000); // 60 requests per minute
 	if (!limitRes.success) {
-		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
+		return NextResponse.json(
+			{ error: limitRes.error },
+			{ status: limitRes.status },
+		);
 	}
 
 	try {
@@ -31,8 +38,8 @@ export async function GET(req: NextRequest) {
 					ilike(users.nom, `%${name}%`),
 					ilike(users.prenom, `%${name}%`),
 					ilike(users.username, `%${name}%`),
-					ilike(users.bucque, `%${name}%`)
-				)!
+					ilike(users.bucque, `%${name}%`),
+				)!,
 			);
 		}
 
@@ -67,10 +74,11 @@ export async function GET(req: NextRequest) {
 
 		return NextResponse.json({ success: true, users: result });
 	} catch (error: any) {
+		Sentry.captureException(error);
 		console.error("API User Search Error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

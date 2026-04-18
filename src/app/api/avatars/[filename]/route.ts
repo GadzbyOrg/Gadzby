@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
 import { type NextRequest, NextResponse } from "next/server";
@@ -7,7 +8,7 @@ const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
 
 export async function GET(
 	req: NextRequest,
-	{ params }: { params: Promise<{ filename: string }> }
+	{ params }: { params: Promise<{ filename: string }> },
 ) {
 	const { filename } = await params;
 
@@ -42,6 +43,7 @@ export async function GET(
 			},
 		});
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Error reading avatar file:", error);
 		return new NextResponse("Internal Server Error", { status: 500 });
 	}

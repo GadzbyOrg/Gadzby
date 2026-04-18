@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
 			//console.log("Missing provider param");
 			return NextResponse.json(
 				{ error: "Missing provider param" },
-				{ status: 400 }
+				{ status: 400 },
 			);
 		}
 
@@ -28,14 +29,31 @@ export async function POST(request: NextRequest) {
 		const verification = await provider.verifyWebhook(request);
 
 		if (!verification.isValid || !verification.transactionId) {
-			//console.log("Invalid webhook verification");
-			return NextResponse.json(
-				{ error: "Invalid signature or missing tx ID" },
-				{ status: 400 }
-			);
+			// Return 200 to prevent provider from retrying non-actionable events
+			return NextResponse.json({ received: true });
 		}
 
 		const txId = verification.transactionId;
+
+		if (verification.shouldFail) {
+			// Provider reported a declined or errored payment — mark as FAILED
+			await db.transaction(async (tx) => {
+				const [currentTx] = await tx
+					.select()
+					.from(transactions)
+					.where(eq(transactions.id, txId))
+					.for("update");
+
+				if (!currentTx || currentTx.status !== "PENDING") return;
+
+				await tx
+					.update(transactions)
+					.set({ status: "FAILED" })
+					.where(eq(transactions.id, txId));
+			});
+
+			return NextResponse.json({ received: true });
+		}
 
 		// TODO: Refactor to use transactions service
 		await db.transaction(async (tx) => {
@@ -74,10 +92,11 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
+		Sentry.captureException(error);
 		console.error("Webhook processing error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

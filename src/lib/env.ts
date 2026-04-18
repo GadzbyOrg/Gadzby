@@ -10,6 +10,7 @@ const envSchema = z.object({
 		.default("development"),
 	JWT_SECRET: z.string(),
 	CAMPUS_NAME: z.string(),
+	SENTRY_DSN: z.string().optional(),
 });
 
 const env = envSchema.safeParse(process.env);

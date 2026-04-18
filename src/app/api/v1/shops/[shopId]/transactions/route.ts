@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { and, desc, eq, gte, inArray, lte } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -7,17 +8,23 @@ import { rateLimit, validateApiKey } from "@/lib/api-auth";
 
 export async function GET(
 	req: NextRequest,
-	{ params }: { params: Promise<{ shopId: string }> }
+	{ params }: { params: Promise<{ shopId: string }> },
 ) {
 	const authRes = await validateApiKey(req);
 	if (!authRes.success) {
-		return NextResponse.json({ error: authRes.error }, { status: authRes.status });
+		return NextResponse.json(
+			{ error: authRes.error },
+			{ status: authRes.status },
+		);
 	}
 
 	const keyId = authRes.keyRecord!.id;
 	const limitRes = await rateLimit(req, keyId, 100, 60000);
 	if (!limitRes.success) {
-		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
+		return NextResponse.json(
+			{ error: limitRes.error },
+			{ status: limitRes.status },
+		);
 	}
 
 	try {
@@ -45,14 +52,17 @@ export async function GET(
 
 			// If the category has no products, there can be no transactions
 			if (productIdsFromCategory.length === 0) {
-				return NextResponse.json({ success: true, transactions: [], offset, limit });
+				return NextResponse.json({
+					success: true,
+					transactions: [],
+					offset,
+					limit,
+				});
 			}
 		}
 
 		// Build filters
-		const conditions = [
-			eq(transactions.shopId, shopId)
-		];
+		const conditions = [eq(transactions.shopId, shopId)];
 
 		if (userId) {
 			conditions.push(eq(transactions.targetUserId, userId));
@@ -68,12 +78,14 @@ export async function GET(
 
 		if (startDate) {
 			const start = new Date(startDate);
-			if (!isNaN(start.getTime())) conditions.push(gte(transactions.createdAt, start));
+			if (!isNaN(start.getTime()))
+				conditions.push(gte(transactions.createdAt, start));
 		}
 
 		if (endDate) {
 			const end = new Date(endDate);
-			if (!isNaN(end.getTime())) conditions.push(lte(transactions.createdAt, end));
+			if (!isNaN(end.getTime()))
+				conditions.push(lte(transactions.createdAt, end));
 		}
 
 		const whereCondition = and(...conditions);
@@ -91,24 +103,24 @@ export async function GET(
 						nom: true,
 						prenom: true,
 						bucque: true,
-						promss: true
-					}
-				}
-			}
+						promss: true,
+					},
+				},
+			},
 		});
 
 		return NextResponse.json({
 			success: true,
 			transactions: resultTxs,
 			limit,
-			offset
+			offset,
 		});
-
 	} catch (error: any) {
+		Sentry.captureException(error);
 		console.error("API Shop Transactions Error:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

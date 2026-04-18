@@ -3,8 +3,10 @@
 import {
 	IconBuildingStore,
 	IconChevronRight,
+	IconHistory,
 	IconHome2,
 	IconSettings,
+	IconWallet,
 	IconX,
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -112,11 +114,75 @@ type BottomNavProps = {
 	}[];
 };
 
-export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
+const STAFF_PERMISSIONS = [
+	"VIEW_TRANSACTIONS",
+	"MANAGE_ROLES",
+	"MANAGE_USERS",
+	"MANAGE_SHOPS",
+	"MANAGE_FAMSS",
+	"ADMIN_ACCESS",
+	"MANAGE_PAYMENTS",
+	"TOPUP_USER",
+];
+
+function SimpleBottomNav({
+	shops,
+	pathname,
+}: {
+	shops: BottomNavProps["shops"];
+	pathname: string;
+}) {
+	const shopUrl =
+		shops.length === 1 ? `/shops/${shops[0].slug}/self-service` : "/shops";
+	const shopLabel = shops.length === 1 ? shops[0].name : "Boutiques";
+
+	const tabs = [
+		{ label: "Accueil", url: "/", icon: IconHome2 },
+		...(shops.length > 0
+			? [{ label: shopLabel, url: shopUrl, icon: IconBuildingStore }]
+			: []),
+		{ label: "Recharger", url: "/topup", icon: IconWallet },
+		{ label: "Historique", url: "/transactions", icon: IconHistory },
+	];
+
+	return (
+		<nav className="fixed bottom-0 left-0 right-0 z-50 flex items-end justify-around h-[calc(3.75rem+env(safe-area-inset-bottom))] bg-surface-950/90 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)] md:hidden px-1 shadow-[0_-5px_20px_-15px_rgba(0,0,0,0.5)]">
+			{tabs.map((tab) => {
+				const isActive =
+					tab.url === "/"
+						? pathname === "/"
+						: pathname === tab.url || pathname.startsWith(tab.url + "/");
+
+				return (
+					<Link
+						key={tab.url}
+						href={tab.url}
+						className={cn(
+							"flex flex-col items-center justify-end pb-2 gap-1 flex-1 transition-colors",
+							isActive ? "text-accent-500" : "text-fg-subtle",
+						)}
+					>
+						<tab.icon size={24} stroke={isActive ? 2 : 1.5} />
+						<span
+							className={cn(
+								"text-[10px] leading-none",
+								isActive ? "font-bold" : "font-medium",
+							)}
+						>
+							{tab.label}
+						</span>
+					</Link>
+				);
+			})}
+		</nav>
+	);
+}
+
+function FullBottomNav({ userRole, permissions, shops }: BottomNavProps) {
 	const pathname = usePathname();
 	const [activeMain, setActiveMain] = useState("Général");
 	const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
-		{}
+		{},
 	);
 
 	// Menu mobile ouvert ou non
@@ -235,7 +301,7 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 						return pathname.startsWith(l.url);
 					}
 					return false;
-				})
+				}),
 			);
 			if (group) setActiveMain(group.main);
 
@@ -296,7 +362,7 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 								if ("type" in item && item.type === "dropdown") {
 									const isOpen = openDropdowns[item.label];
 									const isChildActive = item.items.some((sub) =>
-										pathname.startsWith(sub.url)
+										pathname.startsWith(sub.url),
 									);
 
 									return (
@@ -307,7 +373,7 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 													"flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
 													isChildActive || isOpen
 														? "text-fg bg-elevated/80"
-														: "text-fg-muted hover:bg-elevated hover:text-fg"
+														: "text-fg-muted hover:bg-elevated hover:text-fg",
 												)}
 											>
 												<span>{item.label}</span>
@@ -315,7 +381,7 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 													size={14}
 													className={cn(
 														"transition-transform",
-														isOpen ? "rotate-90" : ""
+														isOpen ? "rotate-90" : "",
 													)}
 												/>
 											</button>
@@ -336,7 +402,7 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 																	"rounded-lg px-3 py-2.5 text-sm transition-colors",
 																	isSubActive
 																		? "text-accent-400 font-semibold bg-accent-950/20"
-																		: "text-fg-subtle hover:text-fg active:bg-elevated"
+																		: "text-fg-subtle hover:text-fg active:bg-elevated",
 																)}
 															>
 																{subItem.label}
@@ -364,7 +430,7 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 											"flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium transition-all duration-200",
 											isActive
 												? "bg-white text-surface-950 shadow-md"
-												: "text-fg-muted hover:bg-elevated hover:text-fg active:bg-elevated"
+												: "text-fg-muted hover:bg-elevated hover:text-fg active:bg-elevated",
 										)}
 									>
 										{link.label}
@@ -380,7 +446,7 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 			</Drawer.Root>
 
 			{/* Bottom Navigation Bar */}
-			<nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around h-[4.5rem] bg-surface-950/90 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)] md:hidden px-2 shadow-[0_-5px_20px_-15px_rgba(0,0,0,0.5)]">
+			<nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around h-[calc(3.75rem+env(safe-area-inset-bottom))] bg-surface-950/90 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)] md:hidden px-2 shadow-[0_-5px_20px_-15px_rgba(0,0,0,0.5)]">
 				{availableGroups.map((group) => {
 					const isActive = group.main === activeMain;
 					return (
@@ -398,19 +464,23 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 							}}
 							className={cn(
 								"flex flex-col items-center justify-center w-16 h-full gap-1 mt-1 transition-all duration-200 relative",
-								isActive ? "text-accent-500" : "text-fg-subtle hover:text-fg"
+								isActive ? "text-accent-500" : "text-fg-subtle hover:text-fg",
 							)}
 						>
-							<div className={cn(
-								"p-1.5 rounded-xl transition-colors duration-300 relative",
-								isActive && isMenuOpen ? "bg-accent-900/30" : ""
-							)}>
+							<div
+								className={cn(
+									"p-1.5 rounded-xl transition-colors duration-300 relative",
+									isActive && isMenuOpen ? "bg-accent-900/30" : "",
+								)}
+							>
 								<group.icon size={26} stroke={isActive ? 2 : 1.5} />
 							</div>
-							<span className={cn(
-								"text-[10px] pb-1 leading-none",
-								isActive ? "font-bold" : "font-medium"
-							)}>
+							<span
+								className={cn(
+									"text-[10px] pb-1 leading-none",
+									isActive ? "font-bold" : "font-medium",
+								)}
+							>
 								{group.main}
 							</span>
 						</button>
@@ -418,5 +488,36 @@ export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
 				})}
 			</nav>
 		</>
+	);
+}
+
+function checkIsSimpleUser(
+	userRole: string,
+	permissions: string[],
+	shops: BottomNavProps["shops"],
+): boolean {
+	const hasAdminAccess =
+		permissions.includes("ADMIN_ACCESS") || userRole === "ADMIN";
+	const isShopMember = shops.some((s) => s.canManage);
+	const hasSpecialPermissions = permissions.some((p) =>
+		STAFF_PERMISSIONS.includes(p),
+	);
+	return !hasAdminAccess && !isShopMember && !hasSpecialPermissions;
+}
+
+export function BottomNav({ userRole, permissions, shops }: BottomNavProps) {
+	const pathname = usePathname();
+	const isSimpleUser = checkIsSimpleUser(userRole, permissions, shops);
+
+	if (isSimpleUser) {
+		return <SimpleBottomNav shops={shops} pathname={pathname} />;
+	}
+
+	return (
+		<FullBottomNav
+			userRole={userRole}
+			permissions={permissions}
+			shops={shops}
+		/>
 	);
 }

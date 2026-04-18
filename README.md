@@ -1,167 +1,60 @@
 # Gadzby
 
-Gadzby est une application web Fullstack conçue pour centraliser, simplifier et sécuriser la gestion financière et logistique des magasins ("Boquettes") des élèves ingénieurs (Arts et Métiers). Elle vise à remplacer l'ancien système [Borgia](https://github.com/borgia-app).
+Application web fullstack de gestion pour les associations étudiantes des Arts et Métiers. Vise à remplacer l'ancien système [Borgia](https://github.com/borgia-app).
 
-## Objectifs du Projet
-
-Le but de Gadzby est d'offrir une solution robuste et "student-proof" permettant :
-
-- **La gestion comptable** de multiples points de vente.
-- **La fluidification des transactions** ("Débucquage") et des rechargements.
-- **Un suivi précis des stocks** et des événements ("Manips").
-
-## Fonctionnalités
-
-### 1. Pour le Gadz (Utilisateur)
-L'expérience utilisateur est centrée sur la rapidité et la transparence.
-
-- **Débucquage Multi-Comptes** : Paiement via solde personnel ou via le compte commun de Fam'ss.
-- **Rechargement Autonome** : Intégration API (Lydia/Sumup) avec calcul des frais à la charge de l'utilisateur (zéro coût pour l'asso).
-- **Self-Service** : Possibilité de se servir soi-même dans les boquettes autorisées.
-- **Social & P2P** : Transfert d'argent entre utilisateurs.
-
-### 2. Pour les Gestionnaires de Boquette
-
-- **Gestion des Stocks & Inventaires** : Suivi des unités et volumes, audits d'inventaire.
-- **Comptabilité & Dépenses** : Calcul automatique du bénéfice, suivi des dépenses fournisseurs.
-- **Analyses & Statistiques** : Tableaux de bord détaillés sur les ventes, produits phares et performances financières.
-- **Rayons Dynamiques** : Organisation flexible des produits par catégories.
-- **Gestion des Manips** : Création d'événements temporaires avec produits exclusifs et dates de validité.
-- **Rôles Boutique** : Gestion fine des permissions pour chaque membre (Membre, VP, etc...).
-
-### 3. Pour les Grip'ss (Admins)
-Une supervision globale pour garantir la pérennité de l'AE.
-
-- **Gestion Globale des Boutiques** : Création et administration de nouvelles boquettes.
-- **Gestion des Utilisateurs & Rôles** : Un annuaire complet avec recherche, édition et attribution de rôles précis (Admin, Manager, etc.) pour chaque context (Boquette ou Global).
-- **Opérations de Masse** : Débucquage groupé (import Excel) pour gérer les événements majeurs rapidement.
-- **Gestion des Fam'ss** : Supervision des comptes communs et des membres associés.
-- **Sécurité et Maintenance** : Logs d'activité, annulation de transactions,gestion des mandats et outils de suppression, désactivation d'utilisateurs.
-- **Intégration Pennylane** : Réception automatique des factures fournisseurs depuis Pennylane.
-
-## Stack Technique
-
-Ce projet est construit avec les technologies suivantes :
+## Stack
 
 - **Framework** : [Next.js 16](https://nextjs.org/) (App Router)
 - **Langage** : TypeScript
-- **Base de données** : PostgreSQL avec [Drizzle ORM](https://orm.drizzle.team/)
-- **UI/UX** : [Tailwind CSS](https://tailwindcss.com/)
-- **Authentification** : Custom (JWT/Bcrypt)
-- **Paiements** : Intégrations API externes (Lydia/Sumup)
+- **Base de données** : PostgreSQL + [Drizzle ORM](https://orm.drizzle.team/)
+- **UI** : Tailwind CSS
+- **Auth** : JWT / Bcrypt (custom)
+- **Paiements** : Lydia, SumUp, HelloAsso
 
-## 📦 Installation et Démarrage
-
-> */!\ Cette section est valable pour un envrionement de developpement* pour configurer
-> Gadzby en production voir [la documentation](./DOCS/SYSADMIN.md)
-
-### 1. Prérequis
-
-Avant de commencer, installez ces outils :
-- [Node.js](https://nodejs.org/) (Version LTS recommandée)
-- [Git](https://git-scm.com/)
-- [PostgreSQL](https://www.postgresql.org/)
-
-### 2. Cloner le projet
-
-Ouvrez un terminal (PowerShell, Command Prompt ou Terminal) et lancez :
+## Installation (développement)
 
 ```bash
-git clone https://github.com/LouisChabanon/Gadzby.git
+git clone https://github.com/GadzbyOrg/Gadzby.git
 cd Gadzby
-```
-
-### 3. Installer les dépendances
-
-Installez les librairies nécessaires au fonctionnement du site :
-
-```bash
 npm install
 ```
 
-### 4. Configuration
+Créez `.env.local` :
 
-Créez votre fichier de configuration secret :
-
-1. Copier ce fichier d'exemple dans un ficher `.env.local`:
-   ```
-   DATABASE_URL="postgres://postgres:password@localhost:5432/gadzby"
-   JWT_SECRET="a-string-secret-at-least-256-bits-long"
-   NEXT_PUBLIC_APP_URL="https://domaine-de-votre-app.exemple"
-   CAMPUS_NAME="developpement"
-   ```
-
-2. Editez les variables et vérifiez que `DATABASE_URL` pointe bien vers votre base de données.
-
-### 5. Préparer la Base de Données
-
-Cette commande va créer les tables et ajouter des données de test (utilisateurs, produits, promos) :
-
-```bash
-npm run db:reset
+```env
+DATABASE_URL="postgres://postgres:password@localhost:5432/gadzby"
+JWT_SECRET="a-string-secret-at-least-256-bits-long"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+CAMPUS_NAME="developpement"
 ```
-*Répondez "y" (yes) quand on vous demande confirmation.*
 
-### 6. Lancer l'application
-
-Démarrez le serveur de développement :
+Initialisez la base de données et démarrez :
 
 ```bash
+npx drizzle-kit generate
+npm run db:reset
 npm run dev
 ```
 
-Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
-Connectez-vous avec un des comptes de test (ex: Admin généré par le script).
+Ouvrez [http://localhost:3000](http://localhost:3000) et connectez-vous avec un compte de test généré par le seed.
 
-## Guide de configuration
+## Commandes utiles
 
-Ce guide vous permet de configurer les différents services connectés à Gadzby et nécessaire pour son fonctionnement.
+```bash
+npm run build          # Build de production
+npm run lint           # ESLint
+npm test               # Vitest
+npx drizzle-kit push   # Appliquer les changements de schéma DB
+```
 
-### 1. Email
-L'envoi d'email est utilisé pour la récupération de mot de passe.
+## Documentation
 
-Il existe deux options :
-- Utiliser un serveur SMTP custom (gratuit mais difficile à configurer)
-- Utiliser Resend (gratuit au debut mais peut devenir payant)
+**Administrateur applicatif** — configuration de l'app, moyens de paiement, rôles :
+- [Guide administrateur](./docs/ADMIN-GUIDE.md)
 
+**Sysadmin** — déploiement et hébergement :
+- [Administration système](./docs/SYSADMIN.md)
 
-### 2. Paiements
-
-Gadzby est compatible avec Lydia, SumUp et HelloAsso.
-
-#### Lydia
-
-pour configurer Lydia, vous avez besoin de :
-- VendorToken : Clé Vendeur Publique 
-- privateToken : Clé API privée
-
-
-#### SumUp
-
-Pour configurer SumUp, vous avez besoin de :
-- sumup_api_key : Clé API SumUp à générer dans les paramètres développeurs de l'interface SumUp 
-- merchantCode : L'identifiant unique de marchant de votre compte SumUp (s'affiche sous le nom de l'asso dans le coin en haut à droite de l'interface SumUp)
-
-
-#### HelloAsso
-
-Pour configurer HelloAsso, vous avez besoin de :
-- clientId : Rendez-vous sur l'interface de gestion d'association puis dans Mon compte > Intégrations et API
-- clientSecret : Idem
-- organizationSlug : trouvable dans l'url de l'interface de gestion : https://admin.helloasso.com/{organisationSlug}/accueil
-
-**IMPORTANT** : Vous devez renseigner un url dans le champs "Mon URL de callback" avec : *https://url_de_votre_app/api/webhooks/payment?provider=helloasso*.
-
-### 3. Pennylane
-
-L'intégration Pennylane permet aux boul'c d'envoyer les factures fournisseurs directement sur Pennylane. Pour configurer Pennylane, vous avez besoin de :
-- Clé API Pennylane : Pour créer une clé API, vous devez vous rendre sur la page "Connectivité" du dashboard Pennylane, puis dans l'onglet Développeurs cliquez sur "Générer un Token API". Vous devez donner les droits en lecture et écriture sur :
-    * Factures Fournisseurs
-    * Fichiers
-    * Catégories
-
-## 🔌 API Développeur
-
-Gadzby expose une API RESTful qui permet aux applications tierces de s'intégrer au système (débucquage externe, accès au produits, transactions, webhooks, etc.).
-
-Pour en savoir plus sur l'authentification, la gestion des clés, et les endpoints disponibles, consultez la **[documentation de l'API Gadzby](./docs/API-DOCS.md)**.
+**Développeur** — API externe et intégrations paiement :
+- [API développeur](./docs/API-DOCS.md)
+- [Système de paiement](./docs/PAYMENTS.md)
