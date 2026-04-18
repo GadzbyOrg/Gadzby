@@ -1,6 +1,7 @@
 import "./globals.css";
 
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import React from "react";
 
 import { ServiceWorkerUnregister } from "@/components/ServiceWorkerUnregister";
@@ -41,6 +42,14 @@ export default function RootLayout({
 				<ThemeProvider />
 				<ServiceWorkerUnregister />
 				{children}
+				{process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL && process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
+					<Script
+						defer
+						src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
+						data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+						strategy="afterInteractive"
+					/>
+				)}
 			</body>
 		</html>
 	);
