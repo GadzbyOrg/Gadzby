@@ -1,6 +1,6 @@
 "use server";
 
-import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -44,7 +44,8 @@ export async function getUsers(
 	sort: string | null = null,
 	order: "asc" | "desc" | null = null,
 	role: string | null = null,
-	promss: string | null = null
+	promss: string | null = null,
+	status: string | null = null
 ) {
 	const session = await verifySession();
 	if (
@@ -86,6 +87,12 @@ export async function getUsers(
 
 		if (promss) {
 			conditions.push(eq(users.promss, promss));
+		}
+
+		if (status === "active") {
+			conditions.push(or(eq(users.isAsleep, false), isNull(users.isAsleep))!);
+		} else if (status === "inactive") {
+			conditions.push(eq(users.isAsleep, true));
 		}
 
 		const whereCondition = and(...conditions);

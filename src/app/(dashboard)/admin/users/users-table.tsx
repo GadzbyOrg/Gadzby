@@ -279,10 +279,19 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 		});
 	};
 
+	const handleStatusFilter = (status: string) => {
+		const params = new URLSearchParams(searchParams);
+		if (status && status !== "all") params.set("status", status);
+		else params.delete("status");
+		params.set("page", "1");
+		router.replace(`${pathname}?${params.toString()}`);
+	};
+
 	const currentSort = searchParams.get("sort");
 	const currentOrder = searchParams.get("order");
 	const currentRole = searchParams.get("role") || "all";
 	const currentPromss = searchParams.get("promss") || "all";
+	const currentStatus = searchParams.get("status") || "all";
 	const activeUsers = users.filter((u) => !u.isDeleted);
 
 	return (
@@ -319,6 +328,16 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 							{roles.map((role) => (
 								<SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
 							))}
+						</SelectContent>
+					</Select>
+					<Select value={currentStatus} onValueChange={handleStatusFilter}>
+						<SelectTrigger className="w-auto min-w-[140px]">
+							<SelectValue placeholder="Tous les états" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Tous les états</SelectItem>
+							<SelectItem value="active">Actif</SelectItem>
+							<SelectItem value="inactive">Inactif</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>

@@ -9,19 +9,19 @@ import { UsersTable } from "./users-table";
 export default async function AdminUsersPage({
     searchParams,
 }: {
-    searchParams: Promise<{ page?: string; search?: string; sort?: string; order?: "asc" | "desc"; role?: string; promss?: string }>;
+    searchParams: Promise<{ page?: string; search?: string; sort?: string; order?: "asc" | "desc"; role?: string; promss?: string; status?: string }>;
 }) {
     const session = await verifySession();
     if (!session || (!session.permissions.includes("MANAGE_USERS") && !session.permissions.includes("ADMIN_ACCESS"))) {
         redirect("/");
     }
 
-    const { page, search, sort, order, role, promss } = await searchParams;
+    const { page, search, sort, order, role, promss, status } = await searchParams;
     const currentPage = Number(page) || 1;
     const searchTerm = search || "";
 
     const [{ users, totalCount, error }, rolesRes, promssListRes] = await Promise.all([
-        getUsers(currentPage, 50, searchTerm, sort || null, order || null, role || null, promss || null),
+        getUsers(currentPage, 50, searchTerm, sort || null, order || null, role || null, promss || null, status || null),
         getRolesAction(),
         getPromssListAction({})
     ]);
