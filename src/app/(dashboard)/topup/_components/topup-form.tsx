@@ -3,9 +3,10 @@
 import { IconCheck, IconCreditCard, IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 
+import { ErrorDialog } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { initiateTopUp } from "@/features/payments/actions";
 import { cn } from "@/lib/utils";
-import { ErrorDialog } from "@/components/ui/dialog";
 
 type PaymentMethod = {
 	id: string;
@@ -113,11 +114,11 @@ export function TopUpForm({
 						))}
 					</div>
 					<div className="relative">
-						<input
+						<Input
 							type="number"
 							value={amount}
 							onChange={(e) => setAmount(Number(e.target.value))}
-							className="w-full rounded-xl border border-border bg-surface-950 px-4 py-3 text-lg font-bold text-fg focus:border-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+							className="rounded-xl px-4 py-3 text-lg font-bold pr-14"
 							placeholder="Montant personnalisé"
 							min="0.01"
 							step="0.01"

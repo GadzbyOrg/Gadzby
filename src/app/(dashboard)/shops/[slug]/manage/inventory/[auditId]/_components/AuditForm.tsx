@@ -4,6 +4,7 @@ import { IconAlertTriangle, IconCheck } from "@tabler/icons-react"; // Removed I
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { completeInventoryAudit, updateAuditItem } from "@/features/shops/inventory";
 
@@ -205,14 +206,14 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                     </div>
                                                 ) : (
                                                     <div className="relative">
-                                                        <input
+                                                        <Input
                                                             type="number"
                                                             inputMode="decimal"
                                                             step="0.01"
-                                                            className={`w-full bg-surface-950 border ${item.difference !== 0
+                                                            className={`px-3 py-3 text-right font-mono text-lg focus:ring-1 outline-none transition-colors ${item.difference !== 0
                                                                 ? "border-yellow-500/30 focus:border-yellow-500"
                                                                 : "border-border focus:border-accent-500"
-                                                                } rounded-lg px-3 py-3 text-right text-fg font-mono text-lg focus:ring-1 focus:ring-accent-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                                }`}
                                                             value={item.actualStock}
                                                             onChange={(e) =>
                                                                 handleStockChange(item.id, e.target.value)
@@ -271,13 +272,13 @@ export default function AuditForm({ audit, shopSlug }: { audit: Audit; shopSlug:
                                                             </span>
                                                         ) : (
                                                             <div className="relative">
-                                                                <input
+                                                                <Input
                                                                     type="number"
                                                                     step="0.01"
-                                                                    className={`w-full bg-surface-950 border ${item.difference !== 0
+                                                                    className={`px-3 py-2 text-right font-mono focus:ring-1 outline-none transition-colors ${item.difference !== 0
                                                                         ? "border-yellow-500/30 focus:border-yellow-500"
                                                                         : "border-border focus:border-accent-500"
-                                                                        } rounded-lg px-3 py-2 text-right text-fg font-mono focus:ring-1 focus:ring-accent-500 outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                                        }`}
                                                                     value={item.actualStock}
                                                                     onChange={(e) =>
                                                                         handleStockChange(item.id, e.target.value)

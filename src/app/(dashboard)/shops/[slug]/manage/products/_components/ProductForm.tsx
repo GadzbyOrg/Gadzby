@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation"; // Correct import for App Router
 import { useState } from "react";
 
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createCategory,createProduct, updateProduct } from "@/features/shops/products";
 
@@ -187,7 +188,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         <label htmlFor="price" className="block text-sm font-medium text-fg-muted mb-1">
                             Prix {unit === "unit" ? "(€ / Unité)" : unit === "liter" ? "(€ / Litre)" : "(€ / Kg)"}
                         </label>
-                        <input
+                        <Input
                             type="number"
                             name="price"
                             id="price"
@@ -195,21 +196,21 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             min="0"
                             required
                             defaultValue={product ? (product.price / 100).toFixed(2) : ""}
-                            className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="px-4 py-2"
                         />
                     </div>
                     <div>
                         <label htmlFor="stock" className="block text-sm font-medium text-fg-muted mb-1">
                             Stock
                         </label>
-                         <input
+                         <Input
                             type="number"
                             name="stock"
                             id="stock"
-                            step="0.01" // Allow decimals
+                            step="0.01"
                             required
                             defaultValue={product?.stock || 0}
-                            className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="px-4 py-2"
                         />
                     </div>
                     <div>
@@ -237,14 +238,14 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         <label htmlFor="fcv" className="block text-sm font-medium text-fg-muted mb-1">
                             Facteur Correction (FCV)
                         </label>
-                        <input
+                        <Input
                             type="number"
                             name="fcv"
                             id="fcv"
                             step="0.01"
                             required
                             defaultValue={product?.fcv || 1.0}
-                            className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="px-4 py-2"
                         />
                         <p className="text-xs text-fg-subtle mt-1">Multiplicateur de sortie stock (défaut: 1)</p>
                     </div>
@@ -343,25 +344,25 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                                     </div>
                                     <div className="w-24 space-y-1">
                                         <label className="text-xs text-fg-subtle">Qté ({unit === "liter" ? "L" : "Kg"})</label>
-                                        <input
+                                        <Input
                                             type="number"
                                             step="0.01"
                                             value={variant.quantity}
                                             onChange={(e) => updateVariant(index, "quantity", e.target.value)}
                                             placeholder="0.5"
-                                            className="w-full bg-surface-950 border border-border rounded-lg px-3 py-1.5 text-white text-sm"
+                                            className="px-3 py-1.5 text-sm"
                                             required
                                         />
                                     </div>
                                     <div className="w-28 space-y-1">
                                         <label className="text-xs text-fg-subtle">Prix €</label>
-                                        <input
+                                        <Input
                                             type="number"
                                             step="0.01"
                                             value={variant.price}
                                             onChange={(e) => updateVariant(index, "price", e.target.value)}
                                             placeholder="Auto"
-                                            className="w-full bg-surface-950 border border-border rounded-lg px-3 py-1.5 text-white text-sm"
+                                            className="px-3 py-1.5 text-sm"
                                         />
                                     </div>
                                     <button 
