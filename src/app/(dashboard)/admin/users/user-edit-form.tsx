@@ -10,6 +10,7 @@ import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { TabagnssSelector } from "@/components/tabagnss-selector";
 import { ErrorDialog } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
 	adminUpdateUserAction,
@@ -260,14 +261,14 @@ export function UserEditForm({ user, roles, onSuccess }: UserEditFormProps) {
 							>
 								Solde (€)
 							</label>
-							<input
+							<Input
 								type="number"
 								name="balance"
 								id="balance"
 								step="0.01"
 								value={balanceDisplay}
 								onChange={(e) => setBalanceDisplay(e.target.value)}
-								className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all font-mono"
+								className="px-4 py-2.5 font-mono"
 							/>
 						</div>
 

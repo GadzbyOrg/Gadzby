@@ -8,6 +8,8 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 
+import { Input } from "@/components/ui/input";
+
 import {
 	togglePaymentMethod,
 	updatePaymentMethodConfig,
@@ -208,13 +210,13 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 									Frais fixes (cts)
 								</label>
 								<div className="relative mt-1">
-									<input
+									<Input
 										type="number"
 										value={fees.fixed}
 										onChange={(e) =>
 											setFees({ ...fees, fixed: Number(e.target.value) })
 										}
-										className="w-full rounded-lg border border-border bg-surface-950 p-2 text-sm text-fg focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+										className="p-2 pr-8 text-sm"
 										placeholder="0"
 									/>
 									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fg-subtle">
@@ -227,14 +229,14 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 									Frais (%)
 								</label>
 								<div className="relative mt-1">
-									<input
+									<Input
 										type="number"
 										step="0.01"
 										value={fees.percentage}
 										onChange={(e) =>
 											setFees({ ...fees, percentage: Number(e.target.value) })
 										}
-										className="w-full rounded-lg border border-border bg-surface-950 p-2 text-sm text-fg focus:border-accent-500 focus:ring-1 focus:ring-accent-500 outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+										className="p-2 pr-8 text-sm"
 										placeholder="0.00"
 									/>
 									<span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-fg-subtle">

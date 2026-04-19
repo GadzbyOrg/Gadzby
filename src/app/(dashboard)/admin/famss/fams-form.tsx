@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { Input } from "@/components/ui/input";
 import {
 	createFamsAction,
 	updateFamsAction,
@@ -21,7 +22,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
 				? "Chargement..."
 				: isEdit
 					? "Enregistrer les modifications"
-					: "Créer la Fam&apos;ss"}
+					: "Créer la Fam'ss"}
 		</button>
 	);
 }
@@ -89,7 +90,7 @@ export function FamsForm({ fams, onSuccess }: FamsFormProps) {
 						defaultValue={fams?.name || ""}
 						required
 						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-1 focus:ring-accent-500 placeholder:text-fg-subtle"
-						placeholder="Ex: Les Dalton"
+						placeholder="Ex: 24"
 					/>
 				</div>
 
@@ -101,14 +102,14 @@ export function FamsForm({ fams, onSuccess }: FamsFormProps) {
 						Solde
 					</label>
 					<div className="relative">
-						<input
+						<Input
 							type="number"
 							name="balance"
 							id="balance"
 							step="0.01"
 							defaultValue={fams ? (fams.balance / 100).toFixed(2) : "0"}
 							required
-							className="w-full bg-surface-900 border border-border rounded-lg pl-4 pr-8 py-2.5 text-fg focus:outline-none focus:ring-1 focus:ring-accent-500 placeholder:text-fg-subtle font-mono"
+							className="pl-4 pr-8 py-2.5 font-mono"
 						/>
 						<span className="absolute right-4 top-1/2 -translate-y-1/2 text-fg-subtle">
 							€

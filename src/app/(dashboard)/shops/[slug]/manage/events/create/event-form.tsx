@@ -8,7 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { DatePicker } from "@/components/ui/date-picker";
-
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { createEvent, updateEvent } from "@/features/events/actions";
 
@@ -307,11 +307,11 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 									Marge personnalisée (%)
 								</label>
 								<div className="flex items-center gap-2">
-									<input
+									<Input
 										type="number"
 										min="0"
 										placeholder="0"
-										className="bg-surface-900 border border-border rounded-md p-2 text-fg focus:outline-none focus:border-accent-500 w-32 md:w-40"
+										className="p-2 w-32 md:w-40"
 										{...form.register("customMargin")}
 									/>
 									<span className="text-fg-muted hidden md:inline">%</span>
@@ -333,11 +333,11 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 								<label className="text-sm font-medium text-fg">
 									Acompte (en €)
 								</label>
-								<input
+								<Input
 									type="number"
 									step="0.01"
 									min="0"
-									className="bg-surface-900 border border-border rounded-md p-2 text-fg focus:outline-none focus:border-accent-500"
+									className="p-2"
 									{...form.register("acompte", { valueAsNumber: true })}
 								/>
 
@@ -361,11 +361,11 @@ export function EventForm({ shopId, slug, initialData }: EventFormProps) {
 									<label className="text-sm font-medium text-fg">
 										Capacité limite de participants (Optionnel)
 									</label>
-									<input
+									<Input
 										type="number"
 										min="1"
 										placeholder="Illimité"
-										className="bg-surface-900 border border-border rounded-md p-2 text-fg focus:outline-none focus:border-accent-500"
+										className="p-2"
 										{...form.register("maxParticipants")}
 									/>
 									{form.formState.errors.maxParticipants && (
