@@ -1,6 +1,6 @@
 "use client";
 
-import { IconCurrencyEuro, IconSearch } from "@tabler/icons-react";
+import { IconCurrencyEuro, IconSearch, IconWallet } from "@tabler/icons-react";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 
@@ -112,16 +112,22 @@ export function TransferForm({ balance }: { balance: number }) {
 
 			<div className="grid gap-6">
 				{/* Balance Card */}
-				<div className="rounded-xl border border-accent-900/30 bg-gradient-to-br from-accent-900/10 to-transparent p-6">
-					<h3 className="text-sm font-medium text-fg-muted">
-						Votre solde actuel
-					</h3>
-					<p className="mt-2 text-4xl font-bold text-fg tracking-tight">
-						{formatPrice(balance)} €
-					</p>
-					<p className="mt-2 text-xs text-fg-subtle">
+				<div className="group relative overflow-hidden rounded-2xl border border-border bg-surface-900 p-6">
+					<div className="flex items-start justify-between">
+						<div>
+							<p className="text-sm font-medium text-fg-muted">Votre solde actuel</p>
+							<h3 className="mt-2 text-3xl font-bold text-fg tracking-tight">
+								{formatPrice(balance)} €
+							</h3>
+						</div>
+						<div className="rounded-xl p-3 bg-blue-500/10 text-blue-500 ring-1 ring-inset ring-white/5">
+							<IconWallet size={24} />
+						</div>
+					</div>
+					<p className="mt-4 text-sm text-fg-subtle">
 						Les virements sont débités immédiatement.
 					</p>
+					<div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent-600/10 blur-2xl transition-all group-hover:bg-accent-600/20" />
 				</div>
 
 				{/* Form Card */}

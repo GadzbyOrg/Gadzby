@@ -87,8 +87,8 @@ export function ShopSettingsForm({
 				</p>
 			</div>
 
-			<div className="flex items-center justify-between p-4 bg-elevated rounded-lg border border-border">
-				<div className="space-y-1">
+			<div className="flex items-center justify-between gap-4 p-4 bg-elevated rounded-lg border border-border">
+				<div className="min-w-0 space-y-1">
 					<div className="font-medium text-fg">Mode Self-Service</div>
 					<div className="text-sm text-fg-muted">
 						Autorise les commandes en autonomie sur la page du shop.
@@ -96,7 +96,7 @@ export function ShopSettingsForm({
 				</div>
 				<button
 					onClick={() => setIsSelfService(!isSelfService)}
-					className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500/50 ${isSelfService ? "bg-accent-600" : "bg-elevated"
+					className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500/50 ${isSelfService ? "bg-accent-600" : "bg-border"
 						}`}
 				>
 					<span
@@ -106,8 +106,8 @@ export function ShopSettingsForm({
 				</button>
 			</div>
 
-			<div className="flex items-center justify-between p-4 bg-elevated rounded-lg border border-border">
-				<div className="space-y-1">
+			<div className="flex items-center justify-between gap-4 p-4 bg-elevated rounded-lg border border-border">
+				<div className="min-w-0 space-y-1">
 					<div className="font-medium text-fg">Déconnecter après achat</div>
 					<div className="text-sm text-fg-muted">
 						Déconnecte automatiquement l'utilisateur du shop après avoir validé un panier en self-service.
@@ -115,7 +115,7 @@ export function ShopSettingsForm({
 				</div>
 				<button
 					onClick={() => setDisconnectAfterCheckout(!disconnectAfterCheckout)}
-					className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500/50 ${disconnectAfterCheckout ? "bg-accent-600" : "bg-elevated"
+					className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500/50 ${disconnectAfterCheckout ? "bg-accent-600" : "bg-border"
 						}`}
 				>
 					<span
