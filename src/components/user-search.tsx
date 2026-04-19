@@ -33,6 +33,7 @@ export function UserSearch({
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const skipNextSearch = useRef(false);
 
     useEffect(() => {
         let active = true;
@@ -41,6 +42,11 @@ export function UserSearch({
             setResults([]);
             setIsLoading(false);
             setIsOpen(false);
+            return;
+        }
+
+        if (skipNextSearch.current) {
+            skipNextSearch.current = false;
             return;
         }
 
@@ -120,6 +126,7 @@ export function UserSearch({
         if (clearOnSelect) {
             setQuery('');
         } else {
+            skipNextSearch.current = true;
             setQuery(user.username);
         }
         setIsOpen(false);
