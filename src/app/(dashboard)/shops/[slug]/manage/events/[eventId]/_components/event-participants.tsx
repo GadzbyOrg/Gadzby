@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
 import { PromssSelector } from "@/components/promss-selector";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import {
 	importParticipants,
@@ -321,14 +322,14 @@ export function EventParticipants({ event }: Props) {
 								</td>
 								{event.type === "SHARED_COST" && (
 									<td className="px-4 py-3">
-										<input
+										<Input
 											type="number"
 											min="0"
 											value={p.weight}
 											onChange={(e) =>
 												handleWeightChange(p.userId, Number(e.target.value))
 											}
-											className="w-20 bg-surface-950 border border-border rounded px-2 py-1 text-fg text-center focus:outline-none focus:border-accent-500"
+											className="w-20 px-2 py-1 text-center"
 										/>
 									</td>
 								)}

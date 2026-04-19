@@ -275,11 +275,11 @@ export function FamssTable({ famss }: FamssTableProps) {
             {/* Create/Edit Modal */}
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-surface-950 border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in zoom-in-95 duration-200">
+                    <div className="bg-surface-950 border border-border rounded-2xl w-full max-w-lg shadow-2xl relative animate-in zoom-in-95 duration-200 overflow-hidden">
                         <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-surface-950/95 backdrop-blur border-b border-border">
                             <div>
                                 <h2 className="text-xl font-bold text-fg">
-                                    {isEditMode ? "Modifier la Fam&apos;ss" : "Créer une Fam&apos;ss"}
+                                    {isEditMode ? "Modifier la Fam'ss" : "Créer une Fam'ss"}
                                 </h2>
                                 {isEditMode && <p className="text-sm text-fg-muted">{selectedFams?.name}</p>}
                             </div>

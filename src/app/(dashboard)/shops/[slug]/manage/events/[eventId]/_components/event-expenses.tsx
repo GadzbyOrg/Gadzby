@@ -3,6 +3,7 @@
 import { IconLink, IconLoader2,IconUnlink } from '@tabler/icons-react';
 import { useState, useTransition } from 'react';
 
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { deleteExpenseSplit,getAvailableExpensesAction, linkExpenseToEvent, splitExpense, unlinkExpenseFromEvent } from '@/features/events/actions';
@@ -258,11 +259,11 @@ export function EventExpenses({ event }: Props) {
                                     {linkMode === 'SPLIT' && (
                                         <div>
                                             <label className="text-xs font-medium text-fg-muted mb-1 block">Montant à attribuer (€)</label>
-                                            <input
+                                            <Input
                                                 type="number"
                                                 min="0"
                                                 step="0.01"
-                                                className="w-full bg-elevated border border-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-purple-500"
+                                                className="px-2 py-1.5"
                                                 value={splitAmount}
                                                 onChange={e => setSplitAmount(e.target.value)}
                                                 placeholder="0.00"

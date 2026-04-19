@@ -3,6 +3,7 @@
 import { IconCirclePlus } from "@tabler/icons-react";
 import { useState } from "react";
 
+import { Input } from "@/components/ui/input";
 import { restockProduct } from "@/features/shops/inventory";
 
 type RestockButtonProps = {
@@ -73,13 +74,13 @@ export default function RestockButton({ shopSlug, productId, productName, curren
                                 <label className="block text-sm font-medium text-fg mb-1">
                                     Quantité à ajouter ({currentUnit})
                                 </label>
-                                <input
+                                <Input
                                     type="number"
                                     step="0.01"
                                     min="0.01"
                                     value={quantity}
                                     onChange={(e) => setQuantity(Number(e.target.value))}
-                                    className="w-full bg-elevated border-border rounded-lg px-4 py-2 text-fg focus:ring-2 focus:ring-accent-500 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    className="px-4 py-2"
                                     placeholder="Ex: 50"
                                     autoFocus
                                 />

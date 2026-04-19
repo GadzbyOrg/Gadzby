@@ -53,9 +53,19 @@ export default function RootLayout({
 				{process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL && process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
 					<Script
 						defer
-						src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
+						src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL + "/script.js"}
 						data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
 						strategy="afterInteractive"
+					/>
+				)}
+				{process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL && process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
+					<Script
+						defer
+						src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL + "/recorder.js"}
+						data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+						data-sample-rate="0.15"
+						data-mask-level="moderate"
+						data-max-duration="300000"
 					/>
 				)}
 			</body>

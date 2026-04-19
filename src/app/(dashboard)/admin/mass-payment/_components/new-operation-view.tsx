@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { ExcelImportModal } from "@/components/excel-import-modal";
 import { PromssSelector } from "@/components/promss-selector";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserSearch } from "@/components/user-search";
@@ -286,13 +287,13 @@ export function NewOperationView() {
 
                         <div>
                             <label className="block text-sm font-medium text-fg-muted mb-1">Montant à prélever (€)</label>
-                            <input
+                            <Input
                                 type="number"
                                 min="0.01"
                                 step="0.01"
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
-                                className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2 text-fg focus:outline-none focus:border-accent-500 font-mono text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="px-4 py-2 font-mono text-lg"
                                 placeholder="0.00"
                             />
                         </div>

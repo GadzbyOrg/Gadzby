@@ -5,6 +5,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 
 import { UserAvatar } from "@/components/user-avatar";
+import { Input } from "@/components/ui/input";
 import { transferMoneyAction } from "@/features/transactions/actions";
 import { searchUsersPublicAction } from "@/features/users/actions";
 
@@ -254,7 +255,7 @@ export function TransferForm({ balance }: { balance: number }) {
 							</label>
 							<div className="relative">
 								<IconCurrencyEuro className="absolute left-3 top-3 h-5 w-5 text-fg-subtle" />
-								<input
+								<Input
 									id="amount"
 									name="amount"
 									type="number"
@@ -264,7 +265,7 @@ export function TransferForm({ balance }: { balance: number }) {
 									value={amount}
 									onChange={(e) => setAmount(e.target.value)}
 									required
-									className="w-full rounded-lg border border-border bg-surface-950 py-2.5 pl-10 pr-4 text-fg placeholder:text-fg-subtle focus:border-accent-600 focus:outline-none focus:ring-1 focus:ring-accent-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+									className="py-2.5 pl-10 pr-4"
 								/>
 							</div>
 						</div>

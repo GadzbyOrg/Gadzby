@@ -111,24 +111,24 @@ export function ShopTeamManager({
 					{members.map((member) => (
 						<div
 							key={member.user.id}
-							className="flex items-center justify-between p-3 bg-elevated rounded-xl border border-border"
+							className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-elevated rounded-xl border border-border"
 						>
-							<div className="flex items-center gap-3">
-								<div className="h-10 w-10 rounded-full bg-accent-900/50 flex items-center justify-center text-accent-200 font-bold border border-accent-500/30">
+							<div className="flex items-center gap-3 min-w-0">
+								<div className="h-10 w-10 shrink-0 rounded-full bg-accent-900/50 flex items-center justify-center text-accent-200 font-bold border border-accent-500/30">
 									{member.user.prenom?.[0] ||
 										member.user.username[0].toUpperCase()}
 								</div>
-								<div>
-									<div className="font-medium text-fg">
+								<div className="min-w-0">
+									<div className="font-medium text-fg truncate">
 										{member.user.prenom} {member.user.nom}
 									</div>
-									<div className="text-xs text-fg-subtle">
+									<div className="text-xs text-fg-subtle truncate">
 										@{member.user.username}
 									</div>
 								</div>
 							</div>
 
-							<div className="flex items-center gap-4">
+							<div className="flex items-center gap-3 shrink-0">
 								<Select
 									value={getMemberRoleId(member)}
 									onValueChange={(value) => handleUpdateRole(member.user.id, value)}

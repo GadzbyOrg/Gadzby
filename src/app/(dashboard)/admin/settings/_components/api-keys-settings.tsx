@@ -64,7 +64,7 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 
 			<div className="space-y-6">
 				{/* Create Form */}
-				<form onSubmit={handleCreate} className="flex gap-3">
+				<form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3">
 					<input
 						type="text"
 						placeholder="Nom de la nouvelle clé"
@@ -76,7 +76,7 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 					<button
 						type="submit"
 						disabled={isPending || !newKeyName.trim()}
-						className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black shadow-sm hover:bg-fg disabled:opacity-50 disabled:cursor-not-allowed"
+						className="flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black shadow-sm hover:bg-fg disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{isPending ? <IconLoader2 className="animate-spin" size={16} /> : <IconPlus size={16} />}
 						Générer
@@ -88,59 +88,31 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 						<p className="text-sm font-medium text-yellow-500 mb-2">
 							Clé générée ! Copiez-la immédiatement, elle ne sera plus affichée.
 						</p>
-						<code className="block rounded bg-surface-950 p-3 text-sm text-fg select-all">
+						<code className="block rounded bg-surface-950 p-3 text-sm text-fg select-all break-all">
 							{newRawKey}
 						</code>
 					</div>
 				)}
 
-				{/* List */}
-				<div className="overflow-hidden rounded-lg border border-border bg-surface-950">
-					<table className="min-w-full divide-y divide-border">
-						<thead>
-							<tr>
-								<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">
-									Nom
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">
-									Création
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">
-									Statut
-								</th>
-								<th className="px-4 py-3 text-right text-xs font-medium text-fg-muted uppercase tracking-wider">
-									Actions
-								</th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-border bg-surface-900">
-							{apiKeys.length === 0 && (
-								<tr>
-									<td colSpan={4} className="px-4 py-6 text-center text-sm text-fg-muted">
-										Aucune clé API
-									</td>
-								</tr>
-							)}
+				{/* List — cards on mobile, table on sm+ */}
+				{apiKeys.length === 0 ? (
+					<p className="py-6 text-center text-sm text-fg-muted">Aucune clé API</p>
+				) : (
+					<>
+						{/* Mobile cards */}
+						<div className="sm:hidden space-y-2">
 							{apiKeys.map((key) => (
-								<tr key={key.id}>
-									<td className="px-4 py-3 text-sm text-fg font-medium">
-										{key.name}
-									</td>
-									<td className="px-4 py-3 text-sm text-fg-muted">
-										{new Date(key.createdAt).toLocaleDateString()}
-									</td>
-									<td className="px-4 py-3 text-sm">
+								<div key={key.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-950 px-4 py-3">
+									<div className="min-w-0">
+										<p className="text-sm font-medium text-fg truncate">{key.name}</p>
+										<p className="text-xs text-fg-muted mt-0.5">{new Date(key.createdAt).toLocaleDateString()}</p>
+									</div>
+									<div className="flex items-center gap-3 shrink-0">
 										{key.revokedAt ? (
-											<span className="inline-flex rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-400">
-												Révoquée
-											</span>
+											<span className="inline-flex rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-400">Révoquée</span>
 										) : (
-											<span className="inline-flex rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-400">
-												Active
-											</span>
+											<span className="inline-flex rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-400">Active</span>
 										)}
-									</td>
-									<td className="px-4 py-3 text-sm text-right">
 										{!key.revokedAt && (
 											<button
 												onClick={() => handleRevoke(key.id)}
@@ -151,12 +123,53 @@ export function ApiKeysSettings({ apiKeys }: ApiKeyListProps) {
 												<IconTrash size={16} />
 											</button>
 										)}
-									</td>
-								</tr>
+									</div>
+								</div>
 							))}
-						</tbody>
-					</table>
-				</div>
+						</div>
+
+						{/* Desktop table */}
+						<div className="hidden sm:block overflow-hidden rounded-lg border border-border bg-surface-950">
+							<table className="min-w-full divide-y divide-border">
+								<thead>
+									<tr>
+										<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">Nom</th>
+										<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">Création</th>
+										<th className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">Statut</th>
+										<th className="px-4 py-3 text-right text-xs font-medium text-fg-muted uppercase tracking-wider">Actions</th>
+									</tr>
+								</thead>
+								<tbody className="divide-y divide-border bg-surface-900">
+									{apiKeys.map((key) => (
+										<tr key={key.id}>
+											<td className="px-4 py-3 text-sm text-fg font-medium">{key.name}</td>
+											<td className="px-4 py-3 text-sm text-fg-muted">{new Date(key.createdAt).toLocaleDateString()}</td>
+											<td className="px-4 py-3 text-sm">
+												{key.revokedAt ? (
+													<span className="inline-flex rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-400">Révoquée</span>
+												) : (
+													<span className="inline-flex rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-400">Active</span>
+												)}
+											</td>
+											<td className="px-4 py-3 text-sm text-right">
+												{!key.revokedAt && (
+													<button
+														onClick={() => handleRevoke(key.id)}
+														disabled={isPending}
+														className="text-red-400 hover:text-red-300 disabled:opacity-50"
+														title="Révoquer"
+													>
+														<IconTrash size={16} />
+													</button>
+												)}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</>
+				)}
 			</div>
 		</div>
 	);

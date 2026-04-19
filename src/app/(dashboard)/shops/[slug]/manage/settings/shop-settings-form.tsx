@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Input } from "@/components/ui/input";
 import { updateShop } from "@/features/shops/actions";
 
 interface ShopSettingsFormProps {
@@ -69,12 +70,12 @@ export function ShopSettingsForm({
 					Marge par défaut (%)
 				</label>
 				<div className="relative">
-					<input
+					<Input
 						type="number"
 						min="0"
 						value={defaultMargin}
 						onChange={(e) => setDefaultMargin(Number(e.target.value))}
-						className="w-full rounded-lg bg-elevated border border-border px-4 py-2 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500/50"
+						className="px-4 py-2 pr-8"
 						placeholder="20"
 					/>
 					<div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

@@ -13,7 +13,7 @@ import {
 // ... existing imports
 import { IconCalendar } from "@tabler/icons-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ export function TransactionToolbar() {
 					<input
 						type="text"
 						placeholder="Rechercher..."
-						className="h-10 w-full rounded-lg border border-dark-700 bg-surface-950 pl-9 pr-4 text-sm text-fg placeholder:text-gray-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-600 focus-visible:border-primary-600"
+						className="h-10 w-full rounded-lg border border-border bg-surface-950 pl-9 pr-4 text-sm text-fg placeholder:text-gray-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
 						defaultValue={searchParams.get("search")?.toString()}
 						onChange={(e) => handleSearch(e.target.value)}
 					/>
@@ -113,7 +113,7 @@ export function TransactionToolbar() {
 				<button
 					type="button"
 					onClick={() => setFiltersOpen((o) => !o)}
-					className="md:hidden relative h-10 px-3 rounded-lg border border-dark-700 bg-dark-950 text-gray-400 hover:text-white hover:border-dark-600 transition-colors shrink-0"
+					className="md:hidden relative h-10 px-3 rounded-lg border border-border bg-surface-950 text-gray-400 hover:text-white hover:border-primary-600 transition-colors shrink-0"
 				>
 					<IconFilter size={16} />
 					{activeFilterCount > 0 && (
@@ -213,7 +213,7 @@ export function ExportButton() {
 			<button
 				onClick={handleExport}
 				disabled={isExporting}
-				className="flex items-center gap-2 px-3 py-2 bg-surface-950 hover:bg-surface-900 text-fg rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+				className="flex items-center gap-2 px-3 py-2 bg-elevated border-border border hover:bg-surface-900 text-fg rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
 			>
 				{isExporting ? (
 					<IconLoader2 className="w-4 h-4 animate-spin" />
@@ -245,6 +245,8 @@ export function TransactionActions({
 	isPending?: boolean;
 }) {
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+	const buttonRef = useRef<HTMLButtonElement>(null);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [editQuantity, setEditQuantity] = useState(quantity || 0);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -297,8 +299,16 @@ export function TransactionActions({
 		<>
 			<div className="relative inline-block text-left">
 				<button
+					ref={buttonRef}
 					onClick={(e) => {
 						e.stopPropagation();
+						if (!menuOpen && buttonRef.current) {
+							const rect = buttonRef.current.getBoundingClientRect();
+							setMenuPos({
+								top: rect.top,
+								right: window.innerWidth - rect.right,
+							});
+						}
 						setMenuOpen(!menuOpen);
 					}}
 					disabled={isCancelling || isUpdating}
@@ -320,7 +330,10 @@ export function TransactionActions({
 								setMenuOpen(false);
 							}}
 						/>
-						<div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-surface-900 border border-border shadow-xl z-20 overflow-hidden ring-1 ring-black ring-opacity-5 focus:outline-none">
+						<div
+							className="fixed w-48 rounded-md bg-surface-900 border border-border shadow-xl z-20 overflow-hidden ring-1 ring-black ring-opacity-5"
+							style={{ top: menuPos.top, right: menuPos.right, transform: "translateY(-100%)" }}
+						>
 							<div className="py-1">
 								{canEdit && (
 									<button

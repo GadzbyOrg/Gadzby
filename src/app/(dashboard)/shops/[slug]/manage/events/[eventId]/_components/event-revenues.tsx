@@ -8,6 +8,7 @@ import {
 } from "@tabler/icons-react";
 import { useState, useTransition } from "react";
 
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import {
 	createEventRevenue,
@@ -126,7 +127,7 @@ export function EventRevenues({ event, revenues = [] }: Props) {
 						<label className="block text-xs font-medium text-fg-muted mb-1">
 							Montant (€)
 						</label>
-						<input
+						<Input
 							type="number"
 							required
 							step="0.01"
@@ -135,7 +136,7 @@ export function EventRevenues({ event, revenues = [] }: Props) {
 							onChange={(e) =>
 								setFormData({ ...formData, amount: e.target.value })
 							}
-							className="w-full bg-surface-900 border border-border rounded-md px-3 py-2 text-fg focus:outline-none focus:border-green-500"
+							className="px-3 py-2"
 							placeholder="0.00"
 						/>
 					</div>

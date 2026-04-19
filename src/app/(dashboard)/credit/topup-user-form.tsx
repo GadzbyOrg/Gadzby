@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
+import { Input } from "@/components/ui/input";
 import { UserSearch } from "@/components/user-search";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { topUpUserAction } from "@/features/transactions/actions";
@@ -62,13 +63,13 @@ export function TopUpUserForm() {
 							<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 								<span className="text-fg-subtle sm:text-sm">€</span>
 							</div>
-							<input
+							<Input
 								type="number"
 								name="amount"
 								step="0.01"
 								min="0.01"
 								required
-								className="block w-full rounded-lg border-border bg-surface-950 pl-7 pr-12 text-white placeholder-gray-500 focus:border-accent-500 focus:ring-accent-500 sm:text-sm py-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+								className="pl-7 pr-12 py-2.5"
 								placeholder="0.00"
 							/>
 						</div>

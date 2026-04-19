@@ -1,4 +1,4 @@
-import { count, eq, ilike } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, notInArray } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -53,17 +53,39 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 	// Where clause for filtering
 	const whereClause = query ? ilike(famss.name, `%${query}%`) : undefined;
 
-	// Count total matching famss
+	// Fetch IDs of famss the user belongs to
+	const userMemberships = await db
+		.select({ famsId: famsMembers.famsId })
+		.from(famsMembers)
+		.where(eq(famsMembers.userId, session.userId));
+	const memberFamsIds = userMemberships.map((m) => m.famsId);
+
+	// Fetch member famss (always shown first, not paginated)
+	const memberFamss = memberFamsIds.length > 0
+		? await db.query.famss.findMany({
+			where: and(inArray(famss.id, memberFamsIds), whereClause),
+			with: {
+				members: { where: eq(famsMembers.userId, session.userId) },
+				requests: { where: eq(famsRequests.userId, session.userId) },
+			},
+		})
+		: [];
+
+	// Count non-member famss for pagination
+	const nonMemberWhereClause = memberFamsIds.length > 0
+		? and(whereClause, notInArray(famss.id, memberFamsIds))
+		: whereClause;
+
 	const [{ totalCount }] = await db
 		.select({ totalCount: count() })
 		.from(famss)
-		.where(whereClause);
+		.where(nonMemberWhereClause);
 
 	const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-	// Fetch paginated famss with members and requests
-	const allFamss = await db.query.famss.findMany({
-		where: whereClause,
+	// Fetch paginated non-member famss
+	const nonMemberFamss = await db.query.famss.findMany({
+		where: nonMemberWhereClause,
 		with: {
 			members: {
 				where: eq(famsMembers.userId, session.userId),
@@ -75,6 +97,8 @@ export default async function FamssPage({ searchParams }: { searchParams: Promis
 		limit: PAGE_SIZE,
 		offset,
 	});
+
+	const allFamss = [...memberFamss, ...nonMemberFamss];
 
 	return (
 		<main aria-label="Liste des Fam'ss" className="p-4 sm:p-6 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
