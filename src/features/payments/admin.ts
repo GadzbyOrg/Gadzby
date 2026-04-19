@@ -18,7 +18,7 @@ export const togglePaymentMethod = authenticatedAction(
 			.set({ isEnabled })
 			.where(eq(paymentMethods.id, id));
 
-		revalidatePath("/admin/payments");
+		revalidatePath("/admin/settings");
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_PAYMENTS"] }
 );
@@ -35,7 +35,7 @@ export const updatePaymentMethodConfig = authenticatedAction(
 			})
 			.where(eq(paymentMethods.id, id));
 
-		revalidatePath("/admin/payments");
+		revalidatePath("/admin/settings");
 	},
 	{ permissions: ["ADMIN_ACCESS", "MANAGE_PAYMENTS"] }
 );
