@@ -491,10 +491,6 @@ export class UserService {
                     )
                 ];
 
-                if (currentUserId) {
-                    conditions.push(ne(users.id, currentUserId));
-                }
-
                 return and(...conditions);
             },
             orderBy: (users, { asc, desc }) => [
