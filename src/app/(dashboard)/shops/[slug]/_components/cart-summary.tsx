@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLoader2, IconTrash,IconUsers, IconWallet } from "@tabler/icons-react";
+import { IconLoader2, IconTrash, IconUsers, IconWallet } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -64,30 +64,30 @@ export function CartSummary({
             const product = products.find(p => p.id === productId) as any;
             const variant = product?.variants?.find((v: any) => v.id === variantId);
             const price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
-             return total + (price * qty);
+            return total + (price * qty);
         }
         const product = products.find((p) => p.id === key);
         return total + (product ? product.price * qty : 0);
     }, 0);
 
     const selectedFams = clientFamss.find((f) => f.id === selectedFamsId);
-    
+
     // In Self Service, we might not know the personal balance of the connected user easily here
     // unless passed. For now, we only show balance estimation if selectedClient is present.
-	const currentBalance = selectedClient 
+    const currentBalance = selectedClient
         ? (paymentSource === "PERSONAL" ? selectedClient.balance : selectedFams?.balance || 0)
         : (selectedFams?.balance || 0); // specific fallback if needed
 
     const showPaymentOptions = selectedClient || isSelfService;
 
     return (
-        <div className={`rounded-xl border border-border bg-elevated p-4 ${className}`}>
-            
+        <div className={`rounded-xl border border-border bg-surface-900 p-4 ${className}`}>
+
             {/* Header / Clear */}
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-white">Panier ({cartItemsCount})</h3>
                 {onClearCart && cartItemsCount > 0 && (
-                    <button 
+                    <button
                         onClick={onClearCart}
                         className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1"
                     >
@@ -110,7 +110,7 @@ export function CartSummary({
                             product = products.find(p => p.id === pId);
                             variantId = vId;
                             variant = product?.variants?.find((v: any) => v.id === vId);
-                             price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
+                            price = variant?.price ?? (product ? Math.round(product.price * (variant?.quantity || 0)) : 0);
                         } else {
                             product = products.find(p => p.id === key);
                             price = product?.price || 0;
@@ -121,7 +121,7 @@ export function CartSummary({
                         return (
                             <li
                                 key={key}
-                                className="flex justify-between items-center bg-surface-900/50 p-2 rounded-lg"
+                                className="flex justify-between items-center bg-elevated p-2 rounded-lg"
                             >
                                 <span className="flex-1">
                                     <div className="text-white font-medium">{product.name} {variant && <span className="text-fg-muted text-xs font-normal">({variant.name})</span>}</div>
@@ -132,15 +132,15 @@ export function CartSummary({
                                         {((price * qty) / 100).toFixed(2)}€
                                     </span>
                                     <div className="flex items-center gap-1 ml-2">
-                                         <button
+                                        <button
                                             onClick={() => onUpdateCart(product, -1, variantId)}
-                                            className="h-6 w-6 bg-surface-800 hover:bg-red-500/20 hover:text-red-400 text-fg-muted rounded flex items-center justify-center transition-colors"
+                                            className="h-6 w-6 border border-border hover:bg-red-500/20 hover:text-red-400 text-fg-muted rounded flex items-center justify-center transition-colors"
                                         >
                                             -
                                         </button>
                                         <button
                                             onClick={() => onUpdateCart(product, 1, variantId)}
-                                            className="h-6 w-6 bg-surface-800 hover:bg-accent-500/20 hover:text-accent-400 text-fg-muted rounded flex items-center justify-center transition-colors"
+                                            className="h-6 w-6 border border-border hover:bg-accent-500/20 hover:text-accent-400 text-fg-muted rounded flex items-center justify-center transition-colors"
                                         >
                                             +
                                         </button>
@@ -167,36 +167,34 @@ export function CartSummary({
                 <div className="space-y-3 mb-4">
                     {/* Payment Source Selector — only when fam'ss feature is on */}
                     {famssEnabled && (
-                    <div className="grid grid-cols-2 gap-2">
-                        <button
-                            onClick={() => setPaymentSource("PERSONAL")}
-                            className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${
-                                paymentSource === "PERSONAL"
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => setPaymentSource("PERSONAL")}
+                                className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${paymentSource === "PERSONAL"
                                     ? "bg-surface-800 border-accent-500 text-white"
                                     : "bg-surface-900 border-border text-fg-muted hover:bg-elevated"
-                            }`}
-                        >
-                            <IconWallet className="h-4 w-4 mr-1.5" />
-                            Perso
-                        </button>
-                        <button
-                            onClick={() => {
-                                setPaymentSource("FAMILY");
-                                if (clientFamss.length > 0 && !selectedFamsId) {
-                                    setSelectedFamsId(clientFamss[0].id);
-                                }
-                            }}
-                            disabled={clientFamss.length === 0}
-                            className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${
-                                paymentSource === "FAMILY"
+                                    }`}
+                            >
+                                <IconWallet className="h-4 w-4 mr-1.5" />
+                                Perso
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setPaymentSource("FAMILY");
+                                    if (clientFamss.length > 0 && !selectedFamsId) {
+                                        setSelectedFamsId(clientFamss[0].id);
+                                    }
+                                }}
+                                disabled={clientFamss.length === 0}
+                                className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${paymentSource === "FAMILY"
                                     ? "bg-surface-800 border-accent-500 text-white"
                                     : "bg-surface-900 border-border text-fg-muted hover:bg-elevated disabled:opacity-50"
-                            }`}
-                        >
-                            <IconUsers className="h-4 w-4 mr-1.5" />
-                            Fam'ss
-                        </button>
-                    </div>
+                                    }`}
+                            >
+                                <IconUsers className="h-4 w-4 mr-1.5" />
+                                Fam'ss
+                            </button>
+                        </div>
                     )}
 
                     {paymentSource === "FAMILY" && clientFamss.length > 0 && (

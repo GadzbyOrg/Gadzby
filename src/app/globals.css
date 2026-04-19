@@ -32,13 +32,18 @@
   --color-chart-secondary: #3b82f6;
 
   /* Foreground text — flips in dark mode */
-  --color-fg: #0f172a;        /* primary text */
-  --color-fg-muted: #475569;  /* secondary / label text */
-  --color-fg-subtle: #64748b; /* placeholder / hint text */
+  --color-fg: #0f172a;
+  /* primary text */
+  --color-fg-muted: #475569;
+  /* secondary / label text */
+  --color-fg-subtle: #64748b;
+  /* placeholder / hint text */
 
   /* Adaptive border & elevated surface — flip in dark mode */
-  --color-border: #cbd5e1;    /* border color */
-  --color-elevated: #f1f5f9;  /* elevated bg / input bg */
+  --color-border: #cbd5e1;
+  /* border color */
+  --color-elevated: #f1f5f9;
+  /* elevated bg / input bg */
 }
 
 @layer base {
@@ -210,7 +215,7 @@ html[data-mode="dark"] {
   --color-fg-muted: #94a3b8;
   --color-fg-subtle: #64748b;
 
-  --color-border: #334155;
+  --color-border: #293548;
   --color-elevated: #334155;
 }
 

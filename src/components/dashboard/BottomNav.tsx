@@ -1,11 +1,13 @@
 "use client";
 
 import {
+	IconArrowsLeftRight,
 	IconBuildingStore,
 	IconChevronRight,
 	IconHistory,
 	IconHome2,
 	IconSettings,
+	IconUsersGroup,
 	IconWallet,
 	IconX,
 } from "@tabler/icons-react";
@@ -141,8 +143,12 @@ function SimpleBottomNav({
 		...(shops.length > 0
 			? [{ label: shopLabel, url: shopUrl, icon: IconBuildingStore }]
 			: []),
+		{ label: "Fam'ss", url: "/famss", icon: IconUsersGroup },
+		{ label: "Virement", url: "/transfer", icon: IconArrowsLeftRight },
 		{ label: "Recharger", url: "/topup", icon: IconWallet },
-		{ label: "Historique", url: "/transactions", icon: IconHistory },
+		...(shops.length === 0
+			? [{ label: "Historique", url: "/transactions", icon: IconHistory }]
+			: []),
 	];
 
 	return (

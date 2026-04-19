@@ -134,7 +134,7 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 									name="username"
 									clearOnSelect={false}
 									className="max-w-none"
-									inputClassName="bg-surface-950 border-0 ring-1 ring-inset ring-border focus:ring-2 focus:ring-inset focus:ring-accent-600 rounded-md py-2.5 pl-10 h-[46px]" // Styling to match original input
+									inputClassName="bg-surface-950 border-0 ring-1 ring-inset ring-border focus:ring-2 focus:ring-inset focus:ring-accent-600 rounded-md py-2.5 pl-10 h-[46px] text-base sm:text-sm" // Styling to match original input
 								/>
 							</div>
 						</div>
@@ -165,7 +165,7 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 									type={showPassword ? "text" : "password"}
 									required
 									placeholder="••••••••"
-									className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 pr-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 sm:text-sm sm:leading-6 transition-all"
+									className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 pr-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-600 text-base sm:text-sm sm:leading-6 transition-all"
 								/>
 								<button
 									type="button"
