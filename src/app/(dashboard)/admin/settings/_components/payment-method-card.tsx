@@ -1,10 +1,10 @@
 "use client";
 
 import {
+	IconEye,
+	IconEyeOff,
 	IconLoader2,
-	IconPlus,
 	IconSettings,
-	IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
 
@@ -28,6 +28,8 @@ interface PaymentMethod {
 export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [configError, setConfigError] = useState<string | null>(null);
+	const [showValues, setShowValues] = useState(false);
 
 	// Local state for form
 	const [fees, setFees] = useState(method.fees);
@@ -40,7 +42,6 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 	// Initialize fields on open
 	const initFields = () => {
 		const entries = Object.entries(method.config || {});
-		// If empty, maybe add one empty row? No, start empty or as is.
 		const fields = entries.map(([key, value]) => ({
 			id: crypto.randomUUID(),
 			key,
@@ -49,7 +50,15 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 		setConfigFields(fields);
 	};
 
+	const hasMissingValues = () =>
+		configFields.some((f) => !f.value.trim());
+
 	const handleToggle = async () => {
+		if (!method.isEnabled && hasMissingValues()) {
+			setConfigError("Impossible d'activer ce moyen de paiement : certaines variables de configuration sont manquantes.");
+			return;
+		}
+		setConfigError(null);
 		setIsLoading(true);
 		try {
 			await togglePaymentMethod({
@@ -64,14 +73,30 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 	};
 
 	const handleSave = async () => {
+		setConfigError(null);
+
+		const invalidFields = configFields.filter((f) => !f.key.trim());
+		if (invalidFields.length > 0) {
+			setConfigError("Toutes les variables de configuration doivent avoir un nom valide.");
+			return;
+		}
+
+		const keys = configFields.map((f) => f.key.trim());
+		if (new Set(keys).size !== keys.length) {
+			setConfigError("Les noms de variables doivent être uniques.");
+			return;
+		}
+
+		if (hasMissingValues()) {
+			setConfigError("Certaines variables de configuration sont manquantes.");
+			return;
+		}
+
 		setIsLoading(true);
 
-		// Reconstruct JSON object
 		const newConfig: Record<string, string> = {};
 		for (const field of configFields) {
-			if (field.key.trim()) {
-				newConfig[field.key.trim()] = field.value;
-			}
+			newConfig[field.key.trim()] = field.value;
 		}
 
 		try {
@@ -80,23 +105,11 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 				fees,
 				config: newConfig,
 			});
-			setIsEditing(false);
 		} catch {
 			alert("Erreur lors de la sauvegarde");
 		} finally {
 			setIsLoading(false);
 		}
-	};
-
-	const addField = () => {
-		setConfigFields([
-			...configFields,
-			{ id: crypto.randomUUID(), key: "", value: "" },
-		]);
-	};
-
-	const removeField = (id: string) => {
-		setConfigFields(configFields.filter((f) => f.id !== id));
 	};
 
 	const updateField = (
@@ -113,7 +126,19 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 		<div className="rounded-xl border border-border bg-surface-900 text-fg shadow-md flex flex-col justify-between h-full">
 			<div className="p-6 flex flex-col gap-4 max-h-[800px] overflow-y-auto custom-scrollbar">
 				{/* Header */}
-				<div className="flex items-start justify-between">
+				<button
+					type="button"
+					onClick={() => {
+						setIsEditing(!isEditing);
+						setConfigError(null);
+						setShowValues(false);
+						if (!isEditing) {
+							initFields();
+						}
+					}}
+					disabled={isLoading}
+					className="flex items-start justify-between w-full text-left cursor-pointer group"
+				>
 					<div>
 						<div className="flex items-center gap-2">
 							<h3 className="text-lg font-bold tracking-tight text-fg">
@@ -154,22 +179,10 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 						</div>
 					</div>
 
-					<div className="flex items-center gap-1">
-						<button
-							onClick={() => {
-								setIsEditing(!isEditing);
-								if (!isEditing) {
-									initFields();
-								}
-							}}
-							className="p-2 text-fg-muted hover:text-fg hover:bg-elevated rounded-lg transition-colors"
-							disabled={isLoading}
-							title="Configurer"
-						>
-							<IconSettings size={18} />
-						</button>
+					<div className="p-2 text-fg-muted group-hover:text-fg group-hover:bg-elevated rounded-lg transition-colors">
+						<IconSettings size={18} />
 					</div>
-				</div>
+				</button>
 
 				{isEditing && (
 					<div className="space-y-4 pt-4 border-t border-border animate-in slide-in-from-top-2 duration-200">
@@ -236,28 +249,35 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 						<div className="space-y-2">
 							<label className="text-xs font-medium text-fg-subtle uppercase tracking-wider flex items-center justify-between">
 								Configuration
-								<span className="text-[10px] text-fg-subtle">
-									{configFields.length} variables
-								</span>
+								<div className="flex items-center gap-2">
+									<span className="text-[10px] text-fg-subtle">
+										{configFields.length} variables
+									</span>
+									<button
+										type="button"
+										onClick={() => setShowValues(!showValues)}
+										className="p-1 text-fg-subtle hover:text-fg rounded transition-colors"
+										title={showValues ? "Masquer les valeurs" : "Afficher les valeurs"}
+									>
+										{showValues ? <IconEyeOff size={14} /> : <IconEye size={14} />}
+									</button>
+								</div>
 							</label>
 
 							<div className="space-y-3">
 								{configFields.map((field) => (
-									<div key={field.id} className="flex gap-3 items-start">
-										<div className="flex-1 min-w-[200px]">
+									<div key={field.id} className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-start">
+										<div className="sm:flex-1">
 											<input
 												type="text"
-												placeholder="Clé (ex: apiKey)"
 												value={field.key}
-												onChange={(e) =>
-													updateField(field.id, "key", e.target.value)
-												}
-												className="w-full rounded-lg border border-border bg-surface-950 p-3 text-sm text-fg focus:border-accent-500 outline-none transition-all placeholder:text-fg-subtle"
+												readOnly
+												className="w-full rounded-lg border border-border bg-elevated p-3 text-sm text-fg-muted outline-none cursor-default select-none font-mono"
 											/>
 										</div>
-										<div className="flex-[3]">
+										<div className="sm:flex-[3]">
 											<input
-												type="password"
+												type={showValues ? "text" : "password"}
 												placeholder="Valeur"
 												value={field.value}
 												onChange={(e) =>
@@ -266,22 +286,14 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 												className="w-full rounded-lg border border-border bg-surface-950 p-3 text-sm text-fg focus:border-accent-500 outline-none transition-all placeholder:text-fg-subtle font-mono"
 											/>
 										</div>
-										<button
-											onClick={() => removeField(field.id)}
-											className="mt-1 p-2 text-fg-subtle hover:text-red-400 hover:bg-red-900/10 rounded-lg transition-colors"
-										>
-											<IconTrash size={18} />
-										</button>
 									</div>
 								))}
 
-								<button
-									onClick={addField}
-									className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-accent-400 hover:text-accent-300 hover:bg-accent-900/10 rounded-lg transition-colors w-full justify-center border border-dashed border-border hover:border-accent-800"
-								>
-									<IconPlus size={16} />
-									Ajouter une variable
-								</button>
+								{configError && (
+									<p className="text-xs text-red-400 bg-red-900/10 border border-red-900/30 rounded-lg px-3 py-2">
+										{configError}
+									</p>
+								)}
 							</div>
 						</div>
 
@@ -289,8 +301,10 @@ export function PaymentMethodCard({ method }: { method: PaymentMethod }) {
 							<button
 								onClick={() => {
 									setIsEditing(false);
-									setFees(method.fees); // Reset changes
-									initFields(); // Reset fields
+									setConfigError(null);
+									setShowValues(false);
+									setFees(method.fees);
+									initFields();
 								}}
 								className="px-4 py-2 text-sm font-medium text-fg-muted hover:text-fg hover:bg-elevated rounded-lg transition-colors"
 								disabled={isLoading}

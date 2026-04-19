@@ -20,7 +20,7 @@ export default async function AdminSettingsPage() {
     }
 
     const [methods, keys] = await Promise.all([
-        db.select().from(paymentMethods),
+        db.select().from(paymentMethods).orderBy(paymentMethods.name),
         db.query.apiKeys.findMany({
             orderBy: (t, { desc }) => [desc(t.createdAt)]
         })
