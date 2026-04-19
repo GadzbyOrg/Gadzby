@@ -183,10 +183,10 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                 </div>
 
                 {/* Price & Stock */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div>
                         <label htmlFor="price" className="block text-sm font-medium text-fg-muted mb-1">
-                            Prix {unit === "unit" ? "(€ / Unité)" : unit === "liter" ? "(€ / Litre)" : "(€ / Kg)"}
+                            Prix {unit === "unit" ? "(€/unité)" : unit === "liter" ? "(€/litre)" : "(€/kg)"}
                         </label>
                         <Input
                             type="number"
@@ -203,7 +203,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         <label htmlFor="stock" className="block text-sm font-medium text-fg-muted mb-1">
                             Stock
                         </label>
-                         <Input
+                        <Input
                             type="number"
                             name="stock"
                             id="stock"
@@ -213,7 +213,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                             className="px-4 py-2"
                         />
                     </div>
-                    <div>
+                    <div className="col-span-2 sm:col-span-1">
                         <label htmlFor="unit" className="block text-sm font-medium text-fg-muted mb-1">
                             Unité
                         </label>
@@ -229,27 +229,22 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         </Select>
                     </div>
                 </div>
-                
-                {/* IDK where to put FCV so a new row? Or add to grid above? 
-                   Let's change grid-cols-3 to grid-cols-2 lg:grid-cols-4
-                */}
-                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label htmlFor="fcv" className="block text-sm font-medium text-fg-muted mb-1">
-                            Facteur Correction (FCV)
-                        </label>
-                        <Input
-                            type="number"
-                            name="fcv"
-                            id="fcv"
-                            step="0.01"
-                            required
-                            defaultValue={product?.fcv || 1.0}
-                            className="px-4 py-2"
-                        />
-                        <p className="text-xs text-fg-subtle mt-1">Multiplicateur de sortie stock (défaut: 1)</p>
-                    </div>
-                 </div>
+
+                <div className="sm:max-w-xs">
+                    <label htmlFor="fcv" className="block text-sm font-medium text-fg-muted mb-1">
+                        Facteur Correction (FCV)
+                    </label>
+                    <Input
+                        type="number"
+                        name="fcv"
+                        id="fcv"
+                        step="0.01"
+                        required
+                        defaultValue={product?.fcv || 1.0}
+                        className="px-4 py-2"
+                    />
+                    <p className="text-xs text-fg-subtle mt-1">Multiplicateur de sortie stock (défaut: 1)</p>
+                </div>
 
                 {/* Category */}
                 <div>
