@@ -17,6 +17,7 @@ import {
 	updateEmailConfigAction,
 } from "@/features/settings/actions";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 function SubmitButton() {
 	const { pending } = useFormStatus();
@@ -210,13 +211,13 @@ export function EmailSettings() {
 									>
 										Port
 									</label>
-									<input
+									<Input
 										type="number"
 										name="smtpPort"
 										id="smtpPort"
 										defaultValue={defaultConfig?.smtpPort}
 										placeholder="587"
-										className="w-full bg-surface-950 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-600 focus:border-transparent"
+										className="px-4 py-2.5"
 									/>
 								</div>
 								<div className="space-y-2">

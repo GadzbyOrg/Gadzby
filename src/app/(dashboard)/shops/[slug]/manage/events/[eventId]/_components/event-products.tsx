@@ -3,6 +3,7 @@
 import { IconCheck, IconEdit, IconLink, IconUnlink, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { getAvailableProductsAction, linkProductsToEvent, unlinkProductFromEvent } from '@/features/events/actions';
 import { setEventProductPrice } from '@/features/events/actions/products';
@@ -158,11 +159,11 @@ export function EventProducts({ event }: Props) {
                                     <td className="px-4 py-3">
                                         {editingPriceId === p.id ? (
                                             <div className="flex items-center gap-2">
-                                                <input
+                                                <Input
                                                     type="number"
                                                     step="0.01"
                                                     min="0"
-                                                    className="w-20 bg-surface-900 border border-border rounded p-1 text-sm focus:outline-none focus:border-accent-500"
+                                                    className="w-20 p-1 text-sm"
                                                     value={editPriceValue}
                                                     onChange={(e) => setEditPriceValue(e.target.value)}
                                                     placeholder={(p.price / 100).toFixed(2)}

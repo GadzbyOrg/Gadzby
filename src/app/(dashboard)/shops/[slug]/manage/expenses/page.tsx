@@ -11,6 +11,7 @@ import {
 import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
 
 import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import { PennylaneImportModal } from "./_components/pennylane-import-modal";
 
 export default async function ShopExpensesPage({
@@ -128,13 +129,13 @@ export default async function ShopExpensesPage({
 								<label className="text-sm font-medium text-fg">
 									Montant (€)
 								</label>
-								<input
+								<Input
 									name="amount"
 									type="number"
 									step="0.01"
 									min="0"
 									required
-									className="w-full rounded-lg bg-elevated border border-border px-4 py-2 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500/50 no-spinner"
+									className="px-4 py-2"
 									placeholder="0.00"
 								/>
 							</div>
