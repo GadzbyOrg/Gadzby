@@ -92,7 +92,16 @@ export const addMemberAction = authenticatedAction(
 			});
 			if (!targetUser) return { error: "Utilisateur introuvable" };
 
-			// 4. Add member
+			// 4. Check if already member
+			const existingMember = await db.query.famsMembers.findFirst({
+				where: and(
+					eq(famsMembers.famsId, fams.id),
+					eq(famsMembers.userId, targetUser.id)
+				),
+			});
+			if (existingMember) return { error: "Cet utilisateur est déjà membre de cette Fam'ss" };
+
+			// 5. Add member
 			await db.insert(famsMembers).values({
 				famsId: fams.id,
 				userId: targetUser.id,

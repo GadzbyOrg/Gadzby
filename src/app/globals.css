@@ -54,6 +54,15 @@
   }
 }
 
+/*
+ * Prevent iOS Safari from auto-zooming focused inputs.
+ * Intentionally outside @layer so it beats Tailwind utility classes (text-sm etc.)
+ * which live in @layer utilities. Unlayered CSS wins over all layered styles.
+ */
+input, select, textarea {
+  font-size: max(16px, 1em);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

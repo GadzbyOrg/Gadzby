@@ -107,7 +107,9 @@ describe("Famss Actions", () => {
 	describe("addMemberAction", () => {
 		test("should add member if admin", async () => {
 			vi.mocked(db.query.famss.findFirst).mockResolvedValue({ id: "fams-1" } as any);
-			vi.mocked(db.query.famsMembers.findFirst).mockResolvedValue({ isAdmin: true } as any);
+			vi.mocked(db.query.famsMembers.findFirst)
+				.mockResolvedValueOnce({ isAdmin: true } as any)  // admin check
+				.mockResolvedValueOnce(undefined as any);          // not already a member
 			vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: "user-2" } as any);
 
 			const result = await addMemberAction(undefined, { famsName: "La Famss", username: "targetuser" });
