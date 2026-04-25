@@ -49,6 +49,7 @@ export function TopUpUserForm() {
 						placeholder="Rechercher un utilisateur (nom, bucque, num'ss)..."
 						clearOnSelect={false}
 						className="max-w-none"
+						inputClassName="h-12 text-base py-3"
 					/>
 				</div>
 			</div>
@@ -65,6 +66,7 @@ export function TopUpUserForm() {
 							</div>
 							<Input
 								type="number"
+								inputMode="decimal"
 								name="amount"
 								step="0.01"
 								min="0.01"

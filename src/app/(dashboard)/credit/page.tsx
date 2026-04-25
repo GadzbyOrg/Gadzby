@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { verifySession } from "@/lib/session";
 
+import { RecentTopups } from "./recent-topups";
 import { TopUpUserForm } from "./topup-user-form";
 
 export default async function CreditUserPage() {
@@ -22,6 +23,7 @@ export default async function CreditUserPage() {
                 </p>
             </div>
             <TopUpUserForm />
+            <RecentTopups />
         </div>
     );
 }
