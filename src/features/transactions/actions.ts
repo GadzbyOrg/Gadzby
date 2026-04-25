@@ -18,6 +18,7 @@ import { TransactionService } from "@/services/transaction-service";
 
 import { getTransactionsQuery } from "./queries";
 import {
+	editTopupAmountSchema,
 	topUpUserSchema,
 	transactionQuerySchema,
 	transferMoneySchema,
@@ -221,6 +222,7 @@ export const topUpUserAction = authenticatedAction(
 		);
 
 		revalidatePath("/admin/users");
+		revalidatePath("/credit");
 		return { success: "Rechargement effectué avec succès" };
 	},
 	{ permissions: ["TOPUP_USER", "ADMIN_ACCESS"] }
@@ -274,4 +276,14 @@ export const updateTransactionQuantityAction = authenticatedAction(
 		return { success: result.message || "Quantité mise à jour avec succès" };
 	},
 	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
+);
+
+export const editTopupAmountAction = authenticatedAction(
+	editTopupAmountSchema,
+	async ({ transactionId, amount }, { session }) => {
+		await TransactionService.editTopupAmount(transactionId, amount, session.userId);
+		revalidatePath("/credit");
+		return { success: "Rechargement modifié avec succès" };
+	},
+	{ permissions: ["TOPUP_USER", "ADMIN_ACCESS"] }
 );
