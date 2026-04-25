@@ -730,4 +730,45 @@ export class TransactionService {
 			return { success: true, message: "Quantité mise à jour" };
 		});
 	}
+
+	static async editTopupAmount(
+		transactionId: string,
+		newAmountInEuros: number,
+		performedByUserId: string
+	) {
+		if (newAmountInEuros <= 0) throw new Error("Montant invalide");
+
+		return await db.transaction(async (tx) => {
+			const originalTx = await tx.query.transactions.findFirst({
+				where: eq(transactions.id, transactionId),
+			});
+
+			if (!originalTx) throw new Error("Transaction introuvable");
+			if (originalTx.type !== "TOPUP")
+				throw new Error("Seuls les rechargements peuvent être modifiés");
+			if (originalTx.issuerId !== performedByUserId)
+				throw new Error("Non autorisé");
+			if (originalTx.status !== "COMPLETED")
+				throw new Error("Transaction non modifiable");
+
+			const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+			if (originalTx.createdAt < thirtyMinutesAgo)
+				throw new Error("Délai de modification dépassé (30 min)");
+
+			const newAmountCents = Math.round(newAmountInEuros * 100);
+			const delta = newAmountCents - originalTx.amount;
+
+			await tx
+				.update(transactions)
+				.set({ amount: newAmountCents })
+				.where(eq(transactions.id, transactionId));
+
+			await tx
+				.update(users)
+				.set({ balance: sql`${users.balance} + ${delta}` })
+				.where(eq(users.id, originalTx.targetUserId));
+
+			return { success: true };
+		});
+	}
 }
