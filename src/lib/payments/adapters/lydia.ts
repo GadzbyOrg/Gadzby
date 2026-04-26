@@ -122,6 +122,8 @@ export class LydiaAdapter implements PaymentProvider {
 
 	async verifyWebhook(request: Request): Promise<WebhookResult> {
 		try {
+			console.log("[Lydia] Webhook received", request); // TODO: remove this 
+
 			// Lydia sends data as Form Data in POST
 			const formData = await request.formData();
 			const data = Object.fromEntries(formData);
