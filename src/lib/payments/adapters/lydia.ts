@@ -58,8 +58,7 @@ export class LydiaAdapter implements PaymentProvider {
 		const amountFloat = (totalAmountCents / 100).toFixed(2); // Lydia expects "10.50"
 
 		console.log(
-			`[Lydia] Initiating payment. User pays: ${amountFloat}€ (Target: ${
-				amountCents / 100
+			`[Lydia] Initiating payment. User pays: ${amountFloat}€ (Target: ${amountCents / 100
 			}€)`
 		);
 
@@ -77,7 +76,7 @@ export class LydiaAdapter implements PaymentProvider {
 		formData.append("message", description);
 		formData.append("browser_success_url", successUrl);
 		formData.append("browser_fail_url", failUrl);
-		formData.append("callback_url", confirmUrl);
+		formData.append("confirm_url", confirmUrl);
 		formData.append("type", "phone");
 
 		console.log(
