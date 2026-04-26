@@ -126,15 +126,13 @@ export class LydiaAdapter implements PaymentProvider {
 
 			// Lydia sends data as Form Data in POST
 			const formData = await request.formData();
-			const data = Object.fromEntries(formData);
+			const data: Record<string, string> = {};
+			formData.forEach((value, key) => {
+				data[key] = value.toString();
+			});
 
-			const request_id = data.request_id as string;
-			const amount = data.amount as string;
-			const currency = data.currency as string;
-			const sig = data.sig as string;
-			const signed = data.signed as string;
-			const transaction_identifier = data.transaction_identifier as string; // Bank reference
-			const vendor_token = data.vendor_token as string;
+			const request_id = data.request_id;
+			const sig = data.sig;
 
 			const url = new URL(request.url);
 			const order_ref = url.searchParams.get("order_id"); // Our internal transaction ID
@@ -144,13 +142,20 @@ export class LydiaAdapter implements PaymentProvider {
 			}
 
 			// Signature Verification
-			const signatureSource = `${currency}${request_id}${amount}${signed}${transaction_identifier}${vendor_token}${sig}`;
+			delete data.sig;
+			const sortedKeys = Object.keys(data).sort();
+			const h_sig_table: string[] = [];
+			for (const key of sortedKeys) {
+				h_sig_table.push(`${key}=${data[key]}`);
+			}
+			const h_sig = h_sig_table.join("&") + "&" + this.config.privateToken;
+
 			const calculatedHash = crypto
 				.createHash("md5")
-				.update(signatureSource)
+				.update(h_sig)
 				.digest("hex");
 
-			if (calculatedHash !== this.config.privateToken) {
+			if (calculatedHash !== sig) {
 				console.warn("[Lydia] Invalid signature", { calculatedHash, sig });
 				return { isValid: false };
 			}
