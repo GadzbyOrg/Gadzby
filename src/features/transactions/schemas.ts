@@ -31,3 +31,8 @@ export const massChargeSchema = z.object({
 export const cancelMassOperationSchema = z.object({
     groupId: z.string().uuid(),
 });
+
+export const editTopupAmountSchema = z.object({
+  transactionId: z.string().uuid(),
+  amount: z.coerce.number().min(0.01, "Montant positif requis"),
+});

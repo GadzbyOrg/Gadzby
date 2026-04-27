@@ -323,4 +323,93 @@ describe('TransactionService', () => {
 			).rejects.toThrow("Seuls les achats peuvent être modifiés");
 		});
 	});
+
+  describe('editTopupAmount', () => {
+    const txId = 'tx-edit-1'
+    const issuerId = 'issuer-1'
+    const targetId = 'target-1'
+
+    const freshTopup = {
+      id: txId,
+      type: 'TOPUP',
+      status: 'COMPLETED',
+      issuerId,
+      targetUserId: targetId,
+      amount: 1000, // 10.00€ stored in cents
+      createdAt: new Date(), // within 30 min
+    }
+
+    it('should update amount upward and adjust balance', async () => {
+      mockTx.query.transactions.findFirst.mockResolvedValue(freshTopup)
+
+      await TransactionService.editTopupAmount(txId, 20, issuerId) // 20€
+
+      // update transactions + update users
+      expect(mockTx.update).toHaveBeenCalledTimes(2)
+    })
+
+    it('should update amount downward and adjust balance', async () => {
+      mockTx.query.transactions.findFirst.mockResolvedValue(freshTopup)
+
+      await TransactionService.editTopupAmount(txId, 5, issuerId) // 5€
+
+      expect(mockTx.update).toHaveBeenCalledTimes(2)
+    })
+
+    it('should throw if amount is zero or negative', async () => {
+      await expect(
+        TransactionService.editTopupAmount(txId, 0, issuerId)
+      ).rejects.toThrow('Montant invalide')
+    })
+
+    it('should throw if transaction not found', async () => {
+      mockTx.query.transactions.findFirst.mockResolvedValue(null)
+
+      await expect(
+        TransactionService.editTopupAmount(txId, 20, issuerId)
+      ).rejects.toThrow('Transaction introuvable')
+    })
+
+    it('should throw if type is not TOPUP', async () => {
+      mockTx.query.transactions.findFirst.mockResolvedValue({
+        ...freshTopup,
+        type: 'PURCHASE',
+      })
+
+      await expect(
+        TransactionService.editTopupAmount(txId, 20, issuerId)
+      ).rejects.toThrow('Seuls les rechargements peuvent être modifiés')
+    })
+
+    it('should throw if issuer does not match', async () => {
+      mockTx.query.transactions.findFirst.mockResolvedValue(freshTopup)
+
+      await expect(
+        TransactionService.editTopupAmount(txId, 20, 'other-user')
+      ).rejects.toThrow('Non autorisé')
+    })
+
+    it('should throw if status is not COMPLETED', async () => {
+      mockTx.query.transactions.findFirst.mockResolvedValue({
+        ...freshTopup,
+        status: 'CANCELLED',
+      })
+
+      await expect(
+        TransactionService.editTopupAmount(txId, 20, issuerId)
+      ).rejects.toThrow('Transaction non modifiable')
+    })
+
+    it('should throw if older than 30 minutes', async () => {
+      const oldDate = new Date(Date.now() - 31 * 60 * 1000)
+      mockTx.query.transactions.findFirst.mockResolvedValue({
+        ...freshTopup,
+        createdAt: oldDate,
+      })
+
+      await expect(
+        TransactionService.editTopupAmount(txId, 20, issuerId)
+      ).rejects.toThrow('Délai de modification dépassé (30 min)')
+    })
+  })
 })
