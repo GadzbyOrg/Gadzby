@@ -150,17 +150,38 @@ export const exportTransactionsAction = authenticatedAction(
 		 
 		const txs = await db.query.transactions.findMany(queryOptions as any);
 
-		// Format for Excel
-		 
+		const TYPE_LABELS: Record<string, string> = {
+			PURCHASE: "Achat",
+			TOPUP: "Rechargement",
+			TRANSFER: "Virement",
+			REFUND: "Remboursement",
+			DEPOSIT: "Caution / Pénalité",
+			ADJUSTMENT: "Ajustement",
+		};
+		const STATUS_LABELS: Record<string, string> = {
+			COMPLETED: "Complété",
+			CANCELLED: "Annulé",
+			PENDING: "En attente",
+			FAILED: "Échoué",
+		};
+
 		const formattedData = txs.map((t: any) => ({
 			Date: new Date(t.createdAt).toLocaleString("fr-FR"),
-			Type: t.type,
-			Montant: (t.amount / 100).toFixed(2),
-			Description: t.description,
-			"Utilisateur Cible": t.targetUser
+			Type: TYPE_LABELS[t.type] ?? t.type,
+			Statut: STATUS_LABELS[t.status] ?? t.status,
+			"Montant (€)": (t.amount / 100).toFixed(2),
+			Quantité: t.quantity != null && t.type === "PURCHASE" ? t.quantity : "",
+			Portefeuille: t.walletSource === "FAMILY" ? "Fam'ss" : "Personnel",
+			Utilisateur: t.targetUser
 				? `${t.targetUser.nom} ${t.targetUser.prenom} (${t.targetUser.username})`
 				: "",
-			Auteur: t.issuer ? `${t.issuer.nom} ${t.issuer.prenom}` : "",
+			"Destinataire (virement)": t.receiverUser
+				? `${t.receiverUser.nom} ${t.receiverUser.prenom} (${t.receiverUser.username})`
+				: "",
+			Auteur: t.issuer
+				? `${t.issuer.nom} ${t.issuer.prenom} (${t.issuer.username})`
+				: "",
+			Description: t.description || "",
 			Boutique: t.shop?.name || "",
 			Produit: t.product?.name || "",
 			"Fam'ss": t.fams?.name || "",
