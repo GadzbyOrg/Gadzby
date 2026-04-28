@@ -130,8 +130,8 @@ export function DashboardShell({
 
 				{/* PAGE CONTENT (Scrollable) */}
 				<div className="flex-1 overflow-y-auto bg-surface-100 flex flex-col pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-0">
-					<div className="flex-1 p-6 md:p-8">
-						<div className="mx-auto max-w-6xl animate-in fade-in zoom-in-95 duration-300">
+					<div className="flex-1 p-4 md:p-6 lg:p-8">
+						<div className="mx-auto w-full max-w-[1600px] animate-in fade-in zoom-in-95 duration-300">
 							{children}
 						</div>
 					</div>
