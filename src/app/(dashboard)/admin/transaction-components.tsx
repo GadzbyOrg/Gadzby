@@ -6,8 +6,6 @@ import {
 	IconLoader2,
 	IconPencil,
 	IconSearch,
-	IconSortAscending,
-	IconSortDescending,
 	IconTrash,
 } from "@tabler/icons-react";
 // ... existing imports
@@ -104,7 +102,7 @@ export function TransactionToolbar() {
 					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3.5 h-3.5 pointer-events-none" />
 					<input
 						type="text"
-						placeholder="Rechercher..."
+						placeholder="Rechercher par description, utilisateur, montant..."
 						className="h-10 w-full rounded-lg border border-border bg-surface-950 pl-9 pr-4 text-sm text-fg placeholder:text-gray-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
 						defaultValue={searchParams.get("search")?.toString()}
 						onChange={(e) => handleSearch(e.target.value)}

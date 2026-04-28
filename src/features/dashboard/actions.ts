@@ -86,6 +86,7 @@ export async function getUserRecentActivity() {
 		),
 		with: {
 			shop: true,
+			fams: true,
 			targetUser: true,
 		},
 		orderBy: [desc(transactions.createdAt)],
@@ -125,13 +126,13 @@ export async function getUserExpensesOverTime() {
 	const session = await verifySession();
 	if (!session) redirect("/login");
 
-    // Get last 30 days
-    const now = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(now.getDate() - 30);
+	// Get last 30 days
+	const now = new Date();
+	const thirtyDaysAgo = new Date();
+	thirtyDaysAgo.setDate(now.getDate() - 30);
 
 	// This is a bit complex in pure SQL without specific date functions that might vary by DB
-    // Assuming Postgres
+	// Assuming Postgres
 	const expensesOverTime = await db
 		.select({
 			date: sql<string>`to_char(${transactions.createdAt}, 'YYYY-MM-DD')`,
@@ -142,14 +143,14 @@ export async function getUserExpensesOverTime() {
 			and(
 				eq(transactions.issuerId, session.userId),
 				eq(transactions.type, "PURCHASE"),
-                gte(transactions.createdAt, thirtyDaysAgo)
+				gte(transactions.createdAt, thirtyDaysAgo)
 			)
 		)
 		.groupBy(sql`to_char(${transactions.createdAt}, 'YYYY-MM-DD')`)
 		.orderBy(sql`to_char(${transactions.createdAt}, 'YYYY-MM-DD') asc`);
 
 	return expensesOverTime.map(item => ({
-        date: new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
-        amount: item.amount / 100
-    }));
+		date: new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+		amount: item.amount / 100
+	}));
 }

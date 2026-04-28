@@ -1,6 +1,7 @@
-import { and, asc, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
 
-import { transactions } from "@/db/schema";
+import { db } from "@/db";
+import { transactions, users } from "@/db/schema";
 
 export async function getTransactionsQuery(
     search = "",
@@ -16,12 +17,29 @@ export async function getTransactionsQuery(
 
     // Search
     if (search) {
+        const matchingUserIds = (await db
+            .select({ id: users.id })
+            .from(users)
+            .where(
+                or(
+                    ilike(users.prenom, `%${search}%`),
+                    ilike(users.nom, `%${search}%`),
+                    ilike(users.username, `%${search}%`),
+                    sql`concat(${users.prenom}, ' ', ${users.nom}) ILIKE ${`%${search}%`}`,
+                    sql`concat(${users.nom}, ' ', ${users.prenom}) ILIKE ${`%${search}%`}`,
+                )
+            )).map((u) => u.id);
+
         whereConditions.push(
             or(
-                // Search in description
                 ilike(transactions.description, `%${search}%`),
-                // Search in amount (approximate string match)
                 sql`CAST(${transactions.amount} AS TEXT) ILIKE ${`%${search}%`}`,
+                ...(matchingUserIds.length > 0
+                    ? [
+                        inArray(transactions.targetUserId, matchingUserIds),
+                        inArray(transactions.issuerId, matchingUserIds),
+                      ]
+                    : []),
             )
         );
     }

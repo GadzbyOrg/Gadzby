@@ -32,9 +32,9 @@ export interface TransactionWithRelations {
 	walletSource: "PERSONAL" | "FAMILY";
 	shop?: { name: string } | null;
 	product?: { name: string } | null;
-	issuer?: { prenom: string; nom: string; username?: string } | null;
+	issuer?: { id: string; prenom: string; nom: string; username?: string } | null;
 	receiverUser?: { prenom: string; nom: string; username?: string } | null;
-	targetUser?: { prenom: string; nom: string; username?: string } | null;
+	targetUser?: { id: string; prenom: string; nom: string; username?: string } | null;
 	fams?: { name: string } | null;
 }
 
@@ -110,6 +110,7 @@ export function TransactionTable({
 						<tr className="border-b border-border">
 							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Type</th>
 							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Utilisateur</th>}
+							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Auteur</th>}
 							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Description</th>
 							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Date</th>
 							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Qté</th>
@@ -241,6 +242,18 @@ function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean
 		title += match?.[1] ? ` (Annulé par ${match[1]})` : " (Annulé)";
 	}
 
+	let issuerLine: string | null = null;
+	if (isAdmin && t.issuer) {
+		const issuerName = `${t.issuer.prenom} ${t.issuer.nom}`;
+		if (t.type === "PURCHASE") {
+			issuerLine = `Vendeur : ${issuerName}`;
+		} else if (t.type === "TOPUP" && t.issuer.id !== t.targetUser?.id) {
+			issuerLine = `Crédité par : ${issuerName}`;
+		} else if (t.type === "ADJUSTMENT" || t.type === "DEPOSIT") {
+			issuerLine = `Par : ${issuerName}`;
+		}
+	}
+
 	return {
 		isPositive,
 		amountFormatted,
@@ -251,6 +264,7 @@ function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean
 		isCancelled,
 		isPending,
 		isFailed,
+		issuerLine,
 		canCancel: ["PURCHASE", "TOPUP", "DEPOSIT", "ADJUSTMENT", "TRANSFER"].includes(t.type) && !isCancelled && !isPending && !isFailed,
 	};
 }
@@ -258,7 +272,7 @@ function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean
 // ─── Desktop Row ──────────────────────────────────────────────────────────────
 
 function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRelations; isAdmin: boolean; isChild?: boolean }) {
-	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed } =
+	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed, issuerLine } =
 		getTransactionDisplayData(t, isAdmin);
 
 	return (
@@ -305,12 +319,34 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 				</td>
 			)}
 
+			{isAdmin && (
+				<td className="px-5 py-3">
+					{t.issuer ? (
+						<div className="flex flex-col">
+							<span className="text-sm text-fg font-medium">
+								{t.issuer.prenom} {t.issuer.nom}
+							</span>
+							{t.issuer.username && (
+								<span className="text-xs text-fg-subtle">{t.issuer.username}</span>
+							)}
+						</div>
+					) : (
+						<span className="text-fg-subtle">—</span>
+					)}
+				</td>
+			)}
+
 			<td className="px-5 py-3 max-w-xs">
 				<span className={cn("text-sm text-fg truncate block", isCancelled && "line-through text-fg-subtle")}>
 					{title}
 				</span>
 				{isAdmin && t.description && t.description !== title && (
 					<span className="text-xs text-fg-subtle truncate block">{t.description}</span>
+				)}
+				{!isAdmin && t.walletSource === "FAMILY" && (
+					<span className="text-xs text-accent-600 truncate block">
+						Fam&apos;ss{t.fams ? ` · ${t.fams.name}` : ""}
+					</span>
 				)}
 			</td>
 
@@ -421,6 +457,10 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 					<td className="px-5 py-3 text-xs text-fg-subtle italic">Multiple</td>
 				)}
 
+				{isAdmin && (
+					<td className="px-5 py-3 text-xs text-fg-subtle italic">Multiple</td>
+				)}
+
 				<td className="px-5 py-3 max-w-xs">
 					<span className={cn("text-sm text-fg-muted truncate block", allCancelled && "line-through")}>
 						{group.data.description || "Opération groupée"}
@@ -432,6 +472,10 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 				</td>
 
 				<td className="px-5 py-3 text-right whitespace-nowrap">
+					<span className="text-xs text-fg-subtle tabular-nums">{items.length} lignes</span>
+				</td>
+
+				<td className="px-5 py-3 text-right whitespace-nowrap">
 					<span className={cn(
 						"text-sm font-semibold tabular-nums",
 						isPositive ? "text-emerald-400" : "text-fg",
@@ -439,10 +483,6 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 					)}>
 						{isPositive ? "+" : "−"}{amountFormatted} €
 					</span>
-				</td>
-
-				<td className="px-5 py-3 text-right">
-					<span className="text-xs text-fg-subtle">{items.length} lignes</span>
 				</td>
 
 				{isAdmin && (
@@ -462,7 +502,7 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 // ─── Mobile Cards ─────────────────────────────────────────────────────────────
 
 function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: TransactionWithRelations; isAdmin: boolean; isChild?: boolean }) {
-	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed } =
+	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed, issuerLine } =
 		getTransactionDisplayData(t, isAdmin);
 
 	return (
@@ -509,6 +549,14 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 						)}>
 							{isPending ? "En attente" : isFailed ? "Échoué" : typeLabel}
 						</span>
+						{!isAdmin && t.walletSource === "FAMILY" && (
+							<>
+								<span className="text-fg-subtle text-[11px]">·</span>
+								<span className="text-[10px] font-semibold bg-accent-500/10 text-accent-600 px-1.5 py-0.5 rounded uppercase tracking-wide">
+									Fam&apos;ss{t.fams ? ` · ${t.fams.name}` : ""}
+								</span>
+							</>
+						)}
 					</div>
 					{isAdmin && t.targetUser && (
 						<div className="flex items-center gap-1 mt-1">
@@ -516,6 +564,12 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 							<span className="text-[11px] text-fg-subtle truncate">
 								{t.targetUser.prenom} {t.targetUser.nom}
 							</span>
+						</div>
+					)}
+					{issuerLine && (
+						<div className="flex items-center gap-1 mt-0.5">
+							<IconUser size={10} className="text-fg-subtle shrink-0" />
+							<span className="text-[11px] text-fg-subtle truncate">{issuerLine}</span>
 						</div>
 					)}
 				</div>
