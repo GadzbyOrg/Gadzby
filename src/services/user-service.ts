@@ -427,7 +427,7 @@ export class UserService {
             .where(eq(users.id, userId));
     }
     static async searchPublic(query: string, currentUserId?: string) {
-        if (!query || query.length < 2) return [];
+        if (!query || query.length < 1) return [];
 
         const searchPattern = `%${query}%`;
 
@@ -454,6 +454,7 @@ export class UserService {
             orderBy: (users, { asc, desc }) => [
                 desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
                 desc(sql`CASE WHEN ${users.username} ILIKE ${query + '%'} THEN 1 ELSE 0 END`),
+                asc(sql`LENGTH(${users.username})`),
                 desc(users.promss),
                 asc(users.username)
             ],
@@ -473,7 +474,7 @@ export class UserService {
     }
 
     static async searchWithBalance(query: string, currentUserId?: string) {
-        if (!query || query.length < 2) return [];
+        if (!query || query.length < 1) return [];
 
         const searchPattern = `%${query}%`;
 
@@ -496,6 +497,7 @@ export class UserService {
             orderBy: (users, { asc, desc }) => [
                 desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
                 desc(sql`CASE WHEN ${users.username} ILIKE ${query + '%'} THEN 1 ELSE 0 END`),
+                asc(sql`LENGTH(${users.username})`),
                 desc(users.promss),
                 asc(users.username)
             ],
