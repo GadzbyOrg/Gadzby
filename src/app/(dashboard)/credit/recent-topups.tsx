@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 
 import { UserAvatar } from "@/components/user-avatar";
 import { db } from "@/db";
@@ -19,7 +19,15 @@ function relativeTime(date: Date): string {
 
 function extractPaymentMethod(description: string | null): string {
   const match = description?.match(/\(([^)]+)\)/);
-  return match?.[1] ?? "—";
+  const method = match?.[1];
+  
+  switch(method) {
+    case "CASH": return "Espèces";
+    case "CARD": return "CB";
+    case "CHECK": return "Chèque";
+    case "TRANSFER": return "Virement";
+    default: return method ?? "—";
+  }
 }
 
 export async function RecentTopups() {
@@ -29,6 +37,7 @@ export async function RecentTopups() {
   const recentTopups = await db.query.transactions.findMany({
     where: and(
       eq(transactions.issuerId, session.userId),
+      ne(transactions.targetUserId, session.userId),
       eq(transactions.type, "TOPUP"),
       eq(transactions.status, "COMPLETED")
     ),

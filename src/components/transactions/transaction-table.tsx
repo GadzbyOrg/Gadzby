@@ -105,7 +105,8 @@ export function TransactionTable({
 		<div className="flex flex-col gap-4">
 			{/* Desktop Table */}
 			<div className="hidden md:block bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
-				<table className="w-full text-left text-sm">
+				<div className="overflow-x-auto">
+					<table className="w-full text-left text-sm">
 					<thead>
 						<tr className="border-b border-border">
 							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Type</th>
@@ -128,6 +129,7 @@ export function TransactionTable({
 						)}
 					</tbody>
 				</table>
+				</div>
 			</div>
 
 			{/* Mobile List */}
@@ -282,7 +284,7 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 			isPending && "bg-yellow-500/5",
 			isChild && "bg-elevated/20",
 		)}>
-			<td className={cn("px-5 py-3", isChild && "pl-10")}>
+			<td className={cn("px-5 py-3 whitespace-nowrap", isChild && "pl-10")}>
 				<div className="flex items-center gap-2.5">
 					{isChild && (
 						<div className="absolute w-4 h-4 border-l-2 border-b-2 border-border rounded-bl-sm -ml-5 mt-1 pointer-events-none" />
@@ -307,7 +309,7 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 			</td>
 
 			{isAdmin && (
-				<td className="px-5 py-3">
+				<td className="px-5 py-3 whitespace-nowrap">
 					<div className="flex flex-col">
 						<span className="text-sm text-fg font-medium">
 							{t.targetUser ? `${t.targetUser.prenom} ${t.targetUser.nom}` : "—"}
@@ -320,7 +322,7 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 			)}
 
 			{isAdmin && (
-				<td className="px-5 py-3">
+				<td className="px-5 py-3 whitespace-nowrap">
 					{t.issuer ? (
 						<div className="flex flex-col">
 							<span className="text-sm text-fg font-medium">
@@ -430,7 +432,7 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 				)}
 				onClick={() => setExpanded(!expanded)}
 			>
-				<td className="px-5 py-3">
+				<td className="px-5 py-3 whitespace-nowrap">
 					<div className="flex items-center gap-2.5">
 						<div className={cn(
 							"text-fg-subtle transition-transform duration-200",
@@ -454,11 +456,11 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 				</td>
 
 				{isAdmin && (
-					<td className="px-5 py-3 text-xs text-fg-subtle italic">Multiple</td>
+					<td className="px-5 py-3 text-xs text-fg-subtle italic whitespace-nowrap">Multiple</td>
 				)}
 
 				{isAdmin && (
-					<td className="px-5 py-3 text-xs text-fg-subtle italic">Multiple</td>
+					<td className="px-5 py-3 text-xs text-fg-subtle italic whitespace-nowrap">Multiple</td>
 				)}
 
 				<td className="px-5 py-3 max-w-xs">
