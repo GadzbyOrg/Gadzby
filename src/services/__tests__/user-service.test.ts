@@ -485,7 +485,7 @@ describe("UserService", () => {
     
     describe("searchPublic", () => {
         test("should return empty array for short query", async () => {
-            const result = await UserService.searchPublic("a");
+            const result = await UserService.searchPublic("");
             expect(result).toEqual([]);
             expect(db.query.users.findMany).not.toHaveBeenCalled();
         });

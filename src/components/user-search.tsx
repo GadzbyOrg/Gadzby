@@ -38,7 +38,7 @@ export function UserSearch({
     useEffect(() => {
         let active = true;
 
-        if (query.length < 2) {
+        if (query.length < 1) {
             setResults([]);
             setIsLoading(false);
             setIsOpen(false);
@@ -72,12 +72,18 @@ export function UserSearch({
                             const bStarts = bUser.startsWith(queryLower);
                             if (aStarts && !bStarts) return -1;
                             if (!aStarts && bStarts) return 1;
+                            if (aStarts && bStarts && aUser.length !== bUser.length) {
+                                return aUser.length - bUser.length;
+                            }
 
                             // 3. Includes
                             const aIncludes = aUser.includes(queryLower);
                             const bIncludes = bUser.includes(queryLower);
                             if (aIncludes && !bIncludes) return -1;
                             if (!aIncludes && bIncludes) return 1;
+                            if (aIncludes && bIncludes && aUser.length !== bUser.length) {
+                                return aUser.length - bUser.length;
+                            }
 
                             // 4. Fallback promotion + alphabétique
                             const aMatch = a.promss ? a.promss.match(/\d+/) : null;
@@ -143,12 +149,12 @@ export function UserSearch({
                     onChange={(e) => {
                         const val = e.target.value;
                         setQuery(val);
-                        if (val.length >= 2) {
+                        if (val.length >= 1) {
                             setIsLoading(true);
                         } else {
                             setIsLoading(false);
                         }
-                        if (!isOpen && val.length >= 2) setIsOpen(true);
+                        if (!isOpen && val.length >= 1) setIsOpen(true);
                     }}
                     placeholder={placeholder}
                     className={cn(
@@ -196,7 +202,7 @@ export function UserSearch({
                 </div>
             )}
 
-            {isOpen && query.length >= 2 && results.length === 0 && !isLoading && (
+            {isOpen && query.length >= 1 && results.length === 0 && !isLoading && (
                 <div className="absolute z-50 w-full mt-1 bg-elevated border border-border rounded-md shadow-lg p-4 text-center text-sm text-fg-subtle">
                     Aucun utilisateur trouvé
                 </div>
