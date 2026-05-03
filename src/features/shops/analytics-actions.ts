@@ -1,10 +1,28 @@
 "use server";
 
-import { and, count, desc, eq, gte, lte, ne, notInArray, sql, sum } from "drizzle-orm";
+import {
+	and,
+	count,
+	desc,
+	eq,
+	gte,
+	lte,
+	ne,
+	notInArray,
+	sql,
+	sum,
+} from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { productCategories, products, shops, transactions, users } from "@/db/schema";
+import {
+	productCategories,
+	products,
+	shops,
+	shopExpenses,
+	transactions,
+	users,
+} from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
 
 import { checkShopPermission } from "./utils";
@@ -37,18 +55,17 @@ export const getMostActiveStaff = authenticatedAction(
 			session.userId,
 			session.permissions,
 			shop.id,
-			"VIEW_STATS"
+			"VIEW_STATS",
 		);
 
 		if (!isAuthorized) throw new Error("Non autorisé");
-
 
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
 			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			ne(transactions.issuerId, transactions.targetUserId), // Exclude self-service
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
-			endDate ? lte(transactions.createdAt, endDate) : undefined
+			endDate ? lte(transactions.createdAt, endDate) : undefined,
 		);
 
 		const stats = await db
@@ -66,12 +83,19 @@ export const getMostActiveStaff = authenticatedAction(
 			.from(transactions)
 			.innerJoin(users, eq(transactions.issuerId, users.id))
 			.where(whereClause)
-			.groupBy(transactions.issuerId, users.id, users.nom, users.prenom, users.username, users.image)
+			.groupBy(
+				transactions.issuerId,
+				users.id,
+				users.nom,
+				users.prenom,
+				users.username,
+				users.image,
+			)
 			.orderBy(desc(count()))
 			.limit(limit);
 
 		return { stats };
-	}
+	},
 );
 
 export const getBestCustomers = authenticatedAction(
@@ -87,7 +111,7 @@ export const getBestCustomers = authenticatedAction(
 			session.userId,
 			session.permissions,
 			shop.id,
-			"VIEW_STATS"
+			"VIEW_STATS",
 		);
 
 		if (!isAuthorized) throw new Error("Non autorisé");
@@ -97,7 +121,7 @@ export const getBestCustomers = authenticatedAction(
 			eq(transactions.type, "PURCHASE"),
 			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
-			endDate ? lte(transactions.createdAt, endDate) : undefined
+			endDate ? lte(transactions.createdAt, endDate) : undefined,
 		);
 
 		const stats = await db
@@ -115,18 +139,25 @@ export const getBestCustomers = authenticatedAction(
 			.from(transactions)
 			.innerJoin(users, eq(transactions.targetUserId, users.id))
 			.where(whereClause)
-			.groupBy(transactions.targetUserId, users.id, users.nom, users.prenom, users.username, users.image)
+			.groupBy(
+				transactions.targetUserId,
+				users.id,
+				users.nom,
+				users.prenom,
+				users.username,
+				users.image,
+			)
 			.orderBy(desc(sum(sql`ABS(${transactions.amount})`))) // Order by spend volume
 			.limit(limit);
 
 		// Map volume to number (drizzle might return string)
-		const mappedStats = stats.map(s => ({
+		const mappedStats = stats.map((s) => ({
 			...s,
-			volume: Number(s.volume)
+			volume: Number(s.volume),
 		}));
 
 		return { stats: mappedStats };
-	}
+	},
 );
 
 export const getProductSalesStats = authenticatedAction(
@@ -142,7 +173,7 @@ export const getProductSalesStats = authenticatedAction(
 			session.userId,
 			session.permissions,
 			shop.id,
-			"VIEW_STATS"
+			"VIEW_STATS",
 		);
 
 		if (!isAuthorized) throw new Error("Non autorisé");
@@ -152,7 +183,7 @@ export const getProductSalesStats = authenticatedAction(
 			eq(transactions.type, "PURCHASE"),
 			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
-			endDate ? lte(transactions.createdAt, endDate) : undefined
+			endDate ? lte(transactions.createdAt, endDate) : undefined,
 		);
 
 		const stats = await db
@@ -169,18 +200,23 @@ export const getProductSalesStats = authenticatedAction(
 			.from(transactions)
 			.innerJoin(products, eq(transactions.productId, products.id))
 			.where(whereClause)
-			.groupBy(transactions.productId, products.id, products.name, products.stock)
+			.groupBy(
+				transactions.productId,
+				products.id,
+				products.name,
+				products.stock,
+			)
 			.orderBy(desc(sum(transactions.quantity)))
 			.limit(limit);
 
-		const mappedStats = stats.map(s => ({
+		const mappedStats = stats.map((s) => ({
 			...s,
 			totalQuantity: Number(s.totalQuantity),
 			totalRevenue: Number(s.totalRevenue),
 		}));
 
 		return { stats: mappedStats };
-	}
+	},
 );
 
 export const getCategorySalesStats = authenticatedAction(
@@ -196,7 +232,7 @@ export const getCategorySalesStats = authenticatedAction(
 			session.userId,
 			session.permissions,
 			shop.id,
-			"VIEW_STATS"
+			"VIEW_STATS",
 		);
 
 		if (!isAuthorized) throw new Error("Non autorisé");
@@ -206,7 +242,7 @@ export const getCategorySalesStats = authenticatedAction(
 			eq(transactions.type, "PURCHASE"),
 			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
-			endDate ? lte(transactions.createdAt, endDate) : undefined
+			endDate ? lte(transactions.createdAt, endDate) : undefined,
 		);
 
 		const stats = await db
@@ -217,19 +253,22 @@ export const getCategorySalesStats = authenticatedAction(
 			})
 			.from(transactions)
 			.innerJoin(products, eq(transactions.productId, products.id))
-			.innerJoin(productCategories, eq(products.categoryId, productCategories.id))
+			.innerJoin(
+				productCategories,
+				eq(products.categoryId, productCategories.id),
+			)
 			.where(whereClause)
 			.groupBy(productCategories.id, productCategories.name)
 			.orderBy(desc(sum(sql`ABS(${transactions.amount})`)))
 			.limit(limit);
 
-		const mappedStats = stats.map(s => ({
+		const mappedStats = stats.map((s) => ({
 			...s,
 			totalRevenue: Number(s.totalRevenue),
 		}));
 
 		return { stats: mappedStats };
-	}
+	},
 );
 
 export const getStockProjections = authenticatedAction(
@@ -245,7 +284,7 @@ export const getStockProjections = authenticatedAction(
 			session.userId,
 			session.permissions,
 			shop.id,
-			"VIEW_STATS"
+			"VIEW_STATS",
 		);
 
 		if (!isAuthorized) throw new Error("Non autorisé");
@@ -257,7 +296,7 @@ export const getStockProjections = authenticatedAction(
 				id: true,
 				name: true,
 				stock: true,
-			}
+			},
 		});
 
 		// 2. Calculate daily sales velocity over the last 30 days
@@ -270,18 +309,22 @@ export const getStockProjections = authenticatedAction(
 				quantity: sum(transactions.quantity),
 			})
 			.from(transactions)
-			.where(and(
-				eq(transactions.shopId, shop.id),
-				eq(transactions.type, "PURCHASE"),
-				notInArray(transactions.status, ["CANCELLED", "FAILED"]),
-				gte(transactions.createdAt, thirtyDaysAgo)
-			))
+			.where(
+				and(
+					eq(transactions.shopId, shop.id),
+					eq(transactions.type, "PURCHASE"),
+					notInArray(transactions.status, ["CANCELLED", "FAILED"]),
+					gte(transactions.createdAt, thirtyDaysAgo),
+				),
+			)
 			.groupBy(transactions.productId);
 
-		const salesMap = new Map(recentSales.map(s => [s.productId, Number(s.quantity)]));
+		const salesMap = new Map(
+			recentSales.map((s) => [s.productId, Number(s.quantity)]),
+		);
 
 		// 3. Compute projections
-		const projections = shopProducts.map(p => {
+		const projections = shopProducts.map((p) => {
 			const soldLast30Days = salesMap.get(p.id) || 0;
 			const dailyVelocity = soldLast30Days / 30;
 
@@ -295,17 +338,17 @@ export const getStockProjections = authenticatedAction(
 				name: p.name,
 				currentStock: p.stock,
 				dailyVelocity,
-				daysRemaining: Math.floor(daysRemaining)
+				daysRemaining: Math.floor(daysRemaining),
 			};
 		});
 
 		// Filter out products with infinite stock or very low velocity, and sort by risk (lowest days remaining)
 		const riskList = projections
-			.filter(p => p.daysRemaining < 30 && p.dailyVelocity > 0)
+			.filter((p) => p.daysRemaining < 30 && p.dailyVelocity > 0)
 			.sort((a, b) => a.daysRemaining - b.daysRemaining);
 
 		return { projections: riskList };
-	}
+	},
 );
 
 export const getShopStats = authenticatedAction(
@@ -314,8 +357,8 @@ export const getShopStats = authenticatedAction(
 		const shop = await db.query.shops.findFirst({
 			where: eq(shops.slug, shopSlug),
 			with: {
-				members: true
-			}
+				members: true,
+			},
 		});
 
 		if (!shop) throw new Error("Shop introuvable");
@@ -324,7 +367,7 @@ export const getShopStats = authenticatedAction(
 			session.userId,
 			session.permissions,
 			shop.id,
-			"VIEW_STATS"
+			"VIEW_STATS",
 		);
 
 		if (!isAuthorized) throw new Error("Non autorisé");
@@ -334,7 +377,7 @@ export const getShopStats = authenticatedAction(
 			eq(transactions.type, "PURCHASE"),
 			notInArray(transactions.status, ["CANCELLED", "FAILED"]),
 			startDate ? gte(transactions.createdAt, startDate) : undefined,
-			endDate ? lte(transactions.createdAt, endDate) : undefined
+			endDate ? lte(transactions.createdAt, endDate) : undefined,
 		);
 
 		// Fetch all relevant transactions for the chart
@@ -348,14 +391,26 @@ export const getShopStats = authenticatedAction(
 			.where(whereClause)
 			.orderBy(transactions.createdAt);
 
+		// Get shop expences
+		const expences = await db.query.shopExpenses.findMany({
+			where: and(
+				eq(shopExpenses.shopId, shop.id),
+				startDate ? gte(shopExpenses.date, startDate) : undefined,
+				endDate ? lte(shopExpenses.date, endDate) : undefined,
+			),
+		});
+
 		// Process data for charts
-		const dailyStats = new Map<string, { revenue: number, expenses: number, profit: number }>();
+		const dailyStats = new Map<
+			string,
+			{ revenue: number; expenses: number; profit: number }
+		>();
 		let totalRevenue = 0;
-		const totalExpenses = 0; // Assuming 0 for now as we don't strictly track COGS yet
+		let totalExpenses = 0;
 		let totalOrders = 0;
 
-		txs.forEach(tx => {
-			const dateKey = tx.createdAt.toISOString().split('T')[0];
+		txs.forEach((tx) => {
+			const dateKey = tx.createdAt.toISOString().split("T")[0];
 			const amount = Math.abs(tx.amount);
 
 			if (!dailyStats.has(dateKey)) {
@@ -363,13 +418,26 @@ export const getShopStats = authenticatedAction(
 			}
 
 			const day = dailyStats.get(dateKey)!;
-
-			// Assuming PURCHASE is revenue
 			day.revenue += amount;
-			day.profit += amount; // expenses are 0
+			day.profit += amount;
 
 			totalRevenue += amount;
 			totalOrders++;
+		});
+
+		expences.forEach((expense) => {
+			const dateKey = expense.date.toISOString().split("T")[0];
+			const amount = expense.amount;
+
+			if (!dailyStats.has(dateKey)) {
+				dailyStats.set(dateKey, { revenue: 0, expenses: 0, profit: 0 });
+			}
+
+			const day = dailyStats.get(dateKey)!;
+			day.expenses += amount;
+			day.profit -= amount;
+
+			totalExpenses += amount;
 		});
 
 		// Fill in missing dates if range is defined
@@ -378,21 +446,25 @@ export const getShopStats = authenticatedAction(
 			const currentDate = new Date(startDate);
 			// End date is usually included, ensure we cover it logic
 			while (currentDate <= endDate) {
-				const dateKey = currentDate.toISOString().split('T')[0];
-				const stats = dailyStats.get(dateKey) || { revenue: 0, expenses: 0, profit: 0 };
+				const dateKey = currentDate.toISOString().split("T")[0];
+				const stats = dailyStats.get(dateKey) || {
+					revenue: 0,
+					expenses: 0,
+					profit: 0,
+				};
 				chartData.push({
 					date: dateKey,
-					...stats
+					...stats,
 				});
 				currentDate.setDate(currentDate.getDate() + 1);
 			}
 		} else {
 			// If no range, just return keys sorted
 			const sortedKeys = Array.from(dailyStats.keys()).sort();
-			sortedKeys.forEach(key => {
+			sortedKeys.forEach((key) => {
 				chartData.push({
 					date: key,
-					...dailyStats.get(key)!
+					...dailyStats.get(key)!,
 				});
 			});
 		}
@@ -406,14 +478,14 @@ export const getShopStats = authenticatedAction(
 				totalRevenue,
 				totalOrders,
 				averageBasket,
-				memberCount: shop.members.length
+				memberCount: shop.members.length,
 			},
 			summary: {
 				totalRevenue,
 				totalExpenses,
-				profit
+				profit,
 			},
-			chartData
+			chartData,
 		};
-	}
+	},
 );

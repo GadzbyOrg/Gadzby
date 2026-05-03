@@ -41,11 +41,6 @@ import { StaffActivityCard, StaffStats } from "./staff-activity-card";
 import { StockProjection } from "./stock-projection-card";
 import { CustomerStats, TopCustomersCard } from "./top-customers-card";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import {
-	formatPeriodLabel,
-	getGranularity,
-	groupByPeriod,
-} from "./statistics-utils";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";
 
@@ -256,11 +251,6 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 		loadEvents();
 	}, [slug]);
 
-	const granularity = data
-		? getGranularity(timeframe, customStart, customEnd)
-		: ("month" as const);
-	const groupedData = data ? groupByPeriod(data.chartData, granularity) : [];
-
 	return (
 		<div className="space-y-6">
 			{/* Controls */}
@@ -413,7 +403,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 								{/* Evolution financière */}
 								<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
 									<h3 className="text-lg font-medium text-white mb-6">
-										Évolution du chiffre d'affaires
+										Évolution financière
 									</h3>
 									<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
 										<div className="min-w-[600px] h-full">
@@ -438,6 +428,24 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 															<stop
 																offset="95%"
 																stopColor="#4ade80"
+																stopOpacity={0}
+															/>
+														</linearGradient>
+														<linearGradient
+															id="colorExpenses"
+															x1="0"
+															y1="0"
+															x2="0"
+															y2="1"
+														>
+															<stop
+																offset="5%"
+																stopColor="#f87171"
+																stopOpacity={0.3}
+															/>
+															<stop
+																offset="95%"
+																stopColor="#f87171"
 																stopOpacity={0}
 															/>
 														</linearGradient>
@@ -494,6 +502,15 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 														stroke="#4ade80"
 														fillOpacity={1}
 														fill="url(#colorRevenue)"
+														strokeWidth={2}
+													/>
+													<Area
+														type="monotone"
+														dataKey="expenses"
+														name="Dépenses"
+														stroke="#f87171"
+														fillOpacity={1}
+														fill="url(#colorExpenses)"
 														strokeWidth={2}
 													/>
 												</AreaChart>
@@ -565,89 +582,6 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 											</div>
 										</div>
 									)}
-									{/* Revenue vs Expenses comparison */}
-									<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
-										<h3 className="text-lg font-medium text-white mb-4">
-											Revenus vs Dépenses
-										</h3>
-										{groupedData.length === 0 ? (
-											<p className="text-fg-subtle text-sm">
-												Aucune donnée pour cette période
-											</p>
-										) : (
-											<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
-												<div className="min-w-[300px] h-full">
-													<ResponsiveContainer width="100%" height="100%">
-														<BarChart
-															data={groupedData}
-															margin={{
-																top: 10,
-																right: 30,
-																left: 0,
-																bottom: 0,
-															}}
-														>
-															<XAxis
-																dataKey="period"
-																stroke="#6b7280"
-																fontSize={12}
-																tick={{ fill: "#9ca3af" }}
-																tickFormatter={(value) =>
-																	formatPeriodLabel(value, granularity)
-																}
-															/>
-															<YAxis
-																stroke="#6b7280"
-																fontSize={12}
-																tickFormatter={(value) =>
-																	`${(value / 100).toFixed(0)}€`
-																}
-																tick={{ fill: "#9ca3af" }}
-															/>
-															<CartesianGrid
-																strokeDasharray="3 3"
-																stroke="#374151"
-																vertical={false}
-															/>
-															<Tooltip
-																contentStyle={{
-																	backgroundColor: "#111827",
-																	borderColor: "#374151",
-																	borderRadius: "0.5rem",
-																}}
-																formatter={(value) => [
-																	`${((Number(value) || 0) / 100).toFixed(2)}€`,
-																	"",
-																]}
-																labelFormatter={(label) =>
-																	formatPeriodLabel(label, granularity)
-																}
-																labelStyle={{
-																	color: "#9ca3af",
-																	marginBottom: "0.25rem",
-																}}
-															/>
-															<Legend />
-															<Bar
-																dataKey="revenue"
-																name="Revenus"
-																fill="#4ade80"
-																radius={[4, 4, 0, 0]}
-																maxBarSize={40}
-															/>
-															<Bar
-																dataKey="expenses"
-																name="Dépenses"
-																fill="#f87171"
-																radius={[4, 4, 0, 0]}
-																maxBarSize={40}
-															/>
-														</BarChart>
-													</ResponsiveContainer>
-												</div>
-											</div>
-										)}
-									</div>
 								</div>
 							</div>
 
