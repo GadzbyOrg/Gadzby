@@ -111,7 +111,7 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                 <div className="sm:hidden flex flex-col gap-3">
                     <div className="flex justify-between items-start gap-4">
                         <div className="flex-1 min-w-0">
-                            <div className="font-bold text-fg text-lg truncate leading-tight">{product.name}</div>
+                            <div className="font-bold text-fg text-lg line-clamp-2 leading-tight">{product.name}</div>
                         </div>
                         <div className="text-right shrink-0">
                             <div className="text-accent-400 font-bold text-lg leading-tight">{(product.price / 100).toFixed(2)}€</div>
@@ -143,22 +143,22 @@ function SortableItem({ product, shopSlug, disabled }: { product: Product; shopS
                                 productName={product.name}
                                 currentUnit={product.unit}
                                 trigger={
-                                    <button className="w-full h-full bg-emerald-600/10 hover:bg-emerald-600/20 active:bg-emerald-600/30 border border-emerald-600/20 text-emerald-500 rounded-lg px-2 sm:px-4 py-3 flex items-center justify-center gap-1 sm:gap-2 font-bold transition-colors min-w-0 overflow-hidden">
+                                    <button className="w-full h-full bg-emerald-600/10 hover:bg-emerald-600/20 active:bg-emerald-600/30 border border-emerald-600/20 text-emerald-500 rounded-lg px-2 sm:px-4 py-2 flex items-center justify-center gap-1 sm:gap-2 font-bold transition-colors min-w-0 overflow-hidden">
                                         <IconPlus size={18} className="shrink-0" />
-                                        <span className="truncate">Ajouter Stock</span>
+                                        <span className="truncate">Stock</span>
                                     </button>
                                 }
                             />
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 shrink-0">
                             <Link
                                 href={`/shops/${shopSlug}/manage/products/${product.id}`}
-                                className="flex items-center justify-center w-12 bg-elevated border border-border text-fg-muted hover:text-fg hover:border-fg-subtle rounded-lg transition-colors"
+                                className="flex items-center justify-center w-11 bg-elevated border border-border text-fg-muted hover:text-fg hover:border-fg-subtle rounded-lg transition-colors"
                                 title="Modifier"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                             </Link>
-                            <div className="flex items-center justify-center w-12 bg-elevated border border-border rounded-lg p-0 hover:border-red-900/50 transition-colors">
+                            <div className="flex items-center justify-center w-11 bg-elevated border border-border rounded-lg p-0 hover:border-red-900/50 transition-colors">
                                 <DeleteProductButton
                                     shopSlug={shopSlug}
                                     productId={product.id}

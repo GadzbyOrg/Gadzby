@@ -172,7 +172,7 @@ export function ProductGrid({
 			</div>
 
 			{/* Mobile Grid View (< md) */}
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:hidden">
+			<div className="flex flex-col sm:grid sm:grid-cols-2 gap-0 sm:gap-3 md:hidden -mx-4 sm:mx-0 border-y sm:border-0 border-border bg-surface-900 sm:bg-transparent">
 				{filteredProducts.map((product) => {
 					const quantityInCart = getProductCartQuantity(product);
 					const hasVariants = product.variants && product.variants.length > 0;
@@ -181,10 +181,11 @@ export function ProductGrid({
 						<div
 							key={product.id}
 							className={cn(
-								"flex flex-col justify-center rounded-xl border p-3 transition-all",
+								"flex flex-col justify-center p-4 sm:p-3 transition-all",
+								"border-b border-border last:border-b-0 sm:border sm:rounded-xl sm:last:border",
 								quantityInCart > 0
-									? "bg-elevated border-accent-500/50 shadow-[0_0_15px_-3px_rgba(var(--accent-500-rgb),0.3)]"
-									: "bg-surface-900 border-border hover:border-border",
+									? "bg-elevated sm:border-accent-500/50 sm:shadow-[0_0_15px_-3px_rgba(var(--accent-500-rgb),0.3)]"
+									: "bg-transparent sm:bg-surface-900 sm:hover:border-border",
 							)}
 							onClick={() => {
 								if (hasVariants) {
@@ -195,8 +196,8 @@ export function ProductGrid({
 							}}
 						>
 							<div className="space-y-1">
-								<div className="flex justify-between items-start">
-									<div className="flex flex-col gap-1 pr-2">
+								<div className="flex justify-between items-start gap-2">
+									<div className="flex flex-col gap-1 flex-1 min-w-0">
 										<h3
 											className={cn(
 												"font-medium leading-tight min-h-[1.5em]",
