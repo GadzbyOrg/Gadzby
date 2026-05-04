@@ -361,9 +361,9 @@ export function UserEditForm({
 				</div>
 
 				{/* Save + Danger zone — full width */}
-				<div className="border-t border-border/40 pt-5 flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between gap-4">
+				<div className="mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-6 sm:gap-4">
 					{/* Danger zone inline */}
-					<div className="flex items-center gap-4 w-full sm:w-auto">
+					<div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto p-4 sm:p-0 rounded-xl sm:rounded-none border sm:border-0 border-red-500/20 bg-red-500/5 sm:bg-transparent text-center sm:text-left">
 						<div>
 							<p className="text-xs text-red-300/70 font-medium">
 								Supprimer définitivement
@@ -376,7 +376,7 @@ export function UserEditForm({
 							type="button"
 							onClick={handleDelete}
 							disabled={isDeleting || isUpdatePending}
-							className="flex items-center gap-2 px-3.5 py-2 bg-red-600/15 hover:bg-red-600 border border-red-600/30 hover:border-red-600 text-red-400 hover:text-white text-sm rounded-lg font-medium transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+							className="w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 bg-red-600/15 hover:bg-red-600 border border-red-600/30 hover:border-red-600 text-red-400 hover:text-white text-sm rounded-lg font-medium transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							{isDeleting ? (
 								<IconLoader2 className="w-4 h-4 animate-spin" />
@@ -390,7 +390,7 @@ export function UserEditForm({
 					<button
 						type="submit"
 						disabled={isUpdatePending || isDeleting}
-						className="w-full sm:w-auto px-5 py-2.5 bg-accent-600 hover:bg-accent-500 text-white rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-accent-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+						className="w-full sm:w-auto px-6 py-3 sm:px-5 sm:py-2.5 bg-accent-600 hover:bg-accent-500 text-white rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-accent-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{isUpdatePending ? (
 							<>

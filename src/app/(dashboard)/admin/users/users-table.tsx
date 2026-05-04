@@ -4,12 +4,9 @@ import {
 	IconArrowsSort,
 	IconChevronLeft,
 	IconChevronRight,
-	IconHistory,
 	IconId,
 	IconMail,
-	IconPencil,
 	IconPlus,
-	IconPower,
 	IconSchool,
 	IconSearch,
 	IconSortAscending,
@@ -158,19 +155,11 @@ function TablePagination({
 
 function UserMobileCard({
 	user,
-	onEdit,
-	onHistory,
-	onToggleStatus,
-	isPending,
 }: {
 	user: User;
-	onEdit: () => void;
-	onHistory: () => void;
-	onToggleStatus: () => void;
-	isPending: boolean;
 }) {
 	return (
-		<Link href={`/admin/users/${user.id}`}>
+		<Link href={`/admin/users/${user.id}`} className="block">
 			<div
 				className={`bg-surface-900 border border-border rounded-xl overflow-hidden transition-opacity ${user.isAsleep ? "opacity-60" : ""}`}
 			>
@@ -232,35 +221,6 @@ function UserMobileCard({
 						</div>
 					</div>
 				)}
-
-				<div className="flex border-t border-border divide-x divide-border">
-					<button
-						onClick={onHistory}
-						className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-fg-subtle hover:text-fg hover:bg-elevated transition-colors font-medium"
-					>
-						<IconHistory className="w-3.5 h-3.5" />
-						Historique
-					</button>
-					<button
-						onClick={onEdit}
-						className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-fg-subtle hover:text-fg hover:bg-elevated transition-colors font-medium"
-					>
-						<IconPencil className="w-3.5 h-3.5" />
-						Modifier
-					</button>
-					<button
-						onClick={onToggleStatus}
-						disabled={isPending}
-						className={`flex items-center justify-center px-4 py-2.5 transition-colors disabled:opacity-40 ${
-							user.isAsleep
-								? "text-emerald-400 hover:bg-emerald-500/10"
-								: "text-fg-subtle hover:text-red-400 hover:bg-red-500/10"
-						}`}
-						title={user.isAsleep ? "Réactiver" : "Désactiver"}
-					>
-						<IconPower className="w-4 h-4" />
-					</button>
-				</div>
 			</div>
 		</Link>
 	);
@@ -443,12 +403,6 @@ export function UsersTable({
 						<UserMobileCard
 							key={user.id}
 							user={user}
-							onEdit={() => setSelectedUser(user)}
-							onHistory={() => setViewHistoryUser(user)}
-							onToggleStatus={() =>
-								handleToggleStatus(user.id, user.isAsleep ?? false)
-							}
-							isPending={isPending}
 						/>
 					))
 				)}

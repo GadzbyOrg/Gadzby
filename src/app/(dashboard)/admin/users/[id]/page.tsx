@@ -11,6 +11,7 @@ import {
 	IconChevronRight,
 	IconArrowDownLeft,
 	IconArrowUpRight,
+	IconChevronDown,
 } from "@tabler/icons-react";
 
 import { verifySession } from "@/lib/session";
@@ -275,17 +276,17 @@ export default async function UserAdminPage({
 			</Link>
 
 			{/* Identity header */}
-			<div className="bg-surface-900 border border-border rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+			<div className="bg-surface-900 border border-border rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-5">
 				<UserAvatar
 					user={{
 						name: `${currentUser.prenom} ${currentUser.nom}`,
 						username: currentUser.username,
 						image: currentUser.image,
 					}}
-					className="w-16 h-16 text-xl shrink-0"
+					className="w-20 h-20 sm:w-16 sm:h-16 text-xl shrink-0 mx-auto sm:mx-0"
 				/>
-				<div className="flex-1 min-w-0">
-					<div className="flex flex-wrap items-center gap-2 mb-1">
+				<div className="flex-1 min-w-0 flex flex-col items-center sm:items-start">
+					<div className="flex flex-wrap justify-center sm:justify-start items-center gap-2 mb-1">
 						<h1 className="text-2xl font-bold text-fg">
 							{currentUser.prenom} {currentUser.nom}
 						</h1>
@@ -302,7 +303,7 @@ export default async function UserAdminPage({
 					</div>
 					<p className="text-fg-subtle text-sm">@{currentUser.username}</p>
 					{currentUser.role && (
-						<div className="mt-2 flex flex-wrap items-center gap-2">
+						<div className="mt-2 flex flex-wrap justify-center sm:justify-start items-center gap-2">
 							<div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-accent-500/12 text-accent-400 border border-accent-500/25">
 								<IconShield className="w-3 h-3" />
 								{currentUser.role.name}
@@ -318,7 +319,7 @@ export default async function UserAdminPage({
 						</div>
 					)}
 				</div>
-				<div className="shrink-0 text-right">
+				<div className="shrink-0 w-full sm:w-auto pt-4 sm:pt-0 mt-2 sm:mt-0 border-t border-border/40 sm:border-t-0 text-center sm:text-right">
 					<p className="text-xs text-fg-subtle mb-0.5">Solde actuel</p>
 					<p
 						className={`text-3xl font-bold font-mono tabular-nums ${isNegative ? "text-red-400" : "text-fg"}`}
@@ -368,11 +369,8 @@ export default async function UserAdminPage({
 				/>
 			</div>
 
-			{/* Edit form — full width */}
+			{/* Edit form */}
 			<div className="bg-surface-900 border border-border rounded-2xl p-6">
-				<h2 className="text-xs font-semibold text-fg-subtle uppercase tracking-wider mb-6">
-					Modifier le profil
-				</h2>
 				<UserEditWrapper user={userForForm} roles={allRoles} />
 			</div>
 
