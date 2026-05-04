@@ -58,7 +58,7 @@ export function ExpensesOverTimeChart({ data }: ExpensesOverTimeChartProps) {
 				/>
 				<Tooltip
 					cursor={{ fill: "#374151", opacity: 0.4 }}
-					formatter={(value) => [`${((Number(value) || 0) / 100).toFixed(2)} €`, "Dépenses"]}
+					formatter={(value) => [`${(Number(value) || 0).toFixed(2)} €`, "Dépenses"]}
 					contentStyle={{
 						backgroundColor: "#1f2937",
 						borderColor: "#374151",

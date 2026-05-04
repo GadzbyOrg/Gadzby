@@ -87,6 +87,9 @@ export async function getUserRecentActivity() {
 		with: {
 			shop: true,
 			fams: true,
+			product: true,
+			issuer: true,
+			receiverUser: true,
 			targetUser: true,
 		},
 		orderBy: [desc(transactions.createdAt)],
@@ -110,7 +113,8 @@ export async function getUserExpensesByShop() {
 		.where(
 			and(
 				eq(transactions.targetUserId, session.userId),
-				eq(transactions.type, "PURCHASE")
+				eq(transactions.type, "PURCHASE"),
+				eq(transactions.status, "COMPLETED"),
 			)
 		)
 		.groupBy(shops.name)
@@ -118,7 +122,7 @@ export async function getUserExpensesByShop() {
 
 	return expensesByShop.map((item) => ({
 		name: item.shopName || "Inconnu",
-		value: item.amount / 100,
+		value: Number(item.amount) / 100,
 	}));
 }
 
@@ -141,16 +145,20 @@ export async function getUserExpensesOverTime() {
 		.from(transactions)
 		.where(
 			and(
-				eq(transactions.issuerId, session.userId),
+				eq(transactions.targetUserId, session.userId),
 				eq(transactions.type, "PURCHASE"),
+				eq(transactions.status, "COMPLETED"),
 				gte(transactions.createdAt, thirtyDaysAgo)
 			)
 		)
 		.groupBy(sql`to_char(${transactions.createdAt}, 'YYYY-MM-DD')`)
 		.orderBy(sql`to_char(${transactions.createdAt}, 'YYYY-MM-DD') asc`);
 
-	return expensesOverTime.map(item => ({
-		date: new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
-		amount: item.amount / 100
-	}));
+	return expensesOverTime.map(item => {
+		const [year, month, day] = item.date.split('-');
+		return {
+			date: `${day}/${month}`,
+			amount: Number(item.amount) / 100
+		};
+	});
 }
