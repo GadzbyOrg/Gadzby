@@ -4,12 +4,9 @@ import {
 	IconArrowsSort,
 	IconChevronLeft,
 	IconChevronRight,
-	IconHistory,
 	IconId,
 	IconMail,
-	IconPencil,
 	IconPlus,
-	IconPower,
 	IconSchool,
 	IconSearch,
 	IconSortAscending,
@@ -23,12 +20,22 @@ import { ExcelImportModal } from "@/components/excel-import-modal";
 import { PromssSelector } from "@/components/promss-selector";
 import { UserAvatar } from "@/components/user-avatar";
 import { ErrorDialog } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { importUsersBatchAction, toggleUserStatusAction } from "@/features/users/actions";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	importUsersBatchAction,
+	toggleUserStatusAction,
+} from "@/features/users/actions";
 
 import { CreateUserForm } from "./create-user-form";
 import { TransactionHistoryModal } from "./transaction-history-modal";
 import { UserEditForm } from "./user-edit-form";
+import Link from "next/link";
 
 interface Role {
 	id: string;
@@ -64,7 +71,6 @@ interface UsersTableProps {
 	promssList?: string[];
 }
 
-
 function RoleBadge({ role, appRole }: { role: Role | null; appRole?: string }) {
 	const name = role?.name || appRole || "—";
 	if (name === "ADMIN") {
@@ -85,21 +91,42 @@ function BalanceCell({ balance }: { balance: number }) {
 	const formatted = (Math.abs(balance) / 100).toFixed(2);
 	const isNeg = balance < 0;
 	return (
-		<span className={`font-mono text-sm font-semibold tabular-nums ${isNeg ? "text-red-400" : "text-fg"}`}>
-			{isNeg ? "−" : ""}{formatted} €
+		<span
+			className={`font-mono text-sm font-semibold tabular-nums ${isNeg ? "text-red-400" : "text-fg"}`}
+		>
+			{isNeg ? "−" : ""}
+			{formatted} €
 		</span>
 	);
 }
 
-function SortIcon({ column, currentSort, currentOrder }: { column: string; currentSort: string | null; currentOrder: string | null }) {
+function SortIcon({
+	column,
+	currentSort,
+	currentOrder,
+}: {
+	column: string;
+	currentSort: string | null;
+	currentOrder: string | null;
+}) {
 	if (currentSort !== column)
-		return <IconArrowsSort className="w-3 h-3 opacity-20 group-hover:opacity-60 transition-opacity" />;
+		return (
+			<IconArrowsSort className="w-3 h-3 opacity-20 group-hover:opacity-60 transition-opacity" />
+		);
 	if (currentOrder === "desc")
 		return <IconSortDescending className="w-3 h-3 text-accent-400" />;
 	return <IconSortAscending className="w-3 h-3 text-accent-400" />;
 }
 
-function TablePagination({ total, current, onChange }: { total: number; current: number; onChange: (page: number) => void }) {
+function TablePagination({
+	total,
+	current,
+	onChange,
+}: {
+	total: number;
+	current: number;
+	onChange: (page: number) => void;
+}) {
 	if (total <= 1) return null;
 	return (
 		<div className="flex items-center justify-between px-5 py-3 border-t border-border bg-surface-950/40">
@@ -126,96 +153,86 @@ function TablePagination({ total, current, onChange }: { total: number; current:
 	);
 }
 
-function UserMobileCard({ user, onEdit, onHistory, onToggleStatus, isPending }: {
+function UserMobileCard({
+	user,
+}: {
 	user: User;
-	onEdit: () => void;
-	onHistory: () => void;
-	onToggleStatus: () => void;
-	isPending: boolean;
 }) {
 	return (
-		<div className={`bg-surface-900 border border-border rounded-xl overflow-hidden transition-opacity ${user.isAsleep ? "opacity-60" : ""}`}>
-			<div className="p-4 flex items-center gap-3">
-				<UserAvatar user={{ name: `${user.prenom} ${user.nom}`, username: user.username, image: user.image }} className="w-12 h-12 text-base" />
-				<div className="min-w-0 flex-1">
-					<div className="flex items-center gap-2 flex-wrap">
-						<span className="font-semibold text-fg truncate">
-							{user.prenom} {user.nom}
-						</span>
-						{user.isAsleep && (
-							<span className="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-widest">
-								Inactif
+		<Link href={`/admin/users/${user.id}`} className="block">
+			<div
+				className={`bg-surface-900 border border-border rounded-xl overflow-hidden transition-opacity ${user.isAsleep ? "opacity-60" : ""}`}
+			>
+				<div className="p-4 flex items-center gap-3">
+					<UserAvatar
+						user={{
+							name: `${user.prenom} ${user.nom}`,
+							username: user.username,
+							image: user.image,
+						}}
+						className="w-12 h-12 text-base"
+					/>
+					<div className="min-w-0 flex-1">
+						<div className="flex items-center gap-2 flex-wrap">
+							<span className="font-semibold text-fg truncate">
+								{user.prenom} {user.nom}
 							</span>
-						)}
-					</div>
-					<div className="text-xs text-fg-subtle mt-0.5">@{user.username}</div>
-				</div>
-				<div className="text-right shrink-0">
-					<BalanceCell balance={user.balance} />
-				</div>
-			</div>
-
-			<div className="px-4 pb-3 flex flex-wrap gap-1.5">
-				<RoleBadge role={user.role} appRole={user.appRole} />
-				{user.promss && (
-					<span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono bg-elevated text-fg-subtle border border-border/60">
-						{user.promss}
-					</span>
-				)}
-				{user.tabagnss && (
-					<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-elevated text-fg-subtle border border-border/60">
-						<IconSchool className="w-3 h-3" />{user.tabagnss}
-					</span>
-				)}
-			</div>
-
-			{(user.bucque || user.email) && (
-				<div className="px-4 pb-3 space-y-1 text-xs text-fg-subtle border-t border-border/40 pt-3">
-					{user.bucque && (
-						<div className="flex items-center gap-2">
-							<IconId className="w-3.5 h-3.5 shrink-0" />
-							<span className="truncate">{user.bucque}</span>
+							{user.isAsleep && (
+								<span className="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-widest">
+									Inactif
+								</span>
+							)}
 						</div>
-					)}
-					<div className="flex items-center gap-2">
-						<IconMail className="w-3.5 h-3.5 shrink-0" />
-						<span className="truncate">{user.email}</span>
+						<div className="text-xs text-fg-subtle mt-0.5">
+							@{user.username}
+						</div>
+					</div>
+					<div className="text-right shrink-0">
+						<BalanceCell balance={user.balance} />
 					</div>
 				</div>
-			)}
 
-			<div className="flex border-t border-border divide-x divide-border">
-				<button
-					onClick={onHistory}
-					className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-fg-subtle hover:text-fg hover:bg-elevated transition-colors font-medium"
-				>
-					<IconHistory className="w-3.5 h-3.5" />
-					Historique
-				</button>
-				<button
-					onClick={onEdit}
-					className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-fg-subtle hover:text-fg hover:bg-elevated transition-colors font-medium"
-				>
-					<IconPencil className="w-3.5 h-3.5" />
-					Modifier
-				</button>
-				<button
-					onClick={onToggleStatus}
-					disabled={isPending}
-					className={`flex items-center justify-center px-4 py-2.5 transition-colors disabled:opacity-40 ${user.isAsleep
-						? "text-emerald-400 hover:bg-emerald-500/10"
-						: "text-fg-subtle hover:text-red-400 hover:bg-red-500/10"
-						}`}
-					title={user.isAsleep ? "Réactiver" : "Désactiver"}
-				>
-					<IconPower className="w-4 h-4" />
-				</button>
+				<div className="px-4 pb-3 flex flex-wrap gap-1.5">
+					<RoleBadge role={user.role} appRole={user.appRole} />
+					{user.promss && (
+						<span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono bg-elevated text-fg-subtle border border-border/60">
+							{user.promss}
+						</span>
+					)}
+					{user.tabagnss && (
+						<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-elevated text-fg-subtle border border-border/60">
+							<IconSchool className="w-3 h-3" />
+							{user.tabagnss}
+						</span>
+					)}
+				</div>
+
+				{(user.bucque || user.email) && (
+					<div className="px-4 pb-3 space-y-1 text-xs text-fg-subtle border-t border-border/40 pt-3">
+						{user.bucque && (
+							<div className="flex items-center gap-2">
+								<IconId className="w-3.5 h-3.5 shrink-0" />
+								<span className="truncate">{user.bucque}</span>
+							</div>
+						)}
+						<div className="flex items-center gap-2">
+							<IconMail className="w-3.5 h-3.5 shrink-0" />
+							<span className="truncate">{user.email}</span>
+						</div>
+					</div>
+				)}
 			</div>
-		</div>
+		</Link>
 	);
 }
 
-export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, promssList = [] }: UsersTableProps) {
+export function UsersTable({
+	users,
+	roles,
+	totalPages = 1,
+	currentPage = 1,
+	promssList = [],
+}: UsersTableProps) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -254,7 +271,10 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 		const currentOrderParam = params.get("order");
 		if (currentSortParam === column) {
 			if (currentOrderParam === "asc") params.set("order", "desc");
-			else { params.delete("sort"); params.delete("order"); }
+			else {
+				params.delete("sort");
+				params.delete("order");
+			}
 		} else {
 			params.set("sort", column);
 			params.set("order", "asc");
@@ -271,10 +291,19 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 	};
 
 	const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
-		if (!confirm(currentStatus ? "Voulez-vous réactiver cet utilisateur ?" : "Voulez-vous désactiver cet utilisateur ?"))
+		if (
+			!confirm(
+				currentStatus
+					? "Voulez-vous réactiver cet utilisateur ?"
+					: "Voulez-vous désactiver cet utilisateur ?",
+			)
+		)
 			return;
 		startTransition(async () => {
-			const res = await toggleUserStatusAction({ userId, isAsleep: !currentStatus });
+			const res = await toggleUserStatusAction({
+				userId,
+				isAsleep: !currentStatus,
+			});
 			if (res.error) setErrorMsg(res.error);
 		});
 	};
@@ -326,7 +355,9 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 						<SelectContent>
 							<SelectItem value="all">Tous les rôles</SelectItem>
 							{roles.map((role) => (
-								<SelectItem key={role.id} value={role.id}>{role.name}</SelectItem>
+								<SelectItem key={role.id} value={role.id}>
+									{role.name}
+								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
@@ -372,15 +403,15 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 						<UserMobileCard
 							key={user.id}
 							user={user}
-							onEdit={() => setSelectedUser(user)}
-							onHistory={() => setViewHistoryUser(user)}
-							onToggleStatus={() => handleToggleStatus(user.id, user.isAsleep ?? false)}
-							isPending={isPending}
 						/>
 					))
 				)}
 				<div className="bg-surface-900 border border-border rounded-xl overflow-hidden">
-					<TablePagination total={totalPages} current={currentPage} onChange={handlePageChange} />
+					<TablePagination
+						total={totalPages}
+						current={currentPage}
+						onChange={handlePageChange}
+					/>
 				</div>
 			</div>
 
@@ -404,7 +435,11 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 									>
 										<div className="flex items-center gap-1.5">
 											{label}
-											<SortIcon column={col} currentSort={currentSort} currentOrder={currentOrder} />
+											<SortIcon
+												column={col}
+												currentSort={currentSort}
+												currentOrder={currentOrder}
+											/>
 										</div>
 									</th>
 								))}
@@ -414,18 +449,22 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 								>
 									<div className="flex items-center justify-end gap-1.5">
 										Solde
-										<SortIcon column="balance" currentSort={currentSort} currentOrder={currentOrder} />
+										<SortIcon
+											column="balance"
+											currentSort={currentSort}
+											currentOrder={currentOrder}
+										/>
 									</div>
-								</th>
-								<th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-fg-subtle text-right">
-									Actions
 								</th>
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-border/60">
 							{activeUsers.length === 0 ? (
 								<tr>
-									<td colSpan={7} className="py-12 text-center text-fg-subtle text-sm">
+									<td
+										colSpan={7}
+										className="py-12 text-center text-fg-subtle text-sm"
+									>
 										Aucun utilisateur trouvé
 									</td>
 								</tr>
@@ -433,11 +472,19 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 								activeUsers.map((user) => (
 									<tr
 										key={user.id}
-										className={`hover:bg-elevated/40 transition-colors group ${user.isAsleep ? "opacity-50" : ""}`}
+										onClick={() => router.push(`/admin/users/${user.id}`)}
+										className={`hover:bg-elevated/40 transition-colors group cursor-pointer ${user.isAsleep ? "opacity-50" : ""}`}
 									>
 										<td className="py-3 px-5">
 											<div className="flex items-center gap-3">
-												<UserAvatar user={{ name: `${user.prenom} ${user.nom}`, username: user.username, image: user.image }} className="w-8 h-8 text-xs" />
+												<UserAvatar
+													user={{
+														name: `${user.prenom} ${user.nom}`,
+														username: user.username,
+														image: user.image,
+													}}
+													className="w-8 h-8 text-xs"
+												/>
 												<div>
 													<div className="font-medium text-fg flex items-center gap-1.5">
 														{user.prenom} {user.nom}
@@ -447,13 +494,21 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 															</span>
 														)}
 													</div>
-													<div className="text-xs text-fg-subtle">@{user.username}</div>
+													<div className="text-xs text-fg-subtle">
+														@{user.username}
+													</div>
 												</div>
 											</div>
 										</td>
 										<td className="py-3 px-5">
-											<div className="text-fg-muted text-sm">{user.bucque || <span className="text-fg-subtle/40">—</span>}</div>
-											<div className="text-xs text-fg-subtle truncate max-w-[200px]">{user.email}</div>
+											<div className="text-fg-muted text-sm">
+												{user.bucque || (
+													<span className="text-fg-subtle/40">—</span>
+												)}
+											</div>
+											<div className="text-xs text-fg-subtle truncate max-w-[200px]">
+												{user.email}
+											</div>
 										</td>
 										<td className="py-3 px-5 text-fg-subtle text-sm">
 											{user.tabagnss ? (
@@ -461,10 +516,14 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 													<IconSchool className="w-3.5 h-3.5 shrink-0" />
 													{user.tabagnss}
 												</span>
-											) : <span className="text-fg-subtle/30">—</span>}
+											) : (
+												<span className="text-fg-subtle/30">—</span>
+											)}
 										</td>
 										<td className="py-3 px-5 font-mono text-fg-subtle text-xs">
-											{user.promss || <span className="text-fg-subtle/30">—</span>}
+											{user.promss || (
+												<span className="text-fg-subtle/30">—</span>
+											)}
 										</td>
 										<td className="py-3 px-5">
 											<RoleBadge role={user.role} appRole={user.appRole} />
@@ -472,42 +531,17 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 										<td className="py-3 px-5 text-right">
 											<BalanceCell balance={user.balance} />
 										</td>
-										<td className="py-3 px-5">
-											<div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-												<button
-													onClick={() => setViewHistoryUser(user)}
-													className="p-1.5 text-fg-subtle hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors"
-													title="Historique"
-												>
-													<IconHistory className="w-4 h-4" />
-												</button>
-												<button
-													onClick={() => setSelectedUser(user)}
-													className="p-1.5 text-fg-subtle hover:text-fg hover:bg-elevated rounded-lg transition-colors"
-													title="Modifier"
-												>
-													<IconPencil className="w-4 h-4" />
-												</button>
-												<button
-													onClick={() => handleToggleStatus(user.id, user.isAsleep ?? false)}
-													disabled={isPending}
-													className={`p-1.5 rounded-lg transition-colors disabled:opacity-40 ${user.isAsleep
-														? "text-emerald-400 hover:bg-emerald-400/10"
-														: "text-fg-subtle hover:text-red-400 hover:bg-red-400/10"
-														}`}
-													title={user.isAsleep ? "Réactiver" : "Désactiver"}
-												>
-													<IconPower className="w-4 h-4" />
-												</button>
-											</div>
-										</td>
 									</tr>
 								))
 							)}
 						</tbody>
 					</table>
 				</div>
-				<TablePagination total={totalPages} current={currentPage} onChange={handlePageChange} />
+				<TablePagination
+					total={totalPages}
+					current={currentPage}
+					onChange={handlePageChange}
+				/>
 			</div>
 
 			{/* Edit Modal */}
@@ -516,12 +550,20 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 					<div className="bg-surface-950 border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
 						<div className="sticky top-0 z-10 flex items-center justify-between p-5 bg-surface-950/95 backdrop-blur border-b border-border">
 							<div className="flex items-center gap-3">
-								<UserAvatar user={{ name: `${selectedUser.prenom} ${selectedUser.nom}`, username: selectedUser.username }} className="w-9 h-9 text-sm" />
+								<UserAvatar
+									user={{
+										name: `${selectedUser.prenom} ${selectedUser.nom}`,
+										username: selectedUser.username,
+									}}
+									className="w-9 h-9 text-sm"
+								/>
 								<div>
 									<h2 className="text-base font-bold text-fg">
 										{selectedUser.prenom} {selectedUser.nom}
 									</h2>
-									<p className="text-xs text-fg-subtle">@{selectedUser.username}</p>
+									<p className="text-xs text-fg-subtle">
+										@{selectedUser.username}
+									</p>
 								</div>
 							</div>
 							<button
@@ -556,8 +598,12 @@ export function UsersTable({ users, roles, totalPages = 1, currentPage = 1, prom
 					<div className="bg-surface-950 border border-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
 						<div className="sticky top-0 z-10 flex items-center justify-between p-5 bg-surface-950/95 backdrop-blur border-b border-border">
 							<div>
-								<h2 className="text-base font-bold text-fg">Nouveau Gadz&apos;Arts</h2>
-								<p className="text-xs text-fg-subtle">Ajouter manuellement un utilisateur</p>
+								<h2 className="text-base font-bold text-fg">
+									Nouveau Gadz&apos;Arts
+								</h2>
+								<p className="text-xs text-fg-subtle">
+									Ajouter manuellement un utilisateur
+								</p>
 							</div>
 							<button
 								onClick={() => setShowCreateModal(false)}

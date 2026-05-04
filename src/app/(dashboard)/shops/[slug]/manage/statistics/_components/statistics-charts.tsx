@@ -25,13 +25,27 @@ import {
 	getStockProjections,
 } from "@/features/shops/analytics-actions";
 import { formatPrice } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
-import { ProductPerformanceCard, ProductStats } from "./product-performance-card";
+import {
+	ProductPerformanceCard,
+	ProductStats,
+} from "./product-performance-card";
 import { StaffActivityCard, StaffStats } from "./staff-activity-card";
 import { StockProjection } from "./stock-projection-card";
 import { CustomerStats, TopCustomersCard } from "./top-customers-card";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
+import {
+	formatPeriodLabel,
+	getGranularity,
+	groupByPeriod,
+} from "./statistics-utils";
 
 type Timeframe = "7d" | "30d" | "90d" | "all" | "custom";
 
@@ -70,7 +84,9 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 	const [topProducts, setTopProducts] = useState<ProductStats[]>([]);
 	const [flopProducts, setFlopProducts] = useState<ProductStats[]>([]);
 	const [projections, setProjections] = useState<StockProjection[]>([]);
-	const [categoryStats, setCategoryStats] = useState<{ categoryId: string; categoryName: string; totalRevenue: number }[]>([]);
+	const [categoryStats, setCategoryStats] = useState<
+		{ categoryId: string; categoryName: string; totalRevenue: number }[]
+	>([]);
 	const [isChartsExpanded, setIsChartsExpanded] = useState(false);
 
 	const updateParams = (newParams: Record<string, string | null>) => {
@@ -148,7 +164,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						shopSlug: slug,
 						startDate,
 						endDate,
-						eventId: eventIdParam === "all" ? undefined : eventIdParam
+						eventId: eventIdParam === "all" ? undefined : eventIdParam,
 					}),
 					getMostActiveStaff({ shopSlug: slug, startDate, endDate }),
 					getBestCustomers({ shopSlug: slug, startDate, endDate }),
@@ -159,7 +175,12 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						limit: 100,
 					}), // Get more to find flops
 					getStockProjections({ shopSlug: slug }),
-					getCategorySalesStats({ shopSlug: slug, startDate, endDate, limit: 12 }),
+					getCategorySalesStats({
+						shopSlug: slug,
+						startDate,
+						endDate,
+						limit: 12,
+					}),
 				]);
 
 				if ("error" in statsResult) console.error(statsResult.error);
@@ -171,7 +192,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						staffResult.stats.map((s: any) => ({
 							...s,
 							volume: Number(s.volume || 0),
-						}))
+						})),
 					);
 				}
 
@@ -181,7 +202,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						customerResult.stats.map((c: any) => ({
 							...c,
 							volume: Number(c.volume || 0),
-						}))
+						})),
 					);
 				}
 
@@ -189,11 +210,11 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 				else {
 					// Sort locally for safety and splitting
 					const validStats = productsResult.stats.filter(
-						(p: any) => p.productId && p.product
+						(p: any) => p.productId && p.product,
 					) as ProductStats[];
 
 					const sorted = [...validStats].sort(
-						(a, b) => b.totalQuantity - a.totalQuantity
+						(a, b) => b.totalQuantity - a.totalQuantity,
 					);
 					setTopProducts(sorted.slice(0, 5));
 					// get bottom 5 items that have sales (or maybe we want 0 sales?
@@ -235,9 +256,13 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 		loadEvents();
 	}, [slug]);
 
+	const granularity = data
+		? getGranularity(timeframe, customStart, customEnd)
+		: ("month" as const);
+	const groupedData = data ? groupByPeriod(data.chartData, granularity) : [];
+
 	return (
 		<div className="space-y-6">
-			{/* Controls */}
 			{/* Controls */}
 			<div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-surface-900 p-4 rounded-xl border border-border w-full overflow-hidden">
 				<div className="flex bg-elevated rounded-lg p-1 overflow-x-auto whitespace-nowrap custom-scrollbar w-full sm:w-auto pb-2 sm:pb-1 -mb-1 sm:mb-0">
@@ -245,10 +270,11 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						<button
 							key={t}
 							onClick={() => handleTimeframeChange(t)}
-							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${timeframe === t
-								? "bg-accent-600 text-white shadow-sm"
-								: "text-fg-muted hover:text-white hover:bg-elevated"
-								}`}
+							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
+								timeframe === t
+									? "bg-accent-600 text-white shadow-sm"
+									: "text-fg-muted hover:text-white hover:bg-elevated"
+							}`}
 						>
 							{t === "7d" && "7 Jours"}
 							{t === "30d" && "30 Jours"}
@@ -264,7 +290,12 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						<DateRangePicker
 							startValue={customStart}
 							endValue={customEnd}
-							onChange={(range) => updateParams({ from: range.start || null, to: range.end || null })}
+							onChange={(range) =>
+								updateParams({
+									from: range.start || null,
+									to: range.end || null,
+								})
+							}
 						/>
 					</div>
 				)}
@@ -313,8 +344,9 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 						<div className="bg-surface-900 p-6 rounded-xl border border-border">
 							<p className="text-sm text-fg-muted font-medium">Bénéfice</p>
 							<p
-								className={`text-2xl font-bold mt-2 ${data.summary.profit >= 0 ? "text-blue-400" : "text-orange-400"
-									}`}
+								className={`text-2xl font-bold mt-2 ${
+									data.summary.profit >= 0 ? "text-blue-400" : "text-orange-400"
+								}`}
 							>
 								{data.summary.profit > 0 ? "+" : ""}
 								{formatPrice(data.summary.profit)}
@@ -325,7 +357,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 
 					{projections.length > 0 && (
 						<StockProjectionsCard data={projections} loading={loading} />
-					)} 
+					)}
 					*/}
 
 					<div className="flex justify-center w-full py-2">
@@ -336,12 +368,39 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 							{isChartsExpanded ? (
 								<>
 									<span>Masquer les graphiques et détails</span>
-									<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+									<svg
+										className="w-4 h-4"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M5 15l7-7 7 7"
+										/>
+									</svg>
 								</>
 							) : (
 								<>
-									<span>Afficher les graphiques et détails (Produits, Staff, Revenus)</span>
-									<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+									<span>
+										Afficher les graphiques et détails (Produits, Staff,
+										Revenus)
+									</span>
+									<svg
+										className="w-4 h-4"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M19 9l-7 7-7-7"
+										/>
+									</svg>
 								</>
 							)}
 						</button>
@@ -354,7 +413,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 								{/* Evolution financière */}
 								<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
 									<h3 className="text-lg font-medium text-white mb-6">
-										Évolution financière
+										Évolution du chiffre d'affaires
 									</h3>
 									<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
 										<div className="min-w-[600px] h-full">
@@ -379,24 +438,6 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 															<stop
 																offset="95%"
 																stopColor="#4ade80"
-																stopOpacity={0}
-															/>
-														</linearGradient>
-														<linearGradient
-															id="colorExpenses"
-															x1="0"
-															y1="0"
-															x2="0"
-															y2="1"
-														>
-															<stop
-																offset="5%"
-																stopColor="#f87171"
-																stopOpacity={0.3}
-															/>
-															<stop
-																offset="95%"
-																stopColor="#f87171"
 																stopOpacity={0}
 															/>
 														</linearGradient>
@@ -455,15 +496,6 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 														fill="url(#colorRevenue)"
 														strokeWidth={2}
 													/>
-													<Area
-														type="monotone"
-														dataKey="expenses"
-														name="Dépenses"
-														stroke="#f87171"
-														fillOpacity={1}
-														fill="url(#colorExpenses)"
-														strokeWidth={2}
-													/>
 												</AreaChart>
 											</ResponsiveContainer>
 										</div>
@@ -476,7 +508,9 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 										Revenus par catégorie
 									</h3>
 									{categoryStats.length === 0 ? (
-										<p className="text-fg-subtle text-sm">Aucune donnée de catégorie</p>
+										<p className="text-fg-subtle text-sm">
+											Aucune donnée de catégorie
+										</p>
 									) : (
 										<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
 											<div className="min-w-[300px] h-full">
@@ -494,7 +528,9 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 														<YAxis
 															stroke="#6b7280"
 															fontSize={12}
-															tickFormatter={(value) => `${(value / 100).toFixed(0)}€`}
+															tickFormatter={(value) =>
+																`${(value / 100).toFixed(0)}€`
+															}
 															tick={{ fill: "#9ca3af" }}
 														/>
 														<CartesianGrid
@@ -529,6 +565,89 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 											</div>
 										</div>
 									)}
+									{/* Revenue vs Expenses comparison */}
+									<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
+										<h3 className="text-lg font-medium text-white mb-4">
+											Revenus vs Dépenses
+										</h3>
+										{groupedData.length === 0 ? (
+											<p className="text-fg-subtle text-sm">
+												Aucune donnée pour cette période
+											</p>
+										) : (
+											<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
+												<div className="min-w-[300px] h-full">
+													<ResponsiveContainer width="100%" height="100%">
+														<BarChart
+															data={groupedData}
+															margin={{
+																top: 10,
+																right: 30,
+																left: 0,
+																bottom: 0,
+															}}
+														>
+															<XAxis
+																dataKey="period"
+																stroke="#6b7280"
+																fontSize={12}
+																tick={{ fill: "#9ca3af" }}
+																tickFormatter={(value) =>
+																	formatPeriodLabel(value, granularity)
+																}
+															/>
+															<YAxis
+																stroke="#6b7280"
+																fontSize={12}
+																tickFormatter={(value) =>
+																	`${(value / 100).toFixed(0)}€`
+																}
+																tick={{ fill: "#9ca3af" }}
+															/>
+															<CartesianGrid
+																strokeDasharray="3 3"
+																stroke="#374151"
+																vertical={false}
+															/>
+															<Tooltip
+																contentStyle={{
+																	backgroundColor: "#111827",
+																	borderColor: "#374151",
+																	borderRadius: "0.5rem",
+																}}
+																formatter={(value) => [
+																	`${((Number(value) || 0) / 100).toFixed(2)}€`,
+																	"",
+																]}
+																labelFormatter={(label) =>
+																	formatPeriodLabel(label, granularity)
+																}
+																labelStyle={{
+																	color: "#9ca3af",
+																	marginBottom: "0.25rem",
+																}}
+															/>
+															<Legend />
+															<Bar
+																dataKey="revenue"
+																name="Revenus"
+																fill="#4ade80"
+																radius={[4, 4, 0, 0]}
+																maxBarSize={40}
+															/>
+															<Bar
+																dataKey="expenses"
+																name="Dépenses"
+																fill="#f87171"
+																radius={[4, 4, 0, 0]}
+																maxBarSize={40}
+															/>
+														</BarChart>
+													</ResponsiveContainer>
+												</div>
+											</div>
+										)}
+									</div>
 								</div>
 							</div>
 
@@ -540,7 +659,6 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 								<div className="h-[400px]">
 									<TopCustomersCard data={customerStats} loading={loading} />
 								</div>
-
 							</div>
 							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
 								<div className="h-[400px]">

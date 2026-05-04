@@ -152,7 +152,7 @@ export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 
 				<Tooltip
 					formatter={(value) => [
-						`${((Number(value) || 0) / 100).toFixed(2)} €`,
+						`${(Number(value) || 0).toFixed(2)} €`,
 						"Dépenses",
 					]}
 					contentStyle={{
