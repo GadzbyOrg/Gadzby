@@ -155,7 +155,7 @@ export async function getUserExpensesOverTime() {
 		.orderBy(sql`to_char(${transactions.createdAt}, 'YYYY-MM-DD') asc`);
 
 	return expensesOverTime.map(item => {
-		const [year, month, day] = item.date.split('-');
+		const [, month, day] = item.date.split('-');
 		return {
 			date: `${day}/${month}`,
 			amount: Number(item.amount) / 100
