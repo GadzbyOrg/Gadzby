@@ -27,24 +27,7 @@ L'**action de rechargement** (`src/features/payments/actions.ts`) orchestre la c
 ## Cycle de vie d'un rechargement
 
 ```
-Utilisateur              Gadzby                    Prestataire
-    |                      |                            |
-    |-- initiateTopUp() -->|                            |
-    |                      |-- INSERT transaction ----->|
-    |                      |   status: PENDING          |
-    |                      |-- createPayment() -------->|
-    |<-- redirectUrl -------|<-- { id, redirectUrl } ---|
-    |                      |                            |
-    |-- (paiement sur le site du prestataire) --------->|
-    |                      |                            |
-    |<-- backUrl/errorUrl --|<-- webhook POST -----------|
-    |   (/topup/fail)       |   verifyWebhook()         |
-    |                  si PENDING:                      |
-    |              UPDATE CANCELLED                     |
-    |                      |                            |
-    |             ou si Authorized:                     |
-    |              UPDATE COMPLETED                     |
-    |              UPDATE balance += amount             |
+
 ```
 
 ### États d'une transaction TOPUP
