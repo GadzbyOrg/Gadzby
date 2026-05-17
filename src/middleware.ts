@@ -11,7 +11,9 @@ export default async function middleware(req: NextRequest) {
 	const session = req.cookies.get(COOKIE_NAME)?.value;
 
 	if (!session && !isPublicRoute) {
-		return NextResponse.redirect(new URL("/login", req.url));
+		const response = NextResponse.redirect(new URL("/login", req.url));
+		response.cookies.set("redirect_to", req.nextUrl.pathname + req.nextUrl.search);
+		return response;
 	}
 
 	if (session) {
@@ -23,6 +25,19 @@ export default async function middleware(req: NextRequest) {
 				const payload = await jwtVerify(session, secret);
 				const preferredPath = (payload.payload as any).preferredDashboardPath;
 				return NextResponse.redirect(new URL(preferredPath || "/", req.url));
+			}
+
+			const redirectTo = req.cookies.get("redirect_to")?.value;
+			if (redirectTo) {
+				if (currentPath !== redirectTo) {
+					const response = NextResponse.redirect(new URL(redirectTo, req.url));
+					response.cookies.delete("redirect_to");
+					return response;
+				} else {
+					const response = NextResponse.next();
+					response.cookies.delete("redirect_to");
+					return response;
+				}
 			}
 		} catch (err) {
 			const response = NextResponse.redirect(new URL("/login", req.url));
