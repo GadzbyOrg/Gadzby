@@ -71,6 +71,7 @@ export function ShopManagerView({
 }: ShopManagerViewProps) {
 	const router = useRouter();
 	const [selectedClient, setSelectedClient] = useState<ClientData | null>(null);
+	const [searchQuery, setSearchQuery] = useState("");
 	const [clientFamss, setClientFamss] = useState<FamsData[]>([]);
 	const [cart, setCart] = useState<Record<string, number>>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -200,6 +201,7 @@ export function ShopManagerView({
 			}
 			setCart({});
 			setSelectedClient(null);
+			setSearchQuery("");
 			setIsReviewOpen(false); // Close mobile modal
 
 			setTimeout(() => setSuccess(null), 3000);
@@ -268,6 +270,8 @@ export function ShopManagerView({
 						onSelect={setSelectedClient}
 						placeholder="Rechercher un client (nom, bucque, num'ss)..."
 						className="max-w-none"
+						defaultQuery={searchQuery}
+						onInputChange={setSearchQuery}
 					/>
 				)}
 			</div>
