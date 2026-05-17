@@ -14,6 +14,8 @@ export interface UserSearchProps {
     name?: string;
     clearOnSelect?: boolean;
     searchAction?: (query: string) => Promise<{ users?: any[]; error?: string }>;
+    defaultQuery?: string;
+    onInputChange?: (query: string) => void;
 }
 
 const EMPTY_ARRAY: string[] = [];
@@ -26,9 +28,11 @@ export function UserSearch({
     inputClassName,
     name,
     clearOnSelect = true,
-    searchAction = searchUsersPublicAction
+    searchAction = searchUsersPublicAction,
+    defaultQuery = "",
+    onInputChange
 }: UserSearchProps) {
-    const [query, setQuery] = useState('');
+    const [query, setQuery] = useState(defaultQuery);
     const [results, setResults] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -149,6 +153,7 @@ export function UserSearch({
                     onChange={(e) => {
                         const val = e.target.value;
                         setQuery(val);
+                        if (onInputChange) onInputChange(val);
                         if (val.length >= 1) {
                             setIsLoading(true);
                         } else {
