@@ -2,6 +2,7 @@
 
 import { IconSearch } from "@tabler/icons-react";
 import { useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 import { cn } from "@/lib/utils";
 
@@ -18,10 +19,10 @@ function EditableQty({ qty, onCommit, className }: EditableQtyProps) {
 
 	const startEdit = () => {
 		setDraft(String(qty));
-		setEditing(true);
-		setTimeout(() => {
-			inputRef.current?.select();
-		}, 0);
+		flushSync(() => {
+			setEditing(true);
+		});
+		inputRef.current?.select();
 	};
 
 	const commit = () => {
@@ -46,7 +47,7 @@ function EditableQty({ qty, onCommit, className }: EditableQtyProps) {
 					if (e.key === "Escape") setEditing(false);
 				}}
 				className={cn(
-					"text-center font-mono font-bold text-fg bg-surface-950 border border-accent-500 rounded focus:outline-none",
+					"no-spinner text-center font-mono font-bold text-fg bg-surface-950 border border-accent-500 rounded focus:outline-none",
 					className ?? "w-8 text-sm",
 				)}
 			/>
@@ -228,31 +229,11 @@ export function ProductGrid({
 									)}
 								</div>
 								{!hasVariants && (
-									<div className="text-lg font-bold text-accent-400">
-										{(product.price / 100).toFixed(2)}€
-									</div>
-								)}
-							</div>
-
-							<div className="mt-2 flex flex-col gap-2">
-								<div className="flex items-center justify-between">
-									{!hasVariants && (
-										<div className="text-xs text-fg-subtle font-mono">
-											Stock: {product.stock.toFixed(2)}
+									<div className="flex items-center justify-between min-h-[32px]">
+										<div className="text-lg font-bold text-accent-400">
+											{(product.price / 100).toFixed(2)}€
 										</div>
-									)}
-									{hasVariants && (
-										<div className="text-xs text-fg-subtle font-mono">
-											Stock: {product.stock.toFixed(2)}
-											{product.unit === "liter"
-												? "L"
-												: product.unit === "kg"
-													? "Kg"
-													: "u"}
-										</div>
-									)}
-									{!hasVariants &&
-										(quantityInCart > 0 ? (
+										{quantityInCart > 0 && (
 											<div
 												className="flex items-center gap-2 bg-surface-950 rounded-lg p-1 border border-border shadow-sm"
 												onClick={(e) => e.stopPropagation()}
@@ -277,9 +258,13 @@ export function ProductGrid({
 													+
 												</button>
 											</div>
-										) : null)}
-								</div>
-								{hasVariants && (
+										)}
+									</div>
+								)}
+							</div>
+
+							{hasVariants && (
+								<div className="mt-2 flex flex-col gap-2">
 									<div
 										className="space-y-2 mt-1 pt-2 border-t border-border/50"
 										onClick={(e) => e.stopPropagation()}
@@ -338,8 +323,8 @@ export function ProductGrid({
 											);
 										})}
 									</div>
-								)}
-							</div>
+								</div>
+							)}
 						</div>
 					);
 				})}
@@ -387,14 +372,6 @@ export function ProductGrid({
 													{product.event.name}
 												</span>
 											)}
-										</div>
-										<div className="text-xs text-fg-subtle">
-											Stock: {product.stock.toFixed(2)}{" "}
-											{product.unit === "liter"
-												? "L"
-												: product.unit === "kg"
-													? "Kg"
-													: "u"}
 										</div>
 									</div>
 									<div
