@@ -124,6 +124,15 @@ describe('TransactionService', () => {
           expect(mockTx.insert).toHaveBeenCalled()
       })
 
+      it('should successfully top up user with a non-round amount', async () => {
+          mockTx.query.users.findFirst.mockResolvedValue({ id: targetId })
+
+          await TransactionService.topUpUser(issuerId, 'ADMIN', targetId, 2.24, 'CASH')
+
+          expect(mockTx.update).toHaveBeenCalled()
+          expect(mockTx.insert).toHaveBeenCalled()
+      })
+
       it('should throw if amount is invalid', async () => {
           await expect(
               TransactionService.topUpUser(issuerId, 'ADMIN', targetId, 0, 'CASH')
