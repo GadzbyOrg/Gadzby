@@ -33,7 +33,7 @@ export class TransactionService {
 		if (senderId === receiverId)
 			throw new Error("Transfert impossible vers soi-même");
 
-		const amountInCents = amountInEuros * 100;
+		const amountInCents = Math.round(amountInEuros * 100);
 
 		return await db.transaction(async (tx) => {
 			const sender = await tx.query.users.findFirst({
@@ -158,7 +158,8 @@ export class TransactionService {
 	) {
 		if (amountInEuros <= 0) throw new Error("Montant invalide");
 
-		const amountInCents = amountInEuros * 100;
+		const amountInCents = Math.round(amountInEuros * 100);
+
 		return await db.transaction(async (tx) => {
 			const targetUser = await tx.query.users.findFirst({
 				where: eq(users.id, targetUserId),
