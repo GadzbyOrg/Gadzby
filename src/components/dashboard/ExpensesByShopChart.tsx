@@ -121,6 +121,7 @@ export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 					outerRadius={100}
 					paddingAngle={3}
 					dataKey="value"
+					nameKey="name"
 					labelLine={false}
 					label={renderCustomizedLabel}
 				>
@@ -142,18 +143,17 @@ export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 					innerRadius={0}
 					outerRadius={0}
 					dataKey="value"
-					label={({ cx, cy }) => (
-						<CenterLabel cx={cx} cy={cy} total={total} />
-					)}
+					legendType="none"
+					label={({ cx, cy }) => <CenterLabel cx={cx} cy={cy} total={total} />}
 					labelLine={false}
 				>
 					<Cell fill="transparent" stroke="none" />
 				</Pie>
 
 				<Tooltip
-					formatter={(value) => [
+					formatter={(value, name) => [
 						`${(Number(value) || 0).toFixed(2)} €`,
-						"Dépenses",
+						name,
 					]}
 					contentStyle={{
 						backgroundColor: "#111827",
@@ -172,9 +172,7 @@ export function ExpensesByShopChart({ data }: ExpensesByShopChartProps) {
 					iconType="circle"
 					iconSize={8}
 					formatter={(value: string) => (
-						<span style={{ color: "#9ca3af", fontSize: "12px" }}>
-							{value}
-						</span>
+						<span style={{ color: "#9ca3af", fontSize: "12px" }}>{value}</span>
 					)}
 					wrapperStyle={{ paddingTop: "16px" }}
 				/>

@@ -7,10 +7,13 @@ export const createEventSchema = z.object({
 	startDate: z.date(),
 	endDate: z.date().optional().nullable(),
 	type: z.enum(["SHARED_COST", "COMMERCIAL"]),
-	acompte: z.number().min(0).optional(),
+	acompte: z.coerce.number().min(0).transform(Math.round).optional(),
 	allowSelfRegistration: z.boolean(),
-	maxParticipants: z.number().min(1).optional().nullable(),
-	customMargin: z.number().optional().nullable(),
+	maxParticipants: z.preprocess(
+		(v) => (v === "" || v === null ? undefined : v),
+		z.coerce.number().min(1).transform(Math.round).optional().nullable(),
+	),
+	customMargin: z.coerce.number().transform(Math.round).optional().nullable(),
 });
 
 export const updateEventSchema = z.object({
@@ -21,11 +24,14 @@ export const updateEventSchema = z.object({
 	startDate: z.date().optional(),
 	endDate: z.date().optional().nullable(),
 	type: z.enum(["SHARED_COST", "COMMERCIAL"]).optional(),
-	acompte: z.number().min(0).optional(),
+	acompte: z.coerce.number().min(0).transform(Math.round).optional(),
 	allowSelfRegistration: z.boolean().optional(),
-	maxParticipants: z.number().min(1).optional().nullable(),
+	maxParticipants: z.preprocess(
+		(v) => (v === "" || v === null ? undefined : v),
+		z.coerce.number().min(1).transform(Math.round).optional().nullable(),
+	),
 	status: z.enum(["DRAFT", "OPEN", "STARTED", "CLOSED", "ARCHIVED"]).optional(),
-	customMargin: z.number().optional().nullable(),
+	customMargin: z.coerce.number().transform(Math.round).optional().nullable(),
 });
 
 export const joinEventSchema = z.object({
@@ -50,7 +56,7 @@ export const eventActionSchema = z.object({
 export const updateParticipantSchema = z.object({
 	eventId: z.string(),
 	userId: z.string(),
-	weight: z.number().optional(),
+	weight: z.coerce.number().transform(Math.round).optional(),
 	status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
 });
 
@@ -65,8 +71,8 @@ export const importParticipantsListSchema = z.object({
 	data: z.array(
 		z.object({
 			identifier: z.string(),
-			weight: z.number().optional(),
-		})
+			weight: z.coerce.number().transform(Math.round).optional(),
+		}),
 	),
 });
 
@@ -90,7 +96,7 @@ export const updateEventProductPriceSchema = z.object({
 	shopId: z.string(),
 	eventId: z.string(),
 	productId: z.string(),
-	eventPrice: z.number().nullable(),
+	eventPrice: z.coerce.number().transform(Math.round).nullable(),
 });
 
 export const shopIdSchema = z.object({
@@ -101,7 +107,7 @@ export const createRevenueSchema = z.object({
 	shopId: z.string(),
 	eventId: z.string(),
 	description: z.string(),
-	amount: z.number(),
+	amount: z.coerce.number().transform(Math.round),
 });
 
 export const deleteRevenueSchema = z.object({
@@ -126,7 +132,7 @@ export const splitExpenseSchema = z.object({
 	shopId: z.string(),
 	eventId: z.string(),
 	expenseId: z.string(),
-	amount: z.number(),
+	amount: z.coerce.number().transform(Math.round),
 });
 
 export const deleteSplitSchema = z.object({
