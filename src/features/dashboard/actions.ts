@@ -4,7 +4,7 @@ import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { shops, transactions, users } from "@/db/schema";
+import { products, shops, transactions, users } from "@/db/schema";
 import { verifySession } from "@/lib/session";
 
 export async function getUserStats() {
@@ -36,8 +36,8 @@ export async function getUserStats() {
 				eq(transactions.targetUserId, session.userId),
 				eq(transactions.type, "PURCHASE"),
 				gte(transactions.createdAt, startOfMonth),
-				lt(transactions.createdAt, startOfNextMonth)
-			)
+				lt(transactions.createdAt, startOfNextMonth),
+			),
 		);
 
 	// 3. Get Expenses for Last Month
@@ -53,8 +53,8 @@ export async function getUserStats() {
 				eq(transactions.targetUserId, session.userId),
 				eq(transactions.type, "PURCHASE"),
 				gte(transactions.createdAt, startOfLastMonth),
-				lt(transactions.createdAt, startOfMonth)
-			)
+				lt(transactions.createdAt, startOfMonth),
+			),
 		);
 
 	const currentAmount = Math.abs(currentMonthExpenses[0]?.amount || 0);
@@ -81,9 +81,7 @@ export async function getUserRecentActivity() {
 	if (!session) redirect("/login");
 
 	const recentTransactions = await db.query.transactions.findMany({
-		where: and(
-			eq(transactions.targetUserId, session.userId)
-		),
+		where: and(eq(transactions.targetUserId, session.userId)),
 		with: {
 			shop: true,
 			fams: true,
@@ -115,7 +113,7 @@ export async function getUserExpensesByShop() {
 				eq(transactions.targetUserId, session.userId),
 				eq(transactions.type, "PURCHASE"),
 				eq(transactions.status, "COMPLETED"),
-			)
+			),
 		)
 		.groupBy(shops.name)
 		.orderBy(sql`sum(abs(${transactions.amount})) desc`);
@@ -148,17 +146,87 @@ export async function getUserExpensesOverTime() {
 				eq(transactions.targetUserId, session.userId),
 				eq(transactions.type, "PURCHASE"),
 				eq(transactions.status, "COMPLETED"),
-				gte(transactions.createdAt, thirtyDaysAgo)
-			)
+				gte(transactions.createdAt, thirtyDaysAgo),
+			),
 		)
 		.groupBy(sql`to_char(${transactions.createdAt}, 'YYYY-MM-DD')`)
 		.orderBy(sql`to_char(${transactions.createdAt}, 'YYYY-MM-DD') asc`);
 
-	return expensesOverTime.map(item => {
-		const [, month, day] = item.date.split('-');
+	return expensesOverTime.map((item) => {
+		const [, month, day] = item.date.split("-");
 		return {
 			date: `${day}/${month}`,
-			amount: Number(item.amount) / 100
+			amount: Number(item.amount) / 100,
 		};
 	});
+}
+
+export async function getUserTopProducts() {
+	const session = await verifySession();
+	if (!session) redirect("/login");
+
+	const topProducts = await db
+		.select({
+			name: products.name,
+			amount: sql<number>`sum(abs(${transactions.amount}))`,
+		})
+		.from(transactions)
+		.innerJoin(products, eq(transactions.productId, products.id))
+		.where(
+			and(
+				eq(transactions.targetUserId, session.userId),
+				eq(transactions.type, "PURCHASE"),
+				eq(transactions.status, "COMPLETED"),
+			),
+		)
+		.groupBy(products.id, products.name)
+		.orderBy(sql`sum(abs(${transactions.amount})) desc`)
+		.limit(5);
+
+	return topProducts.map((item) => ({
+		name: item.name,
+		amount: Number(item.amount) / 100,
+	}));
+}
+
+export async function getUserExpensesByWeekday() {
+	const session = await verifySession();
+	if (!session) redirect("/login");
+
+	// Postgres: EXTRACT(DOW) returns 0 (Sunday) .. 6 (Saturday)
+	const expensesByWeekday = await db
+		.select({
+			dow: sql<number>`extract(dow from ${transactions.createdAt})`,
+			amount: sql<number>`sum(abs(${transactions.amount}))`,
+		})
+		.from(transactions)
+		.where(
+			and(
+				eq(transactions.targetUserId, session.userId),
+				eq(transactions.type, "PURCHASE"),
+				eq(transactions.status, "COMPLETED"),
+			),
+		)
+		.groupBy(sql`extract(dow from ${transactions.createdAt})`);
+
+	const amountsByDow = new Map<number, number>();
+	for (const item of expensesByWeekday) {
+		amountsByDow.set(Number(item.dow), Number(item.amount) / 100);
+	}
+
+	// Order Monday -> Sunday. DOW: 1=Mon .. 6=Sat, 0=Sun
+	const weekdays = [
+		{ day: "Lun", dow: 1 },
+		{ day: "Mar", dow: 2 },
+		{ day: "Mer", dow: 3 },
+		{ day: "Jeu", dow: 4 },
+		{ day: "Ven", dow: 5 },
+		{ day: "Sam", dow: 6 },
+		{ day: "Dim", dow: 0 },
+	];
+
+	return weekdays.map(({ day, dow }) => ({
+		day,
+		amount: amountsByDow.get(dow) ?? 0,
+	}));
 }

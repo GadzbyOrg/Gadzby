@@ -10,14 +10,18 @@ import {
 import Link from "next/link";
 
 import { ExpensesByShopChart } from "@/components/dashboard/ExpensesByShopChart";
+import { ExpensesByWeekdayChart } from "@/components/dashboard/ExpensesByWeekdayChart";
 import { ExpensesOverTimeChart } from "@/components/dashboard/ExpensesOverTimeChart";
+import { TopProductsChart } from "@/components/dashboard/TopProductsChart";
 import { UpcomingEventsList } from "@/components/dashboard/UpcomingEventsList";
 import { TransactionTable } from "@/components/transactions/transaction-table";
 import {
 	getUserExpensesByShop,
+	getUserExpensesByWeekday,
 	getUserExpensesOverTime,
 	getUserRecentActivity,
 	getUserStats,
+	getUserTopProducts,
 } from "@/features/dashboard/actions";
 import {
 	getEnrolledEvents,
@@ -114,6 +118,8 @@ export default async function DashboardPage() {
 	const recentActivity = await getUserRecentActivity();
 	const expensesByShop = await getUserExpensesByShop();
 	const expensesOverTime = await getUserExpensesOverTime();
+	const topProducts = await getUserTopProducts();
+	const expensesByWeekday = await getUserExpensesByWeekday();
 	const { shops } = await getShops();
 
 	return (
@@ -207,6 +213,26 @@ export default async function DashboardPage() {
 					</h3>
 					<div className="h-80 w-full">
 						<ExpensesOverTimeChart data={expensesOverTime} />
+					</div>
+				</div>
+			</div>
+
+			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+				<div className="rounded-2xl border border-border bg-surface-900 p-6">
+					<h3 className="mb-6 text-lg font-semibold text-fg">
+						Produits les plus achetés
+					</h3>
+					<div className="h-80 w-full">
+						<TopProductsChart data={topProducts} />
+					</div>
+				</div>
+
+				<div className="rounded-2xl border border-border bg-surface-900 p-6">
+					<h3 className="mb-6 text-lg font-semibold text-fg">
+						Dépenses par jour de la semaine
+					</h3>
+					<div className="h-80 w-full">
+						<ExpensesByWeekdayChart data={expensesByWeekday} />
 					</div>
 				</div>
 			</div>
