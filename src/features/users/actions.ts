@@ -306,7 +306,8 @@ export const hardDeleteUserAction = authenticatedAction(
 		} catch (error) {
 			return { error: error instanceof Error ? error.message : "Erreur lors de la suppression" };
 		}
-	}
+	},
+	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
 export const toggleUserStatusAction = authenticatedAction(
