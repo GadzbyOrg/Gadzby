@@ -104,6 +104,10 @@ export function NewOperationView() {
             return;
         }
 
+        if (!confirm(`Voulez-vous vraiment débiter ${selectedUsers.size} utilisateur(s) de ${amount}€ ?`)) {
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             const res = await processMassChargeAction({

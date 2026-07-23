@@ -10,14 +10,18 @@ import {
 import Link from "next/link";
 
 import { ExpensesByShopChart } from "@/components/dashboard/ExpensesByShopChart";
+import { ExpensesByWeekdayChart } from "@/components/dashboard/ExpensesByWeekdayChart";
 import { ExpensesOverTimeChart } from "@/components/dashboard/ExpensesOverTimeChart";
+import { TopProductsChart } from "@/components/dashboard/TopProductsChart";
 import { UpcomingEventsList } from "@/components/dashboard/UpcomingEventsList";
 import { TransactionTable } from "@/components/transactions/transaction-table";
 import {
 	getUserExpensesByShop,
+	getUserExpensesByWeekday,
 	getUserExpensesOverTime,
 	getUserRecentActivity,
 	getUserStats,
+	getUserTopProducts,
 } from "@/features/dashboard/actions";
 import {
 	getEnrolledEvents,
@@ -33,6 +37,7 @@ interface StatCardProps {
 	icon: React.ElementType;
 	color: string;
 	trend?: number;
+	href?: string;
 }
 
 function StatCard({
@@ -42,9 +47,10 @@ function StatCard({
 	icon: Icon,
 	color,
 	trend,
+	href,
 }: StatCardProps) {
-	return (
-		<div className="group relative overflow-hidden rounded-2xl border border-border bg-surface-900 p-6 transition-all hover:border-border hover:shadow-xl hover:shadow-black/20">
+	const content = (
+		<div className="group relative h-full overflow-hidden rounded-2xl border border-border bg-surface-900 p-6 transition-all hover:border-border hover:shadow-xl hover:shadow-black/20">
 			<div className="flex items-start justify-between">
 				<div>
 					<p className="text-sm font-medium text-fg-muted">{title}</p>
@@ -78,6 +84,16 @@ function StatCard({
 			<div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-accent-600/10 blur-2xl transition-all group-hover:bg-accent-600/20" />
 		</div>
 	);
+
+	if (href) {
+		return (
+			<Link href={href} className="block">
+				{content}
+			</Link>
+		);
+	}
+
+	return content;
 }
 
 async function EventsSection() {
@@ -102,6 +118,8 @@ export default async function DashboardPage() {
 	const recentActivity = await getUserRecentActivity();
 	const expensesByShop = await getUserExpensesByShop();
 	const expensesOverTime = await getUserExpensesOverTime();
+	const topProducts = await getUserTopProducts();
+	const expensesByWeekday = await getUserExpensesByWeekday();
 	const { shops } = await getShops();
 
 	return (
@@ -128,6 +146,7 @@ export default async function DashboardPage() {
 					sub="Disponible"
 					icon={IconWallet}
 					color="bg-blue-500/10 text-blue-500"
+					href="/topup"
 				/>
 				<StatCard
 					title="Dépenses ce mois"
@@ -136,6 +155,7 @@ export default async function DashboardPage() {
 					trend={stats.percentageChange}
 					icon={IconShoppingBag}
 					color="bg-accent-500/10 text-accent-500"
+					href="/transactions"
 				/>
 			</div>
 
@@ -193,6 +213,26 @@ export default async function DashboardPage() {
 					</h3>
 					<div className="h-80 w-full">
 						<ExpensesOverTimeChart data={expensesOverTime} />
+					</div>
+				</div>
+			</div>
+
+			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+				<div className="rounded-2xl border border-border bg-surface-900 p-6">
+					<h3 className="mb-6 text-lg font-semibold text-fg">
+						Produits les plus achetés
+					</h3>
+					<div className="h-80 w-full">
+						<TopProductsChart data={topProducts} />
+					</div>
+				</div>
+
+				<div className="rounded-2xl border border-border bg-surface-900 p-6">
+					<h3 className="mb-6 text-lg font-semibold text-fg">
+						Dépenses par jour de la semaine
+					</h3>
+					<div className="h-80 w-full">
+						<ExpensesByWeekdayChart data={expensesByWeekday} />
 					</div>
 				</div>
 			</div>

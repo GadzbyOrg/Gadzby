@@ -82,6 +82,28 @@ export async function deleteShopExpense(slug: string, expenseId: string) {
 	}
 }
 
+export async function createShopExpenseFromForm(slug: string, formData: FormData) {
+	const description = formData.get("description") as string;
+	const amountStr = formData.get("amount") as string;
+	const dateStr = formData.get("date") as string;
+
+	if (!description || !amountStr || !dateStr) {
+		return { error: "Champs manquants" };
+	}
+
+	const amount = Math.round(parseFloat(amountStr) * 100); // Euros to cents
+
+	let date = new Date(dateStr);
+	const now = new Date();
+	// If the user selected "today", use the current timestamp
+	// We use UTC date comparison as dateStr is YYYY-MM-DD
+	if (dateStr === now.toISOString().split("T")[0]) {
+		date = now;
+	}
+
+	return createShopExpense(slug, { description, amount, date });
+}
+
 export async function getShopExpenses(slug: string) {
 	const session = await verifySession();
 	if (!session) return { error: "Non autorisé" };

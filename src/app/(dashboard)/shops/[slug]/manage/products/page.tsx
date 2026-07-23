@@ -7,6 +7,7 @@ import { importProducts } from "@/features/shops/import";
 import { getShopCategories, getShopProducts } from "@/features/shops/products";
 
 import { ProductFilters } from "./_components/ProductFilters";
+import { ProductSortModeSelector } from "./_components/ProductSortModeSelector";
 import { SortableProductList } from "./_components/SortableProductList";
 
 export default async function ShopProductsPage({
@@ -34,14 +35,6 @@ export default async function ShopProductsPage({
 		typeof resolvedSearchParams.category === "string"
 			? resolvedSearchParams.category
 			: undefined;
-	const sortBy =
-		typeof resolvedSearchParams.sortBy === "string"
-			? (resolvedSearchParams.sortBy as "name" | "price" | "stock")
-			: undefined;
-	const sortOrder =
-		typeof resolvedSearchParams.sortOrder === "string"
-			? (resolvedSearchParams.sortOrder as "asc" | "desc")
-			: undefined;
 
 	// Fetch filters, shop and products in parallel
 	const [shopResult, productsResult, categoriesResult] = await Promise.all([
@@ -49,10 +42,8 @@ export default async function ShopProductsPage({
 		getShopProducts(slug, {
 			categoryId,
 			search,
-			sortBy,
-			sortOrder
 		}),
-		getShopCategories(slug)
+		getShopCategories(slug),
 	]);
 
 	if ("error" in shopResult || !shopResult.shop) {
@@ -68,8 +59,7 @@ export default async function ShopProductsPage({
 	const { categories } = categoriesResult || { categories: [] };
 
 	// Disable reordering if any filter is active
-	const isFiltered = !!categoryId || !!search || !!sortBy;
-
+	const isFiltered = !!categoryId || !!search;
 
 	return (
 		<div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
@@ -112,8 +102,14 @@ export default async function ShopProductsPage({
 			</header>
 
 			<div className="bg-surface-900 border border-border rounded-2xl p-4">
+				<ProductSortModeSelector shopSlug={slug} />
 				<ProductFilters />
-				<SortableProductList products={products} categories={categories} shopSlug={slug} disableReorder={isFiltered} />
+				<SortableProductList
+					products={products}
+					categories={categories}
+					shopSlug={slug}
+					disableReorder={isFiltered}
+				/>
 			</div>
 		</div>
 	);
