@@ -416,7 +416,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 										Évolution du chiffre d'affaires
 									</h3>
 									<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
-										<div className="min-w-[600px] h-full">
+										<div className="min-w-[600px] h-[320px]">
 											<ResponsiveContainer width="100%" height="100%">
 												<AreaChart
 													data={data.chartData}
@@ -478,7 +478,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 															marginBottom: "0.25rem",
 														}}
 														labelFormatter={(label) =>
-															new Date(label).toLocaleDateString("fr-FR", {
+															new Date(String(label)).toLocaleDateString("fr-FR", {
 																weekday: "long",
 																year: "numeric",
 																month: "long",
@@ -513,7 +513,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 										</p>
 									) : (
 										<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
-											<div className="min-w-[300px] h-full">
+											<div className="min-w-[300px] h-[320px]">
 												<ResponsiveContainer width="100%" height="100%">
 													<BarChart
 														data={categoryStats}
@@ -576,7 +576,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 											</p>
 										) : (
 											<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
-												<div className="min-w-[300px] h-full">
+												<div className="min-w-[300px] h-[320px]">
 													<ResponsiveContainer width="100%" height="100%">
 														<BarChart
 															data={groupedData}
@@ -620,7 +620,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 																	"",
 																]}
 																labelFormatter={(label) =>
-																	formatPeriodLabel(label, granularity)
+																	formatPeriodLabel(String(label), granularity)
 																}
 																labelStyle={{
 																	color: "#9ca3af",

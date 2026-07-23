@@ -48,7 +48,7 @@
     "react-day-picker": "^9.14.0",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.69.0",
-    "recharts": "^3.6.0",
+    "recharts": "^3.10.0",
     "resend": "^6.6.0",
     "tailwind-merge": "^3.4.0",
     "tesseract.js": "^7.0.0",
