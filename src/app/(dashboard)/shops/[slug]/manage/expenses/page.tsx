@@ -4,14 +4,14 @@ import { notFound, redirect } from "next/navigation";
 
 import { checkTeamMemberAccess, getShopBySlug } from "@/features/shops/actions";
 import {
-	createShopExpense,
-	deleteShopExpense,
+	createShopExpenseFromForm,
 	getShopExpenses,
 } from "@/features/shops/expenses";
 import { getPennylaneConfig } from "@/features/shops/pennylane-actions";
 
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import { DeleteExpenseButton } from "./_components/delete-expense-button";
 import { PennylaneImportModal } from "./_components/pennylane-import-modal";
 
 export default async function ShopExpensesPage({
@@ -48,30 +48,7 @@ export default async function ShopExpensesPage({
 
 	async function addExpense(formData: FormData) {
 		"use server";
-		const description = formData.get("description") as string;
-		const amountStr = formData.get("amount") as string;
-		const dateStr = formData.get("date") as string;
-
-		if (!description || !amountStr || !dateStr) return;
-
-		const amount = Math.round(parseFloat(amountStr) * 100); // Euros to cents
-
-		let date = new Date(dateStr);
-		const now = new Date();
-		// If the user selected "today", use the current timestamp
-		// We use UTC date comparison as dateStr is YYYY-MM-DD
-		if (dateStr === now.toISOString().split("T")[0]) {
-			date = now;
-		}
-
-		await createShopExpense(slug, { description, amount, date });
-	}
-
-	async function removeExpense(formData: FormData) {
-		"use server";
-		const id = formData.get("id") as string;
-		if (!id) return;
-		await deleteShopExpense(slug, id);
+		await createShopExpenseFromForm(slug, formData);
 	}
 
 	// Calculate total
@@ -205,15 +182,13 @@ export default async function ShopExpensesPage({
 													{(expense.amount / 100).toFixed(2)} €
 												</td>
 												<td className="px-6 py-4 text-right whitespace-nowrap">
-													<form action={removeExpense}>
-														<input type="hidden" name="id" value={expense.id} />
-														<button
-															className="text-red-400 hover:text-red-300 hover:underline text-xs"
-															type="submit"
-														>
-															Supprimer
-														</button>
-													</form>
+													<DeleteExpenseButton
+														slug={slug}
+														expenseId={expense.id}
+														className="text-red-400 hover:text-red-300 hover:underline text-xs"
+													>
+														Supprimer
+													</DeleteExpenseButton>
 												</td>
 											</tr>
 										))
@@ -257,15 +232,13 @@ export default async function ShopExpensesPage({
 													{(expense.amount / 100).toFixed(2)} €
 												</div>
 												<div className="mt-1 flex gap-2 justify-end z-20 relative">
-													<form action={removeExpense}>
-														<input type="hidden" name="id" value={expense.id} />
-														<button
+														<DeleteExpenseButton
+															slug={slug}
+															expenseId={expense.id}
 															className="text-red-400 hover:text-red-300 hover:bg-red-400/10 px-2 py-1 rounded transition-colors text-xs font-medium"
-															type="submit"
 														>
 															Suppr.
-														</button>
-													</form>
+														</DeleteExpenseButton>
 												</div>
 											</div>
 										</div>
