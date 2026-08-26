@@ -96,6 +96,7 @@ interface ProductGridProps {
 	categories: Category[];
 	onAddToCart: (product: Product, quantity: number, variantId?: string) => void;
 	cart: Record<string, number>;
+	readOnly?: boolean;
 }
 
 export function ProductGrid({
@@ -103,6 +104,7 @@ export function ProductGrid({
 	categories,
 	onAddToCart,
 	cart,
+	readOnly = false,
 }: ProductGridProps) {
 	const [selectedCategory, setSelectedCategory] = useState<string>("all");
 	const [searchQuery, setSearchQuery] = useState("");
@@ -188,6 +190,7 @@ export function ProductGrid({
 									: "bg-surface-900 border-border hover:border-border",
 							)}
 							onClick={() => {
+								if (readOnly) return;
 								if (hasVariants) {
 									// Do nothing on main card click if variants exist
 								} else {
@@ -233,7 +236,7 @@ export function ProductGrid({
 										<div className="text-lg font-bold text-accent-400">
 											{(product.price / 100).toFixed(2)}€
 										</div>
-										{quantityInCart > 0 && (
+										{!readOnly && quantityInCart > 0 && (
 											<div
 												className="flex items-center gap-2 bg-surface-950 rounded-lg p-1 border border-border shadow-sm"
 												onClick={(e) => e.stopPropagation()}
@@ -288,7 +291,7 @@ export function ProductGrid({
 														</span>
 													</div>
 													<div className="flex items-center gap-1 shrink-0">
-														{vQty > 0 ? (
+														{readOnly ? null : vQty > 0 ? (
 															<>
 																<button
 																	className="h-7 w-7 rounded bg-elevated hover:bg-red-500/20 hover:text-red-400 text-fg-muted flex items-center justify-center transition-colors"
@@ -332,10 +335,15 @@ export function ProductGrid({
 
 			{/* Desktop List View (>= md) */}
 			<div className="hidden md:block bg-surface-900 rounded-xl border border-border overflow-hidden">
-				<div className="grid grid-cols-[1fr_80px_120px] gap-4 p-4 text-xs font-semibold text-fg-muted uppercase tracking-wider border-b border-border">
+				<div
+					className={cn(
+						"grid gap-4 p-4 text-xs font-semibold text-fg-muted uppercase tracking-wider border-b border-border",
+						readOnly ? "grid-cols-[1fr_120px]" : "grid-cols-[1fr_80px_120px]",
+					)}
+				>
 					<div>Produit</div>
 					<div className="text-right">Prix</div>
-					<div className="text-center">Commande</div>
+					{!readOnly && <div className="text-center">Commande</div>}
 				</div>
 
 				<div className="divide-y divide-border">
@@ -350,7 +358,8 @@ export function ProductGrid({
 							>
 								<div
 									className={cn(
-										"grid grid-cols-[1fr_80px_120px] gap-4 p-4 items-center transition-colors",
+										"grid gap-4 p-4 items-center transition-colors",
+										readOnly ? "grid-cols-[1fr_120px]" : "grid-cols-[1fr_80px_120px]",
 										hasVariants ? "bg-surface-900/50" : "hover:bg-elevated/50",
 									)}
 								>
@@ -387,32 +396,34 @@ export function ProductGrid({
 												? "/ Kg"
 												: ""}
 									</div>
-									<div className="flex items-center justify-center gap-2">
-										{/* If variants, don't show main controls */}
-										{!hasVariants && (
-											<>
-												<button
-													className="h-8 w-8 rounded bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border"
-													onClick={() => onAddToCart(product, -1)}
-												>
-													-
-												</button>
-												<EditableQty
-													qty={quantityInCart}
-													onCommit={(n) =>
-														onAddToCart(product, n - quantityInCart)
-													}
-													className="w-8 text-base"
-												/>
-												<button
-													className="h-8 w-8 rounded bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border"
-													onClick={() => onAddToCart(product, 1)}
-												>
-													+
-												</button>
-											</>
-										)}
-									</div>
+									{!readOnly && (
+										<div className="flex items-center justify-center gap-2">
+											{/* If variants, don't show main controls */}
+											{!hasVariants && (
+												<>
+													<button
+														className="h-8 w-8 rounded bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border"
+														onClick={() => onAddToCart(product, -1)}
+													>
+														-
+													</button>
+													<EditableQty
+														qty={quantityInCart}
+														onCommit={(n) =>
+															onAddToCart(product, n - quantityInCart)
+														}
+														className="w-8 text-base"
+													/>
+													<button
+														className="h-8 w-8 rounded bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border"
+														onClick={() => onAddToCart(product, 1)}
+													>
+														+
+													</button>
+												</>
+											)}
+										</div>
+									)}
 								</div>
 								{hasVariants && (
 									<div className="bg-surface-900/30 px-4 pb-4 space-y-2">
@@ -424,7 +435,10 @@ export function ProductGrid({
 											return (
 												<div
 													key={v.id}
-													className="grid grid-cols-[1fr_80px_120px] gap-4 py-3 px-4 items-center bg-elevated/40 rounded-lg border border-border/50"
+													className={cn(
+														"grid gap-4 py-3 px-4 items-center bg-elevated/40 rounded-lg border border-border/50",
+														readOnly ? "grid-cols-[1fr_120px]" : "grid-cols-[1fr_80px_120px]",
+													)}
 												>
 													<div className="flex items-center gap-3">
 														<div className="w-1.5 h-8 bg-accent-600/50 rounded-full"></div>
@@ -435,27 +449,29 @@ export function ProductGrid({
 													<div className="text-right font-mono text-sm font-bold text-accent-400">
 														{(vPrice / 100).toFixed(2)}€
 													</div>
-													<div className="flex items-center justify-center gap-3">
-														<button
-															className="h-8 w-8 rounded-lg bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border text-lg leading-none pb-1"
-															onClick={() => onAddToCart(product, -1, v.id)}
-														>
-															-
-														</button>
-														<EditableQty
-															qty={vQty}
-															onCommit={(n) =>
-																onAddToCart(product, n - vQty, v.id)
-															}
-															className="w-8 text-base"
-														/>
-														<button
-															className="h-8 w-8 rounded-lg bg-accent-600 hover:bg-accent-500 text-fg flex items-center justify-center text-lg leading-none pb-1 shadow-lg shadow-accent-900/20"
-															onClick={() => onAddToCart(product, 1, v.id)}
-														>
-															+
-														</button>
-													</div>
+													{!readOnly && (
+														<div className="flex items-center justify-center gap-3">
+															<button
+																className="h-8 w-8 rounded-lg bg-elevated hover:bg-elevated text-fg flex items-center justify-center border border-border text-lg leading-none pb-1"
+																onClick={() => onAddToCart(product, -1, v.id)}
+															>
+																-
+															</button>
+															<EditableQty
+																qty={vQty}
+																onCommit={(n) =>
+																	onAddToCart(product, n - vQty, v.id)
+																}
+																className="w-8 text-base"
+															/>
+															<button
+																className="h-8 w-8 rounded-lg bg-accent-600 hover:bg-accent-500 text-fg flex items-center justify-center text-lg leading-none pb-1 shadow-lg shadow-accent-900/20"
+																onClick={() => onAddToCart(product, 1, v.id)}
+															>
+																+
+															</button>
+														</div>
+													)}
 												</div>
 											);
 										})}

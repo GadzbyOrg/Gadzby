@@ -12,7 +12,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { transactions } from "@/db/schema";
+import { transactions, users } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
 import { TransactionService } from "@/services/transaction-service";
 
@@ -56,7 +56,7 @@ export const getUserTransactionsAction = authenticatedAction(
 export const getAllTransactionsAction = authenticatedAction(
 	transactionQuerySchema,
 	async (data) => {
-		const { page, limit, search, type, sort, startDate, endDate } = data;
+		const { page, limit, search, type, status, sort, startDate, endDate } = data;
 		const offset = (page - 1) * limit;
 
         const start = startDate ? new Date(startDate) : undefined;
@@ -69,19 +69,25 @@ export const getAllTransactionsAction = authenticatedAction(
 			undefined, // No limit on base where generation
 			undefined,
             start,
-            end
+            end,
+            undefined,
+            status
 		);
 
         // STAGE 1: Get the "Visual Rows" (Group Keys)
         // Groups often share groupId. Singles have null groupId.
         // We want to paginate on the unique entities (Group or Single).
         
-        let orderByClause = desc(sql`MAX(${transactions.createdAt})`);
-        if (sort === "DATE_ASC") orderByClause = asc(sql`MAX(${transactions.createdAt})`);
+        let orderByClause = [desc(sql`MAX(${transactions.createdAt})`)];
+        if (sort === "DATE_ASC") orderByClause = [asc(sql`MAX(${transactions.createdAt})`)];
         // Note: Sort by Amount is tricky with grouping, currently defaulting to Date for grouping structure
         // If sorting by Amount is strictly required for groups, we'd need SUM(amount).
-        if (sort === "AMOUNT_DESC") orderByClause = desc(sql`SUM(${transactions.amount})`);
-        if (sort === "AMOUNT_ASC") orderByClause = asc(sql`SUM(${transactions.amount})`);
+        if (sort === "AMOUNT_DESC") orderByClause = [desc(sql`SUM(${transactions.amount})`)];
+        if (sort === "AMOUNT_ASC") orderByClause = [asc(sql`SUM(${transactions.amount})`)];
+        if (sort === "TYPE_DESC") orderByClause = [desc(sql`MIN(${transactions.type})`)];
+        if (sort === "TYPE_ASC") orderByClause = [asc(sql`MIN(${transactions.type})`)];
+        if (sort === "USER_DESC") orderByClause = [desc(sql`MIN(${users.nom})`), desc(sql`MIN(${users.prenom})`)];
+        if (sort === "USER_ASC") orderByClause = [asc(sql`MIN(${users.nom})`), asc(sql`MIN(${users.prenom})`)];
 
 
 		// STAGE 0: Count Total "Visual Rows" (Groups) for Pagination
@@ -99,9 +105,10 @@ export const getAllTransactionsAction = authenticatedAction(
                 key: sql`COALESCE(${transactions.groupId}::text, ${transactions.id}::text)`.mapWith(String),
             })
             .from(transactions)
+            .leftJoin(users, eq(transactions.targetUserId, users.id))
             .where(queryOptions.where)
             .groupBy(sql`COALESCE(${transactions.groupId}::text, ${transactions.id}::text)`)
-            .orderBy(orderByClause)
+            .orderBy(...orderByClause)
             .limit(limit)
             .offset(offset);
 

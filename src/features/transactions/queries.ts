@@ -11,7 +11,8 @@ export async function getTransactionsQuery(
     offset?: number,
     startDate?: Date,
     endDate?: Date,
-    eventId?: string
+    eventId?: string,
+    status = "ALL"
 ) {
     const whereConditions = [];
 
@@ -49,6 +50,11 @@ export async function getTransactionsQuery(
         whereConditions.push(eq(transactions.type, type as "PURCHASE" | "TRANSFER" | "TOPUP" | "ADJUSTMENT" | "REFUND"));
     }
 
+    // Filter by Status
+    if (status !== "ALL") {
+        whereConditions.push(eq(transactions.status, status as "COMPLETED" | "PENDING" | "FAILED" | "CANCELLED"));
+    }
+
     // Filter by Date
     if (startDate) {
         whereConditions.push(gte(transactions.createdAt, startDate));
@@ -67,6 +73,8 @@ export async function getTransactionsQuery(
     if (sort === "DATE_ASC") orderByClause = [asc(transactions.createdAt)];
     if (sort === "AMOUNT_DESC") orderByClause = [desc(transactions.amount)];
     if (sort === "AMOUNT_ASC") orderByClause = [asc(transactions.amount)];
+    if (sort === "TYPE_DESC") orderByClause = [desc(transactions.type)];
+    if (sort === "TYPE_ASC") orderByClause = [asc(transactions.type)];
 
     return {
         where: and(...whereConditions),

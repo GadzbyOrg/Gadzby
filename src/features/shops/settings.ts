@@ -36,7 +36,9 @@ export const updateShop = authenticatedAction(
 
 		await ShopService.update(shop.id, data);
 
+    revalidatePath('/shops/');
 		revalidatePath(`/shops/${slug}`);
+		revalidatePath(`/shops/${slug}/self-service`);
 		revalidatePath(`/shops/${slug}/manage/settings`);
 		return { success: true };
 	}
@@ -45,7 +47,7 @@ export const updateShop = authenticatedAction(
 export const toggleShopStatusAction = authenticatedAction(
     toggleShopStatusSchema,
     async ({ shopId, isActive }, { session }) => {
-        
+
         if (
             !session.permissions.includes("ADMIN_ACCESS") &&
             !session.permissions.includes("MANAGE_SHOPS")

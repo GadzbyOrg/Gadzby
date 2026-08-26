@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { famsMembers,famss } from "@/db/schema";
+import { famsMembers, famsRequests, famss } from "@/db/schema";
 
 async function main() {
 	console.log("🌱 Seeding Fam'ss...");
@@ -99,6 +99,26 @@ async function main() {
 	}
 
 	console.log("✅ Fam'ss seeded.");
+
+	// Pending join request (covers the request UI / admin review flow)
+	const baratheon = await db.query.famss.findFirst({
+		where: eq(famss.name, "Baratheon"),
+	});
+	const viserys = getU("viserys");
+	if (baratheon && viserys) {
+		const existingRequest = await db.query.famsRequests.findFirst({
+			where: (t, { and, eq }) =>
+				and(eq(t.famsId, baratheon.id), eq(t.userId, viserys.id)),
+		});
+		if (!existingRequest) {
+			await db.insert(famsRequests).values({
+				famsId: baratheon.id,
+				userId: viserys.id,
+			});
+			console.log("  + Pending Fam'ss request: viserys -> Baratheon");
+		}
+	}
+
 	process.exit(0);
 }
 

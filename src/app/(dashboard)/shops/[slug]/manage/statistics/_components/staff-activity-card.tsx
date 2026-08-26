@@ -37,7 +37,7 @@ export function StaffActivityCard({ data, loading }: StaffActivityCardProps) {
 			<h3 className="text-lg font-medium text-fg mb-4">
 				Boul&apos;c le plus actif
 			</h3>
-			<div className="flex-1 overflow-auto space-y-4 pr-1">
+			<div className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 pr-1">
 				{data.length === 0 ? (
 					<p className="text-fg-subtle text-sm">Aucune activité</p>
 				) : (

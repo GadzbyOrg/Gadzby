@@ -8,8 +8,6 @@ import {
 	IconSearch,
 	IconTrash,
 } from "@tabler/icons-react";
-// ... existing imports
-import { IconCalendar } from "@tabler/icons-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { useDebouncedCallback } from "use-debounce";
@@ -81,15 +79,20 @@ export function TransactionToolbar() {
 		replace(`${pathname}?${params.toString()}`);
 	};
 
-	const handleSort = (sort: string) => {
+	const handleStatusFilter = (status: string) => {
 		const params = new URLSearchParams(searchParams);
-		params.set("sort", sort);
+		if (status !== "ALL") {
+			params.set("status", status);
+		} else {
+			params.delete("status");
+		}
+		params.set("page", "1");
 		replace(`${pathname}?${params.toString()}`);
 	};
 
 	const activeFilterCount = [
 		searchParams.get("type") && searchParams.get("type") !== "ALL",
-		searchParams.get("sort") && searchParams.get("sort") !== "DATE_DESC",
+		searchParams.get("status") && searchParams.get("status") !== "ALL",
 		searchParams.get("startDate"),
 		searchParams.get("endDate"),
 	].filter(Boolean).length;
@@ -146,17 +149,18 @@ export function TransactionToolbar() {
 					</div>
 					<div className="flex-1 md:w-44">
 						<Select
-							defaultValue={searchParams.get("sort")?.toString() || "DATE_DESC"}
-							onValueChange={handleSort}
+							defaultValue={searchParams.get("status")?.toString() || "ALL"}
+							onValueChange={handleStatusFilter}
 						>
 							<SelectTrigger>
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="DATE_DESC">Date (récent)</SelectItem>
-								<SelectItem value="DATE_ASC">Date (ancien)</SelectItem>
-								<SelectItem value="AMOUNT_DESC">Montant (décr.)</SelectItem>
-								<SelectItem value="AMOUNT_ASC">Montant (crois.)</SelectItem>
+								<SelectItem value="ALL">Tous les statuts</SelectItem>
+								<SelectItem value="COMPLETED">Complété</SelectItem>
+								<SelectItem value="PENDING">En attente</SelectItem>
+								<SelectItem value="FAILED">Échoué</SelectItem>
+								<SelectItem value="CANCELLED">Annulé</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -470,7 +474,7 @@ export function CancelGroupButton({
 			<button
 				onClick={onCancel}
 				disabled={isPending}
-				className="flex items-center gap-2 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded text-xs font-medium transition-colors disabled:opacity-50 border border-red-500/20"
+				className="flex gap-1.5 px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded text-xs font-medium transition-colors disabled:opacity-50 border border-red-500/20"
 				title="Annuler tout le groupe"
 			>
 				{isPending ? (
@@ -478,7 +482,6 @@ export function CancelGroupButton({
 				) : (
 					<IconTrash className="w-3 h-3" />
 				)}
-				Annuler le groupe
 			</button>
 			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 		</>
@@ -496,6 +499,8 @@ export function AdminTransactionTable({ transactions, totalCount }: { transactio
 	const { replace } = useRouter();
 
 	const page = Number(searchParams.get("page")) || 1;
+	const pageSize = Number(searchParams.get("limit")) || 50;
+	const sort = searchParams.get("sort") || "DATE_DESC";
 
 	const setPage = (p: number | ((prev: number) => number)) => {
 		const newPage = typeof p === "function" ? p(page) : p;
@@ -504,14 +509,33 @@ export function AdminTransactionTable({ transactions, totalCount }: { transactio
 		replace(`${pathname}?${params.toString()}`);
 	};
 
+	const handleSortChange = (next: string | null) => {
+		const params = new URLSearchParams(searchParams);
+		params.set("sort", next ?? "DATE_DESC");
+		params.set("page", "1");
+		replace(`${pathname}?${params.toString()}`);
+	};
+
+	const handlePageSizeChange = (size: number) => {
+		const params = new URLSearchParams(searchParams);
+		params.set("limit", size.toString());
+		params.set("page", "1");
+		replace(`${pathname}?${params.toString()}`);
+	};
+
 	return (
 		<TransactionTable
 			transactions={transactions}
 			isAdmin={true}
+			sortable
+			sort={sort}
+			onSortChange={handleSortChange}
 			pagination={{
 				page,
 				setPage,
-				total: totalCount
+				total: totalCount,
+				pageSize,
+				onPageSizeChange: handlePageSizeChange,
 			}}
 		/>
 	);

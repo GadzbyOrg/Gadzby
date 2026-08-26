@@ -66,6 +66,7 @@ export const getShops = authenticatedActionNoInput(async ({ session }) => {
 			!!membership ||
 			session.permissions.includes("ADMIN_ACCESS") ||
 			session.permissions.includes("MANAGE_SHOPS") ||
+			shop.isCatalogPublic ||
 			(shop.isSelfServiceEnabled && shop.products.length > 0);
 
 		const canManage = Object.values(permissions).some(Boolean);
