@@ -3,13 +3,19 @@
 import {
 	IconAlertTriangle,
 	IconArrowDownLeft,
+	IconArrowsSort,
 	IconArrowUpRight,
 	IconChevronDown,
+	IconChevronLeft,
 	IconChevronRight,
+	IconChevronsLeft,
+	IconChevronsRight,
 	IconClock,
 	IconCoins,
 	IconRefresh,
 	IconShoppingBag,
+	IconSortAscending,
+	IconSortDescending,
 	IconStack,
 	IconUser,
 	IconWallet,
@@ -18,6 +24,8 @@ import { useMemo, useState } from "react";
 
 import { CancelGroupButton, TransactionActions } from "@/app/(dashboard)/admin/transaction-components";
 import { cn } from "@/lib/utils";
+
+import { getActorLabels, TransactionDetailDrawer } from "./transaction-detail-drawer";
 
 export interface TransactionWithRelations {
 	id: string;
@@ -30,10 +38,10 @@ export interface TransactionWithRelations {
 	groupId?: string | null;
 	group_id?: string | null;
 	walletSource: "PERSONAL" | "FAMILY";
-	shop?: { name: string } | null;
+	shop?: { id?: string; name: string; slug?: string } | null;
 	product?: { name: string } | null;
 	issuer?: { id: string; prenom: string; nom: string; username?: string } | null;
-	receiverUser?: { prenom: string; nom: string; username?: string } | null;
+	receiverUser?: { id?: string; prenom: string; nom: string; username?: string } | null;
 	targetUser?: { id: string; prenom: string; nom: string; username?: string } | null;
 	fams?: { name: string } | null;
 }
@@ -41,6 +49,8 @@ export interface TransactionWithRelations {
 type GroupedTransactionItem =
 	| { type: "SINGLE"; data: TransactionWithRelations }
 	| { type: "GROUP"; groupId: string; data: TransactionWithRelations; items: TransactionWithRelations[] };
+
+type SortColumn = "date" | "amount" | "type" | "user";
 
 interface TransactionTableProps {
 	transactions: TransactionWithRelations[];
@@ -51,7 +61,90 @@ interface TransactionTableProps {
 		setPage: (p: number | ((prev: number) => number)) => void;
 		total?: number;
 		hasMore?: boolean;
+		pageSize?: number;
+		onPageSizeChange?: (size: number) => void;
 	};
+	sortable?: boolean;
+	sort?: string | null;
+	onSortChange?: (next: string | null) => void;
+}
+
+const SORT_PREFIX: Record<SortColumn, string> = {
+	date: "DATE",
+	amount: "AMOUNT",
+	type: "TYPE",
+	user: "USER",
+};
+
+function nextSortValue(current: string | null | undefined, column: SortColumn) {
+	const prefix = SORT_PREFIX[column];
+	if (current === `${prefix}_DESC`) return `${prefix}_ASC`;
+	if (current === `${prefix}_ASC`) return null;
+	return `${prefix}_DESC`;
+}
+
+function getSortState(sort: string | null | undefined, column: SortColumn): "asc" | "desc" | null {
+	const prefix = SORT_PREFIX[column];
+	if (sort === `${prefix}_ASC`) return "asc";
+	if (sort === `${prefix}_DESC`) return "desc";
+	return null;
+}
+
+function SortHeader({
+	label,
+	column,
+	align = "left",
+	sort,
+	sortable,
+	onSortChange,
+}: {
+	label: string;
+	column: SortColumn;
+	align?: "left" | "right";
+	sort?: string | null;
+	sortable?: boolean;
+	onSortChange?: (next: string | null) => void;
+}) {
+	const state = getSortState(sort, column);
+
+	if (!sortable) {
+		return (
+			<th className={cn(
+				"px-4 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider whitespace-nowrap",
+				align === "right" ? "text-right" : "text-left",
+			)}>
+				{label}
+			</th>
+		);
+	}
+
+	return (
+		<th
+			className={cn(
+				"px-4 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider whitespace-nowrap select-none",
+				align === "right" ? "text-right" : "text-left",
+			)}
+		>
+			<button
+				type="button"
+				onClick={() => onSortChange?.(nextSortValue(sort, column))}
+				className={cn(
+					"group inline-flex items-center gap-1.5 uppercase tracking-wider hover:text-fg transition-colors",
+					state && "text-fg",
+					align === "right" && "flex-row-reverse",
+				)}
+			>
+				{label}
+				{state === "desc" ? (
+					<IconSortDescending className="w-3.5 h-3.5 text-accent-400" />
+				) : state === "asc" ? (
+					<IconSortAscending className="w-3.5 h-3.5 text-accent-400" />
+				) : (
+					<IconArrowsSort className="w-3.5 h-3.5 opacity-30 group-hover:opacity-70 transition-opacity" />
+				)}
+			</button>
+		</th>
+	);
 }
 
 export function TransactionTable({
@@ -59,7 +152,12 @@ export function TransactionTable({
 	loading = false,
 	isAdmin = false,
 	pagination,
+	sortable = false,
+	sort,
+	onSortChange,
 }: TransactionTableProps) {
+	const [selected, setSelected] = useState<TransactionWithRelations | null>(null);
+
 	const groupedTransactions = useMemo(() => {
 		if (!transactions) return [];
 
@@ -85,6 +183,8 @@ export function TransactionTable({
 		return result.sort((a, b) => new Date(b.data.createdAt).getTime() - new Date(a.data.createdAt).getTime());
 	}, [transactions]);
 
+	const openDetail = (t: TransactionWithRelations) => setSelected(t);
+
 	if (loading) {
 		return (
 			<div className="w-full bg-surface-900 border border-border rounded-2xl p-12 flex justify-center items-center text-fg-subtle text-sm">
@@ -107,63 +207,127 @@ export function TransactionTable({
 			<div className="hidden md:block bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
 				<div className="overflow-x-auto">
 					<table className="w-full text-left text-sm">
-					<thead>
-						<tr className="border-b border-border">
-							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Type</th>
-							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Utilisateur</th>}
-							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Auteur</th>}
-							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Description</th>
-							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider">Date</th>
-							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Qté</th>
-							<th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Montant</th>
-							{isAdmin && <th className="px-5 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider text-right">Actions</th>}
-						</tr>
-					</thead>
-					<tbody>
-						{groupedTransactions.map((item) =>
-							item.type === "GROUP" ? (
-								<TransactionGroupRow key={item.groupId} group={item} isAdmin={isAdmin} />
-							) : (
-								<TransactionRow key={item.data.id} t={item.data} isAdmin={isAdmin} />
-							)
-						)}
-					</tbody>
-				</table>
+						<thead>
+							<tr className="border-b border-border bg-surface-950/40">
+								<SortHeader label="Type" column="type" sort={sort} sortable={sortable} onSortChange={onSortChange} />
+								{isAdmin && (
+									<SortHeader label="Client" column="user" sort={sort} sortable={sortable} onSortChange={onSortChange} />
+								)}
+								<th className="px-4 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider whitespace-nowrap">Description</th>
+								<SortHeader label="Date" column="date" sort={sort} sortable={sortable} onSortChange={onSortChange} />
+								<SortHeader label="Montant" column="amount" align="right" sort={sort} sortable={sortable} onSortChange={onSortChange} />
+								{isAdmin && (
+									<th className="px-4 py-3 text-xs font-semibold text-fg-subtle uppercase tracking-wider whitespace-nowrap text-right">Actions</th>
+								)}
+							</tr>
+						</thead>
+						<tbody>
+							{groupedTransactions.map((item) =>
+								item.type === "GROUP" ? (
+									<TransactionGroupRow key={item.groupId} group={item} isAdmin={isAdmin} onOpenDetail={openDetail} />
+								) : (
+									<TransactionRow key={item.data.id} t={item.data} isAdmin={isAdmin} onOpenDetail={openDetail} />
+								)
+							)}
+						</tbody>
+					</table>
 				</div>
 			</div>
 
 			{/* Mobile List */}
-			<div className="md:hidden flex flex-col gap-2">
+			<div className="md:hidden flex flex-col gap-2 rounded-2xl border border-border/50 bg-surface-950/50 p-2 sm:p-3">
 				{groupedTransactions.map((item) =>
 					item.type === "GROUP" ? (
-						<TransactionGroupMobileCard key={item.groupId} group={item} isAdmin={isAdmin} />
+						<TransactionGroupMobileCard key={item.groupId} group={item} isAdmin={isAdmin} onOpenDetail={openDetail} />
 					) : (
-						<TransactionMobileCard key={item.data.id} t={item.data} isAdmin={isAdmin} />
+						<TransactionMobileCard key={item.data.id} t={item.data} isAdmin={isAdmin} onOpenDetail={openDetail} />
 					)
 				)}
 			</div>
 
+			<TransactionDetailDrawer transaction={selected} onClose={() => setSelected(null)} isAdmin={isAdmin} />
+
 			{pagination && (transactions?.length > 0 || pagination.page > 1) && (
-				<div className="flex justify-center items-center gap-3 py-2">
-					<button
-						disabled={pagination.page === 1 || loading}
-						onClick={() => pagination.setPage((p) => Math.max(1, p - 1))}
-						className="px-4 py-1.5 bg-surface-900 border border-border rounded-lg hover:bg-elevated disabled:opacity-40 text-sm text-fg-muted transition-colors"
-					>
-						Précédent
-					</button>
-					<span className="text-sm text-fg-subtle tabular-nums">
-						Page {pagination.page}{pagination.total ? ` / ${Math.ceil(pagination.total / 50)}` : ""}
-					</span>
-					<button
-						disabled={loading || (pagination.total ? pagination.page >= Math.ceil(pagination.total / 50) : (transactions?.length || 0) < 50)}
-						onClick={() => pagination.setPage((p) => p + 1)}
-						className="px-4 py-1.5 bg-surface-900 border border-border rounded-lg hover:bg-elevated disabled:opacity-40 text-sm text-fg-muted transition-colors"
-					>
-						Suivant
-					</button>
-				</div>
+				<TablePagination pagination={pagination} />
 			)}
+		</div>
+	);
+}
+
+function TablePagination({
+	pagination,
+}: {
+	pagination: NonNullable<TransactionTableProps["pagination"]>;
+}) {
+	const { page, setPage, total, hasMore, pageSize = 50, onPageSizeChange } = pagination;
+
+	const totalPages = total ? Math.max(1, Math.ceil(total / pageSize)) : null;
+	const isLast = totalPages ? page >= totalPages : !hasMore;
+
+	return (
+		<div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-1">
+			<div className="flex items-center gap-2 text-sm text-fg-subtle">
+				{total != null && (
+					<span className="tabular-nums">
+						<span className="text-fg font-medium">{total}</span> résultat{total > 1 ? "s" : ""}
+					</span>
+				)}
+				{onPageSizeChange && (
+					<div className="flex items-center gap-1 ml-2">
+						{[10, 25, 50].map((size) => (
+							<button
+								key={size}
+								onClick={() => onPageSizeChange(size)}
+								className={cn(
+									"px-2 py-1 rounded-md text-xs tabular-nums transition-colors",
+									pageSize === size
+										? "bg-accent-600 text-white font-semibold"
+										: "text-fg-muted hover:text-fg hover:bg-elevated",
+								)}
+							>
+								{size}
+							</button>
+						))}
+					</div>
+				)}
+			</div>
+
+			<div className="flex items-center gap-1.5">
+				<button
+					disabled={page === 1}
+					onClick={() => setPage(1)}
+					className="p-1.5 rounded-lg border border-border text-fg-subtle hover:text-fg hover:bg-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+				>
+					<IconChevronsLeft className="w-4 h-4" />
+				</button>
+				<button
+					disabled={page === 1}
+					onClick={() => setPage((p) => Math.max(1, p - 1))}
+					className="p-1.5 rounded-lg border border-border text-fg-subtle hover:text-fg hover:bg-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+				>
+					<IconChevronLeft className="w-4 h-4" />
+				</button>
+				<span className="text-sm text-fg-subtle tabular-nums px-2">
+					Page <span className="text-fg font-medium">{page}</span>
+					{totalPages ? ` / ${totalPages}` : ""}
+				</span>
+				<button
+					disabled={isLast}
+					onClick={() => setPage((p) => p + 1)}
+					className="p-1.5 rounded-lg border border-border text-fg-subtle hover:text-fg hover:bg-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+				>
+					<IconChevronRight className="w-4 h-4" />
+				</button>
+				{totalPages && (
+					<button
+						disabled={isLast}
+						onClick={() => setPage(totalPages)}
+						className="p-1.5 rounded-lg border border-border text-fg-subtle hover:text-fg hover:bg-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+					>
+						<IconChevronsRight className="w-4 h-4" />
+					</button>
+				)}
+			</div>
 		</div>
 	);
 }
@@ -173,8 +337,8 @@ function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean
 	const amountFormatted = (Math.abs(t.amount) / 100).toFixed(2);
 
 	let Icon = IconWallet;
-	let title = "Transaction";
 	let typeLabel = "Divers";
+	let title = "Transaction";
 
 	const date = new Date(t.createdAt);
 	const subtitle = new Intl.DateTimeFormat("fr-FR", {
@@ -244,18 +408,6 @@ function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean
 		title += match?.[1] ? ` (Annulé par ${match[1]})` : " (Annulé)";
 	}
 
-	let issuerLine: string | null = null;
-	if (isAdmin && t.issuer) {
-		const issuerName = `${t.issuer.prenom} ${t.issuer.nom}`;
-		if (t.type === "PURCHASE") {
-			issuerLine = `Vendeur : ${issuerName}`;
-		} else if (t.type === "TOPUP" && t.issuer.id !== t.targetUser?.id) {
-			issuerLine = `Crédité par : ${issuerName}`;
-		} else if (t.type === "ADJUSTMENT" || t.type === "DEPOSIT") {
-			issuerLine = `Par : ${issuerName}`;
-		}
-	}
-
 	return {
 		isPositive,
 		amountFormatted,
@@ -266,29 +418,63 @@ function getTransactionDisplayData(t: TransactionWithRelations, isAdmin: boolean
 		isCancelled,
 		isPending,
 		isFailed,
-		issuerLine,
-		canCancel: ["PURCHASE", "TOPUP", "DEPOSIT", "ADJUSTMENT", "TRANSFER"].includes(t.type) && !isCancelled && !isPending && !isFailed,
 	};
 }
 
 // ─── Desktop Row ──────────────────────────────────────────────────────────────
 
-function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRelations; isAdmin: boolean; isChild?: boolean }) {
-	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed, issuerLine } =
+function ActorCell({ t }: { t: TransactionWithRelations }) {
+	const target = t.targetUser;
+	const issuer = t.issuer;
+	const issuerDiffers = !!(issuer && target && issuer.id !== target.id);
+
+	if (!target) {
+		return <span className="text-fg-subtle">—</span>;
+	}
+
+	return (
+		<div className="flex flex-col min-w-0">
+			<span className="text-sm text-fg font-medium truncate">
+				{target.prenom} {target.nom}
+			</span>
+			{target.username && (
+				<span className="text-xs text-fg-subtle truncate">@{target.username}</span>
+			)}
+			{issuerDiffers && issuer && (
+				<span className="text-xs text-fg-subtle truncate">
+					{getActorLabels(t.type).issuer} : {issuer.prenom} {issuer.nom}
+				</span>
+			)}
+		</div>
+	);
+}
+
+function TransactionRow({
+	t,
+	isAdmin,
+	isChild = false,
+	onOpenDetail,
+}: {
+	t: TransactionWithRelations;
+	isAdmin: boolean;
+	isChild?: boolean;
+	onOpenDetail?: (t: TransactionWithRelations) => void;
+}) {
+	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed } =
 		getTransactionDisplayData(t, isAdmin);
 
 	return (
-		<tr className={cn(
-			"border-b border-border/60 transition-colors hover:bg-elevated/25",
-			(isCancelled || isFailed) && "opacity-50",
-			isPending && "bg-yellow-500/5",
-			isChild && "bg-elevated/20",
-		)}>
-			<td className={cn("px-5 py-3 whitespace-nowrap", isChild && "pl-10")}>
+		<tr
+			className={cn(
+				"border-b border-border/60 transition-colors hover:bg-elevated/25 cursor-pointer",
+				(isCancelled || isFailed) && "opacity-50",
+				isPending && "bg-yellow-500/5",
+				isChild && "bg-elevated/20",
+			)}
+			onClick={() => onOpenDetail?.(t)}
+		>
+			<td className={cn("px-4 py-3 whitespace-nowrap", isChild && "pl-10")}>
 				<div className="flex items-center gap-2.5">
-					{isChild && (
-						<div className="absolute w-4 h-4 border-l-2 border-b-2 border-border rounded-bl-sm -ml-5 mt-1 pointer-events-none" />
-					)}
 					<div className={cn(
 						"p-1.5 rounded-md shrink-0",
 						isPending ? "bg-yellow-500/10 text-yellow-400" :
@@ -309,62 +495,22 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 			</td>
 
 			{isAdmin && (
-				<td className="px-5 py-3 whitespace-nowrap">
-					<div className="flex flex-col">
-						<span className="text-sm text-fg font-medium">
-							{t.targetUser ? `${t.targetUser.prenom} ${t.targetUser.nom}` : "—"}
-						</span>
-						{t.targetUser?.username && (
-							<span className="text-xs text-fg-subtle">{t.targetUser.username}</span>
-						)}
-					</div>
+				<td className="px-4 py-3 whitespace-nowrap">
+					<ActorCell t={t} />
 				</td>
 			)}
 
-			{isAdmin && (
-				<td className="px-5 py-3 whitespace-nowrap">
-					{t.issuer ? (
-						<div className="flex flex-col">
-							<span className="text-sm text-fg font-medium">
-								{t.issuer.prenom} {t.issuer.nom}
-							</span>
-							{t.issuer.username && (
-								<span className="text-xs text-fg-subtle">{t.issuer.username}</span>
-							)}
-						</div>
-					) : (
-						<span className="text-fg-subtle">—</span>
-					)}
-				</td>
-			)}
-
-			<td className="px-5 py-3 max-w-xs">
+			<td className="px-4 py-3 max-w-xs">
 				<span className={cn("text-sm text-fg truncate block", isCancelled && "line-through text-fg-subtle")}>
 					{title}
 				</span>
-				{isAdmin && t.description && t.description !== title && (
-					<span className="text-xs text-fg-subtle truncate block">{t.description}</span>
-				)}
-				{!isAdmin && t.walletSource === "FAMILY" && (
-					<span className="text-xs text-accent-600 truncate block">
-						Fam&apos;ss{t.fams ? ` · ${t.fams.name}` : ""}
-					</span>
-				)}
 			</td>
 
-			<td className="px-5 py-3 whitespace-nowrap">
+			<td className="px-4 py-3 whitespace-nowrap">
 				<span className="text-xs text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
 			</td>
 
-			<td className="px-5 py-3 text-right whitespace-nowrap">
-				{t.type === "PURCHASE" && t.quantity != null && t.quantity > 1 ? (
-					<span className="text-sm tabular-nums text-fg-muted">×{t.quantity}</span>
-				) : (
-					<span className="text-fg-subtle">—</span>
-				)}
-			</td>
-
-			<td className="px-5 py-3 text-right whitespace-nowrap">
+			<td className="px-4 py-3 text-right whitespace-nowrap">
 				<span className={cn(
 					"text-sm font-semibold tabular-nums",
 					isCancelled ? "line-through text-fg-subtle" :
@@ -373,11 +519,14 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 					isPositive ? "text-emerald-400" : "text-fg",
 				)}>
 					{isPositive ? "+" : "−"}{amountFormatted} €
+					{t.type === "PURCHASE" && t.quantity != null && t.quantity > 1 && (
+						<span className="text-fg-subtle font-normal ml-1">×{t.quantity}</span>
+					)}
 				</span>
 			</td>
 
 			{isAdmin && (
-				<td className="px-5 py-3 text-right">
+				<td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
 					<TransactionActions
 						transactionId={t.id}
 						quantity={t.quantity}
@@ -392,7 +541,15 @@ function TransactionRow({ t, isAdmin, isChild = false }: { t: TransactionWithRel
 	);
 }
 
-function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem & { type: "GROUP" }; isAdmin: boolean }) {
+function TransactionGroupRow({
+	group,
+	isAdmin,
+	onOpenDetail,
+}: {
+	group: GroupedTransactionItem & { type: "GROUP" };
+	isAdmin: boolean;
+	onOpenDetail?: (t: TransactionWithRelations) => void;
+}) {
 	const [expanded, setExpanded] = useState(false);
 	const { items } = group;
 
@@ -432,7 +589,7 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 				)}
 				onClick={() => setExpanded(!expanded)}
 			>
-				<td className="px-5 py-3 whitespace-nowrap">
+				<td className="px-4 py-3 whitespace-nowrap">
 					<div className="flex items-center gap-2.5">
 						<div className={cn(
 							"text-fg-subtle transition-transform duration-200",
@@ -456,28 +613,20 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 				</td>
 
 				{isAdmin && (
-					<td className="px-5 py-3 text-xs text-fg-subtle italic whitespace-nowrap">Multiple</td>
+					<td className="px-4 py-3 text-xs text-fg-subtle italic whitespace-nowrap">Multiple</td>
 				)}
 
-				{isAdmin && (
-					<td className="px-5 py-3 text-xs text-fg-subtle italic whitespace-nowrap">Multiple</td>
-				)}
-
-				<td className="px-5 py-3 max-w-xs">
+				<td className="px-4 py-3 max-w-xs">
 					<span className={cn("text-sm text-fg-muted truncate block", allCancelled && "line-through")}>
 						{group.data.description || "Opération groupée"}
 					</span>
 				</td>
 
-				<td className="px-5 py-3 whitespace-nowrap">
+				<td className="px-4 py-3 whitespace-nowrap">
 					<span className="text-xs text-fg-subtle tabular-nums" suppressHydrationWarning>{subtitle}</span>
 				</td>
 
-				<td className="px-5 py-3 text-right whitespace-nowrap">
-					<span className="text-xs text-fg-subtle tabular-nums">{items.length} lignes</span>
-				</td>
-
-				<td className="px-5 py-3 text-right whitespace-nowrap">
+				<td className="px-4 py-3 text-right whitespace-nowrap">
 					<span className={cn(
 						"text-sm font-semibold tabular-nums",
 						isPositive ? "text-emerald-400" : "text-fg",
@@ -488,14 +637,14 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 				</td>
 
 				{isAdmin && (
-					<td className="px-5 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+					<td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
 						{!allCancelled && <CancelGroupButton groupId={group.groupId} isCancelled={allCancelled} />}
 					</td>
 				)}
 			</tr>
 
 			{expanded && items.map((t) => (
-				<TransactionRow key={t.id} t={t} isAdmin={isAdmin} isChild />
+				<TransactionRow key={t.id} t={t} isAdmin={isAdmin} isChild onOpenDetail={onOpenDetail} />
 			))}
 		</>
 	);
@@ -503,17 +652,30 @@ function TransactionGroupRow({ group, isAdmin }: { group: GroupedTransactionItem
 
 // ─── Mobile Cards ─────────────────────────────────────────────────────────────
 
-function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: TransactionWithRelations; isAdmin: boolean; isChild?: boolean }) {
-	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed, issuerLine } =
+function TransactionMobileCard({
+	t,
+	isAdmin,
+	isChild = false,
+	onOpenDetail,
+}: {
+	t: TransactionWithRelations;
+	isAdmin: boolean;
+	isChild?: boolean;
+	onOpenDetail?: (t: TransactionWithRelations) => void;
+}) {
+	const { isPositive, amountFormatted, Icon, title, typeLabel, subtitle, isCancelled, isPending, isFailed } =
 		getTransactionDisplayData(t, isAdmin);
 
 	return (
-		<div className={cn(
-			"flex overflow-hidden rounded-xl border border-border bg-surface-900",
-			(isCancelled || isFailed) && "opacity-55",
-			isPending && "border-yellow-500/20",
-			isChild && "rounded-l-none ml-3",
-		)}>
+		<div
+			className={cn(
+				"flex overflow-hidden rounded-xl border border-border bg-surface-900 cursor-pointer shadow-sm shadow-black/10",
+				(isCancelled || isFailed) && "opacity-55",
+				isPending && "border-yellow-500/20",
+				isChild && "rounded-l-none ml-3",
+			)}
+			onClick={() => onOpenDetail?.(t)}
+		>
 			{/* Accent stripe */}
 			<div className={cn(
 				"w-0.5 shrink-0",
@@ -568,12 +730,6 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 							</span>
 						</div>
 					)}
-					{issuerLine && (
-						<div className="flex items-center gap-1 mt-0.5">
-							<IconUser size={10} className="text-fg-subtle shrink-0" />
-							<span className="text-[11px] text-fg-subtle truncate">{issuerLine}</span>
-						</div>
-					)}
 				</div>
 
 				{/* Amount + actions */}
@@ -591,14 +747,16 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 						<span className="text-[11px] text-fg-subtle tabular-nums">×{t.quantity}</span>
 					)}
 					{isAdmin && (
-						<TransactionActions
-							transactionId={t.id}
-							quantity={t.quantity}
-							type={t.type}
-							isCancelled={isCancelled || false}
-							isFailed={isFailed}
-							isPending={isPending}
-						/>
+						<div onClick={(e) => e.stopPropagation()}>
+							<TransactionActions
+								transactionId={t.id}
+								quantity={t.quantity}
+								type={t.type}
+								isCancelled={isCancelled || false}
+								isFailed={isFailed}
+								isPending={isPending}
+							/>
+						</div>
 					)}
 				</div>
 			</div>
@@ -606,7 +764,15 @@ function TransactionMobileCard({ t, isAdmin, isChild = false }: { t: Transaction
 	);
 }
 
-function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransactionItem & { type: "GROUP" }; isAdmin: boolean }) {
+function TransactionGroupMobileCard({
+	group,
+	isAdmin,
+	onOpenDetail,
+}: {
+	group: GroupedTransactionItem & { type: "GROUP" };
+	isAdmin: boolean;
+	onOpenDetail?: (t: TransactionWithRelations) => void;
+}) {
 	const [expanded, setExpanded] = useState(false);
 	const { items } = group;
 
@@ -637,7 +803,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
 	}
 
 	return (
-		<div className={cn("overflow-hidden rounded-xl border border-border bg-surface-900", allCancelled && "opacity-55")}>
+		<div className={cn("overflow-hidden rounded-xl border border-border bg-surface-900 shadow-sm shadow-black/10", allCancelled && "opacity-55")}>
 			<div
 				className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-elevated/30 transition-colors"
 				onClick={() => setExpanded(!expanded)}
@@ -690,7 +856,7 @@ function TransactionGroupMobileCard({ group, isAdmin }: { group: GroupedTransact
 			{expanded && (
 				<div className="border-t border-border flex flex-col gap-1.5 p-2 bg-surface-950/40">
 					{items.map((t) => (
-						<TransactionMobileCard key={t.id} t={t} isAdmin={isAdmin} isChild />
+						<TransactionMobileCard key={t.id} t={t} isAdmin={isAdmin} isChild onOpenDetail={onOpenDetail} />
 					))}
 				</div>
 			)}

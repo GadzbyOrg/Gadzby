@@ -17,6 +17,7 @@ export const transactionQuerySchema = z.object({
     limit: z.number().default(50),
     search: z.string().default(""),
     type: z.string().default("ALL"),
+    status: z.string().default("ALL"),
     sort: z.string().default("DATE_DESC"),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
