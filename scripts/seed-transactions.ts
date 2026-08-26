@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import {shops, transactions } from "@/db/schema";
+import { famss, shops, transactions } from "@/db/schema";
 
 async function main() {
 	console.log("🌱 Seeding transactions...");
@@ -131,6 +131,148 @@ async function main() {
 		description: "Transfer test (Reçu)",
 	});
 	console.log("  + Transfer: Tyrion -> Sansa (50€)");
+
+	// --- DETERMINISTIC HISTORY (statistics & dashboards) ---
+	// Spreads purchases across products/categories/shops over ~90 days,
+	// includes staff-served sales (issuer != target), variant-linked sales,
+	// family-funded purchases, and refund/deposit examples.
+	const cersei = userMap.get("cersei");
+	const allShopsForHistory = await db.query.shops.findMany({
+		with: { products: { with: { variants: true } } },
+	});
+	const shopsWithProductsHistory = allShopsForHistory.filter(
+		(s) => s.products.length > 0
+	);
+	const historyUsers = Array.from(userMap.values());
+	const staffMembers = [tyrion, cersei].filter(
+		(u): u is NonNullable<typeof u> => Boolean(u)
+	);
+
+	if (shopsWithProductsHistory.length > 0 && historyUsers.length > 0) {
+		const DAY = 86400000;
+		const now = Date.now();
+
+		// 1. Self-service purchases (issuer == target), spread over 90 days
+		let counter = 0;
+		for (const shop of shopsWithProductsHistory) {
+			for (const product of shop.products) {
+				for (let u = 0; u < historyUsers.length; u++) {
+					const user = historyUsers[u];
+					if ((u + product.name.length) % 3 === 0) continue;
+
+					const qty = (u % 3) + 1;
+					const variant =
+						product.variants && product.variants.length > 0
+							? product.variants[u % product.variants.length]
+							: undefined;
+					const price = variant?.price ?? product.price;
+					const daysAgo = (counter * 7 + u * 3) % 90;
+					const date = new Date(now - daysAgo * DAY);
+
+					await db.insert(transactions).values({
+						amount: -price * qty,
+						type: "PURCHASE",
+						status: "COMPLETED",
+						walletSource: "PERSONAL",
+						issuerId: user.id,
+						targetUserId: user.id,
+						shopId: shop.id,
+						productId: product.id,
+						productVariantId: variant?.id,
+						quantity: qty,
+						description: `Achat ${product.name}`,
+						createdAt: date,
+					});
+					counter++;
+				}
+			}
+		}
+
+		// 2. Staff-served sales (issuer != target) for "most active staff"
+		if (staffMembers.length > 0) {
+			for (const shop of shopsWithProductsHistory) {
+				for (let i = 0; i < 20; i++) {
+					const product = shop.products[i % shop.products.length];
+					const customer = historyUsers[i % historyUsers.length];
+					const staffMember = staffMembers[i % staffMembers.length];
+					const variant = product.variants?.[0];
+					const price = variant?.price ?? product.price;
+					const date = new Date(now - i * 5 * DAY);
+
+					await db.insert(transactions).values({
+						amount: -price,
+						type: "PURCHASE",
+						status: "COMPLETED",
+						walletSource: "PERSONAL",
+						issuerId: staffMember.id,
+						targetUserId: customer.id,
+						shopId: shop.id,
+						productId: product.id,
+						productVariantId: variant?.id,
+						quantity: 1,
+						description: `Vente ${product.name} (servi)`,
+						createdAt: date,
+					});
+				}
+			}
+		}
+		console.log(
+			"  + Deterministic purchase history generated (self-service + staff-served)"
+		);
+
+		// 3. Family-funded purchase (walletSource FAMILY)
+		const lannisterFams = await db.query.famss.findFirst({
+			where: eq(famss.name, "Lannister"),
+		});
+		if (lannisterFams && beer && foyer) {
+			await db.insert(transactions).values({
+				amount: -beer.price * 6,
+				type: "PURCHASE",
+				status: "COMPLETED",
+				walletSource: "FAMILY",
+				famsId: lannisterFams.id,
+				issuerId: tyrion.id,
+				targetUserId: tyrion.id,
+				shopId: foyer.id,
+				productId: beer.id,
+				quantity: 6,
+				description: "Achat famille (Tournée)",
+				createdAt: new Date(now - 2 * DAY),
+			});
+			console.log("  + Family-funded purchase (Lannister)");
+		}
+
+		// 4. Refund example
+		if (beer && foyer) {
+			await db.insert(transactions).values({
+				amount: beer.price,
+				type: "REFUND",
+				status: "COMPLETED",
+				walletSource: "PERSONAL",
+				issuerId: tyrion.id,
+				targetUserId: arya.id,
+				shopId: foyer.id,
+				productId: beer.id,
+				quantity: 1,
+				description: "Remboursement bière renversée",
+				createdAt: new Date(now - 1 * DAY),
+			});
+			console.log("  + Refund example (Arya)");
+		}
+
+		// 5. Deposit / adjustment example
+		await db.insert(transactions).values({
+			amount: 3000,
+			type: "DEPOSIT",
+			status: "COMPLETED",
+			walletSource: "PERSONAL",
+			issuerId: tyrion.id,
+			targetUserId: sansa.id,
+			description: "Caution écocup remboursée",
+			createdAt: new Date(now - 3 * DAY),
+		});
+		console.log("  + Deposit example (Sansa)");
+	}
 
 	// --- LARGE SEEDING ---
 	if (process.env.SEED_LARGE === "true") {

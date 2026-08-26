@@ -3,7 +3,13 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { productCategories, products,shops } from "@/db/schema";
+import { productCategories, products, productVariants, shops } from "@/db/schema";
+
+type ProductVariantSeedData = {
+  name: string;
+  quantity: number;
+  price?: number;
+};
 
 type ProductSeedData = {
   name: string;
@@ -12,6 +18,7 @@ type ProductSeedData = {
   allowSelfService?: boolean;
   description?: string;
   unit?: string;
+  variants?: ProductVariantSeedData[];
 };
 
 async function seedShopProducts(
@@ -52,20 +59,50 @@ async function seedShopProducts(
 
     // 2. Create Products
     for (const prodData of catData.products) {
+      const { variants, ...productData } = prodData;
+
       const existing = await db.query.products.findFirst({
         where: (t, { and, eq }) =>
           and(eq(t.shopId, shop.id), eq(t.name, prodData.name)),
       });
 
+      let productId = existing?.id;
+
       if (!existing) {
-        await db.insert(products).values({
-          shopId: shop.id,
-          categoryId: category.id,
-          ...prodData,
-        });
+        const [newProduct] = await db
+          .insert(products)
+          .values({
+            shopId: shop.id,
+            categoryId: category.id,
+            ...productData,
+          })
+          .returning();
+        productId = newProduct.id;
         console.log(`    + Product created: ${prodData.name}`);
       } else {
         console.log(`    = Product exists: ${prodData.name}`);
+      }
+
+      // 3. Create Variants (e.g. Pinte / Demi)
+      if (variants && variants.length > 0 && productId) {
+        for (const variant of variants) {
+          const existingVariant = await db.query.productVariants.findFirst({
+            where: (t, { and, eq }) =>
+              and(eq(t.productId, productId!), eq(t.name, variant.name)),
+          });
+
+          if (!existingVariant) {
+            await db.insert(productVariants).values({
+              productId: productId,
+              name: variant.name,
+              quantity: variant.quantity,
+              price: variant.price,
+            });
+            console.log(
+              `      + Variant created: ${prodData.name} - ${variant.name}`
+            );
+          }
+        }
       }
     }
   }
@@ -79,8 +116,14 @@ async function main() {
     {
       name: "Bières Pression",
       products: [
-        { name: "Meteor Lager", price: 130, stock: 100, allowSelfService: true, description: "La classique" },
-        { name: "Meteor Blanche", price: 150, stock: 50, allowSelfService: false },
+        { name: "Meteor Lager", price: 130, stock: 100, allowSelfService: true, description: "La classique", variants: [
+          { name: "Pinte (50cl)", quantity: 1, price: 130 },
+          { name: "Demi (25cl)", quantity: 0.5, price: 80 },
+        ] },
+        { name: "Meteor Blanche", price: 150, stock: 50, allowSelfService: false, variants: [
+          { name: "Pinte (50cl)", quantity: 1, price: 150 },
+          { name: "Demi (25cl)", quantity: 0.5, price: 90 },
+        ] },
         { name: "Kronenbourg", price: 120, stock: 100, allowSelfService: true },
         { name: "Triple Karmeliet", price: 180, stock: 60, allowSelfService: true },
         { name: "Limonade", price: 60, stock: 200, allowSelfService: true },

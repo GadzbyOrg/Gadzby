@@ -44,12 +44,18 @@ async function main() {
           "events",
           "shop_expenses",
           "products",
+          "product_variants",
           "product_categories",
+          "inventory_audit_items",
+          "inventory_audits",
+          "product_restocks",
           "fams_members",
           "fams_requests",
           "famss",
 		  "mandat_shops",
 		  "mandats",
+		  "shop_users",
+		  "shop_roles",
           "users",
           "roles",
           "shops",
@@ -69,11 +75,14 @@ async function main() {
 		"scripts/seed-roles.ts", // Roles first
 		"scripts/seed-admin.ts", // Admin (needs roles)
 		"scripts/seed-users.ts", // Users (needs roles)
-		"scripts/seed-shops.ts", // Shops (needs admin user for VP)
+		"scripts/seed-shops.ts", // Shops (needs users + roles)
+		"scripts/seed-settings.ts", // System settings (independent)
 		"scripts/seed-famss.ts", // Famss (needs users)
-		"scripts/seed-products.ts", // Products (needs shops)
+		"scripts/seed-products.ts", // Products + variants (needs shops)
 		"scripts/seed-payments.ts", // Payments (independent)
 		"scripts/seed-events.ts", // Events (needs shops, users, products)
+		"scripts/seed-expenses.ts", // Expenses (needs shops, users, events)
+		"scripts/seed-inventory.ts", // Inventory (needs shops, products, users)
 		"scripts/seed-mandats.ts", // Mandats (needs shops)
 		"scripts/seed-transactions.ts", // Transactions (needs everything)
 	];

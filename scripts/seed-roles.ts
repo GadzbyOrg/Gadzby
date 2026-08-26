@@ -7,15 +7,33 @@ import { roles } from "@/db/schema";
 const DEFAULT_ROLES = [
 	{
 		name: "ADMIN",
-		permissions: ["ADMIN_ACCESS", "MANAGE_USERS", "MANAGE_ROLES", "MANAGE_SHOPS", "VIEW_TRANSACTIONS", "TOPUP_USER", "MANAGE_FAMSS", "MANAGE_PAYMENTS"],
+		permissions: [
+			"ADMIN_ACCESS",
+			"MANAGE_USERS",
+			"MANAGE_ROLES",
+			"MANAGE_SHOPS",
+			"MANAGE_PAYMENTS",
+			"MANAGE_FAMSS",
+			"CREATE_FAMSS",
+			"MANAGE_MANDATS",
+			"VIEW_TRANSACTIONS",
+			"CANCEL_TRANSACTIONS",
+			"TOPUP_USER",
+		],
 	},
 	{
 		name: "USER",
-		permissions: [""],
+		permissions: [],
 	},
 	{
 		name: "TRESORIER",
-		permissions: ["VIEW_TRANSACTIONS", "MANAGE_SHOPS"],
+		permissions: [
+			"VIEW_TRANSACTIONS",
+			"CANCEL_TRANSACTIONS",
+			"MANAGE_SHOPS",
+			"MANAGE_MANDATS",
+			"MANAGE_PAYMENTS",
+		],
 	},
 	{
 		name: "ZiFoy'ss",
