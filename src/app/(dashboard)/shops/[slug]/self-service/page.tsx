@@ -9,9 +9,14 @@ import {
 	getShopBySlug,
 	getShopDetailsForMember,
 } from "@/features/shops/actions";
-import { getShopCategories, getShopProducts } from "@/features/shops/products";
+import {
+	getPublicCatalogProducts,
+	getShopCategories,
+	getShopProducts,
+} from "@/features/shops/products";
 import { verifySession } from "@/lib/session";
 
+import { CatalogView } from "../_components/catalog-view";
 import { SelfServiceView } from "../_components/self-service-view";
 import { ShopPublicEvents } from "../_components/shop-public-events";
 
@@ -56,6 +61,8 @@ export default async function ShopSelfServicePage({
 
 	// Access Control & Data Fetching
 	const isEnabled = shop.isSelfServiceEnabled;
+	const isCatalogPublic = shop.isCatalogPublic;
+	let isReadOnly = false;
 
 	interface VariantData { price: number | null; quantity: number | null; id?: string }
 	interface ProductData {
@@ -69,106 +76,87 @@ export default async function ShopSelfServicePage({
 		isArchived?: boolean | null;
 	}
 
+	const applyEventPricing = (
+		p: ProductData,
+		forceSelfService = false,
+	): ProductData => {
+		let effectivePrice = p.price || 0;
+		const variants = p.variants
+			? p.variants.map((v: VariantData) => ({ ...v }))
+			: [];
+
+		if (p.event && p.event.status === "OPEN") {
+			const customMargin = p.event.customMargin || 0;
+
+			if (p.eventPrice != null) {
+				effectivePrice = p.eventPrice;
+			} else if (customMargin > 0) {
+				effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
+			}
+
+			variants.forEach((variant: VariantData) => {
+				let vPrice = variant.price;
+				if (vPrice !== null && vPrice !== undefined) {
+					if (customMargin > 0 && p.eventPrice == null) {
+						vPrice = Math.round(vPrice * (1 + customMargin / 100));
+					}
+				} else {
+					vPrice = Math.round(effectivePrice * (variant.quantity || 1));
+				}
+				variant.price = vPrice;
+			});
+		}
+
+		return {
+			...p,
+			price: effectivePrice,
+			variants,
+			allowSelfService: forceSelfService ? true : (p.allowSelfService ?? false),
+			isArchived: forceSelfService ? false : (p.isArchived ?? false),
+		};
+	};
+
 	let products: ProductData[] = [];
 	let categories: { id: string; name: string }[] = [];
 	let isClosedForUser = false;
 
 	if (isEnabled) {
 		// Public/Self-Service Mode
-		// We use getSelfServiceProducts which handles the specific filtering
 		const { getSelfServiceProducts } = await import(
 			"@/features/shops/queries"
 		);
 		const res = await getSelfServiceProducts(slug);
 
 		if ("error" in res) {
-			// Should not happen if enabled, but handle gracefully
 			isClosedForUser = true;
 		} else {
-			products = res.products.map((p: ProductData) => {
-				let effectivePrice = p.price || 0;
-				const variants = p.variants ? p.variants.map((v: VariantData) => ({ ...v })) : [];
-
-				if (p.event && p.event.status === "OPEN") {
-					const customMargin = p.event.customMargin || 0;
-
-					if (p.eventPrice != null) {
-						effectivePrice = p.eventPrice;
-					} else if (customMargin > 0) {
-						effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
-					}
-
-					variants.forEach((variant: VariantData) => {
-						let vPrice = variant.price;
-						if (vPrice !== null && vPrice !== undefined) {
-							if (customMargin > 0 && p.eventPrice == null) {
-								vPrice = Math.round(vPrice * (1 + customMargin / 100));
-							}
-						} else {
-							vPrice = Math.round(effectivePrice * (variant.quantity || 1));
-						}
-						variant.price = vPrice;
-					});
-				}
-
-				return {
-					...p,
-					price: effectivePrice,
-					variants,
-					image: null,
-					allowSelfService: true,
-					isArchived: false,
-				};
-			});
+			products = res.products.map((p: ProductData) =>
+				applyEventPricing(p, true),
+			);
 			categories = res.categories;
 		}
-	} else {
-		// Disabled Mode
-		if (isManager) {
-			const [pRes, cRes] = await Promise.all([
-				getShopProducts(slug),
-				getShopCategories(slug),
-			]);
+	} else if (isManager) {
+		const [pRes, cRes] = await Promise.all([
+			getShopProducts(slug),
+			getShopCategories(slug),
+		]);
 
-			products = ("products" in pRes ? pRes.products || [] : []).map((p: ProductData) => {
-				let effectivePrice = p.price || 0;
-				const variants = p.variants ? p.variants.map((v: VariantData) => ({ ...v })) : [];
+		products = ("products" in pRes ? pRes.products || [] : []).map(
+			(p: ProductData) => applyEventPricing(p),
+		);
+		categories = "categories" in cRes ? cRes.categories || [] : [];
+	} else if (isCatalogPublic) {
+		const res = await getPublicCatalogProducts(slug);
 
-				if (p.event && p.event.status === "OPEN") {
-					const customMargin = p.event.customMargin || 0;
-
-					if (p.eventPrice != null) {
-						effectivePrice = p.eventPrice;
-					} else if (customMargin > 0) {
-						effectivePrice = Math.round(effectivePrice * (1 + customMargin / 100));
-					}
-
-					variants.forEach((variant: VariantData) => {
-						let vPrice = variant.price;
-						if (vPrice !== null && vPrice !== undefined) {
-							if (customMargin > 0 && p.eventPrice == null) {
-								vPrice = Math.round(vPrice * (1 + customMargin / 100));
-							}
-						} else {
-							vPrice = Math.round(effectivePrice * (variant.quantity || 1));
-						}
-						variant.price = vPrice;
-					});
-				}
-
-				return {
-					...p,
-					price: effectivePrice,
-					variants,
-					image: null,
-					allowSelfService: p.allowSelfService ?? false,
-					isArchived: p.isArchived ?? false,
-				};
-			});
-			categories = "categories" in cRes ? cRes.categories || [] : [];
-		} else {
+		if ("error" in res) {
 			isClosedForUser = true;
+		} else {
+			products = res.products.map((p: ProductData) => applyEventPricing(p));
+			categories = res.categories;
+			isReadOnly = true;
 		}
+	} else {
+		isClosedForUser = true;
 	}
 
 	if (isClosedForUser) {
@@ -219,7 +207,9 @@ export default async function ShopSelfServicePage({
 					{shop.name}
 				</h1>
 				<p className="text-fg-muted">
-					Commander des produits de {shop.name} en self-service.
+					{isReadOnly
+						? `Consultez le catalogue de ${shop.name}.`
+						: `Commander des produits de ${shop.name} en self-service.`}
 				</p>
 			</header>
 
@@ -231,8 +221,9 @@ export default async function ShopSelfServicePage({
 							Self-Service Désactivé
 						</h3>
 						<p className="text-sm text-orange-400/80">
-							Cette boquette est fermé au public. Vous voyez cette page car vous
-							êtes manager ou administrateur.
+							{isCatalogPublic
+								? "Le catalogue est public mais le self-service est désactivé. Vous voyez cette page car vous êtes membre du shop ou administrateur."
+								: "Cette boquette est fermée au public. Vous voyez cette page car vous êtes membre du shop ou administrateur."}
 							<Link
 								href={`/shops/${slug}/manage/settings`}
 								className="underline ml-1 hover:text-orange-300"
@@ -246,13 +237,20 @@ export default async function ShopSelfServicePage({
 
 			<ShopPublicEvents events={publicEvents} />
 
-			<SelfServiceView
-				shopSlug={slug}
-				products={products as any}
-				categories={categories as any}
-				disconnectAfterCheckout={shop.disconnectAfterCheckout ?? false}
-				famssEnabled={famssEnabled}
-			/>
+			{isReadOnly ? (
+				<CatalogView
+					products={products as any}
+					categories={categories as any}
+				/>
+			) : (
+				<SelfServiceView
+					shopSlug={slug}
+					products={products as any}
+					categories={categories as any}
+					disconnectAfterCheckout={shop.disconnectAfterCheckout ?? false}
+					famssEnabled={famssEnabled}
+				/>
+			)}
 		</div>
 	);
 }

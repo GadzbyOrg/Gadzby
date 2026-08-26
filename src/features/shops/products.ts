@@ -8,6 +8,7 @@ import {
 	productCategories,
 	products,
 	productVariants,
+	shops,
 	transactions,
 } from "@/db/schema"; // productRestocks removed
 import { authenticatedAction } from "@/lib/actions";
@@ -349,6 +350,48 @@ export async function getShopCategories(shopSlug: string) {
 		return { categories: categoriesList };
 	} catch (error) {
 		console.error("Failed to fetch shop categories:", error);
+		return { error: "Erreur de chargement" };
+	}
+}
+
+export async function getPublicCatalogProducts(shopSlug: string) {
+	const shop = await db.query.shops.findFirst({
+		where: eq(shops.slug, shopSlug),
+		columns: { id: true, isCatalogPublic: true },
+	});
+
+	if (!shop || !shop.isCatalogPublic) {
+		return { error: "Catalogue non disponible" };
+	}
+
+	try {
+		const productsList = await db.query.products.findMany({
+			where: and(
+				eq(products.shopId, shop.id),
+				eq(products.isArchived, false),
+			),
+			with: {
+				category: true,
+				variants: {
+					where: eq(productVariants.isArchived, false),
+					orderBy: (variants, { asc }) => [asc(variants.quantity)],
+				},
+				event: true,
+			},
+			orderBy: [asc(products.displayOrder), asc(products.name)],
+		});
+
+		const categoriesList = await db.query.productCategories.findMany({
+			where: and(
+				eq(productCategories.shopId, shop.id),
+				ne(productCategories.name, "__system_archived"),
+			),
+			orderBy: (categories, { asc }) => [asc(categories.name)],
+		});
+
+		return { products: productsList, categories: categoriesList };
+	} catch (error) {
+		console.error("Failed to fetch public catalog products:", error);
 		return { error: "Erreur de chargement" };
 	}
 }

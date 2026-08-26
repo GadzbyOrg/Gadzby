@@ -49,7 +49,7 @@ export class ShopService {
         return newShop;
     }
 
-    static async update(shopId: string, data: { description?: string; isSelfServiceEnabled?: boolean; defaultMargin?: number; isActive?: boolean }) {
+    static async update(shopId: string, data: { description?: string; isSelfServiceEnabled?: boolean; isCatalogPublic?: boolean; disconnectAfterCheckout?: boolean; defaultMargin?: number; isActive?: boolean }) {
          await db
             .update(shops)
             .set({
