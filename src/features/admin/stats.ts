@@ -139,6 +139,7 @@ export async function getAdminTopProducts() {
 		.select({
 			name: products.name,
 			amount: sql<number>`sum(abs(${transactions.amount}))`,
+			quantity: sql<number>`sum(coalesce(${transactions.quantity}, 1))`,
 		})
 		.from(transactions)
 		.innerJoin(products, eq(transactions.productId, products.id))
@@ -155,6 +156,7 @@ export async function getAdminTopProducts() {
 	return topProducts.map((item) => ({
 		name: item.name,
 		amount: Number(item.amount) / 100,
+		quantity: Number(item.quantity),
 	}));
 }
 
