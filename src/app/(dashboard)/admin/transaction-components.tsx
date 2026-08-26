@@ -474,7 +474,7 @@ export function CancelGroupButton({
 			<button
 				onClick={onCancel}
 				disabled={isPending}
-				className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded text-xs font-medium transition-colors disabled:opacity-50 border border-red-500/20"
+				className="flex gap-1.5 px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded text-xs font-medium transition-colors disabled:opacity-50 border border-red-500/20"
 				title="Annuler tout le groupe"
 			>
 				{isPending ? (
@@ -482,8 +482,6 @@ export function CancelGroupButton({
 				) : (
 					<IconTrash className="w-3 h-3" />
 				)}
-				<span className="hidden sm:inline">Annuler le groupe</span>
-				<span className="sm:hidden">Annuler</span>
 			</button>
 			<ErrorDialog message={errorMsg} onClose={() => setErrorMsg(null)} />
 		</>

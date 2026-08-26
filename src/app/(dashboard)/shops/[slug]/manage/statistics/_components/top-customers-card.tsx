@@ -35,7 +35,7 @@ export function TopCustomersCard({ data, loading }: TopCustomersCardProps) {
 	return (
 		<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col h-full">
 			<h3 className="text-lg font-medium text-fg mb-4">Meilleurs Clients</h3>
-			<div className="flex-1 overflow-auto space-y-4 pr-1">
+			<div className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 pr-1">
 				{data.length === 0 ? (
 					<p className="text-fg-subtle text-sm">Aucun client</p>
 				) : (

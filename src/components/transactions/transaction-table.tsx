@@ -205,8 +205,16 @@ export function TransactionTable({
 		<div className="flex flex-col gap-4">
 			{/* Desktop Table */}
 			<div className="hidden md:block bg-surface-900 border border-border rounded-2xl overflow-hidden shadow-sm">
-				<div className="overflow-x-auto">
-					<table className="w-full text-left text-sm">
+				<div className="overflow-hidden">
+					<table className="w-full table-fixed text-left text-sm">
+						<colgroup>
+							<col className="w-44" />
+							{isAdmin && <col className="w-40" />}
+							<col />
+							<col className="w-48" />
+							<col className="w-36" />
+							{isAdmin && <col className="w-16" />}
+						</colgroup>
 						<thead>
 							<tr className="border-b border-border bg-surface-950/40">
 								<SortHeader label="Type" column="type" sort={sort} sortable={sortable} onSortChange={onSortChange} />
@@ -265,7 +273,7 @@ function TablePagination({
 	const isLast = totalPages ? page >= totalPages : !hasMore;
 
 	return (
-		<div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-1">
+		<div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-3 py-1">
 			<div className="flex items-center gap-2 text-sm text-fg-subtle">
 				{total != null && (
 					<span className="tabular-nums">

@@ -565,6 +565,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 											</div>
 										</div>
 									)}
+								</div>
 									{/* Revenue vs Expenses comparison */}
 									<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
 										<h3 className="text-lg font-medium text-white mb-4">
@@ -648,7 +649,6 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 											</div>
 										)}
 									</div>
-								</div>
 							</div>
 
 							{/* Bottom Info Cards Row */}
