@@ -152,8 +152,11 @@ async function main() {
 	const zifoyRole = await db.query.roles.findFirst({
 		where: (roles, { eq }) => eq(roles.name, "ZiFoy'ss"),
 	});
+	const tresorierRole = await db.query.roles.findFirst({
+		where: (roles, { eq }) => eq(roles.name, "TRESORIER"),
+	});
 
-	if (!userRole || !adminRole || !zifoyRole) {
+	if (!userRole || !adminRole || !zifoyRole || !tresorierRole) {
 		console.error("❌ Roles not found. Please run seed-roles.ts first.");
 		process.exit(1);
 	}
@@ -168,6 +171,7 @@ async function main() {
 		let roleId = userRole.id;
 		if ((user.roles as readonly string[]).includes("ADMIN")) roleId = adminRole.id;
 		else if ((user.roles as readonly string[]).includes("ZiFoy'ss")) roleId = zifoyRole.id;
+		else if ((user.roles as readonly string[]).includes("TRESORIER")) roleId = tresorierRole.id;
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { roles: _roles, ...userData } = user;

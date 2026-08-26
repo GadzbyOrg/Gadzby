@@ -7,6 +7,15 @@ import { mandats, mandatShops, shops } from "@/db/schema";
 async function main() {
 	console.log("🌱 Seeding Mandats...");
 
+	// Idempotency: skip if mandats already exist
+	const existingMandats = await db.select().from(mandats);
+	if (existingMandats.length > 0) {
+		console.log(
+			`= ${existingMandats.length} mandat(s) already exist. Skipping.`
+		);
+		process.exit(0);
+	}
+
 	// 1. Get all shops
 	const allShops = await db.select().from(shops);
 

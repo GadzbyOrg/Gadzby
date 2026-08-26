@@ -1,6 +1,6 @@
 // Run with: npx tsx scripts/seed-shops.ts
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { shopRoles,shops, shopUsers, users } from "@/db/schema";
@@ -79,55 +79,72 @@ async function main() {
 		}
 	}
 
-	// Add Admin as VP of Le Foyer
-	const adminUser = await db.query.users.findFirst({
-		where: eq(users.username, "4!Me223"),
-	});
+	// Assign shop memberships (user + shop + shop role)
+	const assignMembership = async (
+		username: string,
+		shopSlug: string,
+		roleName: string
+	) => {
+		const user = await db.query.users.findFirst({
+			where: eq(users.username, username),
+		});
+		if (!user) {
+			console.log(`⚠️ User '${username}' not found. Skip membership.`);
+			return;
+		}
 
-	if (adminUser) {
-		const barShop = await db.query.shops.findFirst({
-			where: eq(shops.slug, "foyer"), // using slug from list above
+		const shop = await db.query.shops.findFirst({
+			where: eq(shops.slug, shopSlug),
+		});
+		if (!shop) {
+			console.log(`⚠️ Shop '${shopSlug}' not found. Skip membership.`);
+			return;
+		}
+
+		const role = await db.query.shopRoles.findFirst({
+			where: (t, { and, eq }) =>
+				and(eq(t.shopId, shop.id), eq(t.name, roleName)),
+		});
+		if (!role) {
+			console.warn(`⚠️ Shop role '${roleName}' not found for ${shopSlug}.`);
+			return;
+		}
+
+		const existing = await db.query.shopUsers.findFirst({
+			where: (t, { and, eq }) =>
+				and(eq(t.shopId, shop.id), eq(t.userId, user.id)),
 		});
 
-		if (barShop) {
-			// Find VP role
-			const vpRole = await db.query.shopRoles.findFirst({
-				where: (roles, { and, eq }) =>
-					and(eq(roles.shopId, barShop.id), eq(roles.name, "VP")),
-			});
-
-			if (vpRole) {
-				const existingMember = await db.query.shopUsers.findFirst({
-					where: (table, { and, eq }) =>
-						and(eq(table.shopId, barShop.id), eq(table.userId, adminUser.id)),
-				});
-
-				if (!existingMember) {
-					await db.insert(shopUsers).values({
-						shopId: barShop.id,
-						userId: adminUser.id,
-						shopRoleId: vpRole.id,
-					});
-					console.log("✅ Admin added as VP of Le Foyer");
-				} else {
-					// Update if missing role id
-					if (!existingMember.shopRoleId) {
-						await db
-							.update(shopUsers)
-							.set({ shopRoleId: vpRole.id })
-							.where(eq(shopUsers.userId, adminUser.id));
-						console.log("Updated Admin with VP role ID");
-					} else {
-						console.log("= Admin is already a member of Le Foyer");
-					}
-				}
+		if (existing) {
+			if (existing.shopRoleId !== role.id) {
+				await db
+					.update(shopUsers)
+					.set({ shopRoleId: role.id })
+					.where(
+						and(eq(shopUsers.shopId, shop.id), eq(shopUsers.userId, user.id))
+					);
+				console.log(`✅ Updated ${username} -> ${roleName} of ${shopSlug}`);
 			} else {
-				console.warn("⚠️ VP role not found for Foyer");
+				console.log(`= ${username} already ${roleName} of ${shopSlug}`);
 			}
+		} else {
+			await db.insert(shopUsers).values({
+				shopId: shop.id,
+				userId: user.id,
+				shopRoleId: role.id,
+			});
+			console.log(`✅ Added ${username} as ${roleName} of ${shopSlug}`);
 		}
-	} else {
-		console.log("⚠️ Admin user (4!Me223) not found. Skip membership.");
-	}
+	};
+
+	// Admin runs the Foyer, Tyrion leads the Auberge, Cersei the BR.
+	await assignMembership("admin", "foyer", "VP");
+	await assignMembership("tyrion", "foyer", "Grip'ss");
+	await assignMembership("cersei", "foyer", "Membre");
+	await assignMembership("tyrion", "obrg", "Grip'ss");
+	await assignMembership("sansa", "obrg", "Membre");
+	await assignMembership("cersei", "br", "Grip'ss");
+	await assignMembership("arya", "br", "Membre");
 
 	console.log("✅ Seed complete.");
 	process.exit(0);
