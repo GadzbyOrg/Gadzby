@@ -169,6 +169,7 @@ export async function getUserTopProducts() {
 		.select({
 			name: products.name,
 			amount: sql<number>`sum(abs(${transactions.amount}))`,
+			quantity: sql<number>`sum(coalesce(${transactions.quantity}, 1))`,
 		})
 		.from(transactions)
 		.innerJoin(products, eq(transactions.productId, products.id))
@@ -180,12 +181,12 @@ export async function getUserTopProducts() {
 			),
 		)
 		.groupBy(products.id, products.name)
-		.orderBy(sql`sum(abs(${transactions.amount})) desc`)
-		.limit(5);
+		.orderBy(sql`sum(coalesce(${transactions.quantity}, 1)) desc`);
 
 	return topProducts.map((item) => ({
 		name: item.name,
 		amount: Number(item.amount) / 100,
+		quantity: Number(item.quantity),
 	}));
 }
 
