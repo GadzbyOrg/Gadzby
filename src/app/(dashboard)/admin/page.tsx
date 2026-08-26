@@ -120,7 +120,7 @@ const ADMIN_SECTIONS: {
 	},
 	{
 		label: "Fam'ss",
-		description: "Caisses familiales",
+		description: "Comptes de fam'ss",
 		href: "/admin/famss",
 		permission: "MANAGE_FAMSS",
 		icon: IconUsersGroup,
@@ -144,7 +144,7 @@ const ADMIN_SECTIONS: {
 	},
 	{
 		label: "Mandats",
-		description: "Prélèvements SEPA",
+		description: "Exercice en cours",
 		href: "/admin/mandats",
 		permission: "ADMIN_ACCESS",
 		icon: IconReceipt,
@@ -225,7 +225,7 @@ export default async function AdminDashboardPage({
 						Tableau de bord
 					</h2>
 					<p className="text-fg-muted">
-						Pilotage et supervision de Gadzby
+						Activité sur Gadzby
 					</p>
 				</div>
 				<ExportButton />
