@@ -48,11 +48,18 @@ export default async function ShopsPage() {
 											<path d="M16 10a4 4 0 0 1-8 0" />
 										</svg>
 									</div>
-									{shop.isSelfServiceEnabled && (
-										<span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">
-											Self-service
-										</span>
-									)}
+									<div className="flex items-center gap-2">
+										{shop.isSelfServiceEnabled && (
+											<span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">
+												Self-service
+											</span>
+										)}
+										{shop.isCatalogPublic && (
+											<span className="inline-flex items-center rounded-full bg-accent-500/10 px-2 py-1 text-xs font-medium text-accent-400 ring-1 ring-inset ring-accent-500/20">
+												Catalogue
+											</span>
+										)}
+									</div>
 								</div>
 
 								<h3 className="text-xl font-bold text-fg mb-2 group-hover:text-accent-400 transition-colors">

@@ -9,6 +9,7 @@ interface ShopSettingsFormProps {
 	slug: string;
 	initialDescription: string | null; // Allow null
 	initialSelfService: boolean; // Must be boolean
+	initialCatalogPublic: boolean;
 	initialDisconnectAfterCheckout: boolean;
 	initialDefaultMargin: number;
 }
@@ -17,11 +18,13 @@ export function ShopSettingsForm({
 	slug,
 	initialDescription,
 	initialSelfService,
+	initialCatalogPublic,
 	initialDisconnectAfterCheckout,
 	initialDefaultMargin,
 }: ShopSettingsFormProps) {
 	const [description, setDescription] = useState(initialDescription || "");
 	const [isSelfService, setIsSelfService] = useState(initialSelfService);
+	const [isCatalogPublic, setIsCatalogPublic] = useState(initialCatalogPublic);
 	const [disconnectAfterCheckout, setDisconnectAfterCheckout] = useState(initialDisconnectAfterCheckout);
 	const [defaultMargin, setDefaultMargin] = useState(initialDefaultMargin);
 	const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +42,7 @@ export function ShopSettingsForm({
 			data: {
 				description,
 				isSelfServiceEnabled: isSelfService,
+				isCatalogPublic,
 				disconnectAfterCheckout,
 				defaultMargin,
 			},
@@ -102,6 +106,25 @@ export function ShopSettingsForm({
 				>
 					<span
 						className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isSelfService ? "translate-x-6" : "translate-x-1"
+							}`}
+					/>
+				</button>
+			</div>
+
+			<div className="flex items-center justify-between gap-4 p-4 bg-elevated rounded-lg border border-border">
+				<div className="min-w-0 space-y-1">
+					<div className="font-medium text-fg">Catalogue public</div>
+					<div className="text-sm text-fg-muted">
+						Permet aux utilisateurs de voir les produits et les prix même si le self-service est désactivé.
+					</div>
+				</div>
+				<button
+					onClick={() => setIsCatalogPublic(!isCatalogPublic)}
+					className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500/50 ${isCatalogPublic ? "bg-accent-600" : "bg-border"
+						}`}
+				>
+					<span
+						className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isCatalogPublic ? "translate-x-6" : "translate-x-1"
 							}`}
 					/>
 				</button>
