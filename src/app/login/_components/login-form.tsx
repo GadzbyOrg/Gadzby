@@ -63,7 +63,7 @@ function SubmitButton() {
 
 // --- Login Form Component ---
 
-export function LoginForm({ campusName, motd }: { campusName: string; motd?: string | null }) {
+export function LoginForm({ campusName, motd, hideUserDetails = false }: { campusName: string; motd?: string | null; hideUserDetails?: boolean }) {
 
 	const [state, action] = useActionState(loginAction, null as any);
 	const [showPassword, setShowPassword] = useState(false);
@@ -133,6 +133,7 @@ export function LoginForm({ campusName, motd }: { campusName: string; motd?: str
 									onSelect={() => { }} // No need to set external state since we use the input's name
 									name="username"
 									clearOnSelect={false}
+									hideUserDetails={hideUserDetails}
 									className="max-w-none"
 									inputClassName="bg-surface-950 border-0 ring-1 ring-inset ring-border focus:ring-2 focus:ring-inset focus:ring-accent-600 rounded-md py-2.5 pl-10 h-[46px] text-base sm:text-sm" // Styling to match original input
 								/>

@@ -318,6 +318,60 @@ export const updateFamssSettingAction = authenticatedAction(
     { requireAdmin: true }
 );
 
+// ─── Login Privacy (hide names / photos) ──────────────────────────────────────
+
+const loginHideUserDetailsSchema = z.object({
+    enabled: z.union([z.boolean(), z.string().transform((v) => v === "true")]),
+});
+
+export const getLoginHideUserDetailsAction = authenticatedActionNoInput(async () => {
+    try {
+        const setting = await db.query.systemSettings.findFirst({
+            where: eq(systemSettings.key, "login_hide_user_details"),
+        });
+
+        const value = setting?.value as { enabled: boolean } | null;
+        return { enabled: value?.enabled ?? false }; // Default: details are shown
+    } catch (error) {
+        console.error("Failed to fetch login privacy setting:", error);
+        return { error: "Erreur lors de la récupération du paramètre" };
+    }
+}, { requireAdmin: true });
+
+export const updateLoginHideUserDetailsAction = authenticatedAction(
+    loginHideUserDetailsSchema,
+    async (data) => {
+        try {
+            await db.insert(systemSettings)
+                .values({
+                    key: "login_hide_user_details",
+                    value: { enabled: data.enabled },
+                    description: "Masquer les nom/prénom et photos de profil sur la page de connexion",
+                    updatedAt: new Date(),
+                })
+                .onConflictDoUpdate({
+                    target: systemSettings.key,
+                    set: {
+                        value: { enabled: data.enabled },
+                        updatedAt: new Date(),
+                    }
+                });
+
+            revalidatePath("/login");
+            revalidatePath("/admin/settings");
+            return {
+                success: data.enabled
+                    ? "Affichage des noms et photos désactivé"
+                    : "Affichage des noms et photos activé",
+            };
+        } catch (error) {
+            console.error("Failed to update login privacy setting:", error);
+            return { error: "Erreur lors de la sauvegarde" };
+        }
+    },
+    { requireAdmin: true }
+);
+
 export const getCampusNameAction = authenticatedActionNoInput(async () => {
     try {
         const setting = await db.query.systemSettings.findFirst({

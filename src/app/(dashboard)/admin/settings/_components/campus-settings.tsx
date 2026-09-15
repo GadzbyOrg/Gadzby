@@ -1,12 +1,14 @@
 "use client";
 
-import { IconCheck, IconLoader2, IconMessage, IconSchool } from "@tabler/icons-react";
+import { IconCheck, IconEyeOff, IconLoader2, IconMessage, IconSchool } from "@tabler/icons-react";
 import { useEffect, useState, useTransition } from "react";
 
 import {
 	getCampusNameAction,
+	getLoginHideUserDetailsAction,
 	getLoginMotdAction,
 	updateCampusNameAction,
+	updateLoginHideUserDetailsAction,
 	updateLoginMotdAction,
 } from "@/features/settings/actions";
 import { cn } from "@/lib/utils";
@@ -14,6 +16,7 @@ import { cn } from "@/lib/utils";
 export function CampusSettings() {
 	const [name, setName] = useState("");
 	const [motd, setMotd] = useState("");
+	const [hideUserDetails, setHideUserDetails] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [isPending, startTransition] = useTransition();
 	const [feedback, setFeedback] = useState<{
@@ -25,9 +28,11 @@ export function CampusSettings() {
 		Promise.all([
 			getCampusNameAction(),
 			getLoginMotdAction(),
-		]).then(([nameRes, motdRes]: [any, any]) => {
+			getLoginHideUserDetailsAction(),
+		]).then(([nameRes, motdRes, hideRes]: [any, any, any]) => {
 			if ("name" in nameRes) setName(nameRes.name);
 			if ("text" in motdRes) setMotd(motdRes.text);
+			if ("enabled" in hideRes) setHideUserDetails(hideRes.enabled);
 			setLoading(false);
 		});
 	}, []);
@@ -40,16 +45,20 @@ export function CampusSettings() {
 			nameFormData.set("name", name);
 			const motdFormData = new FormData();
 			motdFormData.set("text", motd);
+			const hideFormData = new FormData();
+			hideFormData.set("enabled", hideUserDetails ? "true" : "false");
 
 			// @ts-ignore
-			const [nameRes, motdRes] = await Promise.all([
+			const [nameRes, motdRes, hideRes] = await Promise.all([
 				// @ts-ignore
 				updateCampusNameAction(null, nameFormData),
 				// @ts-ignore
 				updateLoginMotdAction(null, motdFormData),
+				// @ts-ignore
+				updateLoginHideUserDetailsAction(null, hideFormData),
 			]);
 
-			const error = nameRes?.error || motdRes?.error;
+			const error = nameRes?.error || motdRes?.error || hideRes?.error;
 			if (error) {
 				setFeedback({ type: "error", message: error });
 			} else {
@@ -144,6 +153,49 @@ export function CampusSettings() {
 								)}
 							/>
 						</div>
+					</div>
+
+					{/* Hide user details (names / photos) toggle */}
+					<div className="flex items-center justify-between gap-6">
+						<div className="flex items-center gap-3">
+							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-900/30 text-accent-500 shrink-0">
+								<IconEyeOff size={20} />
+							</div>
+							<div>
+								<p className="text-sm font-medium text-fg">
+									Masquer les noms et photos
+								</p>
+								<p className="text-xs text-fg-muted">
+									{hideUserDetails
+										? "Seul l'identifiant est affiché lors de la recherche."
+										: "Nom, prénom et photo de profil sont affichés lors de la recherche."}
+								</p>
+							</div>
+						</div>
+
+						<button
+							type="button"
+							role="switch"
+							aria-checked={hideUserDetails}
+							disabled={isPending}
+							onClick={() => {
+								setHideUserDetails((v) => !v);
+								setFeedback(null);
+							}}
+							className={cn(
+								"relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent",
+								"transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-600 focus:ring-offset-2 focus:ring-offset-surface-900",
+								"disabled:opacity-60 disabled:cursor-not-allowed",
+								hideUserDetails ? "bg-accent-600" : "bg-elevated"
+							)}
+						>
+							<span
+								className={cn(
+									"pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-in-out",
+									hideUserDetails ? "translate-x-5" : "translate-x-0.5"
+								)}
+							/>
+						</button>
 					</div>
 
 					<div className="flex justify-end">
