@@ -16,6 +16,12 @@ export interface UserSearchProps {
     searchAction?: (query: string) => Promise<{ users?: any[]; error?: string }>;
     defaultQuery?: string;
     onInputChange?: (query: string) => void;
+    /**
+     * When true, hides the profile photo and the name / first name in the
+     * results list, showing only the username. Used on the login page when the
+     * administrator disables display of user details.
+     */
+    hideUserDetails?: boolean;
 }
 
 const EMPTY_ARRAY: string[] = [];
@@ -30,7 +36,8 @@ export function UserSearch({
     clearOnSelect = true,
     searchAction = searchUsersPublicAction,
     defaultQuery = "",
-    onInputChange
+    onInputChange,
+    hideUserDetails = false
 }: UserSearchProps) {
     const [query, setQuery] = useState(defaultQuery);
     const [results, setResults] = useState<any[]>([]);
@@ -184,24 +191,32 @@ export function UserSearch({
                             onClick={() => handleSelect(user)}
                             className="w-full text-left px-4 py-2 hover:bg-elevated transition-colors flex items-center gap-3 group"
                         >
-                            <UserAvatar
-                                user={{
-                                    id: user.id,
-                                    name: user.username,
-                                    username: user.username,
-                                    image: user.image,
-                                }}
-                                className="h-8 w-8"
-                            />
-                            <div>
+                            {hideUserDetails ? (
                                 <div className="text-sm font-medium text-fg">
-                                    {user.prenom} {user.nom}
+                                    {user.username}
                                 </div>
-                                <div className="text-xs text-fg-subtle">
-                                    {user.bucque ? `${user.bucque} ` : ''}
-                                    <span className="opacity-70">({user.username})</span>
-                                </div>
-                            </div>
+                            ) : (
+                                <>
+                                    <UserAvatar
+                                        user={{
+                                            id: user.id,
+                                            name: user.username,
+                                            username: user.username,
+                                            image: user.image,
+                                        }}
+                                        className="h-8 w-8"
+                                    />
+                                    <div>
+                                        <div className="text-sm font-medium text-fg">
+                                            {user.prenom} {user.nom}
+                                        </div>
+                                        <div className="text-xs text-fg-subtle">
+                                            {user.bucque ? `${user.bucque} ` : ''}
+                                            <span className="opacity-70">({user.username})</span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </button>
                     ))}
                 </div>
