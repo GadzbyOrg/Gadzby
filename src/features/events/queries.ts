@@ -191,6 +191,9 @@ export async function getShopPublicEvents(shopId: string, userId?: string) {
 			description: event.description,
 			startDate: event.startDate,
 			type: event.type,
+			acompte: event.acompte,
+			maxParticipants: event.maxParticipants,
+			participantsCount: event.participants.length,
 			isJoined,
 		};
 	});
