@@ -40,3 +40,23 @@ export async function getLoginMotd(): Promise<string | null> {
 		return null;
 	}
 }
+
+/**
+ * Public query to know whether user details (name, first name and profile
+ * photo) should be hidden in the login page search field, showing only the
+ * username. Does NOT require authentication — safe for use on the login page.
+ * Returns false (details shown) by default.
+ */
+export async function getLoginHideUserDetails(): Promise<boolean> {
+	try {
+		const setting = await db.query.systemSettings.findFirst({
+			where: eq(systemSettings.key, "login_hide_user_details"),
+		});
+
+		const value = setting?.value as { enabled: boolean } | null;
+		return value?.enabled ?? false;
+	} catch (error) {
+		console.error("Failed to fetch login privacy setting:", error);
+		return false;
+	}
+}
