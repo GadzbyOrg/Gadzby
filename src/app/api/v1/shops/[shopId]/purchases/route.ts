@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { rateLimit, validateApiKey, withIdempotency } from "@/lib/api-auth";
+import { findAppError } from "@/lib/errors";
 import { TransactionService } from "@/services/transaction-service";
 
 const purchaseItemSchema = z.object({
@@ -87,19 +88,19 @@ export async function POST(
 
 			return NextResponse.json({ success: true }, { status: 201 });
 		} catch (error: any) {
+			// Erreur métier : statut et message portés par l'AppError elle-même,
+			// plus de matching sur le texte français.
+			const appError = findAppError(error);
+			if (appError) {
+				return NextResponse.json(
+					{ error: appError.message },
+					{ status: appError.status },
+				);
+			}
+
+			// Panne technique uniquement : c'est ça qui mérite une alerte.
 			Sentry.captureException(error);
 			console.error("API Purchase Error:", error);
-
-			// Catch known service errors to return 400 instead of 500
-			if (
-				error instanceof Error &&
-				(error.message.includes("Solde insuffisant") ||
-					error.message.includes("introuvable") ||
-					error.message.includes("invalide") ||
-					error.message.includes("désactivé"))
-			) {
-				return NextResponse.json({ error: error.message }, { status: 400 });
-			}
 
 			return NextResponse.json(
 				{ error: "Internal Server Error" },

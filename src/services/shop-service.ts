@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { db } from "@/db";
 import { eventExpenseSplits, eventParticipants,eventRevenues, events, inventoryAuditItems, inventoryAudits, productCategories, productRestocks, products, productVariants, shopExpenses, shopRoles, shops, shopUsers, transactions } from "@/db/schema";
 import { SHOP_PERMISSIONS } from "@/features/shops/permissions";
+import { AppError } from "@/lib/errors";
 
 export class ShopService {
     static async create(data: { name: string; slug?: string; description?: string; category?: string }) {
@@ -18,7 +19,7 @@ export class ShopService {
             where: eq(shops.slug, slug),
         });
 
-        if (existingShop) throw new Error("Ce shop existe déjà");
+        if (existingShop) throw new AppError("Ce shop existe déjà");
 
         const [newShop] = await db.insert(shops).values({
             name,
@@ -146,7 +147,7 @@ export class ShopService {
         const assigned = await db.query.shopUsers.findFirst({
 			where: eq(shopUsers.shopRoleId, roleId),
 		});
-		if (assigned) throw new Error("Ce rôle est assigné à des membres");
+		if (assigned) throw new AppError("Ce rôle est assigné à des membres");
 
 		await db
 			.delete(shopRoles)
@@ -164,7 +165,7 @@ export class ShopService {
 		});
 
 		if (existingMember)
-			throw new Error("Cet utilisateur est déjà dans l'équipe");
+			throw new AppError("Cet utilisateur est déjà dans l'équipe");
 
 		let newRoleId: string | null = null;
 		if (!["VP", "MEMBRE", "GRIPSS"].includes(roleOrRoleId)) {
@@ -315,7 +316,7 @@ export class ShopService {
         });
 
         if (existingCategory) {
-            throw new Error("Une catégorie avec ce nom existe déjà");
+            throw new AppError("Une catégorie avec ce nom existe déjà");
         }
 
         const [newCat] = await db.insert(productCategories).values({
@@ -335,7 +336,7 @@ export class ShopService {
         });
 
         if (existingCategory) {
-            throw new Error("Une catégorie avec ce nom existe déjà");
+            throw new AppError("Une catégorie avec ce nom existe déjà");
         }
 
         await db
@@ -354,7 +355,7 @@ export class ShopService {
         });
 
         if (activeProducts) {
-            throw new Error("Impossible de supprimer une catégorie qui contient des produits");
+            throw new AppError("Impossible de supprimer une catégorie qui contient des produits");
         }
 
         await db.transaction(async (tx) => {
@@ -385,7 +386,7 @@ export class ShopService {
                 }
 
                 if (categoryId === archiveCat.id) {
-                    throw new Error("Impossible de supprimer la catégorie système d'archives");
+                    throw new AppError("Impossible de supprimer la catégorie système d'archives");
                 }
 
                 const productIds = archivedProducts.map(p => p.id);

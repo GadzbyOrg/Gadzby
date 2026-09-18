@@ -96,13 +96,16 @@ export const loginAction = publicAction(
 
 		console.log("Login successful:", username);
 		redirect("/");
-	}
+	},
+	{ name: "loginAction" },
 );
 
 export const logoutAction = publicActionNoInput(async () => {
 	await deleteSession();
 	redirect("/login");
-});
+},
+	{ name: "logoutAction" },
+);
 
 export const forgotPasswordAction = publicAction(
 	forgotPasswordSchema,
@@ -155,7 +158,8 @@ export const forgotPasswordAction = publicAction(
 			success:
 				"Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
 		};
-	}
+	},
+	{ name: "forgotPasswordAction" },
 );
 
 export const resetPasswordAction = publicAction(
@@ -197,5 +201,6 @@ export const resetPasswordAction = publicAction(
 			success:
 				"Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
 		};
-	}
+	},
+	{ name: "resetPasswordAction" },
 );

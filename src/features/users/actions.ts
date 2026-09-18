@@ -8,7 +8,6 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { transactions } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
-import { handleDbError } from "@/lib/db-errors";
 import { verifySession } from "@/lib/session";
 import { UserService } from "@/services/user-service";
 
@@ -26,15 +25,12 @@ import {
 export const updateUserAction = authenticatedAction(
 	updateUserSchema,
 	async (data, { session }) => {
-		try {
-			await UserService.update(session.userId, data);
+		await UserService.update(session.userId, data);
 
-			revalidatePath("/settings");
-			return { success: "Profil mis à jour avec succès" };
-		} catch (error) {
-			return { error: handleDbError(error) };
-		}
-	}
+		revalidatePath("/settings");
+		return { success: "Profil mis à jour avec succès" };
+	},
+	{ name: "updateUserAction" },
 );
 
 export async function getUsers(
@@ -139,22 +135,18 @@ export const getPromssListAction = authenticatedAction(
 
 		return { promss: result.map((r) => r.promss).filter(Boolean) as string[] };
 	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
+	{ name: "actions.getPromssListAction", permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
 export const adminUpdateUserAction = authenticatedAction(
 	adminUpdateUserSchema,
 	async (data, { session }) => {
-		try {
-			await UserService.adminUpdate(data.userId, session.userId, data);
+		await UserService.adminUpdate(data.userId, session.userId, data);
 
-			revalidatePath("/admin/users");
-			return { success: "Utilisateur mis à jour avec succès" };
-		} catch (error: unknown) {
-			return { error: handleDbError(error) };
-		}
+		revalidatePath("/admin/users");
+		return { success: "Utilisateur mis à jour avec succès" };
 	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
+	{ name: "adminUpdateUserAction", permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
 export const getUserTransactions = authenticatedAction(
@@ -218,22 +210,18 @@ export const getUserTransactions = authenticatedAction(
 			return { error: "Erreur lors de la récupération de l'historique" };
 		}
 	},
-	{ permissions: ["ADMIN_ACCESS", "VIEW_TRANSACTIONS"] }
+	{ name: "getUserTransactions", permissions: ["ADMIN_ACCESS", "VIEW_TRANSACTIONS"] }
 );
 
 export const createUserAction = authenticatedAction(
 	createUserSchema,
 	async (data) => {
-		try {
-			await UserService.create(data);
+		await UserService.create(data);
 
-			revalidatePath("/admin/users");
-			return { success: "Utilisateur créé avec succès" };
-		} catch (error) {
-			return { error: handleDbError(error) };
-		}
+		revalidatePath("/admin/users");
+		return { success: "Utilisateur créé avec succès" };
 	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
+	{ name: "createUserAction", permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
 
@@ -292,7 +280,7 @@ export const importUsersBatchAction = authenticatedAction(
 			return { error: "Erreur lors de l'import du lot" };
 		}
 	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
+	{ name: "importUsersBatchAction", permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
 export const hardDeleteUserAction = authenticatedAction(
@@ -307,7 +295,7 @@ export const hardDeleteUserAction = authenticatedAction(
 			return { error: error instanceof Error ? error.message : "Erreur lors de la suppression" };
 		}
 	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
+	{ name: "hardDeleteUserAction", permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
 export const toggleUserStatusAction = authenticatedAction(
@@ -326,7 +314,7 @@ export const toggleUserStatusAction = authenticatedAction(
 			return { error: "Erreur lors de la modification du statut" };
 		}
 	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
+	{ name: "toggleUserStatusAction", permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
 export async function searchUsersPublicAction(query: string) {
@@ -363,21 +351,19 @@ export const changeSelfPasswordAction = authenticatedAction(
 		} catch (error) {
 			return { error: error instanceof Error ? error.message : "Erreur lors du changement de mot de passe" };
 		}
-	}
+	},
+	{ name: "changeSelfPasswordAction" },
 );
 
 export const updateUserPreferencesAction = authenticatedAction(
 	z.object({ preferredDashboardPath: z.string() }),
 	async ({ preferredDashboardPath }, { session }) => {
-		try {
-			await db.update(users)
-				.set({ preferredDashboardPath })
-				.where(eq(users.id, session.userId));
+		await db.update(users)
+			.set({ preferredDashboardPath })
+			.where(eq(users.id, session.userId));
 
-			revalidatePath("/settings");
-			return { success: "Préférences mises à jour" };
-		} catch (error) {
-			return { error: handleDbError(error) };
-		}
-	}
+		revalidatePath("/settings");
+		return { success: "Préférences mises à jour" };
+	},
+	{ name: "updateUserPreferencesAction" },
 );

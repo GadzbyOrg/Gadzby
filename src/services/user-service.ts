@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { famsMembers, roles, shopUsers, transactions, users } from "@/db/schema";
 import { getTabagnssCode } from "@/features/users/constants";
 import { importUserRowSchema, type Tbk } from "@/features/users/schemas";
+import { AppError } from "@/lib/errors";
 
 const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
 
@@ -82,9 +83,9 @@ export class UserService {
                 columns: { balance: true, isDeleted: true },
             });
 
-            if (!currentUser) throw new Error("Utilisateur non trouvé");
+            if (!currentUser) throw new AppError("Utilisateur non trouvé");
             if (currentUser.isDeleted)
-                throw new Error("Impossible de modifier un utilisateur supprimé");
+                throw new AppError("Impossible de modifier un utilisateur supprimé");
 
             const diff = balance - currentUser.balance;
 
@@ -176,7 +177,7 @@ export class UserService {
         });
 
         if (existingUser) {
-            throw new Error("Un utilisateur avec ce username, email ou téléphone existe déjà");
+            throw new AppError("Un utilisateur avec ce username, email ou téléphone existe déjà");
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
@@ -204,10 +205,10 @@ export class UserService {
                 columns: { balance: true, roleId: true, image: true },
             });
 
-            if (!user) throw new Error("Utilisateur non trouvé");
+            if (!user) throw new AppError("Utilisateur non trouvé");
 
             if (user.balance != 0) {
-                throw new Error(
+                throw new AppError(
                     "Impossible de supprimer un utilisateur avec un solde positif."
                 );
             }
@@ -219,7 +220,7 @@ export class UserService {
             });
 
             if (role?.name === "ADMIN") {
-                throw new Error(
+                throw new AppError(
                     "Impossible de supprimer un utilisateur avec le rôle ADMIN."
                 );
             }
@@ -278,7 +279,7 @@ export class UserService {
         const userRole = await db.query.roles.findFirst({
             where: eq(roles.name, "USER"),
         });
-        if (!userRole) throw new Error("Rôle USER introuvable pour les imports");
+        if (!userRole) throw new AppError("Rôle USER introuvable pour les imports");
 
         // Prepare chunk data with metadata
         const chunkDataWithMeta = rows.map((item) => {
@@ -411,11 +412,11 @@ export class UserService {
             where: eq(users.id, userId),
         });
 
-        if (!user) throw new Error("Utilisateur introuvable");
+        if (!user) throw new AppError("Utilisateur introuvable");
 
         const match = await bcrypt.compare(currentPassword, user.passwordHash);
         if (!match) {
-            throw new Error("Mot de passe actuel incorrect");
+            throw new AppError("Mot de passe actuel incorrect");
         }
 
         const salt = await bcrypt.genSalt(10);

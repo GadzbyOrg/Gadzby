@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { shops, transactions } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
+import { AppError } from "@/lib/errors";
 import { TransactionService } from "@/services/transaction-service";
 
 import { getTransactionsQuery } from "../transactions/queries"; // Import from sibling feature
@@ -37,7 +38,8 @@ export const processSale = authenticatedAction(
 
 		revalidatePath(`/shops/${shopSlug}`);
 		return { success: true };
-	}
+	},
+	{ name: "processSale" },
 );
 
 export const getShopTransactions = authenticatedAction(
@@ -85,7 +87,8 @@ export const getShopTransactions = authenticatedAction(
 			.where(whereClause);
 
 		return { transactions: history, shop, totalCount: totalCountResult[0].count };
-	}
+	},
+	{ name: "getShopTransactions" },
 );
 
 export const exportShopTransactionsAction = authenticatedAction(
@@ -131,7 +134,8 @@ export const exportShopTransactionsAction = authenticatedAction(
 		}));
 
 		return { success: "Export réussi", data: formattedData };
-	}
+	},
+	{ name: "exportShopTransactionsAction" },
 );
 
 export const processSelfServicePurchase = authenticatedAction(
@@ -144,10 +148,10 @@ export const processSelfServicePurchase = authenticatedAction(
 			// include products for verification? original did logic with products separately.
 		});
 
-		if (!shop) throw new Error("Shop introuvable");
+		if (!shop) throw new AppError("Shop introuvable");
 
 		if (!shop.isSelfServiceEnabled)
-			throw new Error("Self-service désactivé pour ce shop");
+			throw new AppError("Self-service désactivé pour ce shop");
 
 		const productIds = items.map((i) => i.productId);
 		const dbProducts = await db.query.products.findMany({
@@ -160,7 +164,7 @@ export const processSelfServicePurchase = authenticatedAction(
 		});
 
 		if (dbProducts.length !== new Set(productIds).size) {
-			throw new Error(
+			throw new AppError(
 				"Certains produits ne sont pas disponibles en self-service"
 			);
 		}
@@ -177,5 +181,6 @@ export const processSelfServicePurchase = authenticatedAction(
 
 		revalidatePath(`/shops/${shopSlug}`);
 		return { success: true };
-	}
+	},
+	{ name: "processSelfServicePurchase" },
 );

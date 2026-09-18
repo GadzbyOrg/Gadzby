@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { POST } from "../route";
 import * as apiAuth from "@/lib/api-auth";
 import { TransactionService } from "@/services/transaction-service";
+import { AppError } from "@/lib/errors";
 
 vi.mock("@/lib/api-auth", () => ({
 	validateApiKey: vi.fn(),
@@ -104,11 +105,11 @@ describe("POST /api/v1/shops/[shopId]/purchases", () => {
 		);
 	});
 
-	it("should gracefully handle known transaction errors with 400", async () => {
+	it("should map a business AppError to its own status and message", async () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1", name: "App" } as any });
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 		
-		vi.mocked(TransactionService.processShopPurchase).mockRejectedValue(new Error("Solde insuffisant"));
+		vi.mocked(TransactionService.processShopPurchase).mockRejectedValue(new AppError("Solde insuffisant"));
 
 		const validPayload = {
 			targetUserId: "931fdf78-c0b3-46ea-967b-117c2a71d794",
@@ -125,5 +126,29 @@ describe("POST /api/v1/shops/[shopId]/purchases", () => {
 
 		expect(res.status).toBe(400);
 		expect(json.error).toBe("Solde insuffisant");
+	});
+
+	it("should mask a technical failure behind a 500 without leaking its message", async () => {
+		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1", name: "App" } as any });
+		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
+
+		vi.mocked(TransactionService.processShopPurchase).mockRejectedValue(
+			new Error("connect ECONNREFUSED 10.0.0.1:5432")
+		);
+
+		const req = new NextRequest("http://localhost/api/v1/shops/shop-1/purchases", {
+			method: "POST",
+			body: JSON.stringify({
+				targetUserId: "931fdf78-c0b3-46ea-967b-117c2a71d794",
+				items: [{ productId: "831fdf78-c0b3-46ea-967b-117c2a71d794", quantity: 2 }]
+			})
+		});
+
+		const res = await POST(req, { params: mockParams });
+		const json = await res.json();
+
+		expect(res.status).toBe(500);
+		expect(json.error).toBe("Internal Server Error");
+		expect(JSON.stringify(json)).not.toContain("ECONNREFUSED");
 	});
 });

@@ -50,7 +50,8 @@ export const createEvent = authenticatedAction(
 
 		revalidatePath(`/shops/${data.shopId}/manage/events`);
 		return newEvent;
-	}
+	},
+	{ name: "createEvent" },
 );
 
 export const updateEvent = authenticatedAction(
@@ -84,7 +85,8 @@ export const updateEvent = authenticatedAction(
 		revalidatePath(`/shops/${data.shopId}/manage/events`);
 		revalidatePath(`/shops/${data.shopId}/manage/events/${data.eventId}`);
 		return updated;
-	}
+	},
+	{ name: "updateEvent" },
 );
 
 export const deleteEvent = authenticatedAction(
@@ -114,7 +116,8 @@ export const deleteEvent = authenticatedAction(
 			console.error("Failed to delete event:", error);
 			return { error: (error as Error).message || "Impossible de supprimer l'événement" };
 		}
-	}
+	},
+	{ name: "deleteEvent" },
 );
 
 export const activateEvent = authenticatedAction(
@@ -244,7 +247,8 @@ export const activateEvent = authenticatedAction(
 		revalidatePath(`/shops/${data.shopId}/manage/events`);
 		revalidatePath(`/shops/${data.shopId}/manage/events/${data.eventId}`);
 		return { message: "Event activated" };
-	}
+	},
+	{ name: "activateEvent" },
 );
 
 export const startEvent = authenticatedAction(
@@ -274,7 +278,8 @@ export const startEvent = authenticatedAction(
 
 		revalidatePath(`/shops/${event.shopId}/manage/events/${data.eventId}`);
 		return { success: "Event started" };
-	}
+	},
+	{ name: "startEvent" },
 );
 
 export const closeEvent = authenticatedAction(
@@ -307,5 +312,6 @@ export const closeEvent = authenticatedAction(
 
 		revalidatePath(`/shops/${event.shopId}/manage/events/${data.eventId}`);
 		return { success: "Event closed" };
-	}
+	},
+	{ name: "closeEvent" },
 );

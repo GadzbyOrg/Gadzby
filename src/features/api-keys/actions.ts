@@ -34,7 +34,7 @@ export const createApiKeyAction = authenticatedAction(
 		
 		return { success: "API Key created successfully", rawKey };
 	},
-	{ permissions: ["ADMIN_ACCESS"] }
+	{ name: "createApiKeyAction", permissions: ["ADMIN_ACCESS"] }
 );
 
 export const revokeApiKeyAction = authenticatedAction(
@@ -48,5 +48,5 @@ export const revokeApiKeyAction = authenticatedAction(
 		revalidatePath("/admin/settings");
 		return { success: "API Key revoked successfully" };
 	},
-	{ permissions: ["ADMIN_ACCESS"] }
+	{ name: "revokeApiKeyAction", permissions: ["ADMIN_ACCESS"] }
 );

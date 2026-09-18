@@ -72,7 +72,9 @@ export const getPennyLaneCategories = authenticatedActionNoInput(async () => {
 		console.error("Error fetching categories:", e);
 		return { categories: [] };
 	}
-});
+},
+	{ name: "getPennyLaneCategories" },
+);
 
 
 export const getPennylaneImportCandidates = authenticatedAction(
@@ -196,7 +198,8 @@ export const getPennylaneImportCandidates = authenticatedAction(
 			console.error("Error syncing Pennylane:", e);
 			return { error: "Erreur interne" };
 		}
-	}
+	},
+	{ name: "getPennylaneImportCandidates" },
 );
 
 export const importPennylaneInvoices = authenticatedAction(
@@ -255,5 +258,6 @@ export const importPennylaneInvoices = authenticatedAction(
 		revalidatePath(`/shops/${shopSlug}/manage/expenses`);
 
 		return { success: `${count} dépense(s) importée(s)` };
-	}
+	},
+	{ name: "importPennylaneInvoices" },
 );
