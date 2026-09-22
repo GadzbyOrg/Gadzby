@@ -273,7 +273,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 							className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
 								timeframe === t
 									? "bg-accent-600 text-white shadow-sm"
-									: "text-fg-muted hover:text-white hover:bg-elevated"
+									: "text-fg-muted hover:text-fg hover:bg-elevated"
 							}`}
 						>
 							{t === "7d" && "7 Jours"}
@@ -363,7 +363,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 					<div className="flex justify-center w-full py-2">
 						<button
 							onClick={() => setIsChartsExpanded(!isChartsExpanded)}
-							className="flex items-center gap-2 px-5 py-2.5 bg-elevated hover:bg-elevated text-fg-muted hover:text-white rounded-full text-sm font-medium transition-all shadow-sm border border-border select-none"
+							className="flex items-center gap-2 px-5 py-2.5 bg-elevated hover:bg-elevated text-fg-muted hover:text-fg rounded-full text-sm font-medium transition-all shadow-sm border border-border select-none"
 						>
 							{isChartsExpanded ? (
 								<>
@@ -412,7 +412,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 							<div className="grid grid-cols-1 gap-6">
 								{/* Evolution financière */}
 								<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
-									<h3 className="text-lg font-medium text-white mb-6">
+									<h3 className="text-lg font-medium text-fg mb-6">
 										Évolution du chiffre d'affaires
 									</h3>
 									<div className="flex-1 min-h-[320px] w-full overflow-x-auto custom-scrollbar">
@@ -504,7 +504,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 
 								{/* Category Stats */}
 								<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
-									<h3 className="text-lg font-medium text-white mb-4">
+									<h3 className="text-lg font-medium text-fg mb-4">
 										Revenus par catégorie
 									</h3>
 									{categoryStats.length === 0 ? (
@@ -568,7 +568,7 @@ export function StatisticsCharts({ slug }: StatisticsChartsProps) {
 								</div>
 									{/* Revenue vs Expenses comparison */}
 									<div className="bg-surface-900 p-6 rounded-xl border border-border flex flex-col w-full">
-										<h3 className="text-lg font-medium text-white mb-4">
+										<h3 className="text-lg font-medium text-fg mb-4">
 											Revenus vs Dépenses
 										</h3>
 										{groupedData.length === 0 ? (

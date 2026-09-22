@@ -82,7 +82,7 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
 							className={`rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
 								metric === key
 									? "bg-accent-600 text-white shadow-sm"
-									: "text-fg-muted hover:bg-elevated hover:text-white"
+									: "text-fg-muted hover:bg-elevated hover:text-fg"
 							}`}
 						>
 							{METRICS[key].label}
