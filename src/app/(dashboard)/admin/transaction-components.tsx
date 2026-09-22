@@ -102,11 +102,11 @@ export function TransactionToolbar() {
 			{/* Row 1: Search + mobile filter toggle */}
 			<div className="flex gap-2">
 				<div className="relative flex-1">
-					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-3.5 h-3.5 pointer-events-none" />
+					<IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle w-3.5 h-3.5 pointer-events-none" />
 					<input
 						type="text"
 						placeholder="Rechercher par description, utilisateur, montant..."
-						className="h-10 w-full rounded-lg border border-border bg-surface-950 pl-9 pr-4 text-sm text-fg placeholder:text-gray-600 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
+						className="h-10 w-full rounded-lg border border-border bg-surface-950 pl-9 pr-4 text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
 						defaultValue={searchParams.get("search")?.toString()}
 						onChange={(e) => handleSearch(e.target.value)}
 					/>
@@ -114,11 +114,11 @@ export function TransactionToolbar() {
 				<button
 					type="button"
 					onClick={() => setFiltersOpen((o) => !o)}
-					className="md:hidden relative h-10 px-3 rounded-lg border border-border bg-surface-950 text-gray-400 hover:text-white hover:border-primary-600 transition-colors shrink-0"
+					className="md:hidden relative h-10 px-3 rounded-lg border border-border bg-surface-950 text-fg-muted hover:text-fg hover:border-accent-500 transition-colors shrink-0"
 				>
 					<IconFilter size={16} />
 					{activeFilterCount > 0 && (
-						<span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary-600 text-white text-[10px] font-bold flex items-center justify-center">
+						<span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent-600 text-white text-[10px] font-bold flex items-center justify-center">
 							{activeFilterCount}
 						</span>
 					)}

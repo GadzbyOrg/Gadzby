@@ -85,7 +85,7 @@ export function CartSummary({
 
             {/* Header / Clear */}
             <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-white">Panier ({cartItemsCount})</h3>
+                <h3 className="font-semibold text-fg">Panier ({cartItemsCount})</h3>
                 {onClearCart && cartItemsCount > 0 && (
                     <button
                         onClick={onClearCart}
@@ -124,11 +124,11 @@ export function CartSummary({
                                 className="flex justify-between items-center bg-elevated p-2 rounded-lg"
                             >
                                 <span className="flex-1">
-                                    <div className="text-white font-medium">{product.name} {variant && <span className="text-fg-muted text-xs font-normal">({variant.name})</span>}</div>
+                                    <div className="text-fg font-medium">{product.name} {variant && <span className="text-fg-muted text-xs font-normal">({variant.name})</span>}</div>
                                     <div className="text-xs text-fg-subtle">{(price / 100).toFixed(2)}€ x {qty}</div>
                                 </span>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-mono font-bold text-white">
+                                    <span className="font-mono font-bold text-fg">
                                         {((price * qty) / 100).toFixed(2)}€
                                     </span>
                                     <div className="flex items-center gap-1 ml-2">
@@ -157,8 +157,8 @@ export function CartSummary({
             )}
 
             <div className="border-t border-border pt-3 flex items-center justify-between mb-4">
-                <span className="font-semibold text-white">Total</span>
-                <div className="text-2xl font-bold font-mono text-white">
+                <span className="font-semibold text-fg">Total</span>
+                <div className="text-2xl font-bold font-mono text-fg">
                     {(cartTotal / 100).toFixed(2)}€
                 </div>
             </div>
@@ -171,7 +171,7 @@ export function CartSummary({
                             <button
                                 onClick={() => setPaymentSource("PERSONAL")}
                                 className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${paymentSource === "PERSONAL"
-                                    ? "bg-surface-800 border-accent-500 text-white"
+                                    ? "bg-elevated border-accent-500 text-fg"
                                     : "bg-surface-900 border-border text-fg-muted hover:bg-elevated"
                                     }`}
                             >
@@ -187,7 +187,7 @@ export function CartSummary({
                                 }}
                                 disabled={clientFamss.length === 0}
                                 className={`flex items-center justify-center p-2 rounded-lg border text-sm transition-all ${paymentSource === "FAMILY"
-                                    ? "bg-surface-800 border-accent-500 text-white"
+                                    ? "bg-elevated border-accent-500 text-fg"
                                     : "bg-surface-900 border-border text-fg-muted hover:bg-elevated disabled:opacity-50"
                                     }`}
                             >

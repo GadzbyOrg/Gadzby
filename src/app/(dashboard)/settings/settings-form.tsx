@@ -68,7 +68,7 @@ function PreferredPathSelector({ defaultValue }: { defaultValue: string | null }
 						value={customValue}
 						onChange={(e) => setCustomValue(e.target.value)}
 						placeholder="/exemple/chemin"
-						className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
+						className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
 					/>
 				</div>
 			)}
@@ -155,7 +155,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="email"
 							id="email"
 							defaultValue={user.email}
-							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -170,7 +170,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="phone"
 							id="phone"
 							defaultValue={user.phone}
-							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>
@@ -186,7 +186,7 @@ export function SettingsForm({ user }: { user: any }) {
 							name="bucque"
 							id="bucque"
 							defaultValue={user.bucque}
-							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-white shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
+							className="block w-full rounded-md border-0 bg-surface-950 py-2.5 pl-10 text-fg shadow-sm ring-1 ring-inset ring-border placeholder:text-fg-subtle focus:ring-2 focus:ring-inset focus:ring-accent-500 sm:text-sm sm:leading-6"
 						/>
 					</div>
 				</div>

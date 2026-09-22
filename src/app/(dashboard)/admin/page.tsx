@@ -156,7 +156,7 @@ const ADMIN_SECTIONS: {
 		href: "/admin/settings",
 		permission: "MANAGE_PAYMENTS",
 		icon: IconSettings,
-		color: "bg-gray-500/10 text-gray-400",
+		color: "bg-elevated text-fg-muted",
 	},
 ];
 

@@ -690,7 +690,7 @@ function TransactionMobileCard({
 				isPending ? "bg-yellow-500" :
 				isFailed ? "bg-red-500" :
 				isCancelled ? "bg-elevated" :
-				isPositive ? "bg-emerald-500" : "bg-surface-800",
+				isPositive ? "bg-emerald-500" : "bg-surface-700",
 			)} />
 
 			<div className="flex flex-1 items-center gap-3 px-3 py-2.5 min-w-0">
@@ -819,7 +819,7 @@ function TransactionGroupMobileCard({
 				{/* Left stripe */}
 				<div className={cn(
 					"w-0.5 self-stretch rounded-full shrink-0",
-					isPositive ? "bg-emerald-500" : "bg-surface-800",
+					isPositive ? "bg-emerald-500" : "bg-surface-700",
 				)} />
 
 				<div className={cn(
