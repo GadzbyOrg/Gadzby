@@ -142,7 +142,7 @@ export function EventExpenses({ event }: Props) {
              <div className="flex justify-end">
                 <button 
                     onClick={handleOpenLink}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md bg-surface-800 text-fg-muted hover:bg-elevated transition-colors text-sm"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md bg-elevated text-fg-muted hover:bg-surface-950 transition-colors text-sm"
                 >
                     <IconLink size={16} />
                     Lier une dépense existante
@@ -162,7 +162,7 @@ export function EventExpenses({ event }: Props) {
                             <th className="px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-dark-700 bg-surface-900">
+                    <tbody className="divide-y divide-border bg-surface-900">
                         {allExpenses.map((e) => (
                             <tr key={e.id} className="hover:bg-elevated/50">
                                 <td className="px-4 py-3">{new Date(e.date).toLocaleDateString()}</td>
@@ -174,7 +174,7 @@ export function EventExpenses({ event }: Props) {
                                         <span className="px-2 py-0.5 rounded text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20">Partiel</span>
                                     )}
                                 </td>
-                                <td className="px-4 py-3 font-medium text-white">{(e.amount / 100).toFixed(2)} €</td>
+                                <td className="px-4 py-3 font-medium text-fg">{(e.amount / 100).toFixed(2)} €</td>
                                 <td className="px-4 py-3 text-fg-subtle">{(e.totalAmount / 100).toFixed(2)} €</td>
                                 <td className="px-4 py-3">{e.issuer?.username || 'Inconnu'}</td>
                                 <td className="px-4 py-3 text-right">
@@ -204,7 +204,7 @@ export function EventExpenses({ event }: Props) {
             {linkOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                      <div className="bg-elevated border border-border rounded-lg shadow-xl w-full max-w-md p-6 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
-                        <h3 className="text-lg font-bold text-white">Lier une dépense</h3>
+                        <h3 className="text-lg font-bold text-fg">Lier une dépense</h3>
                         
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-col gap-1">
@@ -280,7 +280,7 @@ export function EventExpenses({ event }: Props) {
                          <div className="flex justify-end gap-3 mt-2">
                             <button 
                                 onClick={() => setLinkOpen(false)}
-                                className="px-4 py-2 rounded-md bg-surface-800 text-fg-muted hover:bg-elevated transition-colors text-sm"
+                                className="px-4 py-2 rounded-md bg-elevated text-fg-muted hover:bg-surface-950 transition-colors text-sm"
                             >
                                 Annuler
                             </button>

@@ -58,26 +58,26 @@ export function MultiSelect({
           <button
             type="button"
             className={cn(
-              "flex h-10 w-full items-center justify-between rounded-lg border border-dark-700 bg-dark-950 px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-600 focus-visible:border-primary-600 disabled:cursor-not-allowed disabled:opacity-50",
-              value.length === 0 ? "text-gray-600" : "text-white",
+              "flex h-10 w-full items-center justify-between rounded-lg border border-border bg-surface-950 px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500 focus-visible:border-accent-500 disabled:cursor-not-allowed disabled:opacity-50",
+              value.length === 0 ? "text-fg-muted" : "text-fg",
               className
             )}
           >
             <span className="truncate">{selectedLabels || placeholder}</span>
-            <IconChevronDown className="h-4 w-4 text-gray-500 shrink-0 ml-2" />
+            <IconChevronDown className="h-4 w-4 text-fg-muted shrink-0 ml-2" />
           </button>
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Content
           align="start"
           sideOffset={4}
-          className="z-50 rounded-lg border border-dark-700 bg-dark-900 shadow-xl p-1 outline-none"
+          className="z-50 rounded-lg border border-border bg-surface-950 shadow-xl p-1 outline-none"
           style={{ width: "var(--radix-popover-trigger-width)" }}
         >
           <div className="max-h-60 overflow-y-auto">
             {options.map((option) => (
               <div
                 key={option.value}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-white cursor-pointer hover:bg-dark-700 select-none"
+                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-fg cursor-pointer hover:bg-surface-900 select-none"
                 onClick={() => toggle(option.value)}
               >
                 <Checkbox

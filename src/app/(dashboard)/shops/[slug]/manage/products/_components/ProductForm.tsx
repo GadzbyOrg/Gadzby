@@ -163,7 +163,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         id="name"
                         required
                         defaultValue={product?.name}
-                        className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all"
+                        className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-fg focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all"
                         placeholder="Ex: Coca-Cola"
                     />
                 </div>
@@ -178,7 +178,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         id="description"
                         rows={3}
                         defaultValue={product?.description || ""}
-                        className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all"
+                        className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2 text-fg focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all"
                     />
                 </div>
 
@@ -265,7 +265,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                         <button 
                             type="button"
                             onClick={() => setShowNewCatInput(!showNewCatInput)}
-                            className="px-3 py-2 bg-elevated hover:bg-elevated text-white rounded-lg transition-colors border border-border"
+                            className="px-3 py-2 bg-elevated hover:bg-surface-950 text-fg rounded-lg transition-colors border border-border"
                         >
                             +
                         </button>
@@ -277,7 +277,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                                 value={newCategoryName}
                                 onChange={(e) => setNewCategoryName(e.target.value)}
                                 placeholder="Nouvelle catégorie"
-                                className="flex-1 bg-surface-900 border border-border rounded-lg px-4 py-2 text-white text-sm"
+                                className="flex-1 bg-surface-900 border border-border rounded-lg px-4 py-2 text-fg text-sm"
                             />
                             <button 
                                 type="button"
@@ -311,7 +311,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                     <div className="space-y-4 pt-6 border-t border-border">
                         <div className="flex justify-between items-center">
                             <div>
-                                <h3 className="text-lg font-medium text-white">Variantes / Portions</h3>
+                                <h3 className="text-lg font-medium text-fg">Variantes / Portions</h3>
                                 <p className="text-sm text-fg-muted">Ajoutez des formats de vente (ex: Pinte 0.5L)</p>
                             </div>
                             <button 
@@ -333,7 +333,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                                             value={variant.name}
                                             onChange={(e) => updateVariant(index, "name", e.target.value)}
                                             placeholder="Ex: Pinte"
-                                            className="w-full bg-surface-950 border border-border rounded-lg px-3 py-1.5 text-white text-sm"
+                                            className="w-full bg-surface-950 border border-border rounded-lg px-3 py-1.5 text-fg text-sm"
                                             required
                                         />
                                     </div>
@@ -382,7 +382,7 @@ export default function ProductForm({ shopSlug, categories, product }: ProductFo
                 <button
                     type="button"
                     onClick={() => router.back()}
-                    className="flex-1 px-4 py-3 bg-elevated hover:bg-elevated text-white rounded-xl transition-colors font-medium"
+                    className="flex-1 px-4 py-3 bg-elevated hover:bg-surface-950 text-fg rounded-xl transition-colors font-medium"
                 >
                     Annuler
                 </button>

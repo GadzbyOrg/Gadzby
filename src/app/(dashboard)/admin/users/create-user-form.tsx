@@ -62,7 +62,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							name="prenom"
 							id="prenom"
 							placeholder="Ex: Louis"
-							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 						/>
 					</div>
 					<div className="space-y-2">
@@ -75,7 +75,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							name="nom"
 							id="nom"
 							placeholder="Ex: Chabanon"
-							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 						/>
 					</div>
 				</div>
@@ -90,7 +90,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						name="email"
 						id="email"
 						placeholder="Ex: louis.chabanon@gadz.org"
-						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 					/>
 				</div>
 
@@ -103,7 +103,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						name="phone"
 						id="phone"
 						placeholder="Ex: 06 12 34 56 78"
-						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 					/>
 				</div>
 
@@ -121,7 +121,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							name="bucque"
 							id="bucque"
 							placeholder="Ex: Modo"
-							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 						/>
 					</div>
 					<div className="space-y-2">
@@ -137,7 +137,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 							name="promss"
 							id="promss"
 							placeholder="Ex: Me223"
-							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+							className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 						/>
 					</div>
 				</div>
@@ -152,7 +152,7 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						name="nums"
 						id="nums"
 						placeholder="Ex: 4!"
-						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 					/>
 				</div>
 
@@ -172,12 +172,12 @@ export function CreateUserForm({ roles, onSuccess }: CreateUserFormProps) {
 						id="password"
 						minLength={6}
 						placeholder="••••••"
-						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
+						className="w-full bg-surface-900 border border-border rounded-lg px-4 py-2.5 text-fg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
 					/>
 				</div>
 
 				<div className="pt-4 border-t border-border mt-4">
-					<h3 className="text-white text-sm font-semibold mb-4">Options</h3>
+					<h3 className="text-fg text-sm font-semibold mb-4">Options</h3>
 
 					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-2">
