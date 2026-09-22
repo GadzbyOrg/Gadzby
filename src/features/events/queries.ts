@@ -7,6 +7,7 @@ import { eventParticipants } from "@/db/schema/event-participants";
 import { eventRevenues,events } from "@/db/schema/events";
 import { eventExpenseSplits,shopExpenses } from "@/db/schema/expenses";
 import { transactions } from "@/db/schema/transactions";
+import { AppError } from "@/lib/errors";
 import { verifySession } from "@/lib/session";
 
 export async function getShopEvents({
@@ -23,7 +24,7 @@ export async function getShopEvents({
 	status?: string;
 }) {
 	const session = await verifySession();
-	if (!session) throw new Error("Unauthorized");
+	if (!session) throw new AppError("Non autorisé", { status: 403 });
 
 	const offset = (page - 1) * pageSize;
 

@@ -128,7 +128,8 @@ export const joinEvent = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${event.shopId}/events/${data.eventId}`);
 		return { success: "Joined successfully" };
-	}
+	},
+	{ name: "joinEvent" },
 );
 
 export const leaveEvent = authenticatedAction(
@@ -216,7 +217,8 @@ export const leaveEvent = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${event.shopId}/events/${data.eventId}`);
 		return { success: "Left event" };
-	}
+	},
+	{ name: "leaveEvent" },
 );
 
 export const updateParticipant = authenticatedAction(
@@ -250,7 +252,8 @@ export const updateParticipant = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${event.shopId}/events/${data.eventId}`);
 		return { success: "Participant updated" };
-	}
+	},
+	{ name: "updateParticipant" },
 );
 
 export const importParticipants = authenticatedAction(
@@ -324,7 +327,8 @@ export const importParticipants = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${event.shopId}/events/${data.eventId}`);
 		return { success: `Imported ${usersToImport.length} users` };
-	}
+	},
+	{ name: "importParticipants" },
 );
 
 export const importParticipantsFromList = authenticatedAction(
@@ -403,5 +407,6 @@ export const importParticipantsFromList = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${event.shopId}/events/${data.eventId}`);
 		return { count: usersFound.length };
-	}
+	},
+	{ name: "importParticipantsFromList" },
 );

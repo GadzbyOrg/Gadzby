@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { transactions, users } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
+import { AppError } from "@/lib/errors";
 import { getPaymentProvider } from "@/lib/payments/factory";
 
 import { InitiateTopUpSchema } from "./schema";
@@ -20,7 +21,7 @@ export const initiateTopUp = authenticatedAction(
 		});
 
 		if (!user) {
-			throw new Error("User not found");
+			throw new AppError("Utilisateur introuvable");
 		}
 
 		// Update phone number if provided and different
@@ -32,7 +33,7 @@ export const initiateTopUp = authenticatedAction(
 
 		const provider = await getPaymentProvider(providerSlug);
 		if (!provider) {
-			throw new Error("Invalid payment provider");
+			throw new AppError("Moyen de paiement invalide");
 		}
 
 		const [tx] = await db
@@ -49,6 +50,8 @@ export const initiateTopUp = authenticatedAction(
 			.returning({ id: transactions.id });
 
 		if (!tx) {
+			// Échec technique : masqué côté UI, remonté à Sentry par le wrapper.
+			// eslint-disable-next-line no-restricted-syntax
 			throw new Error("Failed to create transaction");
 		}
 
@@ -82,5 +85,6 @@ export const initiateTopUp = authenticatedAction(
 			.where(eq(transactions.id, tx.id));
 
 		return { url: paymentResult.redirectUrl };
-	}
+	},
+	{ name: "initiateTopUp" },
 );

@@ -63,7 +63,8 @@ export const createEventRevenue = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Revenue created" };
-	}
+	},
+	{ name: "createEventRevenue" },
 );
 
 export const deleteEventRevenue = authenticatedAction(
@@ -81,7 +82,8 @@ export const deleteEventRevenue = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Revenue deleted" };
-	}
+	},
+	{ name: "deleteEventRevenue" },
 );
 
 // Expenses
@@ -104,7 +106,8 @@ export const getAvailableExpensesAction = authenticatedAction(
 		});
 
 		return { success: "Expenses retrieved", data: expenses };
-	}
+	},
+	{ name: "getAvailableExpensesAction" },
 );
 
 export const linkExpenseToEvent = authenticatedAction(
@@ -125,7 +128,8 @@ export const linkExpenseToEvent = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Expense linked" };
-	}
+	},
+	{ name: "linkExpenseToEvent" },
 );
 
 export const unlinkExpenseFromEvent = authenticatedAction(
@@ -146,7 +150,8 @@ export const unlinkExpenseFromEvent = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Expense unlinked" };
-	}
+	},
+	{ name: "unlinkExpenseFromEvent" },
 );
 
 export const splitExpense = authenticatedAction(
@@ -168,7 +173,8 @@ export const splitExpense = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Expense split created" };
-	}
+	},
+	{ name: "splitExpense" },
 );
 
 export const deleteExpenseSplit = authenticatedAction(
@@ -188,5 +194,6 @@ export const deleteExpenseSplit = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Split deleted" };
-	}
+	},
+	{ name: "deleteExpenseSplit" },
 );

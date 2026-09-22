@@ -14,7 +14,7 @@ export const getRolesAction = authenticatedActionNoInput(
 		const allRoles = await db.query.roles.findMany();
 		return { roles: allRoles };
 	},
-	{ permissions: ["MANAGE_ROLES", "ADMIN_ACCESS"] }
+	{ name: "getRolesAction", permissions: ["MANAGE_ROLES", "ADMIN_ACCESS"] }
 );
 
 export const createRoleAction = authenticatedAction(
@@ -29,7 +29,7 @@ export const createRoleAction = authenticatedAction(
 		revalidatePath("/admin/roles");
 		return { success: "Rôle créé avec succès" };
 	},
-	{ permissions: ["MANAGE_ROLES", "ADMIN_ACCESS"] }
+	{ name: "createRoleAction", permissions: ["MANAGE_ROLES", "ADMIN_ACCESS"] }
 );
 
 export const updateRoleAction = authenticatedAction(
@@ -39,7 +39,7 @@ export const updateRoleAction = authenticatedAction(
 		revalidatePath("/admin/roles");
 		return { success: "Rôle mis à jour" };
 	},
-	{ permissions: ["MANAGE_ROLES", "ADMIN_ACCESS"] }
+	{ name: "updateRoleAction", permissions: ["MANAGE_ROLES", "ADMIN_ACCESS"] }
 );
 
 export const deleteRoleAction = authenticatedAction(
@@ -54,5 +54,5 @@ export const deleteRoleAction = authenticatedAction(
 			return { error: "Erreur suppression (utilisé par des users?)" };
 		}
 	},
-	{ permissions: ["MANAGE_ROLES", "ADMIN_ACCESS"] }
+	{ name: "deleteRoleAction", permissions: ["MANAGE_ROLES", "ADMIN_ACCESS"] }
 );

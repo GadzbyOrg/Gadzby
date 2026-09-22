@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { z } from "zod";
 
+import * as Sentry from "@sentry/nextjs";
+
 import { authenticatedAction, authenticatedActionNoInput } from "../actions";
+import { AppError, GENERIC_ERROR_MESSAGE } from "../errors";
 import { verifySession } from "@/lib/session";
 import { logAction } from "../logger";
 
@@ -12,6 +15,12 @@ vi.mock("@/lib/session", () => ({
 
 vi.mock("../logger", () => ({
 	logAction: vi.fn(),
+}));
+
+vi.mock("@sentry/nextjs", () => ({
+	captureException: vi.fn(),
+	logger: { info: vi.fn(), error: vi.fn() },
+	setUser: vi.fn(),
 }));
 
 describe("Action Authorization & Permissions", () => {
@@ -196,5 +205,139 @@ describe("Action Authorization & Permissions", () => {
 			expect(result).toEqual({ success: "ok" });
 			expect(handler).toHaveBeenCalled();
 		});
+	});
+});
+
+
+describe("Action error handling", () => {
+	const schema = z.object({ test: z.string() });
+
+	const asUser = () =>
+		vi.mocked(verifySession).mockResolvedValue({
+			userId: "user-1",
+			role: "USER",
+			permissions: ["ADMIN_ACCESS"],
+			expiresAt: new Date(),
+		});
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		asUser();
+	});
+
+	test("surfaces an AppError message to the user without alerting Sentry", async () => {
+		const action = authenticatedAction(
+			schema,
+			async () => {
+				throw new AppError("Solde insuffisant");
+			},
+			{ name: "test.appError" },
+		);
+
+		const result = await action(null, { test: "data" });
+
+		expect(result).toEqual({ error: "Solde insuffisant" });
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+	});
+
+	// Régression du bug d'origine : une erreur métier ne doit jamais
+	// ressortir sous la forme du message générique.
+	test("never reduces a business error to the generic message", async () => {
+		const action = authenticatedAction(
+			schema,
+			async () => {
+				throw new AppError("Un utilisateur avec ce username, email ou téléphone existe déjà");
+			},
+			{ name: "users.create" },
+		);
+
+		const result = await action(null, { test: "data" });
+
+		expect(result.error).not.toBe(GENERIC_ERROR_MESSAGE);
+		expect(result.error).toBe("Un utilisateur avec ce username, email ou téléphone existe déjà");
+	});
+
+	test("masks a technical error but keeps the raw message in the audit log", async () => {
+		const boom = new Error("connect ECONNREFUSED 10.0.0.1:5432");
+		const action = authenticatedAction(
+			schema,
+			async () => {
+				throw boom;
+			},
+			{ name: "test.technical" },
+		);
+
+		const result = await action(null, { test: "data" });
+
+		expect(result).toEqual({ error: GENERIC_ERROR_MESSAGE });
+		expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+		expect(logAction).toHaveBeenCalledWith(
+			expect.objectContaining({
+				status: "ERROR",
+				actionName: "test.technical",
+				errorMessage: "connect ECONNREFUSED 10.0.0.1:5432",
+			}),
+		);
+	});
+
+	test("logs the explicit action name instead of a minified stack frame", async () => {
+		const action = authenticatedAction(schema, async () => ({ success: "ok" }), {
+			name: "users.create",
+		});
+
+		await action(null, { test: "data" });
+
+		expect(logAction).toHaveBeenCalledWith(
+			expect.objectContaining({ actionName: "users.create" }),
+		);
+	});
+
+	test.each([
+		["NEXT_REDIRECT;/login", "redirect"],
+		["NEXT_NOT_FOUND", "notFound"],
+	])("rethrows the %s control-flow error", async (digest) => {
+		const action = authenticatedAction(
+			schema,
+			async () => {
+				throw Object.assign(new Error(digest), { digest });
+			},
+			{ name: "test.controlFlow" },
+		);
+
+		await expect(action(null, { test: "data" })).rejects.toMatchObject({ digest });
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+	});
+
+	test("reports a Zod failure as field errors, not as an incident", async () => {
+		const action = authenticatedAction(schema, async () => ({ success: "ok" }), {
+			name: "test.zod",
+		});
+
+		const result = await action(null, { test: 42 } as any);
+
+		expect(result.error).toBe("Données invalides");
+		expect(result.fieldErrors).toHaveProperty("test");
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+	});
+
+	test("applies the same rules to authenticatedActionNoInput", async () => {
+		const appErrorAction = authenticatedActionNoInput(
+			async () => {
+				throw new AppError("Aucun mandat actif");
+			},
+			{ name: "test.noInput" },
+		);
+		expect(await appErrorAction()).toEqual({ error: "Aucun mandat actif" });
+		expect(Sentry.captureException).not.toHaveBeenCalled();
+
+		const technicalAction = authenticatedActionNoInput(
+			async () => {
+				throw new Error("kaboom");
+			},
+			{ name: "test.noInputTechnical" },
+		);
+		expect(await technicalAction()).toEqual({ error: GENERIC_ERROR_MESSAGE });
+		expect(Sentry.captureException).toHaveBeenCalledTimes(1);
 	});
 });

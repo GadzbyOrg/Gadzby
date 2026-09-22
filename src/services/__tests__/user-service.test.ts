@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { db } from "@/db";
 import { UserService } from "@/services/user-service";
+import { toUserMessage } from "@/lib/db-errors";
+import { AppError, GENERIC_ERROR_MESSAGE } from "@/lib/errors";
 
 // Mock external dependencies
 vi.mock("@/db", () => ({
@@ -319,6 +321,31 @@ describe("UserService", () => {
                  roleId: "role-1",
                  balance: 0
             })).rejects.toThrow("existe déjà");
+       });
+
+        // Le doublon est une issue métier attendue : il doit remonter en
+        // AppError, sinon les wrappers le masquent derrière le message
+        // générique — c'est exactement le bug observé en production.
+        test("should throw a business AppError, not an opaque technical error", async () => {
+            vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: "existing" } as any);
+
+            const promise = UserService.create({
+                 nom: "Soules",
+                 prenom: "Léo",
+                 email: "leo.soules@example.com",
+                 promss: "BO225",
+                 nums: "23-151",
+                 tabagnss: "BO",
+                 password: "password123",
+                 roleId: "role-1",
+                 balance: 0
+            });
+
+            await expect(promise).rejects.toBeInstanceOf(AppError);
+            await expect(promise).rejects.toThrow(
+                "Un utilisateur avec ce username, email ou téléphone existe déjà"
+            );
+            expect(toUserMessage(await promise.catch((e) => e))).not.toBe(GENERIC_ERROR_MESSAGE);
        });
     });
 

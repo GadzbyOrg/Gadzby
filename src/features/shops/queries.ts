@@ -5,6 +5,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { productCategories, products, productVariants, shops, shopUsers } from "@/db/schema";
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
+import { AppError } from "@/lib/errors";
 
 import { SHOP_PERMISSIONS } from "./permissions";
 import {
@@ -89,7 +90,9 @@ export const getShops = authenticatedActionNoInput(async ({ session }) => {
 	}
 
 	return { shops: result };
-});
+},
+	{ name: "getShops" },
+);
 
 export const getAdminShops = authenticatedActionNoInput(async ({ session }) => {
 	if (
@@ -109,7 +112,9 @@ export const getAdminShops = authenticatedActionNoInput(async ({ session }) => {
 	});
 
 	return { shops: allShops };
-});
+},
+	{ name: "getAdminShops" },
+);
 
 export const getShopBySlug = authenticatedAction(
 	getShopBySlugSchema,
@@ -126,9 +131,10 @@ export const getShopBySlug = authenticatedAction(
 			},
 		});
 
-		if (!shop) throw new Error("Shop introuvable");
+		if (!shop) throw new AppError("Shop introuvable");
 		return { shop };
-	}
+	},
+	{ name: "getShopBySlug" },
 );
 
 export const getShopDetailsForMember = authenticatedAction(
@@ -167,7 +173,8 @@ export const getShopDetailsForMember = authenticatedAction(
 		if (!membership) return null;
 
 		return { shop, membership };
-	}
+	},
+	{ name: "getShopDetailsForMember" },
 );
 
 export const searchUsers = authenticatedAction(
@@ -195,7 +202,8 @@ export const searchUsers = authenticatedAction(
 		});
 
 		return { users: matchingUsers };
-	}
+	},
+	{ name: "searchUsers" },
 );
 
 export const getUserFamss = authenticatedAction(
@@ -210,7 +218,9 @@ export const getUserFamss = authenticatedAction(
 
 
 		return { famss: members.map((m: any) => m.family) };
-	});
+	},
+	{ name: "getUserFamss" },
+);
 
 export async function getSelfServiceProducts(shopSlug: string) {
 	// Public/Self-service

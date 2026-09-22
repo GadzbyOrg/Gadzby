@@ -37,7 +37,8 @@ export const getAvailableProductsAction = authenticatedAction(
 		});
 
 		return { success: "Products retrieved", data: available };
-	}
+	},
+	{ name: "getAvailableProductsAction" },
 );
 
 export const linkProductsToEvent = authenticatedAction(
@@ -58,7 +59,8 @@ export const linkProductsToEvent = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Products linked" };
-	}
+	},
+	{ name: "linkProductsToEvent" },
 );
 
 export const unlinkProductFromEvent = authenticatedAction(
@@ -79,7 +81,8 @@ export const unlinkProductFromEvent = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Product unlinked" };
-	}
+	},
+	{ name: "unlinkProductFromEvent" },
 );
 
 export const setEventProductPrice = authenticatedAction(
@@ -100,5 +103,6 @@ export const setEventProductPrice = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${data.shopId}/events/${data.eventId}`);
 		return { success: "Product price updated" };
-	}
+	},
+	{ name: "setEventProductPrice" },
 );

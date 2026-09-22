@@ -35,7 +35,7 @@ export const getEmailConfigAction = authenticatedActionNoInput(async () => {
         console.error("Failed to fetch email config:", error);
         return { error: "Erreur lors de la récupération de la configuration" };
     }
-}, { requireAdmin: true });
+}, { name: "getEmailConfigAction", requireAdmin: true });
 
 export const updateEmailConfigAction = authenticatedAction(
     emailConfigSchema,
@@ -74,7 +74,7 @@ export const updateEmailConfigAction = authenticatedAction(
             return { error: "Erreur lors de la sauvegarde" };
         }
     },
-    { requireAdmin: true }
+    { name: "updateEmailConfigAction", requireAdmin: true }
 );
 
 const testEmailConfigSchema = emailConfigSchema.extend({
@@ -126,7 +126,7 @@ export const testEmailConfigAction = authenticatedAction(
             return { error: `Erreur d'envoi : ${e.message || "Erreur inconnue"}` };
         }
     },
-    { requireAdmin: true }
+    { name: "testEmailConfigAction", requireAdmin: true }
 );
 
 const pennylaneConfigSchema = z.object({
@@ -145,7 +145,7 @@ export const getPennylaneConfigAction = authenticatedActionNoInput(async () => {
         console.error("Failed to fetch pennylane config:", error);
         return { error: "Erreur lors de la récupération de la configuration" };
     }
-}, { requireAdmin: true });
+}, { name: "getPennylaneConfigAction", requireAdmin: true });
 
 export const updatePennylaneConfigAction = authenticatedAction(
     pennylaneConfigSchema,
@@ -178,7 +178,7 @@ export const updatePennylaneConfigAction = authenticatedAction(
             return { error: "Erreur lors de la sauvegarde" };
         }
     },
-    { requireAdmin: true }
+    { name: "updatePennylaneConfigAction", requireAdmin: true }
 );
 
 export const getShopPennylaneCategoriesAction = authenticatedActionNoInput(async () => {
@@ -204,7 +204,7 @@ export const getShopPennylaneCategoriesAction = authenticatedActionNoInput(async
         console.error("Failed to fetch shop pennylane categories:", error);
         return { error: "Erreur lors de la récupération de la configuration" };
     }
-}, { requireAdmin: true });
+}, { name: "getShopPennylaneCategoriesAction", requireAdmin: true });
 
 const shopPennylaneCategoriesSchema = z.record(z.string(), z.any());
 
@@ -265,7 +265,7 @@ export const updateShopPennylaneCategoriesAction = authenticatedAction(
             return { error: "Erreur lors de la sauvegarde" };
         }
     },
-    { requireAdmin: true }
+    { name: "updateShopPennylaneCategoriesAction", requireAdmin: true }
 );
 
 // ─── Famss Feature Toggle ─────────────────────────────────────────────────────
@@ -286,7 +286,7 @@ export const getFamssSettingAction = authenticatedActionNoInput(async () => {
         console.error("Failed to fetch famss setting:", error);
         return { error: "Erreur lors de la récupération du paramètre" };
     }
-}, { requireAdmin: true });
+}, { name: "getFamssSettingAction", requireAdmin: true });
 
 export const updateFamssSettingAction = authenticatedAction(
     famssSettingSchema,
@@ -315,7 +315,7 @@ export const updateFamssSettingAction = authenticatedAction(
             return { error: "Erreur lors de la sauvegarde" };
         }
     },
-    { requireAdmin: true }
+    { name: "updateFamssSettingAction", requireAdmin: true }
 );
 
 // ─── Login Privacy (hide names / photos) ──────────────────────────────────────
@@ -336,7 +336,7 @@ export const getLoginHideUserDetailsAction = authenticatedActionNoInput(async ()
         console.error("Failed to fetch login privacy setting:", error);
         return { error: "Erreur lors de la récupération du paramètre" };
     }
-}, { requireAdmin: true });
+}, { name: "getLoginHideUserDetailsAction", requireAdmin: true });
 
 export const updateLoginHideUserDetailsAction = authenticatedAction(
     loginHideUserDetailsSchema,
@@ -369,7 +369,7 @@ export const updateLoginHideUserDetailsAction = authenticatedAction(
             return { error: "Erreur lors de la sauvegarde" };
         }
     },
-    { requireAdmin: true }
+    { name: "updateLoginHideUserDetailsAction", requireAdmin: true }
 );
 
 export const getCampusNameAction = authenticatedActionNoInput(async () => {
@@ -384,7 +384,7 @@ export const getCampusNameAction = authenticatedActionNoInput(async () => {
         console.error("Failed to fetch campus name:", error);
         return { error: "Erreur lors de la récupération du nom du campus" };
     }
-}, { requireAdmin: true });
+}, { name: "getCampusNameAction", requireAdmin: true });
 
 export const updateCampusNameAction = authenticatedAction(
     z.object({ name: z.string() }),
@@ -412,7 +412,7 @@ export const updateCampusNameAction = authenticatedAction(
             return { error: "Erreur lors de la sauvegarde du nom du campus" };
         }
     },
-    { requireAdmin: true }
+    { name: "updateCampusNameAction", requireAdmin: true }
 );
 
 // ─── Login Page MOTD ──────────────────────────────────────────────────────────
@@ -429,7 +429,7 @@ export const getLoginMotdAction = authenticatedActionNoInput(async () => {
         console.error("Failed to fetch login MOTD:", error);
         return { error: "Erreur lors de la récupération du message" };
     }
-}, { requireAdmin: true });
+}, { name: "getLoginMotdAction", requireAdmin: true });
 
 export const updateLoginMotdAction = authenticatedAction(
     z.object({ text: z.string() }),
@@ -458,5 +458,5 @@ export const updateLoginMotdAction = authenticatedAction(
             return { error: "Erreur lors de la sauvegarde" };
         }
     },
-    { requireAdmin: true }
+    { name: "updateLoginMotdAction", requireAdmin: true }
 );

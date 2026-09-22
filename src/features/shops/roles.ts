@@ -26,7 +26,8 @@ export const getShopRoles = authenticatedAction(
 		});
 
 		return { roles };
-	}
+	},
+	{ name: "getShopRoles" },
 );
 
 export const createShopRole = authenticatedAction(
@@ -38,7 +39,8 @@ export const createShopRole = authenticatedAction(
 
 		revalidatePath(`/shops/${shopSlug}/manage/roles`);
 		return { success: "Rôle créé" };
-	}
+	},
+	{ name: "createShopRole" },
 );
 
 export const updateShopRole = authenticatedAction(
@@ -50,7 +52,8 @@ export const updateShopRole = authenticatedAction(
 
 		revalidatePath(`/shops/${shopSlug}/manage/roles`);
 		return { success: "Rôle mis à jour" };
-	}
+	},
+	{ name: "updateShopRole" },
 );
 
 export const deleteShopRole = authenticatedAction(
@@ -62,5 +65,6 @@ export const deleteShopRole = authenticatedAction(
 
 		revalidatePath(`/shops/${shopSlug}/manage/roles`);
 		return { success: "Rôle supprimé" };
-	}
+	},
+	{ name: "deleteShopRole" },
 );

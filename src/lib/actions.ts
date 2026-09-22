@@ -1,6 +1,7 @@
-import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
+import { toUserMessage } from "@/lib/db-errors";
+import { findAppError } from "@/lib/errors";
 import { verifySession } from "@/lib/session";
 
 import { logAction } from "./logger";
@@ -24,7 +25,77 @@ export type ActionResult<T> = Promise<ActionError | ActionSuccess<T>>;
 type ActionOptions = {
 	permissions?: string[];
 	requireAdmin?: boolean; // Shortcut for ADMIN_ACCESS or ADMIN role check depending on app logic
+	/**
+	 * Nom stable de l'action, utilisé pour l'audit et le tag Sentry.
+	 * À renseigner systématiquement : la dérivation par stack trace ne
+	 * survit pas au build de production (chunks minifiés).
+	 */
+	name?: string;
 };
+
+/** Longueur max d'un message d'erreur écrit dans le log d'audit. */
+const MAX_LOGGED_ERROR_LENGTH = 300;
+
+/**
+ * Les erreurs de contrôle de flux de Next ne doivent jamais être avalées.
+ * `notFound()` et les erreurs HTTP de fallback sont incluses : sans ça, le
+ * masquage les transformerait en "Une erreur technique est survenue.".
+ */
+const isFrameworkControlFlow = (error: unknown): boolean => {
+	const digest = (error as { digest?: unknown })?.digest;
+	if (typeof digest !== "string") return false;
+	return (
+		digest.startsWith("NEXT_REDIRECT") ||
+		digest === "NEXT_NOT_FOUND" ||
+		digest.startsWith("NEXT_HTTP_ERROR_FALLBACK")
+	);
+};
+
+/**
+ * Point unique de traitement des exceptions des handlers.
+ *
+ * - Erreur métier (AppError) -> message affiché tel quel, aucun bruit Sentry.
+ * - Erreur technique -> message masqué côté client, cause réelle dans Sentry.
+ *
+ * Le message brut est conservé dans le log d'audit (tronqué) : seul ce qui
+ * est renvoyé au client est masqué.
+ */
+function handleActionThrow(
+	error: any,
+	actionName: string,
+	userId: string | null,
+	payload?: unknown,
+): ActionError {
+	if (isFrameworkControlFlow(error)) throw error;
+
+	const appError = findAppError(error);
+	if (appError) {
+		logAction({
+			userId,
+			actionName,
+			payload,
+			status: "ERROR",
+			errorMessage: appError.message,
+		});
+		return { error: appError.message };
+	}
+
+	console.error(`Action failed (${actionName}):`, error);
+
+	// toUserMessage traduit les erreurs Postgres connues et remonte le reste
+	// à Sentry — pas de capture ici, sinon l'incident serait doublonné.
+	const message = toUserMessage(error);
+
+	logAction({
+		userId,
+		actionName,
+		payload,
+		status: "ERROR",
+		errorMessage: String(error?.message ?? error).slice(0, MAX_LOGGED_ERROR_LENGTH),
+	});
+
+	return { error: message };
+}
 
 /**
  * Wrapper for authenticated server actions.
@@ -44,12 +115,7 @@ export function authenticatedAction<T extends z.ZodType, R>(
 	) => Promise<R | { error: string } | { success: string; data?: R }>,
 	options: ActionOptions = {},
 ) {
-	const err = new Error();
-	const callerLine = err.stack?.split("\n")[2] || "";
-	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
-	const actionName = match
-		? `${match[1].split(/[\\/]/).pop()}:${match[2]}`
-		: "UnknownAction";
+	const actionName = options.name ?? "UnnamedAction";
 
 	return async (
 		prevState: any,
@@ -148,25 +214,7 @@ export function authenticatedAction<T extends z.ZodType, R>(
 
 			return result;
 		} catch (error: any) {
-			if (
-				error.message === "NEXT_REDIRECT" ||
-				error.digest?.startsWith("NEXT_REDIRECT")
-			) {
-				throw error;
-			}
-			Sentry.captureException(error, { tags: { action: actionName } });
-			console.error("Action failed:", error);
-
-			logAction({
-				userId: session.userId,
-				actionName,
-				payload: parsed.data,
-				status: "ERROR",
-				errorMessage: error.message || "Une erreur est survenue",
-			});
-
-			// Return safe error
-			return { error: error.message || "Une erreur est survenue" };
+			return handleActionThrow(error, actionName, session.userId, parsed.data);
 		}
 	};
 }
@@ -180,12 +228,7 @@ export function authenticatedActionNoInput<R>(
 	}) => Promise<R>,
 	options: ActionOptions = {},
 ) {
-	const err = new Error();
-	const callerLine = err.stack?.split("\n")[2] || "";
-	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
-	const actionName = match
-		? `${match[1].split(/[\\/]/).pop()}:${match[2]}`
-		: "UnknownAction";
+	const actionName = options.name ?? "UnnamedAction";
 
 	return async (): Promise<any> => {
 		const session = await verifySession();
@@ -219,23 +262,7 @@ export function authenticatedActionNoInput<R>(
 
 			return result;
 		} catch (error: any) {
-			if (
-				error.message === "NEXT_REDIRECT" ||
-				error.digest?.startsWith("NEXT_REDIRECT")
-			) {
-				throw error;
-			}
-			Sentry.captureException(error, { tags: { action: actionName } });
-			console.error("Action failed:", error);
-
-			logAction({
-				userId: session.userId,
-				actionName,
-				status: "ERROR",
-				errorMessage: error.message || "Erreur serveur",
-			});
-
-			return { error: error.message || "Erreur serveur" };
+			return handleActionThrow(error, actionName, session.userId);
 		}
 	};
 }
@@ -248,13 +275,9 @@ export function publicAction<T extends z.ZodType, R>(
 	handler: (
 		data: z.infer<T>,
 	) => Promise<R | { error: string } | { success: string; data?: R }>,
+	options: ActionOptions = {},
 ) {
-	const err = new Error();
-	const callerLine = err.stack?.split("\n")[2] || "";
-	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
-	const actionName = match
-		? `${match[1].split(/[\\/]/).pop()}:${match[2]}`
-		: "UnknownAction";
+	const actionName = options.name ?? "UnnamedAction";
 
 	return async (
 		prevState: any,
@@ -317,35 +340,16 @@ export function publicAction<T extends z.ZodType, R>(
 
 			return result;
 		} catch (error: any) {
-			if (
-				error.message === "NEXT_REDIRECT" ||
-				error.digest?.startsWith("NEXT_REDIRECT")
-			) {
-				throw error;
-			}
-			Sentry.captureException(error, { tags: { action: actionName } });
-			console.error("Public action failed:", error);
-
-			logAction({
-				userId: null,
-				actionName,
-				payload: parsed.data,
-				status: "ERROR",
-				errorMessage: error.message || "Une erreur est survenue",
-			});
-
-			return { error: error.message || "Une erreur est survenue" };
+			return handleActionThrow(error, actionName, null, parsed.data);
 		}
 	};
 }
 
-export function publicActionNoInput<R>(handler: () => Promise<R>) {
-	const err = new Error();
-	const callerLine = err.stack?.split("\n")[2] || "";
-	const match = callerLine.match(/(?:at | \()(.+?):(\d+):(\d+)\)?/);
-	const actionName = match
-		? `${match[1].split(/[\\/]/).pop()}:${match[2]}`
-		: "UnknownAction";
+export function publicActionNoInput<R>(
+	handler: () => Promise<R>,
+	options: ActionOptions = {},
+) {
+	const actionName = options.name ?? "UnnamedAction";
 
 	return async (): Promise<any> => {
 		try {
@@ -362,23 +366,7 @@ export function publicActionNoInput<R>(handler: () => Promise<R>) {
 
 			return result;
 		} catch (error: any) {
-			if (
-				error.message === "NEXT_REDIRECT" ||
-				error.digest?.startsWith("NEXT_REDIRECT")
-			) {
-				throw error;
-			}
-			Sentry.captureException(error, { tags: { action: actionName } });
-			console.error("Public action failed:", error);
-
-			logAction({
-				userId: null,
-				actionName,
-				status: "ERROR",
-				errorMessage: error.message || "Erreur serveur",
-			});
-
-			return { error: error.message || "Erreur serveur" };
+			return handleActionThrow(error, actionName, null);
 		}
 	};
 }

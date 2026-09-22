@@ -7,6 +7,8 @@ import { z } from "zod";
 import { db } from "@/db";
 import { famsMembers, famss, transactions, users } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions"; // Assuming this is where it is
+import { getPostgresErrorCode } from "@/lib/db-errors";
+import { AppError } from "@/lib/errors";
 
 import {
 	addAdminMemberSchema,
@@ -43,7 +45,7 @@ export const getAdminFamssAction = authenticatedAction(
 
 		return { famss: formatted };
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "getAdminFamssAction", permissions: ADMIN_PERMISSIONS }
 );
 
 export const createFamsAction = authenticatedAction(
@@ -58,12 +60,13 @@ export const createFamsAction = authenticatedAction(
 			revalidatePath("/admin/famss");
 			return { success: "Fam'ss créée avec succès" };
 		} catch (error: unknown) {
-			console.error("Failed to create fams:", error);
-			if (error && typeof error === "object" && "code" in error && error.code === "23505") return { error: "Ce nom existe déjà" };
-			throw new Error("Erreur lors de la création");
+			if (getPostgresErrorCode(error) === "23505") {
+				throw new AppError("Ce nom existe déjà");
+			}
+			throw error;
 		}
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "admin-actions.createFamsAction", permissions: ADMIN_PERMISSIONS }
 );
 
 const updateFamsSchema = adminFamsSchema.extend({
@@ -82,7 +85,7 @@ export const updateFamsAction = authenticatedAction(
 					where: eq(famss.id, data.id),
 					columns: { balance: true },
 				});
-				if (!currentFams) throw new Error("Fams not found");
+				if (!currentFams) throw new AppError("Fam'ss introuvable");
 
 				const diff = newBalanceInCents - currentFams.balance;
 
@@ -112,14 +115,13 @@ export const updateFamsAction = authenticatedAction(
 			revalidatePath("/admin/famss");
 			return { success: "Fam'ss mise à jour" };
 		} catch (error: unknown) {
-			console.error("Failed to update fams:", error);
-			if (error && typeof error === "object" && "code" in error && error.code === "23505") return { error: "Ce nom existe déjà" };
-			if (error instanceof Error && error.message === "Fams not found")
-				return { error: "Fam'ss introuvable" };
-			throw new Error("Erreur lors de la mise à jour");
+			if (getPostgresErrorCode(error) === "23505") {
+				throw new AppError("Ce nom existe déjà");
+			}
+			throw error;
 		}
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "updateFamsAction", permissions: ADMIN_PERMISSIONS }
 );
 
 export const deleteFamsAction = authenticatedAction(
@@ -132,16 +134,15 @@ export const deleteFamsAction = authenticatedAction(
 			revalidatePath("/admin/famss");
 			return { success: "Fam'ss supprimée" };
 		} catch (error: unknown) {
-			console.error("Failed to delete fams:", error);
-			if (error && typeof error === "object" && "code" in error && error.code === "23503")
-				return {
-					error:
-						"Impossible de supprimer une Fam'ss avec des transactions liées",
-				};
-			throw new Error("Erreur lors de la suppression");
+			if (getPostgresErrorCode(error) === "23503") {
+				throw new AppError(
+					"Impossible de supprimer une Fam'ss avec des transactions liées",
+				);
+			}
+			throw error;
 		}
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "deleteFamsAction", permissions: ADMIN_PERMISSIONS }
 );
 
 // --- Membership Actions ---
@@ -163,7 +164,7 @@ export const getFamsMembersAction = authenticatedAction(
 			})),
 		};
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "getFamsMembersAction", permissions: ADMIN_PERMISSIONS }
 );
 
 export const addMemberAction = authenticatedAction(
@@ -185,12 +186,13 @@ export const addMemberAction = authenticatedAction(
 			revalidatePath("/admin/famss");
 			return { success: "Membre ajouté" };
 		} catch (error: unknown) {
-			console.error("Failed to add member:", error);
-			if (error && typeof error === "object" && "code" in error && error.code === "23505") return { error: "Déjà membre" };
-			throw new Error("Erreur lors de l'ajout");
+			if (getPostgresErrorCode(error) === "23505") {
+				throw new AppError("Déjà membre");
+			}
+			throw error;
 		}
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "admin-actions.addMemberAction", permissions: ADMIN_PERMISSIONS }
 );
 
 export const updateMemberRoleAction = authenticatedAction(
@@ -205,7 +207,7 @@ export const updateMemberRoleAction = authenticatedAction(
 
 		return { success: "Rôle mis à jour" };
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "updateMemberRoleAction", permissions: ADMIN_PERMISSIONS }
 );
 
 export const removeMemberAction = authenticatedAction(
@@ -220,7 +222,7 @@ export const removeMemberAction = authenticatedAction(
 		revalidatePath("/admin/famss");
 		return { success: "Membre retiré" };
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "admin-actions.removeMemberAction", permissions: ADMIN_PERMISSIONS }
 );
 
 // --- Transaction History ---
@@ -238,5 +240,5 @@ export const getFamsTransactionsAction = authenticatedAction(
 		});
 		return { transactions: history };
 	},
-	{ permissions: ADMIN_PERMISSIONS }
+	{ name: "getFamsTransactionsAction", permissions: ADMIN_PERMISSIONS }
 );

@@ -28,6 +28,24 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // Garde-fou du système d'erreurs : une erreur métier destinée à
+    // l'utilisateur doit être une AppError, sinon son message est masqué
+    // derrière "Une erreur technique est survenue." par les wrappers.
+    // Une panne technique reste un `Error` brut (masquée + remontée à Sentry) :
+    // dans ce cas, désactiver la règle sur la ligne avec une justification.
+    files: ["src/services/**/*.ts", "src/features/**/*.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ThrowStatement > NewExpression[callee.name='Error']",
+          message:
+            "Utiliser AppError (@/lib/errors) pour une erreur métier affichée à l'utilisateur, ou relancer l'erreur d'origine (`throw error`) pour une panne technique.",
+        },
+      ],
+    },
+  },
   globalIgnores([
     ".next/**",
     "out/**",

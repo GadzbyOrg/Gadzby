@@ -115,7 +115,8 @@ export const previewSettlement = authenticatedAction(
 			costPerUnit: calc.costPerUnit,
 			breakdown: calc.breakdown,
 		};
-	}
+	},
+	{ name: "previewSettlement" },
 );
 
 export const executeSettlement = authenticatedAction(
@@ -184,5 +185,6 @@ export const executeSettlement = authenticatedAction(
 
 		revalidatePath(`/admin/shops/${event.shopId}/events/${data.eventId}`);
 		return { success: "Settlement executed" };
-	}
+	},
+	{ name: "executeSettlement" },
 );

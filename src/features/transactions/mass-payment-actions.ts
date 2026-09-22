@@ -1,5 +1,6 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
 import { desc,sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { v4 as uuidv4 } from "uuid";
@@ -24,7 +25,8 @@ export const getPromssListAction = authenticatedAction(
 			.orderBy(desc(users.promss));
 		
 		return { promss: result.map((r) => r.promss).filter(Boolean) as string[] };
-	}
+	},
+	{ name: "mass-payment-actions.getPromssListAction" },
 );
 
 // 2. Get Users by Promss
@@ -45,7 +47,7 @@ export const getUsersByPromssAction = authenticatedAction(
 		});
 		return { users: foundUsers };
 	},
-	{ permissions: ["ADMIN_ACCESS"] }
+	{ name: "getUsersByPromssAction", permissions: ["ADMIN_ACCESS"] }
 );
 
 export const searchUsersForPaymentAction = authenticatedAction(
@@ -77,7 +79,7 @@ export const searchUsersForPaymentAction = authenticatedAction(
         });
         return { users: foundUsers };
     },
-    { permissions: ["ADMIN_ACCESS"] }
+    { name: "searchUsersForPaymentAction", permissions: ["ADMIN_ACCESS"] }
 );
 
 // 3. Resolve Users from Excel
@@ -133,7 +135,7 @@ export const resolveUsersFromExcelAction = authenticatedAction(
 			return { error: "Erreur lors de la lecture du fichier" };
 		}
 	},
-	{ permissions: ["ADMIN_ACCESS"] }
+	{ name: "resolveUsersFromExcelAction", permissions: ["ADMIN_ACCESS"] }
 );
 
 export const resolveUsersFromRowsAction = authenticatedAction(
@@ -192,7 +194,7 @@ export const resolveUsersFromRowsAction = authenticatedAction(
 
 		return { users: matchedUsers, notFound };
 	},
-	{ permissions: ["ADMIN_ACCESS"] }
+	{ name: "resolveUsersFromRowsAction", permissions: ["ADMIN_ACCESS"] }
 );
 
 // 4. Process Mass Charge
@@ -219,6 +221,12 @@ export const processMassChargeAction = authenticatedAction(
 					);
 					successCount++;
 				} catch (e) {
+					// Échec par utilisateur dans un lot financier : le lot continue,
+					// mais l'incident doit rester visible.
+					Sentry.captureException(e, {
+						tags: { action: "transactions.processMassCharge" },
+						extra: { targetId, groupId },
+					});
 					console.error(`Failed simple charge for ${targetId}`, e);
 					failCount++;
 				}
@@ -231,7 +239,7 @@ export const processMassChargeAction = authenticatedAction(
             groupId 
         };
 	},
-	{ permissions: ["ADMIN_ACCESS"] }
+	{ name: "processMassChargeAction", permissions: ["ADMIN_ACCESS"] }
 );
 
 // 5. Get History
@@ -257,7 +265,7 @@ export const getMassOperationsHistoryAction = authenticatedAction(
 
         return { history: (history as unknown) as { groupId: string; date: string; description: string; count: number; totalAmount: number; status: string }[] };
     },
-    { permissions: ["ADMIN_ACCESS"] }
+    { name: "getMassOperationsHistoryAction", permissions: ["ADMIN_ACCESS"] }
 );
 
 // 6. Cancel Operation
@@ -273,5 +281,5 @@ export const cancelMassOperationAction = authenticatedAction(
 			return { error: errorMessage };
         }
     },
-    { permissions: ["ADMIN_ACCESS"] }
+    { name: "cancelMassOperationAction", permissions: ["ADMIN_ACCESS"] }
 );
