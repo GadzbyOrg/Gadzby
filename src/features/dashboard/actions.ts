@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { products, shops, transactions, users } from "@/db/schema";
+import { AppError } from "@/lib/errors";
 import { verifySession } from "@/lib/session";
 
 export async function getUserStats() {
@@ -19,7 +20,7 @@ export async function getUserStats() {
 		},
 	});
 
-	if (!user) throw new Error("User not found");
+	if (!user) throw new AppError("Utilisateur introuvable");
 
 	// 2. Get Expenses for Current Month
 	const now = new Date();

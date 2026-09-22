@@ -123,11 +123,11 @@ export const ErrorDialog = ({ message, onClose }: { message: string | null; onCl
                 <DialogHeader>
                     <DialogTitle>Erreur</DialogTitle>
                 </DialogHeader>
-                <p className="text-sm text-gray-300">{message}</p>
+                <p className="text-sm text-fg-muted">{message}</p>
                 <DialogFooter>
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-dark-800 hover:bg-dark-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        className="px-4 py-2 bg-elevated hover:bg-surface-950 text-fg rounded-lg text-sm font-medium transition-colors"
                     >
                         OK
                     </button>

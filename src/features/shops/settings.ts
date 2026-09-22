@@ -25,7 +25,8 @@ export const createShopAction = authenticatedAction(
         } catch (error) {
              return { error: error instanceof Error ? error.message : "Erreur création shop" };
         }
-    }
+    },
+	{ name: "createShopAction" },
 );
 
 
@@ -41,7 +42,8 @@ export const updateShop = authenticatedAction(
 		revalidatePath(`/shops/${slug}/self-service`);
 		revalidatePath(`/shops/${slug}/manage/settings`);
 		return { success: true };
-	}
+	},
+	{ name: "updateShop" },
 );
 
 export const toggleShopStatusAction = authenticatedAction(
@@ -63,7 +65,8 @@ export const toggleShopStatusAction = authenticatedAction(
         } catch (error) {
             return { error: error instanceof Error ? error.message : "Erreur lors de la mise à jour du statut" };
         }
-    }
+    },
+	{ name: "toggleShopStatusAction" },
 );
 
 export const deleteShopAction = authenticatedAction(
@@ -77,5 +80,5 @@ export const deleteShopAction = authenticatedAction(
         } catch (error) {
             return { error: error instanceof Error ? error.message : "Erreur lors de la suppression du shop" };
         }
-    }, { permissions: ["ADMIN_ACCESS"]}
+    }, { name: "deleteShopAction", permissions: ["ADMIN_ACCESS"]}
 );

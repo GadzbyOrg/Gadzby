@@ -72,6 +72,7 @@ export const deleteProduct = authenticatedAction(
 		revalidatePath(`/shops/${shopSlug}/manage/products`);
 		return { success: true };
 	},
+	{ name: "deleteProduct" },
 );
 
 export async function getProduct(shopSlug: string, productId: string) {

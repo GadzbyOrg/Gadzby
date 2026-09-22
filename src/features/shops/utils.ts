@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { shops, shopUsers } from "@/db/schema";
+import { AppError } from "@/lib/errors";
 
 
 export function hasShopPermission(
@@ -61,7 +62,7 @@ export async function getShopOrThrow(
         where: eq(shops.slug, slug),
     });
 
-    if (!shop) throw new Error("Shop introuvable");
+    if (!shop) throw new AppError("Shop introuvable");
 
     if (requiredPermission) {
         const authorized = await checkShopPermission(
@@ -70,7 +71,7 @@ export async function getShopOrThrow(
             shop.id,
             requiredPermission
         );
-        if (!authorized) throw new Error("Non autorisé");
+        if (!authorized) throw new AppError("Non autorisé", { status: 403 });
     }
 
     return shop;

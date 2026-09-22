@@ -18,7 +18,7 @@ export function UserEditWrapper({ user, roles }: Props) {
 			<div className="flex justify-center w-full">
 				<button
 					onClick={() => setIsExpanded(!isExpanded)}
-					className="flex items-center gap-2 px-5 py-2.5 bg-elevated hover:bg-elevated text-fg-muted hover:text-white rounded-full text-sm font-medium transition-all shadow-sm border border-border select-none"
+					className="flex items-center gap-2 px-5 py-2.5 bg-elevated hover:bg-surface-950 text-fg-muted hover:text-fg rounded-full text-sm font-medium transition-all shadow-sm border border-border select-none"
 				>
 					{isExpanded ? (
 						<>

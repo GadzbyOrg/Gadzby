@@ -18,12 +18,13 @@ import { db } from "@/db";
 import {
 	productCategories,
 	products,
-	shops,
 	shopExpenses,
+	shops,
 	transactions,
 	users,
 } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
+import { AppError } from "@/lib/errors";
 
 import { checkShopPermission } from "./utils";
 
@@ -49,7 +50,7 @@ export const getMostActiveStaff = authenticatedAction(
 			where: eq(shops.slug, shopSlug),
 		});
 
-		if (!shop) throw new Error("Shop introuvable");
+		if (!shop) throw new AppError("Shop introuvable");
 
 		const isAuthorized = await checkShopPermission(
 			session.userId,
@@ -58,7 +59,7 @@ export const getMostActiveStaff = authenticatedAction(
 			"VIEW_STATS",
 		);
 
-		if (!isAuthorized) throw new Error("Non autorisé");
+		if (!isAuthorized) throw new AppError("Non autorisé", { status: 403 });
 
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
@@ -96,6 +97,7 @@ export const getMostActiveStaff = authenticatedAction(
 
 		return { stats };
 	},
+	{ name: "getMostActiveStaff" },
 );
 
 export const getBestCustomers = authenticatedAction(
@@ -105,7 +107,7 @@ export const getBestCustomers = authenticatedAction(
 			where: eq(shops.slug, shopSlug),
 		});
 
-		if (!shop) throw new Error("Shop introuvable");
+		if (!shop) throw new AppError("Shop introuvable");
 
 		const isAuthorized = await checkShopPermission(
 			session.userId,
@@ -114,7 +116,7 @@ export const getBestCustomers = authenticatedAction(
 			"VIEW_STATS",
 		);
 
-		if (!isAuthorized) throw new Error("Non autorisé");
+		if (!isAuthorized) throw new AppError("Non autorisé", { status: 403 });
 
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
@@ -158,6 +160,7 @@ export const getBestCustomers = authenticatedAction(
 
 		return { stats: mappedStats };
 	},
+	{ name: "getBestCustomers" },
 );
 
 export const getProductSalesStats = authenticatedAction(
@@ -167,7 +170,7 @@ export const getProductSalesStats = authenticatedAction(
 			where: eq(shops.slug, shopSlug),
 		});
 
-		if (!shop) throw new Error("Shop introuvable");
+		if (!shop) throw new AppError("Shop introuvable");
 
 		const isAuthorized = await checkShopPermission(
 			session.userId,
@@ -176,7 +179,7 @@ export const getProductSalesStats = authenticatedAction(
 			"VIEW_STATS",
 		);
 
-		if (!isAuthorized) throw new Error("Non autorisé");
+		if (!isAuthorized) throw new AppError("Non autorisé", { status: 403 });
 
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
@@ -217,6 +220,7 @@ export const getProductSalesStats = authenticatedAction(
 
 		return { stats: mappedStats };
 	},
+	{ name: "getProductSalesStats" },
 );
 
 export const getCategorySalesStats = authenticatedAction(
@@ -226,7 +230,7 @@ export const getCategorySalesStats = authenticatedAction(
 			where: eq(shops.slug, shopSlug),
 		});
 
-		if (!shop) throw new Error("Shop introuvable");
+		if (!shop) throw new AppError("Shop introuvable");
 
 		const isAuthorized = await checkShopPermission(
 			session.userId,
@@ -235,7 +239,7 @@ export const getCategorySalesStats = authenticatedAction(
 			"VIEW_STATS",
 		);
 
-		if (!isAuthorized) throw new Error("Non autorisé");
+		if (!isAuthorized) throw new AppError("Non autorisé", { status: 403 });
 
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
@@ -269,6 +273,7 @@ export const getCategorySalesStats = authenticatedAction(
 
 		return { stats: mappedStats };
 	},
+	{ name: "getCategorySalesStats" },
 );
 
 export const getStockProjections = authenticatedAction(
@@ -278,7 +283,7 @@ export const getStockProjections = authenticatedAction(
 			where: eq(shops.slug, shopSlug),
 		});
 
-		if (!shop) throw new Error("Shop introuvable");
+		if (!shop) throw new AppError("Shop introuvable");
 
 		const isAuthorized = await checkShopPermission(
 			session.userId,
@@ -287,7 +292,7 @@ export const getStockProjections = authenticatedAction(
 			"VIEW_STATS",
 		);
 
-		if (!isAuthorized) throw new Error("Non autorisé");
+		if (!isAuthorized) throw new AppError("Non autorisé", { status: 403 });
 
 		// 1. Get all products with their current stock
 		const shopProducts = await db.query.products.findMany({
@@ -349,6 +354,7 @@ export const getStockProjections = authenticatedAction(
 
 		return { projections: riskList };
 	},
+	{ name: "getStockProjections" },
 );
 
 export const getShopStats = authenticatedAction(
@@ -361,7 +367,7 @@ export const getShopStats = authenticatedAction(
 			},
 		});
 
-		if (!shop) throw new Error("Shop introuvable");
+		if (!shop) throw new AppError("Shop introuvable");
 
 		const isAuthorized = await checkShopPermission(
 			session.userId,
@@ -370,7 +376,7 @@ export const getShopStats = authenticatedAction(
 			"VIEW_STATS",
 		);
 
-		if (!isAuthorized) throw new Error("Non autorisé");
+		if (!isAuthorized) throw new AppError("Non autorisé", { status: 403 });
 
 		const whereClause = and(
 			eq(transactions.shopId, shop.id),
@@ -488,4 +494,5 @@ export const getShopStats = authenticatedAction(
 			chartData,
 		};
 	},
+	{ name: "getShopStats" },
 );

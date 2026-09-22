@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
@@ -8,7 +8,6 @@ import {
 	famsMembers,
 	famsRequests,
 	famss,
-	transactions,
 	users,
 } from "@/db/schema";
 import { systemSettings } from "@/db/schema/settings";
@@ -22,6 +21,9 @@ async function isFamssEnabled(): Promise<boolean> {
 	return row ? (row.value as { enabled: boolean }).enabled : true;
 }
 
+import { AppError } from "@/lib/errors";
+import { TransactionService } from "@/services/transaction-service";
+
 import {
 	addMemberSchema,
 	createFamsSchema,
@@ -30,7 +32,6 @@ import {
 	requestSchema,
 	transferSchema,
 } from "./schema";
-import { TransactionService } from "@/services/transaction-service";
 
 export const createFamsAction = authenticatedAction(
 	createFamsSchema,
@@ -59,7 +60,7 @@ export const createFamsAction = authenticatedAction(
 			return { error: "Erreur lors de la création (Nom déjà pris ?)" };
 		}
 	},
-	{
+	{ name: "actions.createFamsAction",
 		permissions: ["CREATE_FAMSS", "MANAGE_FAMSS"],
 	}
 );
@@ -114,7 +115,8 @@ export const addMemberAction = authenticatedAction(
 			console.error("Failed to add member:", error);
 			return { error: "Erreur lors de l'ajout (Déjà membre ?)" };
 		}
-	}
+	},
+	{ name: "actions.addMemberAction" },
 );
 
 export const transferToFamsAction = authenticatedAction(
@@ -128,7 +130,7 @@ export const transferToFamsAction = authenticatedAction(
 				where: eq(famss.name, data.famsName),
 				columns: { id: true }
 			});
-			if (!fams) throw new Error("Fam'ss not found");
+			if (!fams) throw new AppError("Fam'ss introuvable");
 
 			await TransactionService.transferUserToFams(
 				session.userId,
@@ -143,7 +145,8 @@ export const transferToFamsAction = authenticatedAction(
 			console.error("Failed to transfer:", error);
 			return { error: (error as Error).message || "Erreur lors du virement" };
 		}
-	}
+	},
+	{ name: "transferToFamsAction" },
 );
 
 export const removeMemberAction = authenticatedAction(
@@ -186,7 +189,8 @@ export const removeMemberAction = authenticatedAction(
 			console.error("Failed to remove member:", error);
 			return { error: "Erreur lors de la suppression" };
 		}
-	}
+	},
+	{ name: "actions.removeMemberAction" },
 );
 
 export const leaveFamsAction = authenticatedAction(
@@ -225,7 +229,8 @@ export const leaveFamsAction = authenticatedAction(
 			console.error("Failed to leave fams:", error);
 			return { error: "Erreur lors de la sortie" };
 		}
-	}
+	},
+	{ name: "leaveFamsAction" },
 );
 
 export const promoteMemberAction = authenticatedAction(
@@ -263,7 +268,8 @@ export const promoteMemberAction = authenticatedAction(
 			console.error("Failed to promote member:", error);
 			return { error: "Erreur lors de la promotion" };
 		}
-	}
+	},
+	{ name: "promoteMemberAction" },
 );
 
 export const requestToJoinFamsAction = authenticatedAction(
@@ -305,7 +311,8 @@ export const requestToJoinFamsAction = authenticatedAction(
 			console.error("Failed to request join:", error);
 			return { error: "Erreur lors de la demande" };
 		}
-	}
+	},
+	{ name: "requestToJoinFamsAction" },
 );
 
 export const cancelRequestAction = authenticatedAction(
@@ -333,7 +340,8 @@ export const cancelRequestAction = authenticatedAction(
 			console.error("Failed to cancel request:", error);
 			return { error: "Erreur lors de l'annulation" };
 		}
-	}
+	},
+	{ name: "cancelRequestAction" },
 );
 
 // UNTESTED
@@ -380,7 +388,8 @@ export const acceptRequestAction = authenticatedAction(
 			console.error("Failed to accept request:", error);
 			return { error: "Erreur lors de l'acceptation" };
 		}
-	}
+	},
+	{ name: "acceptRequestAction" },
 );
 
 // UNTESTED
@@ -418,5 +427,6 @@ export const rejectRequestAction = authenticatedAction(
 			console.error("Failed to reject request:", error);
 			return { error: "Erreur lors du rejet" };
 		}
-	}
+	},
+	{ name: "rejectRequestAction" },
 );

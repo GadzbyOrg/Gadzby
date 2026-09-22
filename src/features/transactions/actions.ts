@@ -50,7 +50,8 @@ export const getUserTransactionsAction = authenticatedAction(
 		});
 
 		return { success: "OK", data: userTransactions };
-	}
+	},
+	{ name: "getUserTransactionsAction" },
 );
 
 export const getAllTransactionsAction = authenticatedAction(
@@ -141,7 +142,7 @@ export const getAllTransactionsAction = authenticatedAction(
 
 		return { success: "OK", data: allTransactions, totalCount };
 	},
-	{ permissions: ["ADMIN_ACCESS", "VIEW_TRANSACTIONS"] }
+	{ name: "getAllTransactionsAction", permissions: ["ADMIN_ACCESS", "VIEW_TRANSACTIONS"] }
 );
 
 export const exportTransactionsAction = authenticatedAction(
@@ -197,7 +198,7 @@ export const exportTransactionsAction = authenticatedAction(
 
 		return { success: "Export OK", data: formattedData };
 	},
-	{ permissions: ["ADMIN_ACCESS", "VIEW_TRANSACTIONS"] }
+	{ name: "exportTransactionsAction", permissions: ["ADMIN_ACCESS", "VIEW_TRANSACTIONS"] }
 );
 
 export const cancelTransactionAction = authenticatedAction(
@@ -216,7 +217,7 @@ export const cancelTransactionAction = authenticatedAction(
 		}
 		return { success: "Transaction annulée avec succès" };
 	},
-	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
+	{ name: "cancelTransactionAction", permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
 );
 
 export const transferMoneyAction = authenticatedAction(
@@ -233,7 +234,8 @@ export const transferMoneyAction = authenticatedAction(
 		revalidatePath("/transfer");
 		revalidatePath("/");
 		return { success: "Virement effectué avec succès" };
-	}
+	},
+	{ name: "transferMoneyAction" },
 );
 
 export const topUpUserAction = authenticatedAction(
@@ -253,7 +255,7 @@ export const topUpUserAction = authenticatedAction(
 		revalidatePath("/credit");
 		return { success: "Rechargement effectué avec succès" };
 	},
-	{ permissions: ["TOPUP_USER", "ADMIN_ACCESS"] }
+	{ name: "topUpUserAction", permissions: ["TOPUP_USER", "ADMIN_ACCESS"] }
 );
 
 export const cancelTransactionGroupAction = authenticatedAction(
@@ -276,7 +278,7 @@ export const cancelTransactionGroupAction = authenticatedAction(
 		}
 		return { success: `${result.count} transactions annulées avec succès` };
 	},
-	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
+	{ name: "cancelTransactionGroupAction", permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
 );
 
 export const updateTransactionQuantityAction = authenticatedAction(
@@ -303,7 +305,7 @@ export const updateTransactionQuantityAction = authenticatedAction(
 		}
 		return { success: result.message || "Quantité mise à jour avec succès" };
 	},
-	{ permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
+	{ name: "updateTransactionQuantityAction", permissions: ["ADMIN_ACCESS", "CANCEL_TRANSACTIONS"] }
 );
 
 export const editTopupAmountAction = authenticatedAction(
@@ -313,5 +315,5 @@ export const editTopupAmountAction = authenticatedAction(
 		revalidatePath("/credit");
 		return { success: "Rechargement modifié avec succès" };
 	},
-	{ permissions: ["TOPUP_USER", "ADMIN_ACCESS"] }
+	{ name: "editTopupAmountAction", permissions: ["TOPUP_USER", "ADMIN_ACCESS"] }
 );

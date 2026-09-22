@@ -20,7 +20,7 @@ export const togglePaymentMethod = authenticatedAction(
 
 		revalidatePath("/admin/settings");
 	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_PAYMENTS"] }
+	{ name: "togglePaymentMethod", permissions: ["ADMIN_ACCESS", "MANAGE_PAYMENTS"] }
 );
 
 export const updatePaymentMethodConfig = authenticatedAction(
@@ -37,5 +37,5 @@ export const updatePaymentMethodConfig = authenticatedAction(
 
 		revalidatePath("/admin/settings");
 	},
-	{ permissions: ["ADMIN_ACCESS", "MANAGE_PAYMENTS"] }
+	{ name: "updatePaymentMethodConfig", permissions: ["ADMIN_ACCESS", "MANAGE_PAYMENTS"] }
 );

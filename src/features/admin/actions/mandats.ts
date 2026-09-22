@@ -7,6 +7,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { mandats, mandatShops, products, shopExpenses, shops,transactions } from "@/db/schema";
 import { authenticatedAction, authenticatedActionNoInput } from "@/lib/actions";
+import { AppError } from "@/lib/errors";
 
 /**
  * Calculates total stock value per shop for ALL active shops.
@@ -42,7 +43,7 @@ export const getMandatsAction = authenticatedActionNoInput(async () => {
             }
         }
     });
-}, { permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] });
+}, { name: "getMandatsAction", permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] });
 
 export const getActiveMandatAction = authenticatedActionNoInput(async () => {
     return await db.query.mandats.findFirst({
@@ -55,7 +56,7 @@ export const getActiveMandatAction = authenticatedActionNoInput(async () => {
             }
         }
     });
-}, { permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] });
+}, { name: "getActiveMandatAction", permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] });
 
 export const getMandatDetailsAction = authenticatedAction(
     z.string(),
@@ -137,7 +138,7 @@ export const getMandatDetailsAction = authenticatedAction(
 
         return mandat;
     },
-    { permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] }
+    { name: "getMandatDetailsAction", permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] }
 );
 
 
@@ -150,12 +151,12 @@ export const getPreStartMandatDetailsAction = authenticatedActionNoInput(async (
     });
     
     if (activeMandat) {
-        throw new Error("Un mandat est déjà en cours");
+        throw new AppError("Un mandat est déjà en cours");
     }
 
     const shopsStock = await calculateShopsStockValue();
     return { shops: shopsStock };
-}, { permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] });
+}, { name: "getPreStartMandatDetailsAction", permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] });
 
 export const confirmStartGlobalMandatAction = authenticatedAction(
     z.array(z.object({
@@ -167,7 +168,7 @@ export const confirmStartGlobalMandatAction = authenticatedAction(
             where: eq(mandats.status, 'ACTIVE')
         });
         if (activeMandat) {
-            throw new Error("Un mandat est déjà en cours");
+            throw new AppError("Un mandat est déjà en cours");
         }
 
         // Calculate sum of initial stocks from the USER VALIDATED data
@@ -194,7 +195,7 @@ export const confirmStartGlobalMandatAction = authenticatedAction(
             return newMandat;
         });
     },
-    { permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] }
+    { name: "confirmStartGlobalMandatAction", permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] }
 );
 
 
@@ -209,7 +210,7 @@ export const getPreEndMandatDetailsAction = authenticatedActionNoInput(async () 
     });
 
     if (!activeMandat) {
-        throw new Error("Aucun mandat actif");
+        throw new AppError("Aucun mandat actif");
     }
 
     const endTime = new Date();
@@ -273,7 +274,7 @@ export const getPreEndMandatDetailsAction = authenticatedActionNoInput(async () 
     });
 
     return { shops: shopsDetails };
-}, { permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] });
+}, { name: "getPreEndMandatDetailsAction", permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] });
 
 export const confirmEndGlobalMandatAction = authenticatedAction(
     z.array(z.object({ 
@@ -287,7 +288,7 @@ export const confirmEndGlobalMandatAction = authenticatedAction(
         });
         
         if (!activeMandat) {
-            throw new Error("Aucun mandat actif");
+            throw new AppError("Aucun mandat actif");
         }
 
         const endTime = new Date();
@@ -368,5 +369,5 @@ export const confirmEndGlobalMandatAction = authenticatedAction(
             return { success: true, benefice: globalBenefice };
         });
     },
-    { permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] }
+    { name: "confirmEndGlobalMandatAction", permissions: ['MANAGE_MANDATS', 'ADMIN_ACCESS'] }
 );

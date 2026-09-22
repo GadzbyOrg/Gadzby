@@ -9,6 +9,8 @@ import {
 	transactions,
 	users,
 } from "@/db/schema";
+import { AppError } from "@/lib/errors";
+
 import { WebhookService } from "./webhook-service";
 
 // Infer the transaction type from the db instance
@@ -29,9 +31,9 @@ export class TransactionService {
 		amountInEuros: number,
 		description?: string
 	) {
-		if (amountInEuros <= 0) throw new Error("Montant invalide");
+		if (amountInEuros <= 0) throw new AppError("Montant invalide");
 		if (senderId === receiverId)
-			throw new Error("Transfert impossible vers soi-même");
+			throw new AppError("Transfert impossible vers soi-même");
 
 		const amountInCents = Math.round(amountInEuros * 100);
 
@@ -43,14 +45,14 @@ export class TransactionService {
 				where: eq(users.id, receiverId),
 			});
 
-			if (!sender || !receiver) throw new Error("Utilisateur introuvable");
-			if (sender.isAsleep) throw new Error("Votre compte est désactivé");
+			if (!sender || !receiver) throw new AppError("Utilisateur introuvable");
+			if (sender.isAsleep) throw new AppError("Votre compte est désactivé");
 			if (receiver.isAsleep)
-				throw new Error("Le compte destinataire est désactivé");
-			if (sender.isDeleted) throw new Error("Votre compte est supprimé");
+				throw new AppError("Le compte destinataire est désactivé");
+			if (sender.isDeleted) throw new AppError("Votre compte est supprimé");
 			if (receiver.isDeleted)
-				throw new Error("Le compte destinataire est supprimé");
-			if (sender.balance < amountInCents) throw new Error("Solde insuffisant");
+				throw new AppError("Le compte destinataire est supprimé");
+			if (sender.balance < amountInCents) throw new AppError("Solde insuffisant");
 
 			// Update balances
 			await tx
@@ -102,7 +104,7 @@ export class TransactionService {
 		amountInCents: number,
 		description?: string
 	) {
-		if (amountInCents <= 0) throw new Error("Montant invalide");
+		if (amountInCents <= 0) throw new AppError("Montant invalide");
 
 		return await db.transaction(async (tx) => {
 			const sender = await tx.query.users.findFirst({
@@ -112,11 +114,11 @@ export class TransactionService {
 				where: eq(famss.id, famsId),
 			});
 
-			if (!sender) throw new Error("Utilisateur introuvable");
-			if (!fams) throw new Error("Fam'ss introuvable");
-			if (sender.isAsleep) throw new Error("Votre compte est désactivé");
-			if (sender.isDeleted) throw new Error("Votre compte est supprimé");
-			if (sender.balance < amountInCents) throw new Error("Solde insuffisant");
+			if (!sender) throw new AppError("Utilisateur introuvable");
+			if (!fams) throw new AppError("Fam'ss introuvable");
+			if (sender.isAsleep) throw new AppError("Votre compte est désactivé");
+			if (sender.isDeleted) throw new AppError("Votre compte est supprimé");
+			if (sender.balance < amountInCents) throw new AppError("Solde insuffisant");
 
 			// Update balances
 			await tx
@@ -156,7 +158,7 @@ export class TransactionService {
 		amountInEuros: number,
 		paymentMethod: string
 	) {
-		if (amountInEuros <= 0) throw new Error("Montant invalide");
+		if (amountInEuros <= 0) throw new AppError("Montant invalide");
 
 		const amountInCents = Math.round(amountInEuros * 100);
 
@@ -164,7 +166,7 @@ export class TransactionService {
 			const targetUser = await tx.query.users.findFirst({
 				where: eq(users.id, targetUserId),
 			});
-			if (!targetUser) throw new Error("Utilisateur introuvable");
+			if (!targetUser) throw new AppError("Utilisateur introuvable");
 
 			await tx
 				.update(users)
@@ -201,13 +203,13 @@ export class TransactionService {
 				},
 			});
 
-			if (!originalTx) throw new Error("Transaction introuvable");
+			if (!originalTx) throw new AppError("Transaction introuvable");
 			if (originalTx.status === "CANCELLED")
-				throw new Error("Transaction déjà annulée");
+				throw new AppError("Transaction déjà annulée");
 			if (originalTx.status === "PENDING")
-				throw new Error("Transaction en attente");
+				throw new AppError("Transaction en attente");
 			if (originalTx.status === "FAILED")
-				throw new Error("Transaction échouée");
+				throw new AppError("Transaction échouée");
 
 			// Special Handling for TRANSFER: Must cancel both legs if found
 			if (originalTx.type === "TRANSFER") {
@@ -338,7 +340,7 @@ export class TransactionService {
 		famsId?: string,
 		descriptionPrefix: string = "Achat"
 	) {
-		if (!items.length) throw new Error("Panier vide");
+		if (!items.length) throw new AppError("Panier vide");
 
 		// 1. Fetch products & variants
 		const productIds = items.map((i) => i.productId);
@@ -351,7 +353,7 @@ export class TransactionService {
 			});
 
 			if (dbProducts.length !== new Set(productIds).size) {
-				throw new Error("Certains produits sont invalides ou introuvables");
+				throw new AppError("Certains produits sont invalides ou introuvables");
 			}
 
             const dbVariants = variantIds.length > 0 ? await tx.query.productVariants.findMany({
@@ -399,7 +401,7 @@ export class TransactionService {
                 if (item.variantId) {
                     const variant = dbVariants.find(v => v.id === item.variantId);
                     if (!variant || variant.productId !== product.id) {
-                        throw new Error(`Variante invalide pour ${product.name}`);
+                        throw new AppError(`Variante invalide pour ${product.name}`);
                     }
 
                     // Price
@@ -450,7 +452,7 @@ export class TransactionService {
 
 			// 3. Update Balance
 			if (paymentSource === "FAMILY") {
-				if (!famsId) throw new Error("ID Famille manquant");
+				if (!famsId) throw new AppError("ID Famille manquant");
 
 				// Check membership explicitly
 				const membership = await tx.query.famsMembers.findFirst({
@@ -461,7 +463,7 @@ export class TransactionService {
 				});
 
 				if (!membership) {
-					throw new Error("L'utilisateur n'est pas membre de cette famille");
+					throw new AppError("L'utilisateur n'est pas membre de cette famille");
 				}
 
 				const fam = await tx.query.famss.findFirst({
@@ -470,7 +472,7 @@ export class TransactionService {
 				});
 
 				if (!fam || fam.balance < totalAmount) {
-					throw new Error("Solde insuffisant (Fam'ss)");
+					throw new AppError("Solde insuffisant (Fam'ss)");
 				}
 
 				await tx
@@ -484,11 +486,11 @@ export class TransactionService {
 				});
 
 				if (!user || user.balance < totalAmount) {
-					throw new Error("Solde insuffisant");
+					throw new AppError("Solde insuffisant");
 				}
 
 				if (user.isAsleep) {
-					throw new Error("Compte désactivé");
+					throw new AppError("Compte désactivé");
 				}
 
 				await tx
@@ -543,7 +545,7 @@ export class TransactionService {
 		description: string,
 		groupId?: string
 	) {
-		if (amountInEuros === 0) throw new Error("Montant nul invalide");
+		if (amountInEuros === 0) throw new AppError("Montant nul invalide");
 
 		const amountInCents = Math.round(amountInEuros * 100);
 
@@ -551,10 +553,10 @@ export class TransactionService {
 			const targetUser = await tx.query.users.findFirst({
 				where: eq(users.id, targetUserId),
 			});
-			if (!targetUser) throw new Error("Utilisateur introuvable");
+			if (!targetUser) throw new AppError("Utilisateur introuvable");
 
 			// Check isDeleted but allow isAsleep for debt collection
-			if (targetUser.isDeleted) throw new Error("Utilisateur supprimé");
+			if (targetUser.isDeleted) throw new AppError("Utilisateur supprimé");
 
 			await tx
 				.update(users)
@@ -589,7 +591,7 @@ export class TransactionService {
 			});
 
 			if (groupTxs.length === 0) {
-				throw new Error("Aucune transaction trouvée pour ce groupe (ou déjà annulées)");
+				throw new AppError("Aucune transaction trouvée pour ce groupe (ou déjà annulées)");
 			}
 
 			for (const txRecord of groupTxs) {
@@ -614,7 +616,7 @@ export class TransactionService {
 		newQuantity: number,
 		performedByUserId: string
 	) {
-		if (newQuantity < 0) throw new Error("Quantité invalide");
+		if (newQuantity < 0) throw new AppError("Quantité invalide");
 
 		return await db.transaction(async (tx) => {
 			const originalTx = await tx.query.transactions.findFirst({
@@ -624,17 +626,17 @@ export class TransactionService {
 				},
 			});
 
-			if (!originalTx) throw new Error("Transaction introuvable");
+			if (!originalTx) throw new AppError("Transaction introuvable");
 			if (originalTx.type !== "PURCHASE")
-				throw new Error("Seuls les achats peuvent être modifiés");
+				throw new AppError("Seuls les achats peuvent être modifiés");
 			if (originalTx.quantity === null)
-				throw new Error("Quantité non spécifiée sur la transaction");
+				throw new AppError("Quantité non spécifiée sur la transaction");
 			if (
 				originalTx.status === "CANCELLED" ||
 				originalTx.status === "FAILED" ||
 				originalTx.status === "PENDING"
 			)
-				throw new Error("Transaction non modifiable (déjà annulée ou échouée)");
+				throw new AppError("Transaction non modifiable (déjà annulée ou échouée)");
 
 			if (newQuantity === 0) {
 				// Full cancellation
@@ -648,7 +650,7 @@ export class TransactionService {
 			}
 
 			if (newQuantity >= originalTx.quantity) {
-				throw new Error(
+				throw new AppError(
 					"La nouvelle quantité doit être inférieure à l'actuelle pour une annulation partielle"
 				);
 			}
@@ -737,24 +739,24 @@ export class TransactionService {
 		newAmountInEuros: number,
 		performedByUserId: string
 	) {
-		if (newAmountInEuros <= 0) throw new Error("Montant invalide");
+		if (newAmountInEuros <= 0) throw new AppError("Montant invalide");
 
 		return await db.transaction(async (tx) => {
 			const originalTx = await tx.query.transactions.findFirst({
 				where: eq(transactions.id, transactionId),
 			});
 
-			if (!originalTx) throw new Error("Transaction introuvable");
+			if (!originalTx) throw new AppError("Transaction introuvable");
 			if (originalTx.type !== "TOPUP")
-				throw new Error("Seuls les rechargements peuvent être modifiés");
+				throw new AppError("Seuls les rechargements peuvent être modifiés");
 			if (originalTx.issuerId !== performedByUserId)
-				throw new Error("Non autorisé");
+				throw new AppError("Non autorisé", { status: 403 });
 			if (originalTx.status !== "COMPLETED")
-				throw new Error("Transaction non modifiable");
+				throw new AppError("Transaction non modifiable");
 
 			const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
 			if (originalTx.createdAt < thirtyMinutesAgo)
-				throw new Error("Délai de modification dépassé (30 min)");
+				throw new AppError("Délai de modification dépassé (30 min)");
 
 			const newAmountCents = Math.round(newAmountInEuros * 100);
 			const delta = newAmountCents - originalTx.amount;
