@@ -1,6 +1,6 @@
 "use client";
 
-import { IconChevronDown, IconHome, IconLogout, IconUser } from "@tabler/icons-react";
+import { IconChevronDown, IconHome, IconLogout, IconSparkles, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -80,6 +80,14 @@ export function UserDropdown({ user }: { user: UserProp }) {
 						>
 							<IconUser size={18} className="text-fg-muted" />
 							Mon Profil
+						</Link>
+						<Link
+							href="/changelog"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm font-medium text-fg hover:bg-elevated hover:text-fg transition-colors"
+						>
+							<IconSparkles size={18} className="text-fg-muted" />
+							Nouveautés
 						</Link>
 						<button
 							onClick={async () => {
