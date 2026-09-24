@@ -252,3 +252,37 @@ export async function completeInventoryAudit(
 		return { error: "Erreur lors de la validation" };
 	}
 }
+
+export async function deleteInventoryAudit(shopSlug: string, auditId: string) {
+    const session = await verifySession();
+    if (!session) return { error: "Non autorisé" };
+
+    const shop = await getShopOrThrow(shopSlug, session.userId, session.permissions, SHOP_PERM.MANAGE_INVENTORY);
+
+	try {
+		const audit = await db.query.inventoryAudits.findFirst({
+			where: and(
+				eq(inventoryAudits.id, auditId),
+				eq(inventoryAudits.shopId, shop.id)
+			),
+		});
+
+		if (!audit) return { error: "Inventaire introuvable" };
+
+		// Le stock des produits n'est pas restauré : seul l'historique est supprimé
+		await db.transaction(async (tx) => {
+			await tx
+				.delete(inventoryAuditItems)
+				.where(eq(inventoryAuditItems.auditId, auditId));
+			await tx
+				.delete(inventoryAudits)
+				.where(eq(inventoryAudits.id, auditId));
+		});
+
+		revalidatePath(`/shops/${shopSlug}/manage/inventory`);
+		return { success: true };
+	} catch (error) {
+		console.error("Failed to delete audit:", error);
+		return { error: "Erreur lors de la suppression de l'inventaire" };
+	}
+}

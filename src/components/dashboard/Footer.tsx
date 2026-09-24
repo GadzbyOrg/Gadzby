@@ -40,7 +40,13 @@ export function Footer() {
 						</div>
 					</div>
 					<p className="ml-0.5 text-xs font-mono text-fg-subtle">
-						Licence MIT • v{packageJson.version}
+						Licence MIT •{" "}
+						<Link
+							href="/changelog"
+							className="underline decoration-dotted underline-offset-2 transition-colors hover:text-accent-400"
+						>
+							v{packageJson.version}
+						</Link>
 					</p>
 				</div>
 
