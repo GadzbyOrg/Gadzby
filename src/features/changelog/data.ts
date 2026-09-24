@@ -25,6 +25,20 @@ export function compareVersions(a: string, b: string): number {
 
 /** Plus récente en premier. À compléter à chaque release (le test vérifie la version de package.json). */
 export const CHANGELOG: readonly Release[] = [
+  {
+		version: "1.7.4",
+		date: "2026-09-24",
+		changes: [
+			{
+				kind: "improvement",
+				text: "Il est maintenant possible de supprimer des inventaires.",
+			},
+			{
+				kind: "feature",
+				text: "Ajour d'une page de changelogs.",
+			},
+		],
+	},
 	{
 		version: "1.7.3",
 		date: "2026-09-22",
