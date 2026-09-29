@@ -11,6 +11,8 @@ import { users } from "@/db/schema";
 import { publicAction, publicActionNoInput } from "@/lib/actions";
 import { createSession, deleteSession } from "@/lib/session";
 
+import { verifyCredentials } from "./credentials";
+
 const loginSchema = z.object({
 	username: z.string().min(1, "Identifiant requis"),
 	password: z.string().min(6, "Mot de passe trop court"),
@@ -38,44 +40,15 @@ const resetPasswordSchema = z
 export const loginAction = publicAction(
 	loginSchema,
 	async (data) => {
-		const { username: rawUsername, password } = data;
-		const username = rawUsername.toLowerCase();
-		console.log("Login attempt for:", username);
+		const result = await verifyCredentials(data.username, data.password);
 
-		const user = await db.query.users.findFirst({
-			where: eq(users.username, username),
-			with: { role: true },
-			columns: {
-				id: true,
-				username: true,
-				passwordHash: true,
-				isAsleep: true,
-				preferredDashboardPath: true,
-			}
-		});
-
-		if (!user) {
-			console.log("User not found:", username);
-			return { error: "Identifiants incorrects" };
+		if (!result.ok) {
+			return result.reason === "DISABLED"
+				? { error: "Votre compte a été désactivé" }
+				: { error: "Identifiants incorrects" };
 		}
 
-		if (!user.passwordHash) {
-			console.log("User has no password hash:", username);
-			return { error: "Identifiants incorrects" };
-		}
-
-		const passwordMatch = await bcrypt.compare(password, user.passwordHash);
-
-		if (!passwordMatch) {
-			console.log("Invalid password for:", username);
-			return { error: "Identifiants incorrects" };
-		}
-
-		if (user.isAsleep) {
-			console.log("User is asleep (inactive):", username);
-			return { error: "Votre compte a été désactivé" };
-		}
-
+		const { user } = result;
 		const roleName = user.role?.name || "USER";
 		const permissions = user.role?.permissions || [];
 
@@ -94,7 +67,6 @@ export const loginAction = publicAction(
 
 		await createSession(user.id, roleName, permissions, user.preferredDashboardPath);
 
-		console.log("Login successful:", username);
 		redirect("/");
 	},
 	{ name: "loginAction" },

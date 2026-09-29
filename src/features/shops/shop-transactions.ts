@@ -4,9 +4,8 @@ import { and, count, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { shops, transactions } from "@/db/schema";
+import { transactions } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
-import { AppError } from "@/lib/errors";
 import { TransactionService } from "@/services/transaction-service";
 
 import { getTransactionsQuery } from "../transactions/queries"; // Import from sibling feature
@@ -16,6 +15,7 @@ import {
 	processSaleSchema,
 	processSelfServicePurchaseSchema
 } from "./schemas";
+import { purchaseSelfService } from "./self-service";
 import { getShopOrThrow } from "./utils";
 
 
@@ -141,43 +141,14 @@ export const exportShopTransactionsAction = authenticatedAction(
 export const processSelfServicePurchase = authenticatedAction(
 	processSelfServicePurchaseSchema,
 	async ({ shopSlug, items, paymentSource, famsId }, { session }) => {
-
-
-		const shop = await db.query.shops.findFirst({
-			where: eq(shops.slug, shopSlug),
-			// include products for verification? original did logic with products separately.
-		});
-
-		if (!shop) throw new AppError("Shop introuvable");
-
-		if (!shop.isSelfServiceEnabled)
-			throw new AppError("Self-service désactivé pour ce shop");
-
-		const productIds = items.map((i) => i.productId);
-		const dbProducts = await db.query.products.findMany({
-			where: (products, { inArray, and }) =>
-				and(
-					inArray(products.id, productIds),
-					eq(products.shopId, shop.id),
-					eq(products.allowSelfService, true)
-				),
-		});
-
-		if (dbProducts.length !== new Set(productIds).size) {
-			throw new AppError(
-				"Certains produits ne sont pas disponibles en self-service"
-			);
-		}
-
-		await TransactionService.processShopPurchase(
-			shop.id,
-			session.userId,
-			session.userId,
+		await purchaseSelfService({
+			shop: { slug: shopSlug },
+			userId: session.userId,
 			items,
 			paymentSource,
 			famsId,
-			"Achat Self-Service:"
-		);
+			descriptionPrefix: "Achat Self-Service:",
+		});
 
 		revalidatePath(`/shops/${shopSlug}`);
 		return { success: true };

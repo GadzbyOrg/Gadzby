@@ -1,7 +1,7 @@
 import crypto from "crypto";
-
 import { and, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import { isDeepStrictEqual } from "util";
 
 import { db } from "@/db";
 import { apiIdempotencyKeys, apiKeys, apiRateLimits } from "@/db/schema";
@@ -78,6 +78,14 @@ export async function rateLimit(req: NextRequest, identifier: string | null = nu
     return { success: true };
 }
 
+/**
+ * Compare le corps stocké au corps reçu sans tenir compte de l'ordre des clés :
+ * Postgres `jsonb` réordonne les clés, un `JSON.stringify` ne matcherait jamais.
+ */
+export function isSameRequestBody(stored: unknown, received: unknown): boolean {
+	return isDeepStrictEqual(stored, received);
+}
+
 export async function withIdempotency(
 	req: NextRequest,
 	apiKeyId: string,
@@ -101,7 +109,7 @@ export async function withIdempotency(
 
 	if (existing) {
 		// Prevent idempotency key reuse for completely different payloads
-		if (existing.reqPath !== reqPath || JSON.stringify(existing.reqBody) !== JSON.stringify(reqBody)) {
+		if (existing.reqPath !== reqPath || !isSameRequestBody(existing.reqBody, reqBody)) {
 			return NextResponse.json({ error: "Idempotency key already used for a different request" }, { status: 400 });
 		}
 

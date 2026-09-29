@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { generateApiKey } from "../api-auth";
+import { generateApiKey, isSameRequestBody } from "../api-auth";
 import crypto from "crypto";
 
 describe("API Auth Helpers", () => {
@@ -30,5 +30,17 @@ describe("API Auth Helpers", () => {
 
 		expect(key1.rawKey).not.toBe(key2.rawKey);
 		expect(key1.hashedKey).not.toBe(key2.hashedKey);
+	});
+
+	it("treats bodies with reordered keys as the same request (jsonb reorders keys)", () => {
+		const sent = { shopId: "s", items: [{ quantity: 1, productId: "p" }] };
+		const storedInJsonb = { items: [{ productId: "p", quantity: 1 }], shopId: "s" };
+
+		expect(isSameRequestBody(storedInJsonb, sent)).toBe(true);
+	});
+
+	it("detects a different request body", () => {
+		expect(isSameRequestBody({ items: [1, 2] }, { items: [2, 1] })).toBe(false);
+		expect(isSameRequestBody({ a: 1 }, { a: 1, b: 2 })).toBe(false);
 	});
 });
