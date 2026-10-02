@@ -36,7 +36,7 @@ Utilisez [`GET /auth/context`](../reference/authentification.md#vérifier-une-cl
 Un administrateur peut révoquer une clé depuis la même page. La révocation est immédiate :
 - toutes les requêtes avec cette clé renvoient `401` ;
 - tous les jetons utilisateur émis pour cette clé deviennent inutilisables ;
-- les webhooks rattachés à la clé ne sont **pas** supprimés automatiquement (voir [Problèmes connus](../problemes-connus.md)).
+- les webhooks rattachés à la clé sont désactivés et ne reçoivent plus d'événements.
 
 En cas de fuite, révoquez la clé puis créez-en une nouvelle.
 

@@ -30,8 +30,8 @@ describe("GET /api/v1/users/[userId]", () => {
 	it("should return 401 if API key is invalid", async () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: false, error: "Invalid Key", status: 401 });
 
-		const req = new NextRequest("http://localhost/api/v1/users/some-uuid");
-		const res = await GET(req, makeParams("some-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/users/22222222-2222-4222-8222-222222222222");
+		const res = await GET(req, makeParams("22222222-2222-4222-8222-222222222222"));
 		const json = await res.json();
 
 		expect(res.status).toBe(401);
@@ -42,8 +42,8 @@ describe("GET /api/v1/users/[userId]", () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: false, error: "Too Many Requests", status: 429 });
 
-		const req = new NextRequest("http://localhost/api/v1/users/some-uuid");
-		const res = await GET(req, makeParams("some-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/users/22222222-2222-4222-8222-222222222222");
+		const res = await GET(req, makeParams("22222222-2222-4222-8222-222222222222"));
 
 		expect(res.status).toBe(429);
 	});
@@ -53,8 +53,8 @@ describe("GET /api/v1/users/[userId]", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 		(db.query.users.findFirst as any).mockResolvedValue(null);
 
-		const req = new NextRequest("http://localhost/api/v1/users/missing-uuid");
-		const res = await GET(req, makeParams("missing-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/users/99999999-9999-4999-8999-999999999999");
+		const res = await GET(req, makeParams("99999999-9999-4999-8999-999999999999"));
 		const json = await res.json();
 
 		expect(res.status).toBe(404);
@@ -64,10 +64,10 @@ describe("GET /api/v1/users/[userId]", () => {
 	it("should return 404 if user is deleted", async () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
-		(db.query.users.findFirst as any).mockResolvedValue({ id: "user-1", isDeleted: true });
+		(db.query.users.findFirst as any).mockResolvedValue({ id: "22222222-2222-4222-8222-222222222222", isDeleted: true });
 
-		const req = new NextRequest("http://localhost/api/v1/users/user-1");
-		const res = await GET(req, makeParams("user-1"));
+		const req = new NextRequest("http://localhost/api/v1/users/22222222-2222-4222-8222-222222222222");
+		const res = await GET(req, makeParams("22222222-2222-4222-8222-222222222222"));
 		const json = await res.json();
 
 		expect(res.status).toBe(404);
@@ -79,7 +79,7 @@ describe("GET /api/v1/users/[userId]", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 
 		const mockUser = {
-			id: "user-1",
+			id: "22222222-2222-4222-8222-222222222222",
 			nom: "Dupont",
 			prenom: "Jean",
 			username: "jdupont",
@@ -93,8 +93,8 @@ describe("GET /api/v1/users/[userId]", () => {
 		};
 		(db.query.users.findFirst as any).mockResolvedValue(mockUser);
 
-		const req = new NextRequest("http://localhost/api/v1/users/user-1");
-		const res = await GET(req, makeParams("user-1"));
+		const req = new NextRequest("http://localhost/api/v1/users/22222222-2222-4222-8222-222222222222");
+		const res = await GET(req, makeParams("22222222-2222-4222-8222-222222222222"));
 		const json = await res.json();
 
 		expect(res.status).toBe(200);
@@ -107,7 +107,7 @@ describe("GET /api/v1/users/[userId]", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 
 		const mockUser = {
-			id: "user-1",
+			id: "22222222-2222-4222-8222-222222222222",
 			nom: "Dupont",
 			prenom: "Jean",
 			username: "jdupont",
@@ -121,11 +121,22 @@ describe("GET /api/v1/users/[userId]", () => {
 		};
 		(db.query.users.findFirst as any).mockResolvedValue(mockUser);
 
-		const req = new NextRequest("http://localhost/api/v1/users/user-1");
-		const res = await GET(req, makeParams("user-1"));
+		const req = new NextRequest("http://localhost/api/v1/users/22222222-2222-4222-8222-222222222222");
+		const res = await GET(req, makeParams("22222222-2222-4222-8222-222222222222"));
 		const json = await res.json();
 
 		expect(json.user).not.toHaveProperty("email");
 		expect(json.user).not.toHaveProperty("passwordHash");
+	});
+
+	it("returns 400 for a malformed userId without querying the DB", async () => {
+		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
+		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
+
+		const res = await GET(new NextRequest("http://localhost/api/v1/users/abc"), makeParams("abc"));
+
+		expect(res.status).toBe(400);
+		expect(await res.json()).toEqual({ error: "Invalid userId" });
+		expect(db.query.users.findFirst).not.toHaveBeenCalled();
 	});
 });

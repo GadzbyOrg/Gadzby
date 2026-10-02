@@ -16,7 +16,7 @@ Débite le solde personnel de l'utilisateur, ou celui de sa Fam'ss, pour une lis
 - une transaction est créée par article ;
 - un événement [`shop.purchase.created`](../guides/webhooks.md) est envoyé.
 
-Contrairement à `/me/purchases`, cet endpoint **ne vérifie pas** le libre-service de la boutique, l'option `allowSelfService` des produits, ni même que la boutique est active (voir [Problèmes connus](../problemes-connus.md)).
+La boutique doit exister et être active. Contrairement à `/me/purchases`, cet endpoint **ne vérifie pas** le libre-service de la boutique ni l'option `allowSelfService` des produits.
 
 ```
 POST /api/v1/shops/{shopId}/purchases
@@ -80,7 +80,8 @@ La réponse ne contient ni les transactions ni le nouveau solde. Récupérez-les
 | `400` | `Invalid JSON body` | JSON invalide. |
 | `400` | `Invalid payload` | Corps non conforme, avec `details` (voir [Erreurs](../guides/erreurs.md#erreurs-de-validation)). |
 | `400` | `famsId is required when paymentSource is FAMILY` | `famsId` manquant. |
-| `400` | `Certains produits sont invalides ou introuvables` | Produit inexistant ou d'une autre boutique (y compris une boutique inconnue). |
+| `400` | `Invalid shopId` | `shopId` qui n'est pas un UUID. |
+| `400` | `Certains produits sont invalides ou introuvables` | Produit inexistant ou d'une autre boutique. |
 | `400` | `Variante invalide pour <produit>` | Variante qui n'appartient pas au produit. |
 | `400` | `Solde insuffisant` | Solde personnel trop faible. |
 | `400` | `Solde insuffisant (Fam'ss)` | Solde de la Fam'ss trop faible. |
@@ -88,6 +89,8 @@ La réponse ne contient ni les transactions ni le nouveau solde. Récupérez-les
 | `400` | `Compte désactivé` | Utilisateur désactivé. |
 | `400` | `Idempotency key already used for a different request` | Clé d'idempotence réutilisée avec un autre corps. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
+| `403` | `Shop inactive` | Boutique désactivée. |
+| `404` | `Shop not found` | `shopId` inconnu. |
 | `409` | `Request already in progress` | Requête avec la même `Idempotency-Key` en cours. |
 | `429` | `Too Many Requests` | Limite atteinte. |
 | `500` | `Internal Server Error` | Erreur inattendue. Aucun débit n'a eu lieu. |

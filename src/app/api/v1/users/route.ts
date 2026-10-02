@@ -1,37 +1,34 @@
-import * as Sentry from "@sentry/nextjs";
-import { and, eq, ilike, or } from "drizzle-orm";
+import { and, asc, eq, ilike, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { rateLimit, validateApiKey } from "@/lib/api-auth";
+import {
+	handleRouteError,
+	jsonError,
+	parsePagination,
+	RATE_LIMITS,
+	rateLimitResponse,
+} from "@/lib/api-http";
 
 export async function GET(req: NextRequest) {
 	const authRes = await validateApiKey(req);
-	if (!authRes.success) {
-		return NextResponse.json(
-			{ error: authRes.error },
-			{ status: authRes.status },
-		);
-	}
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
 
-	const keyId = authRes.keyRecord!.id;
-	const limitRes = await rateLimit(req, keyId, 60, 60000); // 60 requests per minute
-	if (!limitRes.success) {
-		return NextResponse.json(
-			{ error: limitRes.error },
-			{ status: limitRes.status },
-		);
-	}
+	const limitRes = await rateLimit(req, authRes.keyRecord!.id, RATE_LIMITS.usersSearch);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
+
+	const { searchParams } = req.nextUrl;
+	const page = parsePagination(searchParams, { defaultLimit: 50, maxLimit: 100 });
+	if (!page.ok) return page.response;
 
 	try {
-		const searchParams = req.nextUrl.searchParams;
 		const name = searchParams.get("name");
 		const nums = searchParams.get("nums");
 		const promss = searchParams.get("promss");
 
 		const conditions = [eq(users.isDeleted, false), eq(users.isAsleep, false)];
-
 		if (name) {
 			conditions.push(
 				or(
@@ -42,23 +39,16 @@ export async function GET(req: NextRequest) {
 				)!,
 			);
 		}
-
-		if (nums) {
-			conditions.push(eq(users.nums, nums));
-		}
-
-		if (promss) {
-			conditions.push(eq(users.promss, promss));
-		}
-
-		// No mandatory parameters anymore, simply respect the limit
-
-		const whereCondition = and(...conditions);
+		if (nums) conditions.push(eq(users.nums, nums));
+		if (promss) conditions.push(eq(users.promss, promss));
 
 		const result = await db.query.users.findMany({
-			where: whereCondition,
-			limit: 50,
-			// Strict selection to NEVER expose email or passwordHash
+			where: and(...conditions),
+			// Tri stable : sans lui, la pagination peut sauter ou dupliquer des lignes.
+			orderBy: [asc(users.nom), asc(users.prenom), asc(users.id)],
+			limit: page.limit,
+			offset: page.offset,
+			// Sélection stricte : jamais d'email, de téléphone ni de hash.
 			columns: {
 				id: true,
 				nom: true,
@@ -72,13 +62,13 @@ export async function GET(req: NextRequest) {
 			},
 		});
 
-		return NextResponse.json({ success: true, users: result });
-	} catch (error: any) {
-		Sentry.captureException(error);
-		console.error("API User Search Error:", error);
-		return NextResponse.json(
-			{ error: "Internal Server Error" },
-			{ status: 500 },
-		);
+		return NextResponse.json({
+			success: true,
+			users: result,
+			limit: page.limit,
+			offset: page.offset,
+		});
+	} catch (error) {
+		return handleRouteError(error, "users search");
 	}
 }

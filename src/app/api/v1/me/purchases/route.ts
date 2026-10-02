@@ -1,12 +1,18 @@
-import * as Sentry from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { purchaseSelfService } from "@/features/shops/self-service";
 import { rateLimit, withIdempotency } from "@/lib/api-auth";
+import {
+	handleRouteError,
+	jsonError,
+	RATE_LIMITS,
+	rateLimitResponse,
+	readJsonBody,
+	validationError,
+} from "@/lib/api-http";
 import { requireApiUser } from "@/lib/api-user-auth";
 import { getApiUserProfile } from "@/lib/api-user-profile";
-import { findAppError } from "@/lib/errors";
 
 const purchaseSchema = z.object({
 	shopId: z.string().uuid(),
@@ -24,32 +30,18 @@ const purchaseSchema = z.object({
 /** Achat self-service : l'utilisateur connecté se débite lui-même. */
 export async function POST(req: NextRequest) {
 	const auth = await requireApiUser(req);
-	if (!auth.success) {
-		return NextResponse.json({ error: auth.error }, { status: auth.status });
-	}
+	if (!auth.success) return jsonError(auth.status, auth.error);
 
 	const { keyRecord, userId } = auth;
-	const limitRes = await rateLimit(req, keyRecord.id, 30, 60000);
-	if (!limitRes.success) {
-		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
-	}
+	const limitRes = await rateLimit(req, keyRecord.id, RATE_LIMITS.write);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
 
-	let body;
-	try {
-		const text = await req.text();
-		body = text ? JSON.parse(text) : {};
-	} catch {
-		return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-	}
+	const json = await readJsonBody(req);
+	if (!json.ok) return json.response;
 
-	return withIdempotency(req, keyRecord.id, body, async () => {
-		const parsed = purchaseSchema.safeParse(body);
-		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid payload", details: parsed.error.issues },
-				{ status: 400 },
-			);
-		}
+	return withIdempotency(req, keyRecord.id, json.body, async () => {
+		const parsed = purchaseSchema.safeParse(json.body);
+		if (!parsed.success) return validationError(parsed.error);
 
 		try {
 			await purchaseSelfService({
@@ -66,17 +58,7 @@ export async function POST(req: NextRequest) {
 				{ status: 201 },
 			);
 		} catch (error) {
-			const appError = findAppError(error);
-			if (appError) {
-				return NextResponse.json(
-					{ error: appError.message },
-					{ status: appError.status },
-				);
-			}
-
-			Sentry.captureException(error);
-			console.error("API self-service purchase error:", error);
-			return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+			return handleRouteError(error, "me purchases");
 		}
 	});
 }

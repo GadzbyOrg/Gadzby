@@ -1,55 +1,41 @@
-import * as Sentry from "@sentry/nextjs";
 import { and, desc, eq, ilike } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db";
 import { shops } from "@/db/schema";
 import { rateLimit, validateApiKey } from "@/lib/api-auth";
+import {
+	handleRouteError,
+	jsonError,
+	parsePagination,
+	RATE_LIMITS,
+	rateLimitResponse,
+} from "@/lib/api-http";
 
 export async function GET(req: NextRequest) {
 	const authRes = await validateApiKey(req);
-	if (!authRes.success) {
-		return NextResponse.json(
-			{ error: authRes.error },
-			{ status: authRes.status },
-		);
-	}
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
 
-	const keyId = authRes.keyRecord!.id;
-	const limitRes = await rateLimit(req, keyId, 100, 60000);
-	if (!limitRes.success) {
-		return NextResponse.json(
-			{ error: limitRes.error },
-			{ status: limitRes.status },
-		);
-	}
+	const limitRes = await rateLimit(req, authRes.keyRecord!.id, RATE_LIMITS.read);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
+
+	const { searchParams } = req.nextUrl;
+	const page = parsePagination(searchParams, { defaultLimit: 50, maxLimit: 100 });
+	if (!page.ok) return page.response;
 
 	try {
-		const searchParams = req.nextUrl.searchParams;
-
 		const name = searchParams.get("name");
 		const slug = searchParams.get("slug");
 
-		const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
-		const offset = parseInt(searchParams.get("offset") || "0");
-
 		const conditions = [eq(shops.isActive, true)];
-
-		if (name) {
-			conditions.push(ilike(shops.name, `%${name}%`));
-		}
-
-		if (slug) {
-			conditions.push(eq(shops.slug, slug));
-		}
-
-		const whereCondition = and(...conditions);
+		if (name) conditions.push(ilike(shops.name, `%${name}%`));
+		if (slug) conditions.push(eq(shops.slug, slug));
 
 		const resultShops = await db.query.shops.findMany({
-			where: whereCondition,
-			limit,
-			offset,
-			orderBy: [desc(shops.createdAt)],
+			where: and(...conditions),
+			limit: page.limit,
+			offset: page.offset,
+			orderBy: [desc(shops.createdAt), desc(shops.id)],
 			columns: {
 				id: true,
 				name: true,
@@ -63,15 +49,10 @@ export async function GET(req: NextRequest) {
 		return NextResponse.json({
 			success: true,
 			shops: resultShops,
-			limit,
-			offset,
+			limit: page.limit,
+			offset: page.offset,
 		});
-	} catch (error: any) {
-		Sentry.captureException(error);
-		console.error("API Shops List Error:", error);
-		return NextResponse.json(
-			{ error: "Internal Server Error" },
-			{ status: 500 },
-		);
+	} catch (error) {
+		return handleRouteError(error, "shops list");
 	}
 }

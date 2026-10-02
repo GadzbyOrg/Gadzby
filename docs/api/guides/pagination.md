@@ -22,7 +22,7 @@ Il n'y a pas de champ `total`. Pour parcourir toute la liste, augmentez `offset`
 
 ```js
 async function fetchAll(path, key) {
-  const limit = 100;
+  const limit = 100; // maximum de GET /shops
   const all = [];
   for (let offset = 0; ; offset += limit) {
     const res = await fetch(`${BASE_URL}${path}?limit=${limit}&offset=${offset}`, {
@@ -41,13 +41,17 @@ async function fetchAll(path, key) {
 |---|---|---|---|
 | `GET /shops` | 50 | 100 | Création, plus récente d'abord |
 | `GET /shops/{shopId}/transactions` | 50 | 200 | Date, plus récente d'abord |
-| `GET /famss` | 50 | 100 | Non garanti |
-| `GET /users` | 50 (fixe) | 50 | Non garanti. **Pas de pagination** : affinez la recherche avec `name`, `nums` ou `promss`. |
+| `GET /famss` | 50 | 100 | Nom, alphabétique |
+| `GET /users` | 50 | 100 | Nom puis prénom, alphabétique |
+
+Le tri est stable : deux appels identiques renvoient les éléments dans le même ordre.
 
 Les autres listes (`/shops/{shopId}/products`, `/shops/{shopId}/categories`, `/famss/{famsId}/members`, `/webhooks`) renvoient tous les éléments en une fois.
 
-## Comportement aux limites
+## Validation
 
-- `GET /famss` renvoie `400` si `limit` n'est pas compris entre 1 et 100 ou si `offset` est négatif.
-- `GET /shops` et `GET /shops/{shopId}/transactions` plafonnent silencieusement un `limit` trop grand. Une valeur non numérique n'est pas rejetée (voir [Problèmes connus](../problemes-connus.md)) : envoyez toujours des entiers.
-- Les listes paginées peuvent bouger entre deux pages si des éléments sont créés entre-temps. Pour les transactions, utilisez un filtre `endDate` fixe pendant le parcours.
+Sur tous les endpoints paginés :
+- `limit` doit être un entier entre 1 et le maximum de l'endpoint, sinon `400 Invalid limit` ;
+- `offset` doit être un entier positif ou nul, sinon `400 Invalid offset`.
+
+Les listes peuvent bouger entre deux pages si des éléments sont créés entre-temps. Pour les transactions, utilisez un filtre `endDate` fixe pendant le parcours.

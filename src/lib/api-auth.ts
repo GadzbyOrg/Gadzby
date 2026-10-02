@@ -1,10 +1,11 @@
 import crypto from "crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { isDeepStrictEqual } from "util";
 
 import { db } from "@/db";
 import { apiIdempotencyKeys, apiKeys, apiRateLimits } from "@/db/schema";
+import type { RateLimitFailure, RateLimitPolicy } from "@/lib/api-http";
 
 export function generateApiKey() {
 	const rawKey = `gadzby_${crypto.randomBytes(32).toString("hex")}`;
@@ -34,48 +35,35 @@ export async function validateApiKey(req: NextRequest) {
 	return { success: true, keyRecord };
 }
 
-export async function rateLimit(req: NextRequest, identifier: string | null = null, limit = 60, windowMs = 60000) {
-    // Identifier can be API key name/hash or IP address
-    const ip = req.headers.get("x-forwarded-for") ?? "unknown_ip";
-    const id = identifier ?? ip;
-    const endpoint = req.nextUrl.pathname;
+export async function rateLimit(
+	req: NextRequest,
+	identifier: string | null,
+	{ bucket, limit, windowMs }: RateLimitPolicy,
+): Promise<{ success: true } | RateLimitFailure> {
+	const id = identifier ?? req.headers.get("x-forwarded-for") ?? "unknown_ip";
+	const now = new Date();
+	const windowEnd = new Date(now.getTime() + windowMs);
+	const expired = sql`${apiRateLimits.resetTime} < ${now.toISOString()}::timestamptz`;
 
-    const now = new Date();
-    
-    // Cleanup old records sporadically or just rely on resetTime
-    const [record] = await db
-        .select()
-        .from(apiRateLimits)
-        .where(eq(apiRateLimits.ipOrKey, id))
-        .limit(1);
+	// Upsert atomique : deux requêtes simultanées ne peuvent pas lire le même
+	// compteur. Dans le SET, les colonnes désignent la ligne existante.
+	const [row] = await db
+		.insert(apiRateLimits)
+		.values({ ipOrKey: `${id}:${bucket}`, endpoint: bucket, requestCount: 1, resetTime: windowEnd })
+		.onConflictDoUpdate({
+			target: apiRateLimits.ipOrKey,
+			set: {
+				requestCount: sql`CASE WHEN ${expired} THEN 1 ELSE ${apiRateLimits.requestCount} + 1 END`,
+				resetTime: sql`CASE WHEN ${expired} THEN ${windowEnd.toISOString()}::timestamptz ELSE ${apiRateLimits.resetTime} END`,
+			},
+		})
+		.returning({ requestCount: apiRateLimits.requestCount, resetTime: apiRateLimits.resetTime });
 
-    if (!record || record.resetTime < now) {
-        // Create new or reset
-        const resetTime = new Date(now.getTime() + windowMs);
-        if (record) {
-             await db.update(apiRateLimits)
-                .set({ requestCount: 1, resetTime })
-                .where(eq(apiRateLimits.id, record.id));
-        } else {
-             await db.insert(apiRateLimits).values({
-                ipOrKey: id,
-                endpoint,
-                requestCount: 1,
-                resetTime,
-            });
-        }
-        return { success: true };
-    }
+	if (row.requestCount > limit) {
+		return { success: false, error: "Too Many Requests", status: 429, limit, resetTime: row.resetTime };
+	}
 
-    if (record.requestCount >= limit) {
-        return { success: false, error: "Too Many Requests", status: 429 };
-    }
-
-    await db.update(apiRateLimits)
-        .set({ requestCount: record.requestCount + 1 })
-        .where(eq(apiRateLimits.id, record.id));
-
-    return { success: true };
+	return { success: true };
 }
 
 /**

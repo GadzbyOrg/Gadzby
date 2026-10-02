@@ -1,12 +1,19 @@
-import * as Sentry from "@sentry/nextjs";
+import crypto from "crypto";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
-import crypto from "crypto";
 
 import { db } from "@/db";
 import { apiWebhooks } from "@/db/schema/api-webhooks";
-import { validateApiKey } from "@/lib/api-auth";
+import { rateLimit, validateApiKey } from "@/lib/api-auth";
+import {
+	handleRouteError,
+	jsonError,
+	RATE_LIMITS,
+	rateLimitResponse,
+	readJsonBody,
+	validationError,
+} from "@/lib/api-http";
 
 const createWebhookSchema = z.object({
 	url: z
@@ -18,11 +25,14 @@ const createWebhookSchema = z.object({
 
 export async function GET(req: NextRequest) {
 	const authRes = await validateApiKey(req);
-	if (!authRes.success)
-		return NextResponse.json(
-			{ error: authRes.error },
-			{ status: authRes.status },
-		);
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
+
+	const limitRes = await rateLimit(
+		req,
+		authRes.keyRecord!.id,
+		RATE_LIMITS.webhooks,
+	);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
 
 	try {
 		const webhooks = await db.query.apiWebhooks.findMany({
@@ -36,37 +46,31 @@ export async function GET(req: NextRequest) {
 			},
 		});
 
-		return NextResponse.json({ success: true, webhooks }, { status: 200 });
+		return NextResponse.json({ success: true, webhooks });
 	} catch (error) {
-		Sentry.captureException(error);
-		console.error("API Webhooks GET Error:", error);
-		return NextResponse.json(
-			{ error: "Internal Server Error" },
-			{ status: 500 },
-		);
+		return handleRouteError(error, "webhooks list");
 	}
 }
 
 export async function POST(req: NextRequest) {
 	const authRes = await validateApiKey(req);
-	if (!authRes.success)
-		return NextResponse.json(
-			{ error: authRes.error },
-			{ status: authRes.status },
-		);
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
+
+	const limitRes = await rateLimit(
+		req,
+		authRes.keyRecord!.id,
+		RATE_LIMITS.webhooks,
+	);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
+
+	const json = await readJsonBody(req);
+	if (!json.ok) return json.response;
+
+	const parsed = createWebhookSchema.safeParse(json.body);
+	if (!parsed.success) return validationError(parsed.error);
 
 	try {
-		const body = await req.json();
-		const parsed = createWebhookSchema.safeParse(body);
-
-		if (!parsed.success) {
-			return NextResponse.json(
-				{ error: "Invalid payload", details: parsed.error.issues },
-				{ status: 400 },
-			);
-		}
-
-		// Generate a strong random secret for the webhook HMAC operations
+		// Secret fort pour la signature HMAC des livraisons.
 		const secret = `wh_sec_${crypto.randomBytes(24).toString("hex")}`;
 
 		const [webhook] = await db
@@ -88,11 +92,6 @@ export async function POST(req: NextRequest) {
 
 		return NextResponse.json({ success: true, webhook }, { status: 201 });
 	} catch (error) {
-		Sentry.captureException(error);
-		console.error("API Webhooks POST Error:", error);
-		return NextResponse.json(
-			{ error: "Internal Server Error" },
-			{ status: 500 },
-		);
+		return handleRouteError(error, "webhooks create");
 	}
 }

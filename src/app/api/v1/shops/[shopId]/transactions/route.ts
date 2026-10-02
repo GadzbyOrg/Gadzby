@@ -1,100 +1,102 @@
-import * as Sentry from "@sentry/nextjs";
 import { and, desc, eq, gte, inArray, lte } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db";
 import { products, transactions } from "@/db/schema";
 import { rateLimit, validateApiKey } from "@/lib/api-auth";
+import {
+	handleRouteError,
+	jsonError,
+	parsePagination,
+	parseUuid,
+	RATE_LIMITS,
+	rateLimitResponse,
+} from "@/lib/api-http";
+
+const UUID_FILTERS = ["userId", "productId", "categoryId"] as const;
+const DATE_FILTERS = ["startDate", "endDate"] as const;
 
 export async function GET(
 	req: NextRequest,
 	{ params }: { params: Promise<{ shopId: string }> },
 ) {
 	const authRes = await validateApiKey(req);
-	if (!authRes.success) {
-		return NextResponse.json(
-			{ error: authRes.error },
-			{ status: authRes.status },
-		);
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
+
+	const limitRes = await rateLimit(req, authRes.keyRecord!.id, RATE_LIMITS.read);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
+
+	const shopId = parseUuid((await params).shopId, "shopId");
+	if (!shopId.ok) return shopId.response;
+
+	const { searchParams } = req.nextUrl;
+	const page = parsePagination(searchParams, { defaultLimit: 50, maxLimit: 200 });
+	if (!page.ok) return page.response;
+
+	const filters: Partial<Record<(typeof UUID_FILTERS)[number], string>> = {};
+	for (const name of UUID_FILTERS) {
+		const raw = searchParams.get(name);
+		if (!raw) continue;
+		const parsed = parseUuid(raw, name);
+		if (!parsed.ok) return parsed.response;
+		filters[name] = parsed.value;
 	}
 
-	const keyId = authRes.keyRecord!.id;
-	const limitRes = await rateLimit(req, keyId, 100, 60000);
-	if (!limitRes.success) {
-		return NextResponse.json(
-			{ error: limitRes.error },
-			{ status: limitRes.status },
-		);
+	const dates: Partial<Record<(typeof DATE_FILTERS)[number], Date>> = {};
+	for (const name of DATE_FILTERS) {
+		const raw = searchParams.get(name);
+		if (!raw) continue;
+		const date = new Date(raw);
+		if (isNaN(date.getTime())) return jsonError(400, `Invalid ${name}`);
+		dates[name] = date;
 	}
 
 	try {
-		const { shopId } = await params;
-		const searchParams = req.nextUrl.searchParams;
+		const conditions = [eq(transactions.shopId, shopId.value)];
+		if (filters.userId) conditions.push(eq(transactions.targetUserId, filters.userId));
+		if (filters.productId) conditions.push(eq(transactions.productId, filters.productId));
+		if (dates.startDate) conditions.push(gte(transactions.createdAt, dates.startDate));
+		if (dates.endDate) conditions.push(lte(transactions.createdAt, dates.endDate));
 
-		const userId = searchParams.get("userId");
-		const productId = searchParams.get("productId");
-		const categoryId = searchParams.get("categoryId");
-		const startDate = searchParams.get("startDate");
-		const endDate = searchParams.get("endDate");
-
-		const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 200);
-		const offset = parseInt(searchParams.get("offset") || "0");
-
-		let productIdsFromCategory: string[] | undefined;
-
-		// If filtering by category, fetch matching product IDs first
-		if (categoryId) {
+		if (filters.categoryId) {
 			const categoryProducts = await db.query.products.findMany({
-				where: eq(products.categoryId, categoryId),
+				where: eq(products.categoryId, filters.categoryId),
 				columns: { id: true },
 			});
-			productIdsFromCategory = categoryProducts.map((p) => p.id);
-
-			// If the category has no products, there can be no transactions
-			if (productIdsFromCategory.length === 0) {
+			// Catégorie sans produit : aucune transaction possible.
+			if (categoryProducts.length === 0) {
 				return NextResponse.json({
 					success: true,
 					transactions: [],
-					offset,
-					limit,
+					limit: page.limit,
+					offset: page.offset,
 				});
 			}
+			conditions.push(inArray(transactions.productId, categoryProducts.map((p) => p.id)));
 		}
-
-		// Build filters
-		const conditions = [eq(transactions.shopId, shopId)];
-
-		if (userId) {
-			conditions.push(eq(transactions.targetUserId, userId));
-		}
-
-		if (productId) {
-			conditions.push(eq(transactions.productId, productId));
-		}
-
-		if (productIdsFromCategory) {
-			conditions.push(inArray(transactions.productId, productIdsFromCategory));
-		}
-
-		if (startDate) {
-			const start = new Date(startDate);
-			if (!isNaN(start.getTime()))
-				conditions.push(gte(transactions.createdAt, start));
-		}
-
-		if (endDate) {
-			const end = new Date(endDate);
-			if (!isNaN(end.getTime()))
-				conditions.push(lte(transactions.createdAt, end));
-		}
-
-		const whereCondition = and(...conditions);
 
 		const resultTxs = await db.query.transactions.findMany({
-			where: whereCondition,
-			limit,
-			offset,
-			orderBy: [desc(transactions.createdAt)],
+			where: and(...conditions),
+			limit: page.limit,
+			offset: page.offset,
+			orderBy: [desc(transactions.createdAt), desc(transactions.id)],
+			// Contrat public : pas de colonnes internes (issuerId, paymentProviderId…).
+			columns: {
+				id: true,
+				amount: true,
+				type: true,
+				status: true,
+				walletSource: true,
+				targetUserId: true,
+				famsId: true,
+				productId: true,
+				productVariantId: true,
+				quantity: true,
+				eventId: true,
+				description: true,
+				groupId: true,
+				createdAt: true,
+			},
 			with: {
 				targetUser: {
 					columns: {
@@ -106,21 +108,18 @@ export async function GET(
 						promss: true,
 					},
 				},
+				product: { columns: { id: true, name: true } },
+				productVariant: { columns: { id: true, name: true } },
 			},
 		});
 
 		return NextResponse.json({
 			success: true,
 			transactions: resultTxs,
-			limit,
-			offset,
+			limit: page.limit,
+			offset: page.offset,
 		});
-	} catch (error: any) {
-		Sentry.captureException(error);
-		console.error("API Shop Transactions Error:", error);
-		return NextResponse.json(
-			{ error: "Internal Server Error" },
-			{ status: 500 },
-		);
+	} catch (error) {
+		return handleRouteError(error, "shop transactions");
 	}
 }

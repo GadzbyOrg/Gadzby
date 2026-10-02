@@ -40,7 +40,7 @@ describe("GET /api/v1/shops", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 
 		const mockShops = [
-			{ id: "shop-1", name: "Foy", slug: "foy" }
+			{ id: "11111111-1111-4111-8111-111111111111", name: "Foy", slug: "foy" }
 		];
 		(db.query.shops.findMany as any).mockResolvedValue(mockShops);
 
@@ -53,5 +53,15 @@ describe("GET /api/v1/shops", () => {
 		expect(json.limit).toBe(10);
 		expect(json.shops).toEqual(mockShops);
 		expect(db.query.shops.findMany).toHaveBeenCalled();
+	});
+
+	it.each(["abc", "0", "500"])("returns 400 for limit=%s", async (limit) => {
+		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
+		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
+
+		const res = await GET(new NextRequest(`http://localhost/api/v1/shops?limit=${limit}`));
+
+		expect(res.status).toBe(400);
+		expect(db.query.shops.findMany).not.toHaveBeenCalled();
 	});
 });

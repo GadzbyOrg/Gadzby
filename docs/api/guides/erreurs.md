@@ -30,7 +30,7 @@ Il n'y a pas encore de code d'erreur stable et lisible par une machine. Basez vo
 | `403 Forbidden` | Action interdite : compte désactivé, boutique fermée, libre-service désactivé. | Informer l'utilisateur. |
 | `404 Not Found` | Ressource inexistante ou inactive. | Vérifier l'identifiant. |
 | `409 Conflict` | Une requête avec la même `Idempotency-Key` est encore en cours. | Attendre puis réessayer avec la même clé. Voir [Idempotence](./idempotence.md). |
-| `429 Too Many Requests` | Limite de requêtes atteinte. | Attendre la fin de la fenêtre d'une minute. Voir [Limites de requêtes](./limites-de-requetes.md). |
+| `429 Too Many Requests` | Limite de requêtes atteinte. | Attendre la durée indiquée par l'en-tête `Retry-After`. Voir [Limites de requêtes](./limites-de-requetes.md). |
 | `500 Internal Server Error` | Erreur inattendue côté Gadzby. L'incident est remonté automatiquement à l'équipe. L'opération n'a pas été enregistrée. | Réessayer plus tard. Pour une opération qui débite, utiliser une **nouvelle** `Idempotency-Key` (voir [Idempotence](./idempotence.md#comportement)). |
 
 ## Erreurs de validation
@@ -57,7 +57,17 @@ Quand le corps ou les paramètres ne respectent pas le schéma attendu, l'API r�
 | `message` | Description du problème, en anglais. |
 | `code` | Type d'erreur de validation (`invalid_type`, `invalid_format`, `too_small`…). |
 
-> `POST /payments/initiate` renvoie `details` sous une autre forme (objet imbriqué par champ). Voir [Problèmes connus](../problemes-connus.md).
+Ce format est commun à tous les endpoints qui acceptent un corps JSON.
+
+### Paramètres de chemin et de requête
+
+Les paramètres de l'URL sont validés avant tout accès aux données. Ils renvoient un `400` sans `details`, avec le nom du paramètre fautif :
+
+| `error` | Cause |
+|---|---|
+| `Invalid <paramètre>` | Identifiant qui n'est pas un UUID (`Invalid shopId`, `Invalid categoryId`…) ou date invalide (`Invalid startDate`). |
+| `Invalid limit` / `Invalid offset` | Pagination hors limites ou non entière (voir [Pagination](./pagination.md#validation)). |
+| `Invalid JSON body` | Corps qui n'est pas du JSON valide. |
 
 ## Erreurs métier courantes
 

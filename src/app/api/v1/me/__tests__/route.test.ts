@@ -47,11 +47,11 @@ describe("GET /api/v1/me", () => {
 	it("returns the logged-in user's profile and balance", async () => {
 		vi.mocked(requireApiUser).mockResolvedValue({
 			success: true,
-			userId: "user-1",
+			userId: "22222222-2222-4222-8222-222222222222",
 			keyRecord: { id: "key-1" } as any,
 		});
 		const user = {
-			id: "user-1",
+			id: "22222222-2222-4222-8222-222222222222",
 			username: "johndoe",
 			prenom: "John",
 			nom: "Doe",

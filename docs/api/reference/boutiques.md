@@ -31,8 +31,8 @@ GET /api/v1/shops
 |---|---|---|---|---|
 | `name` | string | Non | — | Recherche partielle, insensible à la casse, sur le nom. |
 | `slug` | string | Non | — | Correspondance exacte sur le slug (identifiant utilisé dans les URL de Gadzby). |
-| `limit` | integer | Non | `50` | Nombre de résultats, plafonné à 100. |
-| `offset` | integer | Non | `0` | Décalage (voir [Pagination](../guides/pagination.md)). |
+| `limit` | integer | Non | `50` | Nombre de résultats, entre 1 et 100. |
+| `offset` | integer | Non | `0` | Décalage, positif ou nul (voir [Pagination](../guides/pagination.md)). |
 
 ### Exemple
 
@@ -65,6 +65,7 @@ curl "https://<votre-instance>/api/v1/shops?name=cock&limit=10" \
 
 | Statut | `error` | Cause |
 |---|---|---|
+| `400` | `Invalid limit` / `Invalid offset` | Pagination non entière ou hors limites. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
 | `429` | `Too Many Requests` | Limite atteinte. |
 
@@ -116,10 +117,10 @@ curl https://<votre-instance>/api/v1/shops/1520a378-63aa-4667-86f7-d106f618ee68 
 
 | Statut | `error` | Cause |
 |---|---|---|
-| `404` | `Shop not found` | Boutique inexistante ou désactivée. |
+| `400` | `Invalid shopId` | `shopId` qui n'est pas un UUID. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
+| `404` | `Shop not found` | Boutique inexistante ou désactivée. |
 | `429` | `Too Many Requests` | Limite atteinte. |
-| `500` | `Internal Server Error` | `shopId` qui n'est pas un UUID valide (voir [Problèmes connus](../problemes-connus.md)). |
 
 ---
 
@@ -171,9 +172,9 @@ Une boutique inconnue renvoie une liste vide (pas de `404`).
 
 | Statut | `error` | Cause |
 |---|---|---|
+| `400` | `Invalid shopId` | `shopId` qui n'est pas un UUID. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
 | `429` | `Too Many Requests` | Limite atteinte. |
-| `500` | `Internal Server Error` | Identifiant qui n'est pas un UUID valide (voir [Problèmes connus](../problemes-connus.md)). |
 
 ### Objet `Categorie`
 
@@ -230,22 +231,24 @@ curl "https://<votre-instance>/api/v1/shops/1520a378-63aa-4667-86f7-d106f618ee68
       "name": "Cocktail Classique (25cl)",
       "description": "",
       "price": 150,
+      "eventPrice": null,
+      "eventId": null,
       "stock": 42,
       "unit": "unit",
-      "fcv": 1,
-      "displayOrder": 0,
       "allowSelfService": true,
       "categoryId": "d9e3a4f3-14b8-4965-85aa-f5d4b071e901",
-      "defaultQuantity": 1,
-      "activeFrom": null,
-      "activeUntil": null,
-      "eventId": null,
-      "eventPrice": null,
-      "isArchived": false,
       "category": {
         "id": "d9e3a4f3-14b8-4965-85aa-f5d4b071e901",
         "name": "Cocktails"
-      }
+      },
+      "variants": [
+        {
+          "id": "4f7c2a91-3b8e-4d6a-9c1f-2e5b8a7d6c30",
+          "name": "Pichet (1L)",
+          "quantity": 4,
+          "price": 550
+        }
+      ]
     }
   ]
 }
@@ -257,9 +260,9 @@ Une boutique inconnue renvoie une liste vide (pas de `404`).
 
 | Statut | `error` | Cause |
 |---|---|---|
+| `400` | `Invalid shopId` / `Invalid categoryId` | Identifiant qui n'est pas un UUID. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
 | `429` | `Too Many Requests` | Limite atteinte. |
-| `500` | `Internal Server Error` | Identifiant qui n'est pas un UUID valide (voir [Problèmes connus](../problemes-connus.md)). |
 
 ### Objet `Produit`
 
@@ -275,14 +278,20 @@ Une boutique inconnue renvoie une liste vide (pas de `404`).
 | `allowSelfService` | boolean | Achetable via [`POST /me/purchases`](./utilisateur-connecte.md#acheter-en-libre-service). |
 | `categoryId` | UUID | Catégorie. |
 | `category` | object | `{ id, name }` de la catégorie. |
-| `defaultQuantity` | integer | Quantité proposée par défaut à la caisse. |
-| `activeFrom` / `activeUntil` | string (ISO 8601) \| null | Période de disponibilité affichée dans Gadzby. **Non vérifiée** à l'achat via l'API. |
 | `eventId` | UUID \| null | Manip' liée. |
 | `eventPrice` | integer \| null | Prix en centimes appliqué tant que la manip' liée est ouverte. |
-| `isArchived` | boolean | Toujours `false` ici. |
-| `fcv`, `displayOrder` | number | Champs internes de gestion de stock et d'affichage. Ne vous y fiez pas (voir [Problèmes connus](../problemes-connus.md)). |
+| `variants` | [`Variante`](#objet-variante)[] | Variantes actives du produit. Liste vide si le produit n'en a pas. |
 
-Les **variantes** (demi, pinte…) ne sont pas renvoyées par cet endpoint (voir [Problèmes connus](../problemes-connus.md)).
+### Objet `Variante`
+
+Une variante vend le produit dans un autre conditionnement (demi, pinte, pichet…). Passez son `id` comme `variantId` lors d'un achat.
+
+| Champ | Type | Description |
+|---|---|---|
+| `id` | UUID | Identifiant, à utiliser comme `items[].variantId`. |
+| `name` | string | Nom affiché (`Pinte`, `Demi`…). |
+| `quantity` | number | Quantité de produit de base consommée, dans l'unité du produit (`0.5` = une demi-unité). C'est aussi ce qui est retiré du stock. |
+| `price` | integer \| null | Prix en centimes. Si `null`, le prix est celui du produit (ou son `eventPrice` pendant une manip') × `quantity`, arrondi au centime. |
 
 ---
 

@@ -25,7 +25,7 @@ vi.mock("@/db", () => ({
 		query: {
 			users: {
 				findFirst: vi.fn().mockResolvedValue({
-					id: "user-1",
+					id: "22222222-2222-4222-8222-222222222222",
 					username: "johndoe",
 					prenom: "John",
 					nom: "Doe",
@@ -88,11 +88,11 @@ describe("POST /api/v1/auth/login", () => {
 
 		await POST(loginRequest({ username: "JohnDoe", password: "whatever" }));
 
-		const identifiers = vi
+		const calls = vi
 			.mocked(apiAuth.rateLimit)
-			.mock.calls.map((c) => c[1]);
-		expect(identifiers).toContain("login-user:johndoe");
-		expect(identifiers.some((id) => id?.startsWith("login-ip:"))).toBe(true);
+			.mock.calls.map((c) => [c[1], c[2].bucket]);
+		expect(calls).toContainEqual(["johndoe", "login-user"]);
+		expect(calls.some(([, bucket]) => bucket === "login-ip")).toBe(true);
 	});
 
 	it("returns 400 on invalid JSON", async () => {
@@ -140,7 +140,7 @@ describe("POST /api/v1/auth/login", () => {
 		const expiresAt = new Date("2026-09-29T12:00:00Z");
 		vi.mocked(verifyCredentials).mockResolvedValue({
 			ok: true,
-			user: { id: "user-1" } as any,
+			user: { id: "22222222-2222-4222-8222-222222222222" } as any,
 		});
 		vi.mocked(createApiUserToken).mockResolvedValue({
 			token: "tok",
@@ -153,13 +153,13 @@ describe("POST /api/v1/auth/login", () => {
 		const json = await res.json();
 
 		expect(res.status).toBe(201);
-		expect(createApiUserToken).toHaveBeenCalledWith("user-1", "key-1");
+		expect(createApiUserToken).toHaveBeenCalledWith("22222222-2222-4222-8222-222222222222", "key-1");
 		expect(json).toEqual({
 			success: true,
 			token: "tok",
 			expiresAt: expiresAt.toISOString(),
 			user: {
-				id: "user-1",
+				id: "22222222-2222-4222-8222-222222222222",
 				username: "johndoe",
 				prenom: "John",
 				nom: "Doe",

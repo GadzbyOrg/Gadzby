@@ -55,7 +55,7 @@ describe("POST /api/v1/me/purchases", () => {
 		vi.clearAllMocks();
 		vi.mocked(requireApiUser).mockResolvedValue({
 			success: true,
-			userId: "user-1",
+			userId: "22222222-2222-4222-8222-222222222222",
 			keyRecord: { id: "key-1", name: "Kiosk" } as any,
 		});
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
@@ -113,7 +113,7 @@ describe("POST /api/v1/me/purchases", () => {
 		expect(json).toEqual({ success: true, balance: 750 });
 		expect(purchaseSelfService).toHaveBeenCalledWith({
 			shop: { id: SHOP_ID },
-			userId: "user-1",
+			userId: "22222222-2222-4222-8222-222222222222",
 			items: validBody.items,
 			paymentSource: "PERSONAL",
 			descriptionPrefix: "[API - Kiosk] Achat",

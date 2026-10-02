@@ -28,8 +28,6 @@ C'est une API REST : les requêtes et les réponses sont en JSON, l'authentifica
 - [Fam'ss](./reference/famss.md)
 - [Webhooks](./reference/webhooks.md)
 
-**[Problèmes connus](./problemes-connus.md)** : écarts actuels entre le comportement attendu et le comportement réel.
-
 ---
 
 ## URL de base
@@ -107,3 +105,11 @@ Auth : 🔑 = clé API seule, 🔑👤 = clé API + jeton utilisateur.
 | `GET` | [`/webhooks`](./reference/webhooks.md#lister-les-webhooks) | 🔑 | Lister vos webhooks |
 | `POST` | [`/webhooks`](./reference/webhooks.md#créer-un-webhook) | 🔑 | Créer un webhook |
 | `DELETE` | [`/webhooks/{webhookId}`](./reference/webhooks.md#supprimer-un-webhook) | 🔑 | Supprimer un webhook |
+
+**Limites de requêtes**
+- Compteurs séparés : lectures, recherche d'utilisateurs, écritures et webhooks ont chacun leur quota. Les lectures ne consomment plus le quota des achats.
+- Les réponses `429` portent `Retry-After`, `X-RateLimit-Limit` et `X-RateLimit-Reset`.
+- Les endpoints `/webhooks` sont limités à 30 requêtes par minute.
+
+**Webhooks**
+- Les webhooks d'une clé révoquée ne reçoivent plus d'événements et sont désactivés à la révocation.

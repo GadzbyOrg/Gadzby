@@ -21,7 +21,7 @@ GET /api/v1/webhooks
 | | |
 |---|---|
 | **Auth** | Clé API |
-| **Limite** | Aucune |
+| **Limite** | 30 / min par clé API (quota « Webhooks ») |
 | **Idempotent** | Oui (lecture) |
 
 ### Exemple
@@ -53,6 +53,7 @@ curl https://<votre-instance>/api/v1/webhooks \
 | Statut | `error` | Cause |
 |---|---|---|
 | `401` | `Invalid API Key` / … | Clé API invalide. |
+| `429` | `Too Many Requests` | Limite atteinte. |
 
 ---
 
@@ -67,7 +68,7 @@ POST /api/v1/webhooks
 | | |
 |---|---|
 | **Auth** | Clé API |
-| **Limite** | Aucune |
+| **Limite** | 30 / min par clé API (quota « Webhooks ») |
 | **Idempotent** | Non : chaque appel crée un nouvel abonnement, même pour une URL déjà abonnée. |
 
 ### Corps
@@ -111,9 +112,10 @@ curl -X POST https://<votre-instance>/api/v1/webhooks \
 
 | Statut | `error` | Cause |
 |---|---|---|
+| `400` | `Invalid JSON body` | Corps qui n'est pas du JSON valide. |
 | `400` | `Invalid payload` | URL invalide ou non HTTPS, `events` vide ou événement inconnu, avec `details` (voir [Erreurs](../guides/erreurs.md#erreurs-de-validation)). |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
-| `500` | `Internal Server Error` | Corps qui n'est pas du JSON valide (voir [Problèmes connus](../problemes-connus.md)). |
+| `429` | `Too Many Requests` | Limite atteinte. |
 
 ---
 
@@ -128,7 +130,7 @@ DELETE /api/v1/webhooks/{webhookId}
 | | |
 |---|---|
 | **Auth** | Clé API |
-| **Limite** | Aucune |
+| **Limite** | 30 / min par clé API (quota « Webhooks ») |
 | **Idempotent** | Oui : un deuxième appel renvoie `404` sans autre effet. |
 
 ### Paramètres de chemin
@@ -157,9 +159,10 @@ curl -X DELETE https://<votre-instance>/api/v1/webhooks/5a3c9f0e-2b7d-4e1a-9c8f-
 
 | Statut | `error` | Cause |
 |---|---|---|
-| `404` | `Webhook not found or unauthorized` | Webhook inexistant ou appartenant à une autre clé API. |
+| `400` | `Invalid webhookId` | `webhookId` qui n'est pas un UUID. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
-| `500` | `Internal Server Error` | `webhookId` qui n'est pas un UUID valide (voir [Problèmes connus](../problemes-connus.md)). |
+| `404` | `Webhook not found or unauthorized` | Webhook inexistant ou appartenant à une autre clé API. |
+| `429` | `Too Many Requests` | Limite atteinte. |
 
 ---
 
@@ -171,5 +174,5 @@ curl -X DELETE https://<votre-instance>/api/v1/webhooks/5a3c9f0e-2b7d-4e1a-9c8f-
 | `url` | string | URL de destination (HTTPS). |
 | `events` | string[] | Événements souscrits. |
 | `secret` | string | Clé de signature HMAC, préfixée `wh_sec_`. **Uniquement dans la réponse de création.** |
-| `isActive` | boolean | Abonnement actif. Toujours `true` : il n'existe pas encore d'endpoint pour le mettre en pause. |
+| `isActive` | boolean | Abonnement actif. Passe à `false` quand la clé API est révoquée ; il n'existe pas d'endpoint pour le mettre en pause. |
 | `createdAt` | string (ISO 8601) | Date de création. |

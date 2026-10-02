@@ -58,29 +58,14 @@ curl -X POST https://<votre-instance>/api/v1/payments/initiate \
 | Statut | `error` | Cause |
 |---|---|---|
 | `400` | `Invalid JSON body` | JSON invalide. |
-| `400` | `Invalid payload` | Corps non conforme. **Attention** : `details` a ici une forme différente des autres endpoints (voir ci-dessous). |
+| `400` | `Invalid payload` | Corps non conforme, avec `details` (voir [Erreurs](../guides/erreurs.md#erreurs-de-validation)). |
+| `400` | `Solde insuffisant` | Solde de `senderId` trop faible. |
+| `400` | `Transfert impossible vers soi-même` | `senderId` = `receiverId`. |
+| `400` | `Utilisateur introuvable` | `senderId` ou `receiverId` inconnu. |
+| `400` | `Votre compte est désactivé` / `Le compte destinataire est désactivé` | Compte émetteur ou destinataire désactivé. |
+| `400` | `Votre compte est supprimé` / `Le compte destinataire est supprimé` | Compte émetteur ou destinataire supprimé. |
 | `400` | `Idempotency key already used for a different request` | Clé d'idempotence réutilisée avec un autre corps. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
 | `409` | `Request already in progress` | Requête avec la même `Idempotency-Key` en cours. |
 | `429` | `Too Many Requests` | Limite atteinte. |
-| `500` | `Solde insuffisant` | Solde de `senderId` trop faible. |
-| `500` | `Transfert impossible vers soi-même` | `senderId` = `receiverId`. |
-| `500` | `Utilisateur introuvable` | `senderId` ou `receiverId` inconnu. |
-| `500` | `Votre compte est désactivé` / `Le compte destinataire est désactivé` | Compte émetteur ou destinataire désactivé. |
-| `500` | `Votre compte est supprimé` / `Le compte destinataire est supprimé` | Compte émetteur ou destinataire supprimé. |
-| `500` | autre message | Erreur inattendue. |
-
-> Les erreurs métier de cet endpoint sont actuellement renvoyées en **`500`** avec leur message, au lieu de `400`. Pour savoir si le virement a échoué pour une raison métier, lisez le champ `error`. Voir [Problèmes connus](../problemes-connus.md).
-
-Format de `details` sur cet endpoint :
-
-```json
-{
-  "error": "Invalid payload",
-  "details": {
-    "_errors": [],
-    "senderId": { "_errors": ["Invalid sender ID"] },
-    "amountInEuros": { "_errors": ["Invalid input: expected number, received undefined"] }
-  }
-}
-```
+| `500` | `Internal Server Error` | Erreur inattendue. Aucun virement n'a eu lieu. |

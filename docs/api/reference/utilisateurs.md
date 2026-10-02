@@ -9,7 +9,7 @@ Rechercher et consulter les utilisateurs d'une instance. Ces endpoints ne renvoi
 
 ## Rechercher des utilisateurs
 
-Renvoie au maximum 50 utilisateurs **actifs** (ni désactivés, ni supprimés) qui correspondent à tous les filtres fournis. Sans filtre, renvoie 50 utilisateurs actifs quelconques.
+Renvoie les utilisateurs **actifs** (ni désactivés, ni supprimés) qui correspondent à tous les filtres fournis, triés par nom puis prénom. Sans filtre, parcourt tous les utilisateurs actifs.
 
 ```
 GET /api/v1/users
@@ -23,13 +23,13 @@ GET /api/v1/users
 
 ### Paramètres de requête
 
-| Paramètre | Type | Requis | Description |
-|---|---|---|---|
-| `name` | string | Non | Recherche partielle, insensible à la casse, sur `nom`, `prenom`, `username` et `bucque`. |
-| `nums` | string | Non | Correspondance exacte sur le nums (`11-96(0)`). |
-| `promss` | string | Non | Correspondance exacte sur la promss (`ME210`). |
-
-Cet endpoint n'est pas paginé (voir [Pagination](../guides/pagination.md#valeurs-par-endpoint)).
+| Paramètre | Type | Requis | Défaut | Description |
+|---|---|---|---|---|
+| `name` | string | Non | — | Recherche partielle, insensible à la casse, sur `nom`, `prenom`, `username` et `bucque`. |
+| `nums` | string | Non | — | Correspondance exacte sur le nums (`11-96(0)`). |
+| `promss` | string | Non | — | Correspondance exacte sur la promss (`ME210`). |
+| `limit` | integer | Non | `50` | Nombre de résultats, entre 1 et 100. |
+| `offset` | integer | Non | `0` | Décalage, positif ou nul (voir [Pagination](../guides/pagination.md)). |
 
 ### Exemple
 
@@ -55,7 +55,9 @@ curl "https://<votre-instance>/api/v1/users?name=dupont&promss=ME210" \
       "tabagnss": "ME",
       "image": null
     }
-  ]
+  ],
+  "limit": 50,
+  "offset": 0
 }
 ```
 
@@ -63,6 +65,7 @@ curl "https://<votre-instance>/api/v1/users?name=dupont&promss=ME210" \
 
 | Statut | `error` | Cause |
 |---|---|---|
+| `400` | `Invalid limit` / `Invalid offset` | Pagination non entière ou hors limites. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
 | `429` | `Too Many Requests` | Limite atteinte. |
 
@@ -120,10 +123,10 @@ curl https://<votre-instance>/api/v1/users/a1b2c3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d 
 
 | Statut | `error` | Cause |
 |---|---|---|
-| `404` | `User not found` | Utilisateur inexistant ou supprimé. |
+| `400` | `Invalid userId` | `userId` qui n'est pas un UUID. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
+| `404` | `User not found` | Utilisateur inexistant ou supprimé. |
 | `429` | `Too Many Requests` | Limite atteinte. |
-| `500` | `Internal Server Error` | `userId` qui n'est pas un UUID valide (voir [Problèmes connus](../problemes-connus.md)). |
 
 ---
 

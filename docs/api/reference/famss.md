@@ -56,8 +56,8 @@ curl "https://<votre-instance>/api/v1/famss?name=14&limit=10" \
 
 | Statut | `error` | Cause |
 |---|---|---|
-| `400` | `Invalid limit` | `limit` absent de l'intervalle 1–100 ou non numérique. |
-| `400` | `Invalid offset` | `offset` négatif ou non numérique. |
+| `400` | `Invalid limit` | `limit` hors de l'intervalle 1–100 ou non entier. |
+| `400` | `Invalid offset` | `offset` négatif ou non entier. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
 | `429` | `Too Many Requests` | Limite atteinte. |
 
@@ -121,7 +121,7 @@ Chaque membre a les champs `id`, `username`, `nom`, `prenom`, `bucque` et `proms
 
 | Statut | `error` | Cause |
 |---|---|---|
-| `404` | `Fam'ss introuvable` | Fam'ss inexistante. |
+| `400` | `Invalid famsId` | `famsId` qui n'est pas un UUID. |
 | `401` | `Invalid API Key` / … | Clé API invalide. |
+| `404` | `Fam'ss introuvable` | Fam'ss inexistante. |
 | `429` | `Too Many Requests` | Limite atteinte. |
-| `500` | `Internal Server Error` | `famsId` qui n'est pas un UUID valide (voir [Problèmes connus](../problemes-connus.md)). |
