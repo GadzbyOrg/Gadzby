@@ -12,7 +12,8 @@ import { publicAction, publicActionNoInput } from "@/lib/actions";
 import { createSession, deleteSession } from "@/lib/session";
 
 const loginSchema = z.object({
-	username: z.string().min(1, "Identifiant requis"),
+	// Mobile keyboards (Gboard) append a space after a suggestion and capitalise the first letter
+	username: z.string().trim().toLowerCase().min(1, "Identifiant requis"),
 	password: z.string().min(6, "Mot de passe trop court"),
 });
 
@@ -38,8 +39,7 @@ const resetPasswordSchema = z
 export const loginAction = publicAction(
 	loginSchema,
 	async (data) => {
-		const { username: rawUsername, password } = data;
-		const username = rawUsername.toLowerCase();
+		const { username, password } = data;
 		console.log("Login attempt for:", username);
 
 		const user = await db.query.users.findFirst({
@@ -51,7 +51,7 @@ export const loginAction = publicAction(
 				passwordHash: true,
 				isAsleep: true,
 				preferredDashboardPath: true,
-			}
+			},
 		});
 
 		if (!user) {
@@ -84,15 +84,20 @@ export const loginAction = publicAction(
 			username: user.username,
 			role: roleName,
 			permissions,
-		})
+		});
 
 		logger.info("User logged in", {
 			id: user.id,
 			username: user.username,
 			role: roleName,
-		})
+		});
 
-		await createSession(user.id, roleName, permissions, user.preferredDashboardPath);
+		await createSession(
+			user.id,
+			roleName,
+			permissions,
+			user.preferredDashboardPath,
+		);
 
 		console.log("Login successful:", username);
 		redirect("/");
@@ -100,10 +105,11 @@ export const loginAction = publicAction(
 	{ name: "loginAction" },
 );
 
-export const logoutAction = publicActionNoInput(async () => {
-	await deleteSession();
-	redirect("/login");
-},
+export const logoutAction = publicActionNoInput(
+	async () => {
+		await deleteSession();
+		redirect("/login");
+	},
 	{ name: "logoutAction" },
 );
 
@@ -144,13 +150,13 @@ export const forgotPasswordAction = publicAction(
 			logger.info("Password reset email sent", {
 				email,
 				token,
-			})
+			});
 		} catch (e) {
 			console.error(e);
 			logger.error("Error sending password reset email", {
 				email,
 				error: e,
-			})
+			});
 			return { error: "Erreur lors de l'envoi de l'email" };
 		}
 
@@ -170,7 +176,6 @@ export const resetPasswordAction = publicAction(
 		const user = await db.query.users.findFirst({
 			where: eq(users.resetPasswordToken, token),
 		});
-
 
 		if (!user) {
 			return { error: "Token invalide ou expiré" };
@@ -195,7 +200,7 @@ export const resetPasswordAction = publicAction(
 		logger.info("Password reset successfully", {
 			user: user.id,
 			token,
-		})
+		});
 
 		return {
 			success:

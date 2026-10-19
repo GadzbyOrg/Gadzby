@@ -2,9 +2,17 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+import { eq } from "drizzle-orm";
+
 import { db } from "@/db";
+import { users } from "@/db/schema";
 import { createSession, deleteSession } from "@/lib/session";
-import { forgotPasswordAction, loginAction, logoutAction, resetPasswordAction } from "../actions";
+import {
+	forgotPasswordAction,
+	loginAction,
+	logoutAction,
+	resetPasswordAction,
+} from "../actions";
 
 // Mock dependencies
 vi.mock("@/db", () => ({
@@ -25,15 +33,19 @@ vi.mock("@/db", () => ({
 vi.mock("bcryptjs", () => ({
 	hash: vi.fn().mockResolvedValue("new_hashed_password"),
 	genSalt: vi.fn().mockResolvedValue("salt"),
-	compare: vi.fn().mockImplementation(async (password: string, hash: string) => {
-		return password === "correct_password" && hash === "valid_hash";
-	}),
+	compare: vi
+		.fn()
+		.mockImplementation(async (password: string, hash: string) => {
+			return password === "correct_password" && hash === "valid_hash";
+		}),
 	default: {
 		hash: vi.fn().mockResolvedValue("new_hashed_password"),
 		genSalt: vi.fn().mockResolvedValue("salt"),
-		compare: vi.fn().mockImplementation(async (password: string, hash: string) => {
-			return password === "correct_password" && hash === "valid_hash";
-		}),
+		compare: vi
+			.fn()
+			.mockImplementation(async (password: string, hash: string) => {
+				return password === "correct_password" && hash === "valid_hash";
+			}),
 	},
 }));
 
@@ -78,19 +90,43 @@ describe("Authentication Actions", () => {
 				role: { name: "USER", permissions: [] },
 			} as any);
 
-			const result = await loginAction(undefined, { username: "johndoe", password: "correct_password" });
+			const result = await loginAction(undefined, {
+				username: "johndoe",
+				password: "correct_password",
+			});
 
 			expect(result).toBeUndefined();
-			
+
 			const { redirect } = await import("next/navigation");
 			expect(redirect).toHaveBeenCalledWith("/");
-			expect(createSession).toHaveBeenCalledWith("user-1", "USER", [], "/dashboard");
+			expect(createSession).toHaveBeenCalledWith(
+				"user-1",
+				"USER",
+				[],
+				"/dashboard",
+			);
+		});
+
+		test("should normalise username typed by mobile keyboards (capital + trailing space)", async () => {
+			vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
+
+			const formData = new FormData();
+			formData.set("username", " JohnDoe ");
+			formData.set("password", "correct_password");
+			await loginAction(null, formData);
+
+			expect(db.query.users.findFirst).toHaveBeenCalledWith(
+				expect.objectContaining({ where: eq(users.username, "johndoe") }),
+			);
 		});
 
 		test("should return error if user not found", async () => {
 			vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
 
-			const result = await loginAction(undefined, { username: "unknown", password: "password" });
+			const result = await loginAction(undefined, {
+				username: "unknown",
+				password: "password",
+			});
 
 			expect(result).toEqual({ error: "Identifiants incorrects" });
 			expect(createSession).not.toHaveBeenCalled();
@@ -103,7 +139,10 @@ describe("Authentication Actions", () => {
 				passwordHash: null,
 			} as any);
 
-			const result = await loginAction(undefined, { username: "johndoe", password: "correct_password" });
+			const result = await loginAction(undefined, {
+				username: "johndoe",
+				password: "correct_password",
+			});
 
 			expect(result).toEqual({ error: "Identifiants incorrects" });
 		});
@@ -116,7 +155,10 @@ describe("Authentication Actions", () => {
 				isAsleep: false,
 			} as any);
 
-			const result = await loginAction(undefined, { username: "johndoe", password: "wrong_password" });
+			const result = await loginAction(undefined, {
+				username: "johndoe",
+				password: "wrong_password",
+			});
 
 			expect(result).toEqual({ error: "Identifiants incorrects" });
 		});
@@ -129,7 +171,10 @@ describe("Authentication Actions", () => {
 				isAsleep: true,
 			} as any);
 
-			const result = await loginAction(undefined, { username: "johndoe", password: "correct_password" });
+			const result = await loginAction(undefined, {
+				username: "johndoe",
+				password: "correct_password",
+			});
 
 			expect(result).toEqual({ error: "Votre compte a été désactivé" });
 		});
@@ -138,7 +183,7 @@ describe("Authentication Actions", () => {
 	describe("logoutAction", () => {
 		test("should delete session and redirect", async () => {
 			const result = await logoutAction();
-            expect(result).toBeUndefined();
+			expect(result).toBeUndefined();
 			expect(deleteSession).toHaveBeenCalled();
 
 			const { redirect } = await import("next/navigation");
@@ -150,10 +195,13 @@ describe("Authentication Actions", () => {
 		test("should return success message even if email not found (security)", async () => {
 			vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined);
 
-			const result = await forgotPasswordAction(undefined, { email: "unknown@example.com" });
+			const result = await forgotPasswordAction(undefined, {
+				email: "unknown@example.com",
+			});
 
 			expect(result).toEqual({
-				success: "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
+				success:
+					"Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
 			});
 			const { sendPasswordResetEmail } = await import("@/lib/email");
 			expect(sendPasswordResetEmail).not.toHaveBeenCalled();
@@ -165,14 +213,20 @@ describe("Authentication Actions", () => {
 				email: "existing@example.com",
 			} as any);
 
-			const result = await forgotPasswordAction(undefined, { email: "existing@example.com" });
+			const result = await forgotPasswordAction(undefined, {
+				email: "existing@example.com",
+			});
 
 			expect(result).toEqual({
-				success: "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
+				success:
+					"Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
 			});
 
 			const { sendPasswordResetEmail } = await import("@/lib/email");
-			expect(sendPasswordResetEmail).toHaveBeenCalledWith("existing@example.com", expect.any(String));
+			expect(sendPasswordResetEmail).toHaveBeenCalledWith(
+				"existing@example.com",
+				expect.any(String),
+			);
 			expect(db.update).toHaveBeenCalled();
 		});
 
@@ -183,9 +237,13 @@ describe("Authentication Actions", () => {
 			} as any);
 
 			const { sendPasswordResetEmail } = await import("@/lib/email");
-			vi.mocked(sendPasswordResetEmail).mockRejectedValueOnce(new Error("Email failed"));
+			vi.mocked(sendPasswordResetEmail).mockRejectedValueOnce(
+				new Error("Email failed"),
+			);
 
-			const result = await forgotPasswordAction(undefined, { email: "existing@example.com" });
+			const result = await forgotPasswordAction(undefined, {
+				email: "existing@example.com",
+			});
 
 			expect(result).toEqual({ error: "Erreur lors de l'envoi de l'email" });
 		});
@@ -234,7 +292,8 @@ describe("Authentication Actions", () => {
 			});
 
 			expect(result).toEqual({
-				success: "Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
+				success:
+					"Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
 			});
 
 			expect(db.update).toHaveBeenCalled();
