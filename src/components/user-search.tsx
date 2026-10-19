@@ -22,6 +22,7 @@ export interface UserSearchProps {
      * administrator disables display of user details.
      */
     hideUserDetails?: boolean;
+    autoComplete?: string;
 }
 
 const EMPTY_ARRAY: string[] = [];
@@ -37,7 +38,8 @@ export function UserSearch({
     searchAction = searchUsersPublicAction,
     defaultQuery = "",
     onInputChange,
-    hideUserDetails = false
+    hideUserDetails = false,
+    autoComplete = "off"
 }: UserSearchProps) {
     const [query, setQuery] = useState(defaultQuery);
     const [results, setResults] = useState<any[]>([]);
@@ -173,6 +175,15 @@ export function UserSearch({
                         "w-full bg-surface-900 border border-border rounded-md py-2 pl-9 pr-4 text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-accent-500 transition-colors",
                         inputClassName
                     )}
+                    onBlur={(e) => {
+                        if (!wrapperRef.current?.contains(e.relatedTarget as Node | null)) {
+                            setIsOpen(false);
+                        }
+                    }}
+                    autoComplete={autoComplete}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     suppressHydrationWarning
                 />
                 {isLoading && (
@@ -188,6 +199,8 @@ export function UserSearch({
                         <button
                             type="button"
                             key={user.id}
+                            // Keep focus on the input so onBlur doesn't close the list before the click lands
+                            onMouseDown={(e) => e.preventDefault()}
                             onClick={() => handleSelect(user)}
                             className="w-full text-left px-4 py-2 hover:bg-elevated transition-colors flex items-center gap-3 group"
                         >
