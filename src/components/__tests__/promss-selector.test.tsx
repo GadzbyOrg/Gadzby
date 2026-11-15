@@ -86,4 +86,40 @@ describe("PromssSelector", () => {
         fireEvent.click(screen.getByText("Promo"));
         expect(onChange).toHaveBeenCalledWith("all");
     });
+
+    it("does not render edit buttons when no item action is provided", () => {
+        render(
+            <PromssSelector
+                promssList={promssList}
+                selectedPromss="all"
+                onChange={vi.fn()}
+            />
+        );
+        fireEvent.click(screen.getByRole("button"));
+        expect(screen.queryByRole("button", { name: /Corriger/ })).toBeNull();
+    });
+
+    it("renders an edit button per prom'ss and calls it without selecting the prom'ss", () => {
+        const onSelect = vi.fn();
+        const onChange = vi.fn();
+        render(
+            <PromssSelector
+                promssList={promssList}
+                selectedPromss="all"
+                onChange={onChange}
+                itemAction={{ label: (p) => `Corriger la prom'ss ${p}`, onSelect }}
+            />
+        );
+        fireEvent.click(screen.getByRole("button"));
+        expect(screen.getAllByRole("button", { name: /Corriger la prom'ss/ })).toHaveLength(
+            promssList.length
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Corriger la prom'ss AI223" }));
+
+        expect(onSelect).toHaveBeenCalledWith("AI223");
+        expect(onChange).not.toHaveBeenCalled();
+        // Popover closes after the action is triggered
+        expect(screen.queryByPlaceholderText("Rechercher…")).toBeNull();
+    });
 });

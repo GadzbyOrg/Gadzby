@@ -1,12 +1,18 @@
 import bcrypt from "bcryptjs";
-import { eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { existsSync } from "fs";
 import { unlink } from "fs/promises";
 import { join } from "path";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { famsMembers, roles, shopUsers, transactions, users } from "@/db/schema";
+import {
+	famsMembers,
+	roles,
+	shopUsers,
+	transactions,
+	users,
+} from "@/db/schema";
 import { getTabagnssCode } from "@/features/users/constants";
 import { importUserRowSchema, type Tbk } from "@/features/users/schemas";
 import { AppError } from "@/lib/errors";
@@ -14,507 +20,636 @@ import { AppError } from "@/lib/errors";
 const UPLOAD_DIR = join(process.cwd(), "uploads", "avatars");
 
 export class UserService {
-    static async update(
-        userId: string,
-        data: {
-            email: string;
-            phone?: string | null;
-            bucque?: string | null;
-            preferredDashboardPath?: string | null;
-        }
-    ) {
+	static async update(
+		userId: string,
+		data: {
+			email: string;
+			phone?: string | null;
+			bucque?: string | null;
+			preferredDashboardPath?: string | null;
+		},
+	) {
+		await db
+			.update(users)
+			.set({
+				phone: data.phone || null,
+				bucque: data.bucque || null,
+				email: data.email.toLowerCase(),
+				preferredDashboardPath: data.preferredDashboardPath || null,
+			})
+			.where(eq(users.id, userId));
+	}
 
-        await db
-            .update(users)
-            .set({
-                phone: data.phone || null,
-                bucque: data.bucque || null,
-                email: data.email.toLowerCase(),
-                preferredDashboardPath: data.preferredDashboardPath || null,
-            })
-            .where(eq(users.id, userId));
-    }
+	static async adminUpdate(
+		targetUserId: string,
+		adminUserId: string,
+		data: {
+			nom: string;
+			prenom: string;
+			email: string;
+			phone?: string | null;
+			bucque?: string | null;
+			promss: string;
+			nums?: string | null;
+			tabagnss?: Tbk;
+			username?: string | null;
+			roleId: string;
+			balance: number;
+			isAsleep: boolean;
+			newPassword?: string;
+		},
+	) {
+		const {
+			nom,
+			prenom,
+			nums,
+			promss,
+			username,
+			balance,
+			newPassword,
+			email,
+			phone,
+			bucque,
+			...rest
+		} = data;
 
-    static async adminUpdate(
-        targetUserId: string,
-        adminUserId: string,
-        data: {
-            nom: string;
-            prenom: string;
-            email: string;
-            phone?: string | null;
-            bucque?: string | null;
-            promss: string;
-            nums?: string | null;
-            tabagnss?: Tbk;
-            username?: string | null;
-            roleId: string;
-            balance: number;
-            isAsleep: boolean;
-            newPassword?: string;
-        }
-    ) {
-        const {
-            nom,
-            prenom,
-            nums,
-            promss,
-            username,
-            balance,
-            newPassword,
-            email,
-            phone,
-            bucque,
-            ...rest
-        } = data;
+		const computedUsername =
+			nums && nums.trim()
+				? `${nums}${promss}`.toLowerCase()
+				: `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
 
-        const computedUsername =
-            nums && nums.trim()
-                ? `${nums}${promss}`.toLowerCase()
-                : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
+		const finalUsername =
+			username && username.trim()
+				? username.trim().toLowerCase()
+				: computedUsername;
 
-        const finalUsername =
-            username && username.trim() ? username.trim().toLowerCase() : computedUsername;
+		await db.transaction(async (tx) => {
+			// 1. Get current balance
+			const currentUser = await tx.query.users.findFirst({
+				where: eq(users.id, targetUserId),
+				columns: { balance: true, isDeleted: true },
+			});
 
-        await db.transaction(async (tx) => {
-            // 1. Get current balance
-            const currentUser = await tx.query.users.findFirst({
-                where: eq(users.id, targetUserId),
-                columns: { balance: true, isDeleted: true },
-            });
+			if (!currentUser) throw new AppError("Utilisateur non trouvé");
+			if (currentUser.isDeleted)
+				throw new AppError("Impossible de modifier un utilisateur supprimé");
 
-            if (!currentUser) throw new AppError("Utilisateur non trouvé");
-            if (currentUser.isDeleted)
-                throw new AppError("Impossible de modifier un utilisateur supprimé");
+			const diff = balance - currentUser.balance;
 
-            const diff = balance - currentUser.balance;
+			// 2. If balance changed, log transaction
+			if (diff !== 0) {
+				await tx.insert(transactions).values({
+					amount: diff,
+					type: "ADJUSTMENT",
+					walletSource: "PERSONAL",
+					issuerId: adminUserId,
+					targetUserId: targetUserId,
+					description: "Mouvement exceptionnel (Correction Admin)",
+				});
+			}
 
-            // 2. If balance changed, log transaction
-            if (diff !== 0) {
-                await tx.insert(transactions).values({
-                    amount: diff,
-                    type: "ADJUSTMENT",
-                    walletSource: "PERSONAL",
-                    issuerId: adminUserId,
-                    targetUserId: targetUserId,
-                    description: "Mouvement exceptionnel (Correction Admin)",
-                });
-            }
+			// 3. Update User
+			await tx
+				.update(users)
+				.set({
+					nom,
+					prenom,
+					email: email.toLowerCase(),
+					nums: nums || null,
+					promss: promss.toUpperCase(),
+					username: finalUsername,
+					balance,
+					phone: phone || null,
+					bucque: bucque || null,
+					tabagnss: rest.tabagnss,
+					...rest,
+				})
+				.where(eq(users.id, targetUserId));
 
-            // 3. Update User
-            await tx
-                .update(users)
-                .set({
-                    nom,
-                    prenom,
-                    email: email.toLowerCase(),
-                    nums: nums || null,
-                    promss: promss.toUpperCase(),
-                    username: finalUsername,
-                    balance,
-                    phone: phone || null,
-                    bucque: bucque || null,
-                    tabagnss: rest.tabagnss,
-                    ...rest
-                })
-                .where(eq(users.id, targetUserId));
+			// 4. Update Password if provided
+			if (newPassword && newPassword.trim() !== "") {
+				const salt = await bcrypt.genSalt(10);
+				const hash = await bcrypt.hash(newPassword, salt);
+				await tx
+					.update(users)
+					.set({ passwordHash: hash })
+					.where(eq(users.id, targetUserId));
+			}
+		});
+	}
 
-            // 4. Update Password if provided
-            if (newPassword && newPassword.trim() !== "") {
-                const salt = await bcrypt.genSalt(10);
-                const hash = await bcrypt.hash(newPassword, salt);
-                await tx
-                    .update(users)
-                    .set({ passwordHash: hash })
-                    .where(eq(users.id, targetUserId));
-            }
-        });
-    }
+	static async create(data: {
+		nom: string;
+		prenom: string;
+		email: string;
+		phone?: string | null;
+		bucque?: string | null;
+		promss: string;
+		nums?: string | null;
+		tabagnss: Tbk;
+		password: string;
+		roleId: string;
+		balance: number;
+	}) {
+		const {
+			nom,
+			prenom,
+			email,
+			phone,
+			bucque,
+			promss,
+			nums,
+			tabagnss,
+			password,
+			roleId,
+			balance,
+		} = data;
 
-    static async create(data: {
-        nom: string;
-        prenom: string;
-        email: string;
-        phone?: string | null;
-        bucque?: string | null;
-        promss: string;
-        nums?: string | null;
-        tabagnss: Tbk;
-        password: string;
-        roleId: string;
-        balance: number;
-    }) {
-        const {
-            nom,
-            prenom,
-            email,
-            phone,
-            bucque,
-            promss,
-            nums,
-            tabagnss,
-            password,
-            roleId,
-            balance,
-        } = data;
+		const username =
+			nums && nums.trim()
+				? `${nums}${promss}`.toLowerCase()
+				: `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
 
-        const username =
-            nums && nums.trim()
-                ? `${nums}${promss}`.toLowerCase()
-                : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
+		const existingUser = await db.query.users.findFirst({
+			where: (users, { eq, or }) => {
+				const conditions = [
+					eq(users.username, username),
+					eq(users.email, email),
+				];
+				if (phone) {
+					conditions.push(eq(users.phone, phone));
+				}
+				return or(...conditions);
+			},
+		});
 
-        const existingUser = await db.query.users.findFirst({
-            where: (users, { eq, or }) => {
-                const conditions = [
-                    eq(users.username, username),
-                    eq(users.email, email),
-                ];
-                if (phone) {
-                    conditions.push(eq(users.phone, phone));
-                }
-                return or(...conditions);
-            },
-        });
+		if (existingUser) {
+			throw new AppError(
+				"Un utilisateur avec ce username, email ou téléphone existe déjà",
+			);
+		}
 
-        if (existingUser) {
-            throw new AppError("Un utilisateur avec ce username, email ou téléphone existe déjà");
-        }
+		const passwordHash = await bcrypt.hash(password, 10);
 
-        const passwordHash = await bcrypt.hash(password, 10);
+		await db.insert(users).values({
+			nom,
+			prenom,
+			email: email.toLowerCase(),
+			phone: phone || null,
+			bucque: bucque || null,
+			promss: promss.toUpperCase(),
+			nums: nums || null,
+			tabagnss: tabagnss,
+			username,
+			passwordHash,
+			roleId,
+			balance,
+		});
+	}
 
-        await db.insert(users).values({
-            nom,
-            prenom,
-            email: email.toLowerCase(),
-            phone: phone || null,
-            bucque: bucque || null,
-            promss: promss.toUpperCase(),
-            nums: nums || null,
-            tabagnss: tabagnss,
-            username,
-            passwordHash,
-            roleId,
-            balance,
-        });
-    }
+	static async delete(userId: string) {
+		await db.transaction(async (tx) => {
+			const user = await tx.query.users.findFirst({
+				where: eq(users.id, userId),
+				columns: { balance: true, roleId: true, image: true },
+			});
 
-    static async delete(userId: string) {
-        await db.transaction(async (tx) => {
-            const user = await tx.query.users.findFirst({
-                where: eq(users.id, userId),
-                columns: { balance: true, roleId: true, image: true },
-            });
+			if (!user) throw new AppError("Utilisateur non trouvé");
 
-            if (!user) throw new AppError("Utilisateur non trouvé");
+			if (user.balance != 0) {
+				throw new AppError(
+					"Impossible de supprimer un utilisateur avec un solde positif.",
+				);
+			}
 
-            if (user.balance != 0) {
-                throw new AppError(
-                    "Impossible de supprimer un utilisateur avec un solde positif."
-                );
-            }
+			// Prevent deleting ADMIN users
+			const role = await tx.query.roles.findFirst({
+				where: eq(roles.id, user.roleId as string),
+				columns: { name: true },
+			});
 
-            // Prevent deleting ADMIN users
-            const role = await tx.query.roles.findFirst({
-                where: eq(roles.id, user.roleId as string),
-                columns: { name: true },
-            });
+			if (role?.name === "ADMIN") {
+				throw new AppError(
+					"Impossible de supprimer un utilisateur avec le rôle ADMIN.",
+				);
+			}
 
-            if (role?.name === "ADMIN") {
-                throw new AppError(
-                    "Impossible de supprimer un utilisateur avec le rôle ADMIN."
-                );
-            }
+			await tx.delete(shopUsers).where(eq(shopUsers.userId, userId));
+			await tx.delete(famsMembers).where(eq(famsMembers.userId, userId));
 
-            await tx.delete(shopUsers).where(eq(shopUsers.userId, userId));
-            await tx.delete(famsMembers).where(eq(famsMembers.userId, userId));
+			// Delete avatar file if exists
+			if (user.image) {
+				const filePath = join(UPLOAD_DIR, user.image);
+				if (existsSync(filePath)) {
+					try {
+						await unlink(filePath);
+					} catch (e) {
+						console.error("Failed to delete avatar file:", e);
+					}
+				}
+			}
 
-            // Delete avatar file if exists
-            if (user.image) {
-                const filePath = join(UPLOAD_DIR, user.image);
-                if (existsSync(filePath)) {
-                    try {
-                        await unlink(filePath);
-                    } catch (e) {
-                        console.error("Failed to delete avatar file:", e);
-                    }
-                }
-            }
+			const timestamp = Date.now();
 
-            const timestamp = Date.now();
+			await tx
+				.update(users)
+				.set({
+					nom: "Utilisateur Supprimé",
+					prenom: ``,
+					username: `deleted_user_${timestamp}`,
+					passwordHash: "DELETED_USER_NO_ACCESS",
+					bucque: "",
+					promss: "",
+					nums: "",
+					roleId: null,
+					isAsleep: true,
+					emailVerified: null,
+					email: `deleted_${timestamp}@gadzby.local`,
+					phone: null,
+					image: null,
+					isDeleted: true,
+				})
+				.where(eq(users.id, userId));
+		});
+	}
 
-            await tx
-                .update(users)
-                .set({
-                    nom: "Utilisateur Supprimé",
-                    prenom: ``,
-                    username: `deleted_user_${timestamp}`,
-                    passwordHash: "DELETED_USER_NO_ACCESS",
-                    bucque: "",
-                    promss: "",
-                    nums: "",
-                    roleId: null,
-                    isAsleep: true,
-                    emailVerified: null,
-                    email: `deleted_${timestamp}@gadzby.local`,
-                    phone: null,
-                    image: null,
-                    isDeleted: true,
-                })
-                .where(eq(users.id, userId));
-        });
-    }
+	static async toggleStatus(userId: string, isAsleep: boolean) {
+		await db.update(users).set({ isAsleep }).where(eq(users.id, userId));
+	}
 
-    static async toggleStatus(userId: string, isAsleep: boolean) {
-        await db.update(users).set({ isAsleep }).where(eq(users.id, userId));
-    }
+	static async importBatch(rows: z.infer<typeof importUserRowSchema>[]) {
+		let successCount = 0;
+		let skippedCount = 0;
+		const failCount = 0;
+		const skipped: string[] = [];
+		const errors: string[] = [];
 
-    static async importBatch(rows: z.infer<typeof importUserRowSchema>[]) {
-        let successCount = 0;
-        let skippedCount = 0;
-        const failCount = 0;
-        const skipped: string[] = [];
-        const errors: string[] = [];
+		// Fetch default USER role
+		const userRole = await db.query.roles.findFirst({
+			where: eq(roles.name, "USER"),
+		});
+		if (!userRole) throw new AppError("Rôle USER introuvable pour les imports");
 
-        // Fetch default USER role
-        const userRole = await db.query.roles.findFirst({
-            where: eq(roles.name, "USER"),
-        });
-        if (!userRole) throw new AppError("Rôle USER introuvable pour les imports");
+		// Prepare chunk data with metadata
+		const chunkDataWithMeta = rows.map((item) => {
+			const {
+				promss,
+				nums,
+				email,
+				phone,
+				nom,
+				prenom,
+				username: explicitUsername,
+			} = item;
+			let username = explicitUsername;
 
-        // Prepare chunk data with metadata
-        const chunkDataWithMeta = rows.map((item) => {
-            const { promss, nums, email, phone, nom, prenom, username: explicitUsername } = item;
-            let username = explicitUsername;
+			if (!username || username.trim() === "") {
+				username =
+					nums && nums.trim()
+						? `${nums}${promss}`.toLowerCase()
+						: `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
+			}
+			return { data: item, username: username!.toLowerCase() };
+		});
 
-            if (!username || username.trim() === "") {
-                username = (nums && nums.trim()) ? `${nums}${promss}`.toLowerCase() : `${prenom.trim().toLowerCase()}${nom.trim().toLowerCase()}`;
-            }
-            return { data: item, username: username!.toLowerCase() };
-        });
+		// Verify duplicates within the chunk itself
+		const seenUsernames = new Set();
+		const seenEmails = new Set();
+		const seenPhones = new Set();
+		const uniqueChunk: typeof chunkDataWithMeta = [];
 
-        // Verify duplicates within the chunk itself
-        const seenUsernames = new Set();
-        const seenEmails = new Set();
-        const seenPhones = new Set();
-        const uniqueChunk: typeof chunkDataWithMeta = [];
+		for (const item of chunkDataWithMeta) {
+			let isDuplicate = false;
+			// Check implicit duplicates within the batch
+			if (seenUsernames.has(item.username)) {
+				skipped.push(`Doublon dans le lot (Username): ${item.username}`);
+				isDuplicate = true;
+			}
+			if (item.data.email && seenEmails.has(item.data.email)) {
+				skipped.push(`Doublon dans le lot (Email): ${item.data.email}`);
+				isDuplicate = true;
+			}
+			if (item.data.phone && seenPhones.has(item.data.phone)) {
+				skipped.push(`Doublon dans le lot (Téléphone): ${item.data.phone}`);
+				isDuplicate = true;
+			}
 
-        for (const item of chunkDataWithMeta) {
-            let isDuplicate = false;
-            // Check implicit duplicates within the batch
-            if (seenUsernames.has(item.username)) {
-                skipped.push(`Doublon dans le lot (Username): ${item.username}`);
-                isDuplicate = true;
-            }
-            if (item.data.email && seenEmails.has(item.data.email)) {
-                skipped.push(`Doublon dans le lot (Email): ${item.data.email}`);
-                isDuplicate = true;
-            }
-            if (item.data.phone && seenPhones.has(item.data.phone)) {
-                skipped.push(`Doublon dans le lot (Téléphone): ${item.data.phone}`);
-                isDuplicate = true;
-            }
+			if (isDuplicate) {
+				skippedCount++;
+			}
 
-            if (isDuplicate) {
-                skippedCount++;
-            }
+			if (!isDuplicate) {
+				seenUsernames.add(item.username);
+				if (item.data.email) seenEmails.add(item.data.email);
+				if (item.data.phone) seenPhones.add(item.data.phone);
+				uniqueChunk.push(item);
+			}
+		}
 
-            if (!isDuplicate) {
-                seenUsernames.add(item.username);
-                if (item.data.email) seenEmails.add(item.data.email);
-                if (item.data.phone) seenPhones.add(item.data.phone);
-                uniqueChunk.push(item);
-            }
-        }
+		if (uniqueChunk.length === 0) {
+			return { successCount, skippedCount, failCount, skipped, errors };
+		}
 
-        if (uniqueChunk.length === 0) {
-            return { successCount, skippedCount, failCount, skipped, errors };
-        }
+		// Database checks
+		const usernamesToCheck = uniqueChunk.map((u) => u.username);
+		const emailsToCheck = uniqueChunk
+			.map((u) => u.data.email)
+			.filter(Boolean) as string[];
+		const phonesToCheck = uniqueChunk
+			.map((u) => u.data.phone)
+			.filter(Boolean) as string[];
 
-        // Database checks
-        const usernamesToCheck = uniqueChunk.map(u => u.username);
-        const emailsToCheck = uniqueChunk.map(u => u.data.email).filter(Boolean) as string[];
-        const phonesToCheck = uniqueChunk.map(u => u.data.phone).filter(Boolean) as string[];
+		const existingUsers = await db.query.users.findMany({
+			where: or(
+				usernamesToCheck.length > 0
+					? inArray(users.username, usernamesToCheck)
+					: undefined,
+				emailsToCheck.length > 0
+					? inArray(users.email, emailsToCheck)
+					: undefined,
+				phonesToCheck.length > 0
+					? inArray(users.phone, phonesToCheck)
+					: undefined,
+			),
+			columns: {
+				username: true,
+				email: true,
+				phone: true,
+			},
+		});
 
-        const existingUsers = await db.query.users.findMany({
-            where: or(
-                usernamesToCheck.length > 0 ? inArray(users.username, usernamesToCheck) : undefined,
-                emailsToCheck.length > 0 ? inArray(users.email, emailsToCheck) : undefined,
-                phonesToCheck.length > 0 ? inArray(users.phone, phonesToCheck) : undefined
-            ),
-            columns: {
-                username: true,
-                email: true,
-                phone: true
-            }
-        });
+		const existingUsernames = new Set(existingUsers.map((u) => u.username));
+		const existingEmails = new Set(existingUsers.map((u) => u.email));
+		const existingPhones = new Set(
+			existingUsers.map((u) => u.phone).filter(Boolean),
+		);
 
-        const existingUsernames = new Set(existingUsers.map(u => u.username));
-        const existingEmails = new Set(existingUsers.map(u => u.email));
-        const existingPhones = new Set(existingUsers.map(u => u.phone).filter(Boolean));
+		const usersToInsert: (typeof users.$inferInsert)[] = [];
+		// Generate passwords/hashes
+		const passwordPromises = uniqueChunk.map(async (item) => {
+			if (existingUsernames.has(item.username)) {
+				return {
+					status: "skipped" as const,
+					reason: `Utilisateur déjà existant: ${item.username}`,
+				};
+			}
+			if (item.data.email && existingEmails.has(item.data.email)) {
+				return {
+					status: "skipped" as const,
+					reason: `Email déjà utilisé: ${item.data.email}`,
+				};
+			}
+			if (item.data.phone && existingPhones.has(item.data.phone)) {
+				return {
+					status: "skipped" as const,
+					reason: `Téléphone déjà utilisé: ${item.data.phone}`,
+				};
+			}
 
-        const usersToInsert: (typeof users.$inferInsert)[] = [];
-        // Generate passwords/hashes
-        const passwordPromises = uniqueChunk.map(async (item) => {
-            if (existingUsernames.has(item.username)) {
-                return { status: "skipped" as const, reason: `Utilisateur déjà existant: ${item.username}` };
-            }
-            if (item.data.email && existingEmails.has(item.data.email)) {
-                return { status: "skipped" as const, reason: `Email déjà utilisé: ${item.data.email}` };
-            }
-            if (item.data.phone && existingPhones.has(item.data.phone)) {
-                return { status: "skipped" as const, reason: `Téléphone déjà utilisé: ${item.data.phone}` };
-            }
+			const password = Math.random().toString(36).slice(-10);
+			const hash = await bcrypt.hash(password, 10);
+			return { status: "resolved" as const, hash, item };
+		});
 
-            const password = Math.random().toString(36).slice(-10);
-            const hash = await bcrypt.hash(password, 10);
-            return { status: "resolved" as const, hash, item };
-        });
+		const results = await Promise.all(passwordPromises);
 
-        const results = await Promise.all(passwordPromises);
+		for (const res of results) {
+			if (res.status === "skipped") {
+				skippedCount++;
+				skipped.push(res.reason as string);
+			} else if (res.status === "resolved") {
+				const { hash, item } = res;
+				const {
+					nom,
+					prenom,
+					email,
+					phone,
+					bucque,
+					promss,
+					nums,
+					tabagnss,
+					balance,
+				} = item.data;
+				usersToInsert.push({
+					nom,
+					prenom,
+					email: email ? email.toLowerCase() : `${item.username}@gadzby.local`,
+					phone: phone || null,
+					bucque: bucque || null,
+					promss: promss.toUpperCase(),
+					nums: nums || null,
+					tabagnss: (getTabagnssCode(tabagnss) || "ME") as Tbk,
+					username: item.username,
+					passwordHash: hash,
+					roleId: userRole.id,
+					balance: Math.round((Number(balance) || 0) * 100),
+				});
+			}
+		}
 
-        for (const res of results) {
-            if (res.status === "skipped") {
-                skippedCount++;
-                skipped.push(res.reason as string);
-            } else if (res.status === "resolved") {
-                const { hash, item } = res;
-                const { nom, prenom, email, phone, bucque, promss, nums, tabagnss, balance } = item.data;
-                usersToInsert.push({
-                    nom,
-                    prenom,
-                    email: email ? email.toLowerCase() : `${item.username}@gadzby.local`,
-                    phone: phone || null,
-                    bucque: bucque || null,
-                    promss: promss.toUpperCase(),
-                    nums: nums || null,
-                    tabagnss: (getTabagnssCode(tabagnss) || "ME") as Tbk,
-                    username: item.username,
-                    passwordHash: hash,
-                    roleId: userRole.id,
-                    balance: Math.round((Number(balance) || 0) * 100),
-                });
-            }
-        }
+		if (usersToInsert.length > 0) {
+			await db.insert(users).values(usersToInsert);
+			successCount += usersToInsert.length;
+		}
 
-        if (usersToInsert.length > 0) {
-            await db.insert(users).values(usersToInsert);
-            successCount += usersToInsert.length;
-        }
+		return { successCount, skippedCount, failCount, skipped, errors };
+	}
 
-        return { successCount, skippedCount, failCount, skipped, errors };
+	/**
+	 * Renomme une prom'ss pour tous ses membres (ex : faute de frappe à l'import).
+	 * Les usernames auto-générés (`nums + promss`) sont recalculés ; les usernames
+	 * personnalisés et ceux sans nums (prenomnom) sont conservés.
+	 * Tout ou rien : un conflit de username annule l'opération.
+	 */
+	static async renamePromss(
+		fromPromss: string,
+		toPromss: string,
+	): Promise<{ updatedCount: number; renamedUsernameCount: number }> {
+		// La casse stockée en base n'est pas homogène (ex : "An220") : la prom'ss
+		// source est recherchée sans tenir compte de la casse, la cible est normalisée.
+		const oldPromss = fromPromss.trim();
+		const newPromss = toPromss.trim().toUpperCase();
 
-    }
+		if (!oldPromss || !newPromss) {
+			throw new AppError("Les deux prom'ss sont requises");
+		}
+		if (oldPromss === newPromss) {
+			throw new AppError("La nouvelle prom'ss est identique à l'ancienne");
+		}
 
+		return db.transaction(async (tx) => {
+			const members = await tx.query.users.findMany({
+				where: and(
+					sql`lower(${users.promss}) = ${oldPromss.toLowerCase()}`,
+					eq(users.isDeleted, false),
+				),
+				columns: { id: true, username: true, nums: true },
+			});
 
+			if (members.length === 0) {
+				throw new AppError(`Aucun utilisateur dans la prom'ss ${oldPromss}`);
+			}
 
-    static async changePassword(userId: string, currentPassword: string, newPassword: string) {
-        const user = await db.query.users.findFirst({
-            where: eq(users.id, userId),
-        });
+			const plan = members.map((member) => {
+				const nums = member.nums?.trim();
+				const isAutoUsername =
+					!!nums && member.username === `${nums}${oldPromss}`.toLowerCase();
+				return {
+					id: member.id,
+					username: isAutoUsername
+						? `${nums}${newPromss}`.toLowerCase()
+						: member.username,
+					isRenamed: isAutoUsername,
+				};
+			});
 
-        if (!user) throw new AppError("Utilisateur introuvable");
+			const newUsernames = plan
+				.filter((p) => p.isRenamed)
+				.map((p) => p.username);
 
-        const match = await bcrypt.compare(currentPassword, user.passwordHash);
-        if (!match) {
-            throw new AppError("Mot de passe actuel incorrect");
-        }
+			if (newUsernames.length > 0) {
+				const taken = await tx.query.users.findMany({
+					where: inArray(users.username, newUsernames),
+					columns: { username: true },
+				});
+				if (taken.length > 0) {
+					const list = taken.map((t) => t.username).join(", ");
+					throw new AppError(
+						`Renommage annulé : ces usernames existent déjà (${list})`,
+					);
+				}
+			}
 
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(newPassword, salt);
+			for (const { id, username } of plan) {
+				await tx
+					.update(users)
+					.set({ promss: newPromss, username })
+					.where(eq(users.id, id));
+			}
 
-        await db
-            .update(users)
-            .set({ passwordHash: hash })
-            .where(eq(users.id, userId));
-    }
-    static async searchPublic(query: string, currentUserId?: string) {
-        if (!query || query.length < 1) return [];
+			return {
+				updatedCount: plan.length,
+				renamedUsernameCount: newUsernames.length,
+			};
+		});
+	}
 
-        const searchPattern = `%${query}%`;
+	static async changePassword(
+		userId: string,
+		currentPassword: string,
+		newPassword: string,
+	) {
+		const user = await db.query.users.findFirst({
+			where: eq(users.id, userId),
+		});
 
-        return await db.query.users.findMany({
-            where: (users, { or, and, ilike, ne, eq }) => {
-                const conditions = [
-                    eq(users.isDeleted, false),
-                    eq(users.isAsleep, false),
-                    or(
-                        ilike(users.username, searchPattern),
-                        ilike(users.nom, searchPattern),
-                        ilike(users.prenom, searchPattern),
-                        ilike(users.email, searchPattern),
-                        ilike(users.bucque, searchPattern)
-                    )
-                ];
+		if (!user) throw new AppError("Utilisateur introuvable");
 
-                if (currentUserId) {
-                    conditions.push(ne(users.id, currentUserId));
-                }
+		const match = await bcrypt.compare(currentPassword, user.passwordHash);
+		if (!match) {
+			throw new AppError("Mot de passe actuel incorrect");
+		}
 
-                return and(...conditions);
-            },
-            orderBy: (users, { asc, desc }) => [
-                desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
-                desc(sql`CASE WHEN ${users.username} ILIKE ${query + '%'} THEN 1 ELSE 0 END`),
-                asc(sql`LENGTH(${users.username})`),
-                desc(users.promss),
-                asc(users.username)
-            ],
-            columns: {
-                id: true,
-                username: true,
-                nom: true,
-                prenom: true,
-                email: true,
-                image: true,
-                bucque: true,
-                promss: true,
-                tabagnss: true,
-            },
-            limit: 10,
-        });
-    }
+		const salt = await bcrypt.genSalt(10);
+		const hash = await bcrypt.hash(newPassword, salt);
 
-    static async searchWithBalance(query: string, currentUserId?: string) {
-        if (!query || query.length < 1) return [];
+		await db
+			.update(users)
+			.set({ passwordHash: hash })
+			.where(eq(users.id, userId));
+	}
+	static async searchPublic(query: string, currentUserId?: string) {
+		if (!query || query.length < 1) return [];
 
-        const searchPattern = `%${query}%`;
+		const searchPattern = `%${query}%`;
 
-        return await db.query.users.findMany({
-            where: (users, { or, and, ilike, ne, eq }) => {
-                const conditions = [
-                    eq(users.isDeleted, false),
-                    eq(users.isAsleep, false),
-                    or(
-                        ilike(users.username, searchPattern),
-                        ilike(users.nom, searchPattern),
-                        ilike(users.prenom, searchPattern),
-                        ilike(users.email, searchPattern),
-                        ilike(users.bucque, searchPattern)
-                    )
-                ];
+		return await db.query.users.findMany({
+			where: (users, { or, and, ilike, ne, eq }) => {
+				const conditions = [
+					eq(users.isDeleted, false),
+					eq(users.isAsleep, false),
+					or(
+						ilike(users.username, searchPattern),
+						ilike(users.nom, searchPattern),
+						ilike(users.prenom, searchPattern),
+						ilike(users.email, searchPattern),
+						ilike(users.bucque, searchPattern),
+					),
+				];
 
-                return and(...conditions);
-            },
-            orderBy: (users, { asc, desc }) => [
-                desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
-                desc(sql`CASE WHEN ${users.username} ILIKE ${query + '%'} THEN 1 ELSE 0 END`),
-                asc(sql`LENGTH(${users.username})`),
-                desc(users.promss),
-                asc(users.username)
-            ],
-            columns: {
-                id: true,
-                username: true,
-                nom: true,
-                prenom: true,
-                email: true,
-                image: true,
-                bucque: true,
-                promss: true,
-                tabagnss: true,
-                balance: true,
-            },
-            limit: 10,
-        });
-    }
+				if (currentUserId) {
+					conditions.push(ne(users.id, currentUserId));
+				}
+
+				return and(...conditions);
+			},
+			orderBy: (users, { asc, desc }) => [
+				desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
+				desc(
+					sql`CASE WHEN ${users.username} ILIKE ${query + "%"} THEN 1 ELSE 0 END`,
+				),
+				asc(sql`LENGTH(${users.username})`),
+				desc(users.promss),
+				asc(users.username),
+			],
+			columns: {
+				id: true,
+				username: true,
+				nom: true,
+				prenom: true,
+				email: true,
+				image: true,
+				bucque: true,
+				promss: true,
+				tabagnss: true,
+			},
+			limit: 10,
+		});
+	}
+
+	static async searchWithBalance(query: string, currentUserId?: string) {
+		if (!query || query.length < 1) return [];
+
+		const searchPattern = `%${query}%`;
+
+		return await db.query.users.findMany({
+			where: (users, { or, and, ilike, ne, eq }) => {
+				const conditions = [
+					eq(users.isDeleted, false),
+					eq(users.isAsleep, false),
+					or(
+						ilike(users.username, searchPattern),
+						ilike(users.nom, searchPattern),
+						ilike(users.prenom, searchPattern),
+						ilike(users.email, searchPattern),
+						ilike(users.bucque, searchPattern),
+					),
+				];
+
+				return and(...conditions);
+			},
+			orderBy: (users, { asc, desc }) => [
+				desc(sql`CASE WHEN ${users.username} ILIKE ${query} THEN 1 ELSE 0 END`),
+				desc(
+					sql`CASE WHEN ${users.username} ILIKE ${query + "%"} THEN 1 ELSE 0 END`,
+				),
+				asc(sql`LENGTH(${users.username})`),
+				desc(users.promss),
+				asc(users.username),
+			],
+			columns: {
+				id: true,
+				username: true,
+				nom: true,
+				prenom: true,
+				email: true,
+				image: true,
+				bucque: true,
+				promss: true,
+				tabagnss: true,
+				balance: true,
+			},
+			limit: 10,
+		});
+	}
 }

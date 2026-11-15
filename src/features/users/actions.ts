@@ -18,6 +18,7 @@ import {
 	createUserSchema,
 	importUserRowSchema,
 	importUsersBatchSchema,
+	renamePromssSchema,
 	toggleUserStatusSchema,
 	updateUserSchema,
 } from "./schemas";
@@ -281,6 +282,23 @@ export const importUsersBatchAction = authenticatedAction(
 		}
 	},
 	{ name: "importUsersBatchAction", permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
+);
+
+export const renamePromssAction = authenticatedAction(
+	renamePromssSchema,
+	async ({ fromPromss, toPromss }) => {
+		const { updatedCount, renamedUsernameCount } = await UserService.renamePromss(
+			fromPromss,
+			toPromss,
+		);
+
+		revalidatePath("/admin/users");
+		return {
+			success: `${updatedCount} utilisateur(s) passé(s) de ${fromPromss} à ${toPromss}, ${renamedUsernameCount} username(s) mis à jour`,
+			data: { toPromss },
+		};
+	},
+	{ name: "renamePromssAction", permissions: ["ADMIN_ACCESS", "MANAGE_USERS"] }
 );
 
 export const hardDeleteUserAction = authenticatedAction(

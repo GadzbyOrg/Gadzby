@@ -1,3 +1,4 @@
+import { PgDialect } from "drizzle-orm/pg-core";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { db } from "@/db";
@@ -18,22 +19,22 @@ vi.mock("@/db", () => ({
 			roles: {
 				findFirst: vi.fn(),
 			},
-            products: {
-                findMany: vi.fn(),
-            },
-            famss: {
-                findFirst: vi.fn(),
-            },
-            famsMembers: {
-                findFirst: vi.fn(),
-            },
-            transactions: {
-                findFirst: vi.fn(),
-                findMany: vi.fn(),
-            },
-            events: {
-                findFirst: vi.fn(),
-            }
+			products: {
+				findMany: vi.fn(),
+			},
+			famss: {
+				findFirst: vi.fn(),
+			},
+			famsMembers: {
+				findFirst: vi.fn(),
+			},
+			transactions: {
+				findFirst: vi.fn(),
+				findMany: vi.fn(),
+			},
+			events: {
+				findFirst: vi.fn(),
+			},
 		},
 		transaction: vi.fn(),
 		delete: vi.fn(),
@@ -43,58 +44,58 @@ vi.mock("@/db", () => ({
 vi.mock("bcryptjs", () => ({
 	hash: vi.fn().mockResolvedValue("hashed_password"),
 	genSalt: vi.fn().mockResolvedValue("salt"),
-    compare: vi.fn().mockResolvedValue(true),
-    default: {
-        hash: vi.fn().mockResolvedValue("hashed_password"),
-        genSalt: vi.fn().mockResolvedValue("salt"),
-        compare: vi.fn().mockResolvedValue(true),
-    }
+	compare: vi.fn().mockResolvedValue(true),
+	default: {
+		hash: vi.fn().mockResolvedValue("hashed_password"),
+		genSalt: vi.fn().mockResolvedValue("salt"),
+		compare: vi.fn().mockResolvedValue(true),
+	},
 }));
 
 // Robust fs mock
 vi.mock("fs", async (importOriginal) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const actual = await importOriginal<any>();
-    return {
-        ...actual,
-        default: {
-            ...actual.default,
-            existsSync: vi.fn().mockReturnValue(true),
-        },
-        existsSync: vi.fn().mockReturnValue(true),
-    };
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const actual = await importOriginal<any>();
+	return {
+		...actual,
+		default: {
+			...actual.default,
+			existsSync: vi.fn().mockReturnValue(true),
+		},
+		existsSync: vi.fn().mockReturnValue(true),
+	};
 });
 
 vi.mock("fs/promises", async (importOriginal) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const actual = await importOriginal<any>();
-    return {
-        ...actual,
-        default: {
-            ...actual.default,
-            unlink: vi.fn().mockResolvedValue(undefined),
-        },
-        unlink: vi.fn().mockResolvedValue(undefined),
-    };
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const actual = await importOriginal<any>();
+	return {
+		...actual,
+		default: {
+			...actual.default,
+			unlink: vi.fn().mockResolvedValue(undefined),
+		},
+		unlink: vi.fn().mockResolvedValue(undefined),
+	};
 });
 
 vi.mock("xlsx", () => ({
-    read: vi.fn().mockReturnValue({
-        SheetNames: ["Sheet1"],
-        Sheets: { "Sheet1": {} }
-    }),
-    utils: {
-        sheet_to_json: vi.fn()
-    },
-    default: {
-         read: vi.fn().mockReturnValue({
-            SheetNames: ["Sheet1"],
-            Sheets: { "Sheet1": {} }
-        }),
-        utils: {
-            sheet_to_json: vi.fn()
-        }
-    }
+	read: vi.fn().mockReturnValue({
+		SheetNames: ["Sheet1"],
+		Sheets: { Sheet1: {} },
+	}),
+	utils: {
+		sheet_to_json: vi.fn(),
+	},
+	default: {
+		read: vi.fn().mockReturnValue({
+			SheetNames: ["Sheet1"],
+			Sheets: { Sheet1: {} },
+		}),
+		utils: {
+			sheet_to_json: vi.fn(),
+		},
+	},
 }));
 
 // Helper to mock chained db calls
@@ -127,16 +128,15 @@ describe("UserService", () => {
 				expect.objectContaining({
 					email: "john@example.com",
 					bucque: "MyBucque",
-				})
+				}),
 			);
 			expect(mockUpdate.where).toHaveBeenCalled();
 		});
 
-        test("should ignore restricted fields if provided (unsafe cast)", async () => {
+		test("should ignore restricted fields if provided (unsafe cast)", async () => {
 			const mockUpdate = mockDbChain();
 			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
 
-			 
 			await UserService.update("user-123", {
 				email: "john@example.com",
 				nom: "NewName",
@@ -148,388 +148,533 @@ describe("UserService", () => {
 			expect(mockUpdate.set).toHaveBeenCalledWith(
 				expect.objectContaining({
 					email: "john@example.com",
-				})
+				}),
 			);
-            
-            // Verify restricted fields are NOT in the update call
-            const calledArg = mockUpdate.set.mock.calls[0][0];
-            expect(calledArg).not.toHaveProperty("nom");
-            expect(calledArg).not.toHaveProperty("prenom");
-            expect(calledArg).not.toHaveProperty("balance");
-            expect(calledArg).not.toHaveProperty("username");
+
+			// Verify restricted fields are NOT in the update call
+			const calledArg = mockUpdate.set.mock.calls[0][0];
+			expect(calledArg).not.toHaveProperty("nom");
+			expect(calledArg).not.toHaveProperty("prenom");
+			expect(calledArg).not.toHaveProperty("balance");
+			expect(calledArg).not.toHaveProperty("username");
 		});
 	});
 
-    describe("adminUpdate", () => {
-        test("should perform full update including balance transaction", async () => {
-            // Mock Transaction
-            vi.mocked(db.transaction).mockImplementation(async (callback) => {
-                const txMock = {
-                    query: db.query,
-                    update: db.update,
-                    insert: db.insert,
-                    delete: db.delete,
-                };
-                return callback(txMock as any);
-            });
+	describe("adminUpdate", () => {
+		test("should perform full update including balance transaction", async () => {
+			// Mock Transaction
+			vi.mocked(db.transaction).mockImplementation(async (callback) => {
+				const txMock = {
+					query: db.query,
+					update: db.update,
+					insert: db.insert,
+					delete: db.delete,
+				};
+				return callback(txMock as any);
+			});
 
-            // Mock finding user
-            vi.mocked(db.query.users.findFirst).mockResolvedValue({
-                id: "target-1",
-                balance: 100, // 1 euro
-                isDeleted: false
-            } as any);
+			// Mock finding user
+			vi.mocked(db.query.users.findFirst).mockResolvedValue({
+				id: "target-1",
+				balance: 100, // 1 euro
+				isDeleted: false,
+			} as any);
 
-            const mockUpdate = mockDbChain();
-            vi.mocked(db.update).mockReturnValue(mockUpdate as any);
-            
-            const mockInsert = mockDbChain();
+			const mockUpdate = mockDbChain();
+			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
+
+			const mockInsert = mockDbChain();
 			vi.mocked(db.insert).mockReturnValue(mockInsert as any);
 
-            await UserService.adminUpdate("target-1", "admin-1", {
-                nom: "New",
-                prenom: "Name",
-                email: "new@example.com",
-                promss: "220",
-                roleId: "role-1",
-                balance: 500, // Changed to 5 euros
-                isAsleep: false,
-                tabagnss: "ME"
-            });
+			await UserService.adminUpdate("target-1", "admin-1", {
+				nom: "New",
+				prenom: "Name",
+				email: "new@example.com",
+				promss: "220",
+				roleId: "role-1",
+				balance: 500, // Changed to 5 euros
+				isAsleep: false,
+				tabagnss: "ME",
+			});
 
-            // Should insert transaction for difference (400)
-            expect(db.insert).toHaveBeenCalled();
-            expect(mockInsert.values).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    amount: 400,
-                    type: "ADJUSTMENT",
-                    targetUserId: "target-1"
-                })
-            );
-            
-            // Should update user
-            expect(mockUpdate.set).toHaveBeenCalled();
-        });
-    });
+			// Should insert transaction for difference (400)
+			expect(db.insert).toHaveBeenCalled();
+			expect(mockInsert.values).toHaveBeenCalledWith(
+				expect.objectContaining({
+					amount: 400,
+					type: "ADJUSTMENT",
+					targetUserId: "target-1",
+				}),
+			);
 
-    describe("create", () => {
-        test("should create user if not exists", async () => {
-             vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined); // No existing user
-             
-             const mockInsert = mockDbChain();
-             vi.mocked(db.insert).mockReturnValue(mockInsert as any);
+			// Should update user
+			expect(mockUpdate.set).toHaveBeenCalled();
+		});
+	});
 
-             await UserService.create({
-                 nom: "Test",
-                 prenom: "User",
-                 email: "test@example.com",
-                 promss: "223",
-                 tabagnss: "ME",
-                 password: "password123",
-                 roleId: "role-1",
-                 balance: 0
-             });
+	describe("create", () => {
+		test("should create user if not exists", async () => {
+			vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined); // No existing user
 
-             expect(db.insert).toHaveBeenCalled();
-             expect(mockInsert.values).toHaveBeenCalledWith(
-                 expect.objectContaining({
-                     username: "usertest", // computed
-                     email: "test@example.com"
-                 })
-             );
-        });
+			const mockInsert = mockDbChain();
+			vi.mocked(db.insert).mockReturnValue(mockInsert as any);
 
-        test("should ensure username is lowercase on create", async () => {
-             vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined); // No existing user
-             
-             const mockInsert = mockDbChain();
-             vi.mocked(db.insert).mockReturnValue(mockInsert as any);
+			await UserService.create({
+				nom: "Test",
+				prenom: "User",
+				email: "test@example.com",
+				promss: "223",
+				tabagnss: "ME",
+				password: "password123",
+				roleId: "role-1",
+				balance: 0,
+			});
 
-             // Case 1: Standard firstname/lastname
-             await UserService.create({
-                 nom: "Doe",
-                 prenom: "John",
-                 email: "john@example.com",
-                 promss: "223",
-                 tabagnss: "ME",
-                 password: "password123",
-                 roleId: "role-1",
-                 balance: 0
-             });
+			expect(db.insert).toHaveBeenCalled();
+			expect(mockInsert.values).toHaveBeenCalledWith(
+				expect.objectContaining({
+					username: "usertest", // computed
+					email: "test@example.com",
+				}),
+			);
+		});
 
-             expect(mockInsert.values).toHaveBeenCalledWith(
-                 expect.objectContaining({
-                     username: "johndoe"
-                 })
-             );
+		test("should ensure username is lowercase on create", async () => {
+			vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined); // No existing user
 
-             // Case 2: Nums/Promss
-             await UserService.create({
-                 nom: "Doe",
-                 prenom: "John",
-                 email: "john2@example.com",
-                 promss: "223",
-                 nums: "ABC", // Should be lowercased
-                 tabagnss: "ME",
-                 password: "password123",
-                 roleId: "role-1",
-                 balance: 0
-             });
+			const mockInsert = mockDbChain();
+			vi.mocked(db.insert).mockReturnValue(mockInsert as any);
 
-             expect(mockInsert.values).toHaveBeenCalledWith(
-                 expect.objectContaining({
-                     username: "abc223"
-                 })
-             );
-        });
+			// Case 1: Standard firstname/lastname
+			await UserService.create({
+				nom: "Doe",
+				prenom: "John",
+				email: "john@example.com",
+				promss: "223",
+				tabagnss: "ME",
+				password: "password123",
+				roleId: "role-1",
+				balance: 0,
+			});
 
-        test("should normalize promss and email on create", async () => {
-             vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined); // No existing user
-             
-             const mockInsert = mockDbChain();
-             vi.mocked(db.insert).mockReturnValue(mockInsert as any);
+			expect(mockInsert.values).toHaveBeenCalledWith(
+				expect.objectContaining({
+					username: "johndoe",
+				}),
+			);
 
-             await UserService.create({
-                 nom: "Test",
-                 prenom: "User",
-                 email: "TEST@EXAMPLE.COM",
-                 promss: "me223",
-                 tabagnss: "ME",
-                 password: "password123",
-                 roleId: "role-1",
-                 balance: 0
-             });
+			// Case 2: Nums/Promss
+			await UserService.create({
+				nom: "Doe",
+				prenom: "John",
+				email: "john2@example.com",
+				promss: "223",
+				nums: "ABC", // Should be lowercased
+				tabagnss: "ME",
+				password: "password123",
+				roleId: "role-1",
+				balance: 0,
+			});
 
-             expect(mockInsert.values).toHaveBeenCalledWith(
-                 expect.objectContaining({
-                     email: "test@example.com",
-                     promss: "ME223"
-                 })
-             );
-        });
+			expect(mockInsert.values).toHaveBeenCalledWith(
+				expect.objectContaining({
+					username: "abc223",
+				}),
+			);
+		});
 
-        test("should throw if user exists", async () => {
-            vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: "existing" } as any);
-            
-            await expect(UserService.create({
-                 nom: "Test",
-                 prenom: "User",
-                 email: "test@example.com",
-                 promss: "223",
-                 tabagnss: "ME",
-                 password: "password123",
-                 roleId: "role-1",
-                 balance: 0
-            })).rejects.toThrow("existe déjà");
-       });
+		test("should normalize promss and email on create", async () => {
+			vi.mocked(db.query.users.findFirst).mockResolvedValue(undefined); // No existing user
 
-        // Le doublon est une issue métier attendue : il doit remonter en
-        // AppError, sinon les wrappers le masquent derrière le message
-        // générique — c'est exactement le bug observé en production.
-        test("should throw a business AppError, not an opaque technical error", async () => {
-            vi.mocked(db.query.users.findFirst).mockResolvedValue({ id: "existing" } as any);
+			const mockInsert = mockDbChain();
+			vi.mocked(db.insert).mockReturnValue(mockInsert as any);
 
-            const promise = UserService.create({
-                 nom: "Soules",
-                 prenom: "Léo",
-                 email: "leo.soules@example.com",
-                 promss: "BO225",
-                 nums: "23-151",
-                 tabagnss: "BO",
-                 password: "password123",
-                 roleId: "role-1",
-                 balance: 0
-            });
+			await UserService.create({
+				nom: "Test",
+				prenom: "User",
+				email: "TEST@EXAMPLE.COM",
+				promss: "me223",
+				tabagnss: "ME",
+				password: "password123",
+				roleId: "role-1",
+				balance: 0,
+			});
 
-            await expect(promise).rejects.toBeInstanceOf(AppError);
-            await expect(promise).rejects.toThrow(
-                "Un utilisateur avec ce username, email ou téléphone existe déjà"
-            );
-            expect(toUserMessage(await promise.catch((e) => e))).not.toBe(GENERIC_ERROR_MESSAGE);
-       });
-    });
+			expect(mockInsert.values).toHaveBeenCalledWith(
+				expect.objectContaining({
+					email: "test@example.com",
+					promss: "ME223",
+				}),
+			);
+		});
 
-    describe("delete", () => {
-        test("should soft delete user and clear data", async () => {
-             vi.mocked(db.transaction).mockImplementation(async (callback) => {
-                const txMock = {
-                    query: db.query,
-                    update: db.update,
-                    insert: db.insert,
-                    delete: db.delete,
-                };
-                return callback(txMock as any);
-            });
+		test("should throw if user exists", async () => {
+			vi.mocked(db.query.users.findFirst).mockResolvedValue({
+				id: "existing",
+			} as any);
 
-            vi.mocked(db.query.users.findFirst).mockResolvedValue({
-                id: "user-1",
-                balance: 0,
-                roleId: "user-role",
-                image: "avatar.jpg"
-            } as any);
+			await expect(
+				UserService.create({
+					nom: "Test",
+					prenom: "User",
+					email: "test@example.com",
+					promss: "223",
+					tabagnss: "ME",
+					password: "password123",
+					roleId: "role-1",
+					balance: 0,
+				}),
+			).rejects.toThrow("existe déjà");
+		});
 
-            vi.mocked(db.query.roles.findFirst).mockResolvedValue({ name: "USER" } as any);
+		// Le doublon est une issue métier attendue : il doit remonter en
+		// AppError, sinon les wrappers le masquent derrière le message
+		// générique — c'est exactement le bug observé en production.
+		test("should throw a business AppError, not an opaque technical error", async () => {
+			vi.mocked(db.query.users.findFirst).mockResolvedValue({
+				id: "existing",
+			} as any);
 
-            const mockUpdate = mockDbChain();
-            vi.mocked(db.update).mockReturnValue(mockUpdate as any);
-            const mockDelete = mockDbChain();
-            vi.mocked(db.delete).mockReturnValue(mockDelete as any);
+			const promise = UserService.create({
+				nom: "Soules",
+				prenom: "Léo",
+				email: "leo.soules@example.com",
+				promss: "BO225",
+				nums: "23-151",
+				tabagnss: "BO",
+				password: "password123",
+				roleId: "role-1",
+				balance: 0,
+			});
 
-            await UserService.delete("user-1");
+			await expect(promise).rejects.toBeInstanceOf(AppError);
+			await expect(promise).rejects.toThrow(
+				"Un utilisateur avec ce username, email ou téléphone existe déjà",
+			);
+			expect(toUserMessage(await promise.catch((e) => e))).not.toBe(
+				GENERIC_ERROR_MESSAGE,
+			);
+		});
+	});
 
-            // Should check for 0 balance
-            // Should delete relations
-            expect(db.delete).toHaveBeenCalledTimes(2); // shopUsers, famsMembers
-            // Should updated user to deleted state
-            expect(mockUpdate.set).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    isDeleted: true,
-                    nom: "Utilisateur Supprimé"
-                })
-            );
-        });
+	describe("delete", () => {
+		test("should soft delete user and clear data", async () => {
+			vi.mocked(db.transaction).mockImplementation(async (callback) => {
+				const txMock = {
+					query: db.query,
+					update: db.update,
+					insert: db.insert,
+					delete: db.delete,
+				};
+				return callback(txMock as any);
+			});
 
-        test("should prevent deleting admin", async () => {
-            vi.mocked(db.transaction).mockImplementation(async (callback) => {
-               const txMock = {
-                   query: db.query,
-                   update: db.update,
-                   insert: db.insert,
-                   delete: db.delete,
-               };
-               return callback(txMock as any);
-           });
+			vi.mocked(db.query.users.findFirst).mockResolvedValue({
+				id: "user-1",
+				balance: 0,
+				roleId: "user-role",
+				image: "avatar.jpg",
+			} as any);
 
-           vi.mocked(db.query.users.findFirst).mockResolvedValue({
-               id: "admin-1",
-               balance: 0,
-               roleId: "admin-role"
-           } as any);
+			vi.mocked(db.query.roles.findFirst).mockResolvedValue({
+				name: "USER",
+			} as any);
 
-           vi.mocked(db.query.roles.findFirst).mockResolvedValue({ name: "ADMIN" } as any);
+			const mockUpdate = mockDbChain();
+			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
+			const mockDelete = mockDbChain();
+			vi.mocked(db.delete).mockReturnValue(mockDelete as any);
 
-           await expect(UserService.delete("admin-1")).rejects.toThrow("rôle ADMIN");
-       });
-    });
+			await UserService.delete("user-1");
 
-    describe("importBatch", () => {
-        test("should import valid users", async () => {
-			vi.mocked(db.query.roles.findFirst).mockResolvedValue({ id: "role-user" } as any);
-            vi.mocked(db.query.users.findMany).mockResolvedValue([]); // No duplicates in DB
+			// Should check for 0 balance
+			// Should delete relations
+			expect(db.delete).toHaveBeenCalledTimes(2); // shopUsers, famsMembers
+			// Should updated user to deleted state
+			expect(mockUpdate.set).toHaveBeenCalledWith(
+				expect.objectContaining({
+					isDeleted: true,
+					nom: "Utilisateur Supprimé",
+				}),
+			);
+		});
 
-             const mockInsert = mockDbChain();
-             vi.mocked(db.insert).mockReturnValue(mockInsert as any);
+		test("should prevent deleting admin", async () => {
+			vi.mocked(db.transaction).mockImplementation(async (callback) => {
+				const txMock = {
+					query: db.query,
+					update: db.update,
+					insert: db.insert,
+					delete: db.delete,
+				};
+				return callback(txMock as any);
+			});
 
-             const rows = [
-                {
-                    "nom": "Doe",
-                    "prenom": "Jane",
-                    "email": "jane@example.com",
-                    "promss": "223",
-                    "tabagnss": "ME",
-                    // other optional fields can be missing or null
-                    "phone": null,
-                    "bucque": null,
-                    "nums": null
-                }
-            ];
+			vi.mocked(db.query.users.findFirst).mockResolvedValue({
+				id: "admin-1",
+				balance: 0,
+				roleId: "admin-role",
+			} as any);
 
-            const result = await UserService.importBatch(rows as any);
+			vi.mocked(db.query.roles.findFirst).mockResolvedValue({
+				name: "ADMIN",
+			} as any);
 
-            expect(result.successCount).toBe(1);
-            expect(result.failCount).toBe(0);
-            expect(db.insert).toHaveBeenCalled();
-            expect(mockInsert.values).toHaveBeenCalledWith(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                         nom: "Doe",
-                         email: "jane@example.com"
-                    })
-                ])
-            );
-        });
+			await expect(UserService.delete("admin-1")).rejects.toThrow("rôle ADMIN");
+		});
+	});
 
-        test("should skip duplicates in DB", async () => {
-            vi.mocked(db.query.roles.findFirst).mockResolvedValue({ id: "role-user" } as any);
-            // Simulate existing user
-            vi.mocked(db.query.users.findMany).mockResolvedValue([{
-                username: "janedoe", // computed username for Jane Doe
-                email: "jane@example.com"
-            }] as any);
+	describe("importBatch", () => {
+		test("should import valid users", async () => {
+			vi.mocked(db.query.roles.findFirst).mockResolvedValue({
+				id: "role-user",
+			} as any);
+			vi.mocked(db.query.users.findMany).mockResolvedValue([]); // No duplicates in DB
 
-            const rows = [
-                {
-                    "nom": "Doe",
-                    "prenom": "Jane",
-                    "email": "jane@example.com",
-                    "promss": "223",
-                    "tabagnss": "ME"
-                }
-            ];
+			const mockInsert = mockDbChain();
+			vi.mocked(db.insert).mockReturnValue(mockInsert as any);
 
-            const result = await UserService.importBatch(rows as any);
+			const rows = [
+				{
+					nom: "Doe",
+					prenom: "Jane",
+					email: "jane@example.com",
+					promss: "223",
+					tabagnss: "ME",
+					// other optional fields can be missing or null
+					phone: null,
+					bucque: null,
+					nums: null,
+				},
+			];
 
-            expect(result.successCount).toBe(0);
-            expect(result.skippedCount).toBe(1); // Should be skipped due to existing user
-            expect(result.skipped[0]).toContain("déjà existant");
-        });
+			const result = await UserService.importBatch(rows as any);
 
-        test("should handle duplicates within the batch", async () => {
-            vi.mocked(db.query.roles.findFirst).mockResolvedValue({ id: "role-user" } as any);
-            vi.mocked(db.query.users.findMany).mockResolvedValue([]);
+			expect(result.successCount).toBe(1);
+			expect(result.failCount).toBe(0);
+			expect(db.insert).toHaveBeenCalled();
+			expect(mockInsert.values).toHaveBeenCalledWith(
+				expect.arrayContaining([
+					expect.objectContaining({
+						nom: "Doe",
+						email: "jane@example.com",
+					}),
+				]),
+			);
+		});
 
-            const mockInsert = mockDbChain();
-             vi.mocked(db.insert).mockReturnValue(mockInsert as any);
+		test("should skip duplicates in DB", async () => {
+			vi.mocked(db.query.roles.findFirst).mockResolvedValue({
+				id: "role-user",
+			} as any);
+			// Simulate existing user
+			vi.mocked(db.query.users.findMany).mockResolvedValue([
+				{
+					username: "janedoe", // computed username for Jane Doe
+					email: "jane@example.com",
+				},
+			] as any);
 
-            const rows = [
-                {
-                    "nom": "Doe",
-                    "prenom": "Jane",
-                    "email": "jane@example.com",
-                    "promss": "223",
-                    "tabagnss": "ME"
-                },
-                {
-                    "nom": "Doe", // Duplicate of above (same computed username/email)
-                    "prenom": "Jane",
-                    "email": "jane@example.com",
-                    "promss": "223",
-                    "tabagnss": "ME"
-                }
-            ];
+			const rows = [
+				{
+					nom: "Doe",
+					prenom: "Jane",
+					email: "jane@example.com",
+					promss: "223",
+					tabagnss: "ME",
+				},
+			];
 
-            const result = await UserService.importBatch(rows as any);
+			const result = await UserService.importBatch(rows as any);
 
-            // First one is valid, second one internal duplicate
-            // Actually, my implementation checks implicit duplicates FIRST before even DB check.
-            // If internal duplicate, it is added to skipped count and not added to uniqueChunk.
-            
-            expect(result.successCount).toBe(1);
-            expect(result.skippedCount).toBe(1);
-            expect(result.skipped[0]).toContain("Doublon dans le lot");
-        });
-    });
-    
-    describe("searchPublic", () => {
-        test("should return empty array for short query", async () => {
-            const result = await UserService.searchPublic("");
-            expect(result).toEqual([]);
-            expect(db.query.users.findMany).not.toHaveBeenCalled();
-        });
+			expect(result.successCount).toBe(0);
+			expect(result.skippedCount).toBe(1); // Should be skipped due to existing user
+			expect(result.skipped[0]).toContain("déjà existant");
+		});
 
-        test("should search users with correct parameters", async () => {
-            await UserService.searchPublic("test", "current-user-id");
-            
-            expect(db.query.users.findMany).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    limit: 10,
-                    columns: expect.objectContaining({
-                        id: true,
-                        username: true,
-                        nom: true
-                    })
-                })
-            );
-        });
-    });
+		test("should handle duplicates within the batch", async () => {
+			vi.mocked(db.query.roles.findFirst).mockResolvedValue({
+				id: "role-user",
+			} as any);
+			vi.mocked(db.query.users.findMany).mockResolvedValue([]);
+
+			const mockInsert = mockDbChain();
+			vi.mocked(db.insert).mockReturnValue(mockInsert as any);
+
+			const rows = [
+				{
+					nom: "Doe",
+					prenom: "Jane",
+					email: "jane@example.com",
+					promss: "223",
+					tabagnss: "ME",
+				},
+				{
+					nom: "Doe", // Duplicate of above (same computed username/email)
+					prenom: "Jane",
+					email: "jane@example.com",
+					promss: "223",
+					tabagnss: "ME",
+				},
+			];
+
+			const result = await UserService.importBatch(rows as any);
+
+			// First one is valid, second one internal duplicate
+			// Actually, my implementation checks implicit duplicates FIRST before even DB check.
+			// If internal duplicate, it is added to skipped count and not added to uniqueChunk.
+
+			expect(result.successCount).toBe(1);
+			expect(result.skippedCount).toBe(1);
+			expect(result.skipped[0]).toContain("Doublon dans le lot");
+		});
+	});
+
+	describe("renamePromss", () => {
+		const useTransactionPassthrough = () => {
+			vi.mocked(db.transaction).mockImplementation(async (callback) =>
+				callback({ query: db.query, update: db.update } as any),
+			);
+		};
+
+		beforeEach(() => {
+			useTransactionPassthrough();
+		});
+
+		test("matches the source promss case-insensitively (DB may store mixed case)", async () => {
+			vi.mocked(db.query.users.findMany)
+				.mockResolvedValueOnce([
+					{ id: "u1", username: "12ai211", nums: "12" },
+				] as any)
+				.mockResolvedValueOnce([]);
+			const mockUpdate = mockDbChain();
+			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
+
+			await UserService.renamePromss("Ai211", "Ai221");
+
+			const { where } = vi.mocked(db.query.users.findMany).mock.calls[0][0] as any;
+			const query = new PgDialect().sqlToQuery(where);
+			expect(query.sql.toLowerCase()).toContain("lower(");
+			expect(query.params).toContain("ai211");
+			expect(mockUpdate.set).toHaveBeenCalledWith({
+				promss: "AI221",
+				username: "12ai221",
+			});
+		});
+
+		test("updates promss and rebuilds auto-generated usernames", async () => {
+			vi.mocked(db.query.users.findMany)
+				.mockResolvedValueOnce([
+					{ id: "u1", username: "12322", nums: "123" },
+					{ id: "u2", username: "4522", nums: "45" },
+				] as any)
+				.mockResolvedValueOnce([]); // no username conflicts
+			const mockUpdate = mockDbChain();
+			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
+
+			const result = await UserService.renamePromss("22", "223");
+
+			expect(result).toEqual({ updatedCount: 2, renamedUsernameCount: 2 });
+			expect(mockUpdate.set).toHaveBeenCalledWith({
+				promss: "223",
+				username: "123223",
+			});
+			expect(mockUpdate.set).toHaveBeenCalledWith({
+				promss: "223",
+				username: "45223",
+			});
+		});
+
+		test("keeps custom usernames and users without nums untouched", async () => {
+			vi.mocked(db.query.users.findMany).mockResolvedValueOnce([
+				{ id: "u1", username: "monpseudo", nums: "123" },
+				{ id: "u2", username: "janedoe", nums: null },
+			] as any);
+			const mockUpdate = mockDbChain();
+			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
+
+			const result = await UserService.renamePromss("22", "223");
+
+			expect(result).toEqual({ updatedCount: 2, renamedUsernameCount: 0 });
+			expect(mockUpdate.set).toHaveBeenCalledWith({
+				promss: "223",
+				username: "monpseudo",
+			});
+			expect(mockUpdate.set).toHaveBeenCalledWith({
+				promss: "223",
+				username: "janedoe",
+			});
+			// No conflict lookup needed when no username changes
+			expect(db.query.users.findMany).toHaveBeenCalledTimes(1);
+		});
+
+		test("normalizes input to trimmed upper case", async () => {
+			vi.mocked(db.query.users.findMany)
+				.mockResolvedValueOnce([
+					{ id: "u1", username: "12ch22", nums: "12" },
+				] as any)
+				.mockResolvedValueOnce([]);
+			const mockUpdate = mockDbChain();
+			vi.mocked(db.update).mockReturnValue(mockUpdate as any);
+
+			await UserService.renamePromss(" ch22 ", " ch223 ");
+
+			expect(mockUpdate.set).toHaveBeenCalledWith({
+				promss: "CH223",
+				username: "12ch223",
+			});
+		});
+
+		test("aborts without writing when a new username is already taken", async () => {
+			vi.mocked(db.query.users.findMany)
+				.mockResolvedValueOnce([
+					{ id: "u1", username: "12322", nums: "123" },
+				] as any)
+				.mockResolvedValueOnce([{ username: "123223" }] as any);
+
+			await expect(UserService.renamePromss("22", "223")).rejects.toThrow(
+				/123223/,
+			);
+			expect(db.update).not.toHaveBeenCalled();
+		});
+
+		test("throws when no user has the source promss", async () => {
+			vi.mocked(db.query.users.findMany).mockResolvedValueOnce([]);
+
+			await expect(UserService.renamePromss("22", "223")).rejects.toThrow(
+				AppError,
+			);
+			expect(db.update).not.toHaveBeenCalled();
+		});
+
+		test("throws when source and target promss are identical", async () => {
+			await expect(UserService.renamePromss("223", " 223 ")).rejects.toThrow(
+				AppError,
+			);
+			expect(db.transaction).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("searchPublic", () => {
+		test("should return empty array for short query", async () => {
+			const result = await UserService.searchPublic("");
+			expect(result).toEqual([]);
+			expect(db.query.users.findMany).not.toHaveBeenCalled();
+		});
+
+		test("should search users with correct parameters", async () => {
+			await UserService.searchPublic("test", "current-user-id");
+
+			expect(db.query.users.findMany).toHaveBeenCalledWith(
+				expect.objectContaining({
+					limit: 10,
+					columns: expect.objectContaining({
+						id: true,
+						username: true,
+						nom: true,
+					}),
+				}),
+			);
+		});
+	});
 });

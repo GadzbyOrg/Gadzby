@@ -33,6 +33,7 @@ import {
 } from "@/features/users/actions";
 
 import { CreateUserForm } from "./create-user-form";
+import { RenamePromssDialog } from "./rename-promss-dialog";
 import { TransactionHistoryModal } from "./transaction-history-modal";
 import { UserEditForm } from "./user-edit-form";
 import Link from "next/link";
@@ -240,6 +241,7 @@ export function UsersTable({
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [viewHistoryUser, setViewHistoryUser] = useState<User | null>(null);
 	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [renamingPromss, setRenamingPromss] = useState<string | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const [isPending, startTransition] = useTransition();
 
@@ -347,6 +349,10 @@ export function UsersTable({
 						promssList={promssList}
 						selectedPromss={currentPromss}
 						onChange={handlePromssChange}
+						itemAction={{
+							label: (p) => `Modifier la prom'ss ${p}`,
+							onSelect: setRenamingPromss,
+						}}
 					/>
 					<Select value={currentRole} onValueChange={handleRoleFilter}>
 						<SelectTrigger className="w-auto min-w-[140px]">
@@ -582,6 +588,18 @@ export function UsersTable({
 						</div>
 					</div>
 				</div>
+			)}
+
+			{/* Rename Promss Modal */}
+			{renamingPromss && (
+				<RenamePromssDialog
+					promss={renamingPromss}
+					onClose={() => setRenamingPromss(null)}
+					onRenamed={(newPromss) => {
+						setRenamingPromss(null);
+						handlePromssChange(newPromss);
+					}}
+				/>
 			)}
 
 			{/* Transaction History Modal */}
