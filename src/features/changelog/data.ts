@@ -25,6 +25,24 @@ export function compareVersions(a: string, b: string): number {
 
 /** Plus récente en premier. À compléter à chaque release (le test vérifie la version de package.json). */
 export const CHANGELOG: readonly Release[] = [
+	{
+		version: "1.7.5",
+		date: "2026-11-15",
+		changes: [
+			{
+				kind: "feature",
+				text: "Correction groupée d'une prom'ss mal saisie à l'import : un crayon dans le filtre prom'ss met à jour tous ses membres et leurs usernames.",
+			},
+			{
+				kind: "fix",
+				text: "Connexion difficile sur Android.",
+			},
+			{
+				kind: "improvement",
+				text: "Message d'erreur plus explicite lors de la modification d'un utilisateur.",
+			},
+		],
+	},
   {
 		version: "1.7.4",
 		date: "2026-09-24",
