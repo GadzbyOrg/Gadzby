@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+import { eq } from "drizzle-orm";
+
 import { db } from "@/db";
 
 import { verifyCredentials } from "../credentials";
@@ -15,6 +17,11 @@ vi.mock("@/db", () => ({
 		},
 	},
 }));
+
+vi.mock("drizzle-orm", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("drizzle-orm")>();
+	return { ...actual, eq: vi.fn(actual.eq) };
+});
 
 vi.mock("bcryptjs", () => {
 	const compare = vi.fn(
@@ -45,6 +52,14 @@ describe("verifyCredentials", () => {
 		const result = await verifyCredentials("JohnDoe", "correct_password");
 
 		expect(result).toEqual({ ok: true, user: activeUser });
+	});
+
+	test("trims and lowercases the username before lookup (mobile keyboards)", async () => {
+		vi.mocked(db.query.users.findFirst).mockResolvedValue(activeUser as any);
+
+		await verifyCredentials(" JohnDoe ", "correct_password");
+
+		expect(vi.mocked(eq)).toHaveBeenCalledWith(expect.anything(), "johndoe");
 	});
 
 	test("rejects an unknown user as INVALID", async () => {

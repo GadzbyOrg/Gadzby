@@ -1,10 +1,20 @@
 "use client";
 
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { IconChevronDown, IconSearch } from "@tabler/icons-react";
+import { IconChevronDown, IconPencil, IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
+
+/**
+ * Action secondaire affichée sous forme de crayon à droite de chaque prom'ss
+ * (ex : corriger une prom'ss mal saisie), sans avoir à la sélectionner d'abord.
+ */
+interface PromssSelectorItemAction {
+    /** Libellé accessible du bouton pour une prom'ss donnée. */
+    label: (promss: string) => string;
+    onSelect: (promss: string) => void;
+}
 
 interface PromssSelectorProps {
     promssList: string[];
@@ -12,6 +22,7 @@ interface PromssSelectorProps {
     onChange: (value: string) => void;
     placeholder?: string;
     className?: string;
+    itemAction?: PromssSelectorItemAction;
 }
 
 export function PromssSelector({
@@ -20,6 +31,7 @@ export function PromssSelector({
     onChange,
     placeholder = "Promo",
     className,
+    itemAction,
 }: PromssSelectorProps) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
@@ -37,6 +49,12 @@ export function PromssSelector({
     const handleOpenChange = (isOpen: boolean) => {
         setOpen(isOpen);
         if (!isOpen) setSearch("");
+    };
+
+    const handleItemAction = (e: React.MouseEvent, value: string) => {
+        e.stopPropagation();
+        handleOpenChange(false);
+        itemAction?.onSelect(value);
     };
 
     const isSelected = selectedPromss && selectedPromss !== "all";
@@ -97,14 +115,25 @@ export function PromssSelector({
                             <div
                                 key={p}
                                 className={cn(
-                                    "rounded-md px-3 py-1.5 text-sm cursor-pointer select-none transition-colors font-mono",
+                                    "group flex items-center justify-between gap-2 rounded-md px-3 py-1.5 text-sm cursor-pointer select-none transition-colors font-mono",
                                     selectedPromss === p
                                         ? "text-fg bg-accent-500/10 font-medium"
                                         : "text-fg-subtle hover:bg-elevated hover:text-fg"
                                 )}
                                 onClick={() => handleSelect(p)}
                             >
-                                {p}
+                                <span className="truncate">{p}</span>
+                                {itemAction && (
+                                    <button
+                                        type="button"
+                                        aria-label={itemAction.label(p)}
+                                        title={itemAction.label(p)}
+                                        onClick={(e) => handleItemAction(e, p)}
+                                        className="-my-0.5 -mr-1.5 shrink-0 rounded p-1 text-fg-subtle opacity-0 transition-opacity hover:bg-surface-950 hover:text-fg focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-500/40 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+                                    >
+                                        <IconPencil className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
                             </div>
                         ))
                     )}

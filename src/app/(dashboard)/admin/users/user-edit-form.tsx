@@ -52,6 +52,22 @@ interface UserEditFormProps {
 
 const initialState = { error: undefined, success: undefined };
 
+const FIELD_LABELS: Record<string, string> = {
+	email: "Email",
+	phone: "Téléphone",
+	bucque: "Bucque",
+	nom: "Nom",
+	prenom: "Prénom",
+	promss: "Prom'ss",
+	nums: "Nums",
+	tabagnss: "Tabagn'ss",
+	roleId: "Rôle",
+	balance: "Solde",
+	username: "Nom d'utilisateur",
+	newPassword: "Mot de passe",
+	userId: "Utilisateur",
+};
+
 const inputCls =
 	"w-full bg-surface-950 border border-border/60 rounded-lg px-3.5 py-2 text-sm text-fg placeholder:text-fg-subtle/40 focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 transition-all";
 
@@ -125,7 +141,21 @@ export function UserEditForm({
 				{state?.error && (
 					<div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-500/8 border border-red-500/20 text-red-300 text-sm">
 						<IconAlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-						{state.error}
+						<div>
+							{state.error}
+							{"fieldErrors" in state && state.fieldErrors && (
+								<ul className="mt-1.5 space-y-0.5 text-xs text-red-300/80">
+									{Object.entries(state.fieldErrors).map(([field, msgs]) => (
+										<li key={field}>
+											<span className="font-semibold">
+												{FIELD_LABELS[field] ?? field}
+											</span>{" "}
+											: {(msgs as string[]).join(", ")}
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
 					</div>
 				)}
 				{state?.success && (

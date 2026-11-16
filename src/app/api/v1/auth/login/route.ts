@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 	if (!parsed.success) return validationError(parsed.error);
 
 	// Limite par compte : freine le brute force même réparti sur plusieurs IP.
-	const username = parsed.data.username.toLowerCase();
+	const username = parsed.data.username.trim().toLowerCase();
 	const userLimit = await rateLimit(req, username, RATE_LIMITS.loginUser);
 	if (!userLimit.success) return rateLimitResponse(userLimit);
 

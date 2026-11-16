@@ -38,7 +38,7 @@ export async function verifyCredentials(
 	rawUsername: string,
 	password: string,
 ): Promise<CredentialsResult> {
-	const user = await findUserForLogin(rawUsername.toLowerCase());
+	const user = await findUserForLogin(rawUsername.trim().toLowerCase());
 
 	if (!user || user.isDeleted || !user.passwordHash) {
 		return { ok: false, reason: "INVALID" };

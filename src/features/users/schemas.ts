@@ -99,3 +99,10 @@ export const adminDeleteUserSchema = z.object({
 export const importUsersBatchSchema = z.object({
 	rows: z.array(z.record(z.string(), z.any())),
 });
+
+export const renamePromssSchema = z.object({
+	fromPromss: z.string().trim().min(1, "La prom'ss actuelle est requise"), // casse d'origine, comparée sans casse en base
+	toPromss: z.string().trim().min(1, "La nouvelle prom'ss est requise").toUpperCase(),
+});
+
+export type RenamePromssInput = z.infer<typeof renamePromssSchema>;

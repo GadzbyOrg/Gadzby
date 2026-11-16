@@ -1,8 +1,8 @@
 
-import { eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 
 import { db } from "@/db";
-import { roles,users } from "@/db/schema";
+import { roles, users } from "@/db/schema";
 
 async function main() {
 	console.log("🌱 Assigning Base Role to Users...");
@@ -16,14 +16,19 @@ async function main() {
 		process.exit(1);
 	}
 
-	const result = await db.update(users)
+	// Soft-deleted users have their role cleared on purpose, leave them alone
+	const updated = await db
+		.update(users)
 		.set({ roleId: userRole.id })
-		.where(isNull(users.roleId));
+		.where(
+			and(
+				isNull(users.roleId),
+				or(isNull(users.isDeleted), eq(users.isDeleted, false)),
+			),
+		)
+		.returning({ id: users.id });
 
-    // @ts-ignore - rowCount is available in some drivers/results but typescript definition might vary
-	const updatedCount = result.rowCount ?? "unknown";
-
-	console.log(`✅ Assigned 'USER' role to ${updatedCount} users.`);
+	console.log(`✅ Assigned 'USER' role to ${updated.length} users.`);
 	process.exit(0);
 }
 
