@@ -26,6 +26,24 @@ export function compareVersions(a: string, b: string): number {
 /** Plus récente en premier. À compléter à chaque release (le test vérifie la version de package.json). */
 export const CHANGELOG: readonly Release[] = [
 	{
+		version: "1.8.0",
+		date: "2026-11-16",
+		changes: [
+			{
+				kind: "feature",
+				text: "API pour les applications tierces : connexion d'un utilisateur, consultation de son solde et achats en libre-service.",
+			},
+			{
+				kind: "improvement",
+				text: "Documentation de l'API réécrite sous forme de guides et d'une référence par ressource.",
+			},
+			{
+				kind: "fix",
+				text: "Corrections de plusieurs problèmes connus de l'API (limitation de requêtes, validation des données, comptes supprimés).",
+			},
+		],
+	},
+	{
 		version: "1.7.5",
 		date: "2026-11-15",
 		changes: [
