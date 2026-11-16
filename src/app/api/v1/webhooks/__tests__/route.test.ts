@@ -7,6 +7,7 @@ import { db } from "@/db";
 
 vi.mock("@/lib/api-auth", () => ({
 	validateApiKey: vi.fn(),
+	rateLimit: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock("@/db", () => ({
@@ -44,7 +45,7 @@ describe("Webhooks API Endpoints", () => {
 
 		it("should return webhooks for the valid key", async () => {
 			vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
-			vi.mocked(db.query.apiWebhooks.findMany).mockResolvedValue([{ id: "wh-1", url: "https://test.com" }] as any);
+			vi.mocked(db.query.apiWebhooks.findMany).mockResolvedValue([{ id: "33333333-3333-4333-8333-333333333333", url: "https://test.com" }] as any);
 
 			const req = new NextRequest("http://localhost/api/v1/webhooks");
 			const res = await GET(req);
@@ -72,7 +73,7 @@ describe("Webhooks API Endpoints", () => {
 		it("should create webhook and return 201", async () => {
 			vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 			
-			const insertReturn = vi.fn().mockResolvedValue([{ id: "wh-1", secret: "wh_sec_xxx", url: "https://hook.com" }]);
+			const insertReturn = vi.fn().mockResolvedValue([{ id: "33333333-3333-4333-8333-333333333333", secret: "wh_sec_xxx", url: "https://hook.com" }]);
 			const mockInsert = vi.fn(() => ({ values: vi.fn(() => ({ returning: insertReturn })) }));
 			vi.mocked(db.insert as any).mockImplementation(mockInsert);
 
@@ -90,7 +91,7 @@ describe("Webhooks API Endpoints", () => {
 	});
 
 	describe("DELETE /api/v1/webhooks/[webhookId]", () => {
-		const mockParams = Promise.resolve({ webhookId: "wh-1" });
+		const mockParams = Promise.resolve({ webhookId: "33333333-3333-4333-8333-333333333333" });
 
 		it("should return 404 if webhook not found", async () => {
 			vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
@@ -99,7 +100,7 @@ describe("Webhooks API Endpoints", () => {
 			const mockDelete = vi.fn(() => ({ where: vi.fn(() => ({ returning: deleteReturn })) }));
 			vi.mocked(db.delete as any).mockImplementation(mockDelete);
 
-			const req = new NextRequest("http://localhost/api/v1/webhooks/wh-1", { method: "DELETE" });
+			const req = new NextRequest("http://localhost/api/v1/webhooks/33333333-3333-4333-8333-333333333333", { method: "DELETE" });
 			const res = await DELETE(req, { params: mockParams });
 			expect(res.status).toBe(404);
 		});
@@ -107,11 +108,11 @@ describe("Webhooks API Endpoints", () => {
 		it("should delete and return 200", async () => {
 			vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 			
-			const deleteReturn = vi.fn().mockResolvedValue([{ id: "wh-1" }]);
+			const deleteReturn = vi.fn().mockResolvedValue([{ id: "33333333-3333-4333-8333-333333333333" }]);
 			const mockDelete = vi.fn(() => ({ where: vi.fn(() => ({ returning: deleteReturn })) }));
 			vi.mocked(db.delete as any).mockImplementation(mockDelete);
 
-			const req = new NextRequest("http://localhost/api/v1/webhooks/wh-1", { method: "DELETE" });
+			const req = new NextRequest("http://localhost/api/v1/webhooks/33333333-3333-4333-8333-333333333333", { method: "DELETE" });
 			const res = await DELETE(req, { params: mockParams });
 			expect(res.status).toBe(200);
 		});

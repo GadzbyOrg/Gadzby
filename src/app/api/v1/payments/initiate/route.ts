@@ -1,8 +1,15 @@
-import * as Sentry from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { rateLimit, validateApiKey, withIdempotency } from "@/lib/api-auth";
+import {
+	handleRouteError,
+	jsonError,
+	RATE_LIMITS,
+	rateLimitResponse,
+	readJsonBody,
+	validationError,
+} from "@/lib/api-http";
 import { TransactionService } from "@/services/transaction-service";
 
 const initiatePaymentSchema = z.object({
@@ -13,69 +20,38 @@ const initiatePaymentSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-	// Authentication
 	const authRes = await validateApiKey(req);
-	if (!authRes.success) {
-		return NextResponse.json(
-			{ error: authRes.error },
-			{ status: authRes.status },
-		);
-	}
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
 
-	const keyId = authRes.keyRecord!.id;
+	const keyRecord = authRes.keyRecord!;
+	const limitRes = await rateLimit(req, keyRecord.id, RATE_LIMITS.write);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
 
-	// Rate Limiting (e.g. 30 payments per minute per API key)
-	const limitRes = await rateLimit(req, keyId, 30, 60000);
-	if (!limitRes.success) {
-		return NextResponse.json(
-			{ error: limitRes.error },
-			{ status: limitRes.status },
-		);
-	}
+	const json = await readJsonBody(req);
+	if (!json.ok) return json.response;
 
-	let body;
-	try {
-		const text = await req.text();
-		body = text ? JSON.parse(text) : {};
-	} catch {
-		return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-	}
+	return withIdempotency(req, keyRecord.id, json.body, async () => {
+		const parsed = initiatePaymentSchema.safeParse(json.body);
+		if (!parsed.success) return validationError(parsed.error);
 
-	return withIdempotency(req, keyId, body, async () => {
+		const { senderId, receiverId, amountInEuros, description } = parsed.data;
+
 		try {
-			const parsed = initiatePaymentSchema.safeParse(body);
-
-			if (!parsed.success) {
-				return NextResponse.json(
-					{ error: "Invalid payload", details: parsed.error.format() },
-					{ status: 400 },
-				);
-			}
-
-			const { senderId, receiverId, amountInEuros, description } = parsed.data;
-
-			// Automatically prefix description to identify API origin
-			const finalDescription = `[API - ${authRes.keyRecord!.name}] ${description || "Paiement API"}`;
-
-			// Using TransactionService to create standard transfer
+			// Préfixe systématique pour identifier l'origine API dans l'historique.
 			await TransactionService.transferUserToUser(
 				senderId,
 				receiverId,
 				amountInEuros,
-				finalDescription,
+				`[API - ${keyRecord.name}] ${description || "Paiement API"}`,
 			);
 
 			return NextResponse.json(
 				{ success: true, message: "Payment successful" },
 				{ status: 201 },
 			);
-		} catch (error: any) {
-			Sentry.captureException(error);
-			console.error("API Payment Error:", error);
-			return NextResponse.json(
-				{ error: error.message || "Internal Server Error" },
-				{ status: 500 },
-			);
+		} catch (error) {
+			// Erreurs métier (solde insuffisant…) → 400 via AppError, le reste → 500.
+			return handleRouteError(error, "payments initiate");
 		}
 	});
 }

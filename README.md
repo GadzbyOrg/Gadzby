@@ -56,5 +56,5 @@ npx drizzle-kit push   # Appliquer les changements de schéma DB
 - [Administration système](./docs/SYSADMIN.md)
 
 **Développeur** — API externe et intégrations paiement :
-- [API développeur](./docs/API-DOCS.md)
+- [API développeur](./docs/api/README.md)
 - [Système de paiement](./docs/PAYMENTS.md)

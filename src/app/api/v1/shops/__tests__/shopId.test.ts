@@ -30,8 +30,8 @@ describe("GET /api/v1/shops/[shopId]", () => {
 	it("should return 401 if API key is invalid", async () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: false, error: "Invalid Key", status: 401 });
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-uuid");
-		const res = await GET(req, makeParams("shop-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 		const json = await res.json();
 
 		expect(res.status).toBe(401);
@@ -42,8 +42,8 @@ describe("GET /api/v1/shops/[shopId]", () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: false, error: "Too Many Requests", status: 429 });
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-uuid");
-		const res = await GET(req, makeParams("shop-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 
 		expect(res.status).toBe(429);
 	});
@@ -53,8 +53,8 @@ describe("GET /api/v1/shops/[shopId]", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 		(db.query.shops.findFirst as any).mockResolvedValue(null);
 
-		const req = new NextRequest("http://localhost/api/v1/shops/missing-uuid");
-		const res = await GET(req, makeParams("missing-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/shops/99999999-9999-4999-8999-999999999999");
+		const res = await GET(req, makeParams("99999999-9999-4999-8999-999999999999"));
 		const json = await res.json();
 
 		expect(res.status).toBe(404);
@@ -64,10 +64,10 @@ describe("GET /api/v1/shops/[shopId]", () => {
 	it("should return 404 if shop is inactive", async () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
-		(db.query.shops.findFirst as any).mockResolvedValue({ id: "shop-1", isActive: false });
+		(db.query.shops.findFirst as any).mockResolvedValue({ id: "11111111-1111-4111-8111-111111111111", isActive: false });
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-1");
-		const res = await GET(req, makeParams("shop-1"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 		const json = await res.json();
 
 		expect(res.status).toBe(404);
@@ -79,7 +79,7 @@ describe("GET /api/v1/shops/[shopId]", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 
 		const mockShop = {
-			id: "shop-1",
+			id: "11111111-1111-4111-8111-111111111111",
 			name: "Le Foys",
 			slug: "foyss",
 			description: "Le Foyer",
@@ -89,8 +89,8 @@ describe("GET /api/v1/shops/[shopId]", () => {
 		};
 		(db.query.shops.findFirst as any).mockResolvedValue(mockShop);
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-1");
-		const res = await GET(req, makeParams("shop-1"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 		const json = await res.json();
 
 		expect(res.status).toBe(200);

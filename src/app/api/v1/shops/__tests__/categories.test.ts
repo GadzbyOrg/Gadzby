@@ -30,8 +30,8 @@ describe("GET /api/v1/shops/[shopId]/categories", () => {
 	it("should return 401 if API key is invalid", async () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: false, error: "Invalid Key", status: 401 });
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-uuid/categories");
-		const res = await GET(req, makeParams("shop-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111/categories");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 		const json = await res.json();
 
 		expect(res.status).toBe(401);
@@ -42,8 +42,8 @@ describe("GET /api/v1/shops/[shopId]/categories", () => {
 		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: false, error: "Too Many Requests", status: 429 });
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-uuid/categories");
-		const res = await GET(req, makeParams("shop-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111/categories");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 
 		expect(res.status).toBe(429);
 	});
@@ -53,8 +53,8 @@ describe("GET /api/v1/shops/[shopId]/categories", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 		(db.query.productCategories.findMany as any).mockResolvedValue([]);
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-uuid/categories");
-		const res = await GET(req, makeParams("shop-uuid"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111/categories");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 		const json = await res.json();
 
 		expect(res.status).toBe(200);
@@ -67,13 +67,13 @@ describe("GET /api/v1/shops/[shopId]/categories", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 
 		const mockCategories = [
-			{ id: "cat-1", name: "Boissons", shopId: "shop-1" },
-			{ id: "cat-2", name: "Snacks", shopId: "shop-1" },
+			{ id: "66666666-6666-4666-8666-666666666661", name: "Boissons", shopId: "11111111-1111-4111-8111-111111111111" },
+			{ id: "66666666-6666-4666-8666-666666666662", name: "Snacks", shopId: "11111111-1111-4111-8111-111111111111" },
 		];
 		(db.query.productCategories.findMany as any).mockResolvedValue(mockCategories);
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-1/categories");
-		const res = await GET(req, makeParams("shop-1"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111/categories");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 		const json = await res.json();
 
 		expect(res.status).toBe(200);
@@ -87,8 +87,8 @@ describe("GET /api/v1/shops/[shopId]/categories", () => {
 		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 		(db.query.productCategories.findMany as any).mockRejectedValue(new Error("DB error"));
 
-		const req = new NextRequest("http://localhost/api/v1/shops/shop-1/categories");
-		const res = await GET(req, makeParams("shop-1"));
+		const req = new NextRequest("http://localhost/api/v1/shops/11111111-1111-4111-8111-111111111111/categories");
+		const res = await GET(req, makeParams("11111111-1111-4111-8111-111111111111"));
 		const json = await res.json();
 
 		expect(res.status).toBe(500);
