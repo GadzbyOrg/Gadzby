@@ -61,7 +61,7 @@ export const CHANGELOG: readonly Release[] = [
 			},
 		],
 	},
-  {
+	{
 		version: "1.7.4",
 		date: "2026-09-24",
 		changes: [
