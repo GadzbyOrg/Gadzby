@@ -40,7 +40,7 @@ describe("Fam'ss API Endpoints", () => {
 		it("should return list of families", async () => {
 			vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 			vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
-			vi.mocked(db.query.famss.findMany).mockResolvedValue([{ id: "fam-1", name: "Les Clunysiens" }] as any);
+			vi.mocked(db.query.famss.findMany).mockResolvedValue([{ id: "44444444-4444-4444-8444-444444444444", name: "Les Clunysiens" }] as any);
 
 			const req = new NextRequest("http://localhost/api/v1/famss?limit=10");
 			const res = await GET_Famss(req);
@@ -64,11 +64,11 @@ describe("Fam'ss API Endpoints", () => {
 	});
 
 	describe("GET /api/v1/famss/[famsId]/members", () => {
-		const mockParams = Promise.resolve({ famsId: "fam-1" });
+		const mockParams = Promise.resolve({ famsId: "44444444-4444-4444-8444-444444444444" });
 
 		it("should return 401 if API key is invalid", async () => {
 			vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: false, error: "Invalid Key", status: 401 });
-			const req = new NextRequest("http://localhost/api/v1/famss/fam-1/members");
+			const req = new NextRequest("http://localhost/api/v1/famss/44444444-4444-4444-8444-444444444444/members");
 			const res = await GET_Members(req, { params: mockParams });
 			expect(res.status).toBe(401);
 		});
@@ -78,7 +78,7 @@ describe("Fam'ss API Endpoints", () => {
 			vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
 			vi.mocked(db.query.famss.findFirst).mockResolvedValue(undefined as any);
 
-			const req = new NextRequest("http://localhost/api/v1/famss/fam-1/members");
+			const req = new NextRequest("http://localhost/api/v1/famss/44444444-4444-4444-8444-444444444444/members");
 			const res = await GET_Members(req, { params: mockParams });
 			expect(res.status).toBe(404);
 		});
@@ -86,14 +86,14 @@ describe("Fam'ss API Endpoints", () => {
 		it("should return list of users for valid fam", async () => {
 			vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1" } as any });
 			vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
-			vi.mocked(db.query.famss.findFirst).mockResolvedValue({ id: "fam-1" } as any);
+			vi.mocked(db.query.famss.findFirst).mockResolvedValue({ id: "44444444-4444-4444-8444-444444444444" } as any);
 			
 			const mockMembers = [
-				{ user: { id: "user-1", username: "jdoe" } }
+				{ user: { id: "22222222-2222-4222-8222-222222222222", username: "jdoe" } }
 			];
 			vi.mocked(db.query.famsMembers.findMany).mockResolvedValue(mockMembers as any);
 
-			const req = new NextRequest("http://localhost/api/v1/famss/fam-1/members");
+			const req = new NextRequest("http://localhost/api/v1/famss/44444444-4444-4444-8444-444444444444/members");
 			const res = await GET_Members(req, { params: mockParams });
 			const json = await res.json();
 

@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { apiKeys } from "@/db/schema";
+import { apiKeys, apiWebhooks } from "@/db/schema";
 import { authenticatedAction } from "@/lib/actions";
 
 const createApiKeySchema = z.object({
@@ -31,22 +31,30 @@ export const createApiKeyAction = authenticatedAction(
 		});
 
 		revalidatePath("/admin/settings");
-		
+
 		return { success: "API Key created successfully", rawKey };
 	},
-	{ name: "createApiKeyAction", permissions: ["ADMIN_ACCESS"] }
+	{ name: "createApiKeyAction", permissions: ["ADMIN_ACCESS"] },
 );
 
 export const revokeApiKeyAction = authenticatedAction(
 	revokeApiKeySchema,
 	async (data) => {
 		const { id } = data;
-		await db.update(apiKeys)
-			.set({ revokedAt: new Date() })
-			.where(eq(apiKeys.id, id));
+		await db.transaction(async (tx) => {
+			await tx
+				.update(apiKeys)
+				.set({ revokedAt: new Date() })
+				.where(eq(apiKeys.id, id));
+			// Une clé révoquée ne doit plus recevoir d'événements.
+			await tx
+				.update(apiWebhooks)
+				.set({ isActive: false })
+				.where(eq(apiWebhooks.apiKeyId, id));
+		});
 
 		revalidatePath("/admin/settings");
 		return { success: "API Key revoked successfully" };
 	},
-	{ name: "revokeApiKeyAction", permissions: ["ADMIN_ACCESS"] }
+	{ name: "revokeApiKeyAction", permissions: ["ADMIN_ACCESS"] },
 );

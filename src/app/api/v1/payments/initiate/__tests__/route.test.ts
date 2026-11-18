@@ -3,12 +3,15 @@ import { NextRequest } from "next/server";
 import { POST } from "../route";
 import * as apiAuth from "@/lib/api-auth";
 import { TransactionService } from "@/services/transaction-service";
+import { AppError } from "@/lib/errors";
 
 vi.mock("@/lib/api-auth", () => ({
 	validateApiKey: vi.fn(),
 	rateLimit: vi.fn(),
 	withIdempotency: vi.fn(async (req, keyId, body, handler) => await handler())
 }));
+
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 vi.mock("@/services/transaction-service", () => ({
 	TransactionService: {
@@ -80,5 +83,38 @@ describe("POST /api/v1/payments/initiate", () => {
 			validPayload.amountInEuros,
 			"[API - App Test] Test transfer"
 		);
+	});
+
+	it("returns 400 with the business message when the balance is too low", async () => {
+		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1", name: "App" } as any });
+		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
+		vi.mocked(TransactionService.transferUserToUser).mockRejectedValue(new AppError("Solde insuffisant"));
+
+		const req = new NextRequest("http://localhost/api/v1/payments/initiate", {
+			method: "POST",
+			body: JSON.stringify({
+				senderId: "22222222-2222-4222-8222-222222222222",
+				receiverId: "77777777-7777-4777-8777-777777777777",
+				amountInEuros: 10,
+			}),
+		});
+		const res = await POST(req);
+
+		expect(res.status).toBe(400);
+		expect(await res.json()).toEqual({ error: "Solde insuffisant" });
+	});
+
+	it("returns validation details as an issues array", async () => {
+		vi.mocked(apiAuth.validateApiKey).mockResolvedValue({ success: true, keyRecord: { id: "key-1", name: "App" } as any });
+		vi.mocked(apiAuth.rateLimit).mockResolvedValue({ success: true });
+
+		const req = new NextRequest("http://localhost/api/v1/payments/initiate", {
+			method: "POST",
+			body: JSON.stringify({ senderId: "x" }),
+		});
+		const json = await (await POST(req)).json();
+
+		expect(Array.isArray(json.details)).toBe(true);
+		expect(json.details[0]).toHaveProperty("path");
 	});
 });

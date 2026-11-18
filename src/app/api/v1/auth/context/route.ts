@@ -1,30 +1,28 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { rateLimit, validateApiKey } from "@/lib/api-auth";
+import {
+	jsonError,
+	RATE_LIMITS,
+	rateLimitResponse,
+} from "@/lib/api-http";
 
 export async function GET(req: NextRequest) {
-	// Rate Limiting specifically for this endpoint
-	const ip = req.headers.get("x-forwarded-for") ?? "unknown_ip";
-	const limitRes = await rateLimit(req, ip, 100, 60000); // 100 req per minute per IP
-	if (!limitRes.success) {
-		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
-	}
+	// Limite par IP avant l'authentification : freine le test de clés en masse.
+	const limitRes = await rateLimit(req, null, RATE_LIMITS.context);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
 
 	const authRes = await validateApiKey(req);
-	if (!authRes.success) {
-		return NextResponse.json({ error: authRes.error }, { status: authRes.status });
-	}
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
 
 	const { keyRecord } = authRes;
-
-	// Returns context tied to the API key
 	return NextResponse.json({
 		success: true,
 		key: {
 			id: keyRecord!.id,
 			name: keyRecord!.name,
 			scopes: keyRecord!.scopes,
-			createdAt: keyRecord!.createdAt
+			createdAt: keyRecord!.createdAt,
 		},
 	});
 }

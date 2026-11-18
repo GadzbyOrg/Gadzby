@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 export const apiRateLimits = pgTable("api_rate_limits", {
 	id: uuid("id").defaultRandom().primaryKey(),
@@ -6,4 +6,7 @@ export const apiRateLimits = pgTable("api_rate_limits", {
 	endpoint: text("endpoint").notNull(),
 	requestCount: integer("request_count").default(1).notNull(),
 	resetTime: timestamp("reset_time", { withTimezone: true }).notNull(),
-});
+}, (t) => [
+	// Clé de l'upsert atomique de `rateLimit` (format `<identifiant>:<bucket>`).
+	uniqueIndex("uq_api_rate_limits_ip_or_key").on(t.ipOrKey),
+]);

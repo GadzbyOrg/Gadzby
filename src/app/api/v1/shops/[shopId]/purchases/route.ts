@@ -1,9 +1,19 @@
-import * as Sentry from "@sentry/nextjs";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { db } from "@/db";
+import { shops } from "@/db/schema";
 import { rateLimit, validateApiKey, withIdempotency } from "@/lib/api-auth";
-import { findAppError } from "@/lib/errors";
+import {
+	handleRouteError,
+	jsonError,
+	parseUuid,
+	RATE_LIMITS,
+	rateLimitResponse,
+	readJsonBody,
+	validationError,
+} from "@/lib/api-http";
 import { TransactionService } from "@/services/transaction-service";
 
 const purchaseItemSchema = z.object({
@@ -25,87 +35,49 @@ export async function POST(
 	{ params }: { params: Promise<{ shopId: string }> },
 ) {
 	const authRes = await validateApiKey(req);
-	if (!authRes.success) {
-		return NextResponse.json(
-			{ error: authRes.error },
-			{ status: authRes.status },
-		);
-	}
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
 
-	const keyId = authRes.keyRecord!.id;
-	// Stricter rate limit for purchases (e.g. 30/min)
-	const limitRes = await rateLimit(req, keyId, 30, 60000);
-	if (!limitRes.success) {
-		return NextResponse.json(
-			{ error: limitRes.error },
-			{ status: limitRes.status },
-		);
-	}
+	const keyRecord = authRes.keyRecord!;
+	const limitRes = await rateLimit(req, keyRecord.id, RATE_LIMITS.write);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
 
-	let body;
-	try {
-		const text = await req.text();
-		body = text ? JSON.parse(text) : {};
-	} catch {
-		return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-	}
+	const shopId = parseUuid((await params).shopId, "shopId");
+	if (!shopId.ok) return shopId.response;
 
-	return withIdempotency(req, keyId, body, async () => {
+	const json = await readJsonBody(req);
+	if (!json.ok) return json.response;
+
+	return withIdempotency(req, keyRecord.id, json.body, async () => {
+		const parsed = purchaseSchema.safeParse(json.body);
+		if (!parsed.success) return validationError(parsed.error);
+
+		const { targetUserId, items, paymentSource, famsId, descriptionPrefix } = parsed.data;
+		if (paymentSource === "FAMILY" && !famsId) {
+			return jsonError(400, "famsId is required when paymentSource is FAMILY");
+		}
+
 		try {
-			const { shopId } = await params;
+			const shop = await db.query.shops.findFirst({
+				where: eq(shops.id, shopId.value),
+				columns: { isActive: true },
+			});
+			if (!shop) return jsonError(404, "Shop not found");
+			if (!shop.isActive) return jsonError(403, "Shop inactive");
 
-			const parsed = purchaseSchema.safeParse(body);
-			if (!parsed.success) {
-				return NextResponse.json(
-					{ error: "Invalid payload", details: parsed.error.issues },
-					{ status: 400 },
-				);
-			}
-
-			const { targetUserId, items, paymentSource, famsId, descriptionPrefix } =
-				parsed.data;
-
-			if (paymentSource === "FAMILY" && !famsId) {
-				return NextResponse.json(
-					{ error: "famsId is required when paymentSource is FAMILY" },
-					{ status: 400 },
-				);
-			}
-
-			const prefix =
-				descriptionPrefix || `[API - ${authRes.keyRecord!.name}] Achat`;
-
-			// Using targetUserId as issuerId since they are initiating the purchase via the API
+			// L'utilisateur débité est aussi l'émetteur : l'achat passe par l'API.
 			await TransactionService.processShopPurchase(
-				shopId,
+				shopId.value,
 				targetUserId,
 				targetUserId,
 				items,
 				paymentSource,
 				famsId,
-				prefix,
+				descriptionPrefix || `[API - ${keyRecord.name}] Achat`,
 			);
 
 			return NextResponse.json({ success: true }, { status: 201 });
-		} catch (error: any) {
-			// Erreur métier : statut et message portés par l'AppError elle-même,
-			// plus de matching sur le texte français.
-			const appError = findAppError(error);
-			if (appError) {
-				return NextResponse.json(
-					{ error: appError.message },
-					{ status: appError.status },
-				);
-			}
-
-			// Panne technique uniquement : c'est ça qui mérite une alerte.
-			Sentry.captureException(error);
-			console.error("API Purchase Error:", error);
-
-			return NextResponse.json(
-				{ error: "Internal Server Error" },
-				{ status: 500 },
-			);
+		} catch (error) {
+			return handleRouteError(error, "shop purchase");
 		}
 	});
 }

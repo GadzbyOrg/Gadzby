@@ -4,27 +4,30 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { rateLimit, validateApiKey } from "@/lib/api-auth";
+import {
+	handleRouteError,
+	jsonError,
+	parseUuid,
+	RATE_LIMITS,
+	rateLimitResponse,
+} from "@/lib/api-http";
 
 export async function GET(
 	req: NextRequest,
-	{ params }: { params: Promise<{ userId: string }> }
+	{ params }: { params: Promise<{ userId: string }> },
 ) {
 	const authRes = await validateApiKey(req);
-	if (!authRes.success) {
-		return NextResponse.json({ error: authRes.error }, { status: authRes.status });
-	}
+	if (!authRes.success) return jsonError(authRes.status!, authRes.error!);
 
-	const keyId = authRes.keyRecord!.id;
-	const limitRes = await rateLimit(req, keyId, 100, 60000);
-	if (!limitRes.success) {
-		return NextResponse.json({ error: limitRes.error }, { status: limitRes.status });
-	}
+	const limitRes = await rateLimit(req, authRes.keyRecord!.id, RATE_LIMITS.read);
+	if (!limitRes.success) return rateLimitResponse(limitRes);
+
+	const userId = parseUuid((await params).userId, "userId");
+	if (!userId.ok) return userId.response;
 
 	try {
-		const { userId } = await params;
-
 		const user = await db.query.users.findFirst({
-			where: eq(users.id, userId),
+			where: eq(users.id, userId.value),
 			columns: {
 				id: true,
 				nom: true,
@@ -40,20 +43,10 @@ export async function GET(
 			},
 		});
 
-		if (!user) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
-
-		if (user.isDeleted) {
-			return NextResponse.json({ error: "User not found" }, { status: 404 });
-		}
+		if (!user || user.isDeleted) return jsonError(404, "User not found");
 
 		return NextResponse.json({ success: true, user });
-	} catch (error: any) {
-		console.error("API User Get Error:", error);
-		return NextResponse.json(
-			{ error: "Internal Server Error" },
-			{ status: 500 }
-		);
+	} catch (error) {
+		return handleRouteError(error, "user get");
 	}
 }
